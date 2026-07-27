@@ -21,8 +21,10 @@ describe("tests the displaying of basic texts in the terminal", () => {
     const w = 80;
     const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
 
-    cnv.root.addChildren(new DisplayComponent(cnv.root));
-    cnv.root.addChildren(new DisplayComponent(cnv.root));
+    cnv.root.addChildren([
+      new DisplayComponent(cnv.root),
+      new DisplayComponent(cnv.root),
+    ]);
 
     for (const child of cnv.root.children()) {
       expect(

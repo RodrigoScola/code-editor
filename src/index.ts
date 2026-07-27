@@ -1,6 +1,6 @@
 import process from "process";
 import { Canvas } from "./ui/canvas.js";
-import { DisplayComponent } from "./ui/components.js";
+import { DisplayComponent, TextDisplay } from "./ui/components.js";
 import colors from "./ui/colors.js";
 
 enableMouseEvents();
@@ -12,8 +12,13 @@ const commandWindow = new DisplayComponent(cnv);
 editorWindow.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
 commandWindow.styles.backgroundColor = colors.YELLOW_BACKGROUND;
 
-cnv.addChildren(editorWindow);
-cnv.addChildren(commandWindow);
+cnv.addChildren([editorWindow, commandWindow]);
+
+const textEditor = new TextDisplay(editorWindow);
+
+editorWindow.addChildren(textEditor);
+
+textEditor.setText("this is working?");
 
 commandWindow.setMaxH(1);
 

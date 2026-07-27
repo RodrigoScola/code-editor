@@ -69,7 +69,12 @@ export class Canvas implements Component {
 
     return this;
   }
-  addChildren(c: Component): Component {
+  addChildren(c: Component[]): Component;
+  addChildren(c: Component): Component;
+  addChildren(c: Component | Component[]): Component {
+    if (Array.isArray(c)) {
+      return this.root.addChildren(c);
+    }
     return this.root.addChildren(c);
   }
   children() {

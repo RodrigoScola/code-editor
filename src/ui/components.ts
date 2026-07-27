@@ -60,8 +60,16 @@ export class DisplayComponent implements Component {
     return this.w;
   }
 
-  addChildren(c: Component): Component {
-    this.childs.push(c);
+  addChildren(c: Component[]): Component;
+  addChildren(c: Component): Component;
+  addChildren(c: Component | Component[]): Component {
+    if (Array.isArray(c)) {
+      for (const child of c) {
+        this.childs.push(child);
+      }
+    } else {
+      this.childs.push(c);
+    }
 
     this.setHeight(this.h);
     this.setWidth(this.w);
@@ -174,5 +182,26 @@ export class DisplayComponent implements Component {
     this.y = nStartx;
     this.h = Math.min(this.h, this.parent.height() - this.y);
     return this;
+  }
+}
+
+export class TextDisplay extends DisplayComponent {
+  private text: string;
+  constructor(parent: Component) {
+    super(parent);
+    this.text = "";
+  }
+  setText(ntext: string) {
+    this.text = ntext;
+  }
+  build(map: DisplayTile[][]): DisplayTile[][] {
+    console.log("startx", this.startY());
+    let textInd = 0;
+
+    for (let i = 0; i < this.text.length; i++) {
+      map[this.startY()][this.startX() + i].display = this.text[textInd];
+      textInd++;
+    }
+    return map;
   }
 }
