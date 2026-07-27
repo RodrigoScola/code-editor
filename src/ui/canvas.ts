@@ -21,6 +21,13 @@ export class Canvas implements Component {
 
     this.canvas = new Array();
   }
+  maxHeight() {
+    return this.h;
+  }
+  setMaxH(nmh: number) {
+    this.h = nmh;
+    return this;
+  }
 
   width(): number {
     return this.w;
@@ -32,6 +39,7 @@ export class Canvas implements Component {
   private createTile(x: number, y: number): DisplayTile {
     return {
       x: x,
+      display: " ",
       y: y,
       styles: {
         backgroundColor: colors.BACKGROUND_OFF,
@@ -73,10 +81,9 @@ export class Canvas implements Component {
     // just in case we need it in the future
     this.shadowCanvas = this.canvas.map((i) => ({ ...i })); // ! deep copies
     this.w = nWidth;
+    this.root.setWidth(this.w);
 
     this.canvas = new Array(this.h).map((a) => new Array(this.w));
-
-    this.root.setWidth(this.w);
 
     this.resetCanvas();
 
@@ -84,7 +91,21 @@ export class Canvas implements Component {
   }
 
   render() {
-    return this.canvas.map((line) => line.map((item) => ` `));
+    const rows: string[] = [];
+    for (let i = this.startY(); i < this.startY() + this.height(); i++) {
+      let row = "";
+      for (let j = this.startX(); j < this.startX() + this.width(); j++) {
+        let tile = this.canvas[i][j];
+        assert(
+          tile.display.length == 1,
+          "cannot display more things on one cell",
+        );
+
+        row += `${tile.styles.backgroundColor}${tile.styles.color}${tile.display}${colors.BACKGROUND_OFF}${colors.FOREGROUND_OFF}`;
+      }
+      rows.push(row);
+    }
+    return rows.join("\r\n");
   }
   startX() {
     return this.x;
@@ -105,5 +126,8 @@ export class Canvas implements Component {
   setStartY(nStarty: number): Component {
     this.y = nStarty;
     return this;
+  }
+  getId(): number {
+    return -1;
   }
 }

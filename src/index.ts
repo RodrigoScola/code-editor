@@ -1,18 +1,45 @@
-
+import process from "process";
+import { Canvas } from "./ui/canvas.js";
+import { DisplayComponent } from "./ui/components.js";
+import colors from "./ui/colors.js";
 
 enableMouseEvents();
+
+const cnv = new Canvas();
+
+const editorWindow = new DisplayComponent(cnv);
+const commandWindow = new DisplayComponent(cnv);
+editorWindow.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
+commandWindow.styles.backgroundColor = colors.YELLOW_BACKGROUND;
+
+cnv.addChildren(editorWindow);
+cnv.addChildren(commandWindow);
+
+commandWindow.setMaxH(1);
 
 // setupActiveEditorFrame(state);
 // setupCommandWindow(state);
 // renderWindow(state);
 
+cnv.setHeight(process.stdout.rows);
+cnv.setWidth(process.stdout.columns);
+cnv.build();
+
+process.stdout.write(cnv.render());
+
 process.stdin.on("data", () => {
+  cnv.build();
+  process.stdout.write(cnv.render());
   // renderWindow(state);
 });
 
 process.stdout.on("resize", () => {
-  // resizeEditor(state);
-  // renderWindow(state);
+  clearOutput();
+  cnv.setHeight(process.stdout.rows);
+  cnv.setWidth(process.stdout.columns);
+
+  cnv.build();
+  process.stdout.write(cnv.render());
 });
 
 process.stdout.on("finish", () => {
