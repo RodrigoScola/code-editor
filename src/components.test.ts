@@ -1,7 +1,7 @@
 import colors from "./ui/colors.js";
 import { describe, it, expect } from "vitest";
 import { Canvas } from "./ui/canvas.js";
-import { DisplayComponent } from "./ui/components.js";
+import { DisplayComponent, TextDisplay } from "./ui/components.js";
 describe("tests the displaying of basic texts in the terminal", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
     const cnv = new Canvas();
@@ -163,5 +163,25 @@ describe("tests the displaying of basic texts in the terminal", () => {
       built[0][w - 2].styles.backgroundColor,
       "has the same color as the out",
     ).toBe(colors.MAGENTA_BACKGROUND);
+  });
+  it("the height of the text should be 1 by default", () => {
+    const firstLine = new TextDisplay().setText("this is the first line");
+    const secondLine = new TextDisplay().setText("this is the second line");
+
+    const cnv = new Canvas() as Canvas;
+
+    cnv.setHeight(10).setWidth(10);
+    cnv.addChildren([firstLine, secondLine]);
+
+    cnv.build();
+
+    expect(
+      cnv.canvas[0][0].display,
+      "text should display on the first line",
+    ).toEqual(firstLine.Text().at(0));
+    expect(
+      cnv.canvas[1][0].display,
+      "text should display on the second line",
+    ).toEqual(secondLine.Text().at(0));
   });
 });

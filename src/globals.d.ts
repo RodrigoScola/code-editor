@@ -23,7 +23,7 @@ interface Component {
 
   build(map: DisplayTile[][]): DisplayTile[][];
   styles: () => ComponentStyles | null;
-  setStyles(sty: ComponentStyles): Component;
+  setStyles(sty: Partial<ComponentStyles>): Component;
 }
 
 interface DisplayTile {

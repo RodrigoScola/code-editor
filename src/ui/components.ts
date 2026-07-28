@@ -266,9 +266,16 @@ export class DisplayComponent implements Component {
 
 export class TextDisplay extends DisplayComponent {
   private text: string;
+  paddingLeft: number;
   constructor() {
     super();
+    this.paddingLeft = 0;
+    // if this becomes a problem on the future, fix this
+    this.setMaxH(1);
     this.text = "";
+  }
+  Text() {
+    return this.text;
   }
   setText(ntext: string) {
     this.text = ntext;
@@ -277,9 +284,19 @@ export class TextDisplay extends DisplayComponent {
   build(map: DisplayTile[][]): DisplayTile[][] {
     let textInd = 0;
 
+    const startX = this.startX() + this.paddingLeft;
+    let startY = this.startY();
+
     for (let i = 0; i < this.text.length; i++) {
-      map[this.startY()][this.startX() + i].display = this.text[textInd];
-      map[this.startY()][this.startX() + i].styles = blendStyles(
+      if (!map[startY]) {
+        continue;
+      }
+
+      if (!map[startY] || !map[startY][startX + i]) {
+        continue;
+      }
+      map[startY][startX + i].display = this.text[textInd];
+      map[startY][this.startX() + i].styles = blendStyles(
         this.s,
         this.parent()?.styles(),
       );

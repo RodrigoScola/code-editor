@@ -1,11 +1,80 @@
+import path from "path";
 import process from "process";
+import readline from "node:readline";
 import fs from "fs";
 import { Canvas } from "./ui/canvas.js";
 import { DisplayComponent, TextDisplay } from "./ui/components.js";
 import colors from "./ui/colors.js";
 
-enableMouseEvents();
+// reset any mouse-tracking mode left on by a previous run that didn't exit
+// cleanly (the terminal keeps this state, it isn't tied to our process)
+disableMouseEvents();
 
+const document = {
+  mode: "visual",
+  cursor: {
+    // this is the relative position
+    x: 0,
+    y: 0,
+    down: () => {
+      // todo: this CAN be made simpler, i can feel it
+      const cursor = document.cursor;
+
+      const newComp: TextDisplay | undefined = editorWindow
+        .children()
+        .at(cursor.y + 1) as TextDisplay;
+
+      if (!newComp) {
+        return;
+      }
+      cursor.x = Math.min(cursor.x, newComp.Text().length - 1);
+      cursor.y++;
+    },
+    up: () => {
+      const cursor = document.cursor;
+      cursor.y = Math.min(cursor.y - 1, 0);
+    },
+    left: () => {
+      const cursor = document.cursor;
+      cursor.x = Math.max(cursor.x - 1, 0);
+    },
+    right: () => {
+      // todo: this CAN be made simpler, i can feel it
+
+      const cursor = document.cursor;
+
+      const newComp: TextDisplay | undefined = editorWindow
+        .children()
+        .at(cursor.y) as TextDisplay;
+
+      if (!newComp) {
+        return;
+      }
+      cursor.x = Math.min(cursor.x + 1, newComp.Text().length - 1);
+    },
+
+    build: () => {
+      const cursor = document.cursor;
+      // assuming this was already built
+      const window = editorWindow;
+      const sy = window.startY();
+      const y = clamp(cursor.y + sy, sy, sy + window.height());
+
+      const sx = window.startX();
+      const x = clamp(cursor.x + sx, sx, sx + window.width());
+
+      cnv.canvas[y][x].styles = {
+        backgroundColor: colors.WHITE_FOREGROUND,
+        color: colors.BLUE_FOREGROUND,
+      };
+    },
+  },
+};
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) {
   process.stdin.setRawMode(true);
 }
@@ -13,77 +82,79 @@ process.stdin.resume();
 
 const cnv = new Canvas();
 
-// const editorWindow = new DisplayComponent();
-// const commandWindow = new DisplayComponent();
-// editorWindow.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
-// commandWindow.styles.backgroundColor = colors.YELLOW_BACKGROUND;
+cnv.setDirection("horizontal");
 
-// cnv.addChildren([editorWindow, commandWindow]);
+const treeView = new DisplayComponent();
 
-// const textEditor = new TextDisplay();
+const ignoreDirs = new Set([".git", "node_modules", "dist"]);
+const ignoreExt = [".map"];
 
-// editorWindow.addChildren(textEditor);
+function traverseTree(
+  cmp: DisplayComponent,
+  currentPath: string,
+  indentation: number = 1,
+) {
+  const name = path.basename(currentPath);
 
-// textEditor.setText("this is working?");
+  if (ignoreDirs.has(name)) {
+    return;
+  }
 
-// commandWindow.setMaxH(1);
+  cmp.addChildren(new TextDisplay().setText(name).setMaxH(1));
 
-const out = new DisplayComponent();
-
-const dirnames = fs.readdirSync(".");
-
-for (const name of dirnames) {
-  const txt = new TextDisplay()
-    .setText(name)
-    .setStyles({ color: colors.RED_FOREGROUND });
-
-  out.addChildren(txt);
+  for (const entry of fs.readdirSync(currentPath, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      traverseTree(cmp, path.join(currentPath, entry.name), indentation + 1);
+    } else {
+      if (!ignoreExt.some((ext) => entry.name.endsWith(ext))) {
+        cmp.addChildren(
+          new TextDisplay()
+            .setText(`${` `.repeat(indentation)}${entry.name}`)
+            .setMaxH(1),
+        );
+      }
+    }
+  }
 }
 
-out.setMaxW(Math.max(...dirnames.map((name) => name.length)) + 20);
+for (const entry of fs.readdirSync(".", { withFileTypes: true })) {
+  if (entry.isDirectory()) {
+    traverseTree(treeView, entry.name);
+  } else {
+    treeView.addChildren(new TextDisplay().setText(entry.name).setMaxH(1));
+  }
+}
 
-out.setStyles({
+treeView.setMaxW(30).setStyles({
   backgroundColor: colors.MAGENTA_BACKGROUND,
 });
 
-out.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
+const divisor = new DisplayComponent();
+divisor.setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
+divisor.setMaxW(1);
 
-cnv.setDirection("horizontal");
+const editorWindow = new DisplayComponent();
+editorWindow.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
 
-const oneLine = new DisplayComponent();
-oneLine.setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
-oneLine.setMaxW(1);
+const gitignore = fs.readFileSync(".gitignore", { encoding: "utf-8" });
+const lines = gitignore.split("\n");
+lines.pop();
 
-const out2 = new DisplayComponent();
-out2.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
+for (const line of lines) {
+  const txt = new TextDisplay().setText(line);
 
-cnv.addChildren(out).addChildren(oneLine).addChildren(out2);
+  editorWindow.addChildren(txt.setMaxH(1));
+}
 
-// setupActiveEditorFrame(state);
-// setupCommandWindow(state);
-// renderWindow(state);
+cnv.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
 
 cnv.setHeight(process.stdout.rows);
 cnv.setWidth(process.stdout.columns);
 
 cnv.build();
+editor.cursor.build();
 
-process.stdout.write(cnv.render());
-
-process.stdin.on("data", (chunk: Buffer) => {
-  // ignore the cursor-position-report replies used by queryTerminalSize()
-  if (/\x1b\[\d+;\d+R/.test(chunk.toString("utf8"))) return;
-
-  renderWindow();
-
-  cnv.setHeight(process.stdout.rows);
-  cnv.setWidth(process.stdout.columns);
-
-  cnv.build();
-  process.stdout.write(cnv.render());
-
-  // renderWindow(state);
-});
+process.stdout.write("\x1b[H" + cnv.render());
 
 process.stdout.on("resize", () => handleResize());
 
@@ -94,6 +165,11 @@ process.stdout.on("resize", () => handleResize());
 // position report, and poll that.
 let lastCols = process.stdout.columns;
 let lastRows = process.stdout.rows;
+// while true, a cursor-position-report request is in flight: the terminal's
+// raw reply lands on stdin and readline's keypress parser (which can't
+// recognize it) breaks it into spurious per-character keypress events, so
+// real input handling is paused until the reply is consumed
+let awaitingCPR = false;
 setInterval(async () => {
   const size = (await queryTerminalSize()) ?? {
     columns: process.stdout.columns,
@@ -111,6 +187,7 @@ function queryTerminalSize(
 ): Promise<{ columns: number; rows: number } | null> {
   return new Promise((resolve) => {
     let settled = false;
+    awaitingCPR = true;
     const onData = (chunk: Buffer) => {
       const match = chunk.toString("utf8").match(/\x1b\[(\d+);(\d+)R/);
       if (match) {
@@ -121,6 +198,7 @@ function queryTerminalSize(
     function settle(result: { columns: number; rows: number } | null) {
       if (settled) return;
       settled = true;
+      awaitingCPR = false;
       clearTimeout(timer);
       process.stdin.off("data", onData);
       resolve(result);
@@ -146,18 +224,48 @@ async function handleResize(size?: { columns: number; rows: number }) {
   cnv.setWidth(resolved.columns);
 
   cnv.build();
-  process.stdout.write(cnv.render());
+  document.cursor.build();
+  process.stdout.write("\x1b[H" + cnv.render());
 }
 
 process.stdout.on("finish", () => {
   clearOutput();
   disableMouseEvents();
 });
+process.stdin.on("keypress", (str, key) => {
+  if (awaitingCPR) {
+    return;
+  }
 
-function enableMouseEvents() {
-  process.stdout.write("\x1b[?1000h");
-  process.stdout.write("\x1b[?1006h");
-}
+  if (document.mode === "visual") {
+    if (key.sequence === "j") {
+      document.cursor.down();
+    } else if (key.sequence === "k") {
+      document.cursor.up();
+    } else if (key.sequence === "h") {
+      document.cursor.left();
+    } else if (key.sequence === "l") {
+      document.cursor.right();
+    } else if (key.sequence === "o") {
+      editorWindow.addChildren(new TextDisplay());
+      document.cursor.down();
+      document.mode = "insert";
+    }
+  } else if (str && str.length === 1 && !key.ctrl && !key.meta) {
+    const text = editorWindow.children().at(document.cursor.y) as
+      | TextDisplay
+      | undefined;
+    if (!text) {
+      return;
+    }
+    text.setText(text.Text() + str);
+  }
+
+  cnv.build();
+
+  document.cursor.build();
+  process.stdout.write("\x1b[H" + cnv.render());
+});
 
 function disableMouseEvents() {
   process.stdout.write("\x1b[?1000l");
@@ -166,10 +274,6 @@ function disableMouseEvents() {
 
 function clearOutput() {
   process.stdout.write("\x1b[?1049l");
-}
-
-function renderWindow() {
-  process.stdout.write("\x1b[H\x1b[2J");
 }
 
 //add a test case that the text color should not be reset after the letter color
