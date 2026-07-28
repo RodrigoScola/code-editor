@@ -121,7 +121,9 @@ export class Canvas implements Component {
     if (map.length !== this.height()) {
       this.resetCanvas();
     }
-    return this.root.build(map);
+    map = this.root.build(map);
+
+    return map;
   }
   setStartX(nStartx: number): Component {
     this.x = nStartx;
@@ -149,5 +151,11 @@ export class Canvas implements Component {
   setMaxW(nMax: number): Component {
     this.w = nMax;
     return this;
+  }
+  styles(): ComponentStyles | null {
+    return this.root.styles();
+  }
+  setStyles(sty: ComponentStyles): Component {
+    return this.root.setStyles(sty);
   }
 }

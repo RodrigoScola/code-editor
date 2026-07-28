@@ -22,6 +22,8 @@ interface Component {
   setDirection(dir: "horizontal" | "vertical"): Component;
 
   build(map: DisplayTile[][]): DisplayTile[][];
+  styles: () => ComponentStyles | null;
+  setStyles(sty: ComponentStyles): Component;
 }
 
 interface DisplayTile {

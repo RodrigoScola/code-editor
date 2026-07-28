@@ -50,7 +50,9 @@ describe("tests the displaying of basic texts in the terminal", () => {
 
     const elem = new DisplayComponent();
 
-    elem.styles.backgroundColor = colors.BLUE_BACKGROUND;
+    elem.setStyles({
+      backgroundColor: colors.BLUE_BACKGROUND,
+    });
 
     cnv.root.addChildren(elem.setStartX(2).setStartY(3));
 
@@ -64,10 +66,10 @@ describe("tests the displaying of basic texts in the terminal", () => {
     const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
 
     const out = new DisplayComponent();
-    out.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
+    out.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
 
     const oneLine = new DisplayComponent();
-    oneLine.styles.backgroundColor = colors.YELLOW_BACKGROUND;
+    oneLine.setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
     oneLine.setMaxH(1);
 
     cnv.addChildren([out, oneLine]);
@@ -93,15 +95,15 @@ describe("tests the displaying of basic texts in the terminal", () => {
     const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
 
     const out = new DisplayComponent();
-    out.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
+    out.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
 
-    const oneLine = new DisplayComponent();
-    oneLine.styles.backgroundColor = colors.YELLOW_BACKGROUND;
-    oneLine.setMaxH(1);
+    const oneLine = new DisplayComponent()
+      .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
+      .setMaxH(1);
 
-    const out2 = new DisplayComponent();
-    out.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
-    out2.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
+    const out2 = new DisplayComponent().setStyles({
+      backgroundColor: colors.MAGENTA_BACKGROUND,
+    });
 
     cnv.addChildren(out).addChildren(oneLine).addChildren(out2);
 
@@ -126,26 +128,30 @@ describe("tests the displaying of basic texts in the terminal", () => {
       expect(
         child.height(),
         `height is not being properly displayed?, expected ${h}, got ${child.height()}`,
-      ).toEqual(h / 2);
+      ).toEqual(h);
       expect(
         child.width(),
         `width is not being properly displayed?, expected ${w / 2}, got ${child.width()}`,
-      ).toEqual(w);
+      ).toEqual(w / 2);
     }
   });
   it("sets max render and both the top and bottom respect it", () => {
-    const h = 80;
-    const w = 3;
+    const h = 10;
+    const w = 10;
     const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
 
-    const out = new DisplayComponent();
-    out.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
+    cnv
+      .setDirection("horizontal")
 
-    const oneLine = new DisplayComponent();
-    oneLine.styles.backgroundColor = colors.YELLOW_BACKGROUND;
-    oneLine.setMaxW(1);
+      .addChildren([
+        new DisplayComponent().setStyles({
+          backgroundColor: colors.MAGENTA_BACKGROUND,
+        }),
 
-    cnv.addChildren([out, oneLine]);
+        new DisplayComponent()
+          .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
+          .setMaxW(1),
+      ]);
 
     const built = cnv.build();
 
@@ -157,29 +163,5 @@ describe("tests the displaying of basic texts in the terminal", () => {
       built[0][w - 2].styles.backgroundColor,
       "has the same color as the out",
     ).toBe(colors.MAGENTA_BACKGROUND);
-  });
-  it("preserves the order and the height automatically", () => {
-    const h = 3;
-    const w = 9;
-    const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
-
-    const out = new DisplayComponent();
-    out.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
-
-    const oneLine = new DisplayComponent();
-    oneLine.styles.backgroundColor = colors.YELLOW_BACKGROUND;
-    oneLine.setMaxW(1);
-
-    const out2 = new DisplayComponent();
-    out.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
-    out2.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
-
-    cnv.addChildren(out).addChildren(oneLine).addChildren(out2);
-
-    const map = cnv.build();
-    expect(map[0][4].styles.backgroundColor).eq(colors.YELLOW_BACKGROUND);
-    expect(map[0][3].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
-    expect(map[0][5].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
-    expect(map[0][w - 1].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
   });
 });

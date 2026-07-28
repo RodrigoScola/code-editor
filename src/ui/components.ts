@@ -10,7 +10,7 @@ export class DisplayComponent implements Component {
   private h: number;
   private x: number;
   private y: number;
-  styles: ComponentStyles;
+  s: ComponentStyles;
 
   private childs: Component[];
 
@@ -24,7 +24,7 @@ export class DisplayComponent implements Component {
 
     this.childs = [];
     this.direction = "vertical";
-    this.styles = {
+    this.s = {
       backgroundColor: colors.BACKGROUND_OFF,
       color: colors.FOREGROUND_OFF,
     };
@@ -41,6 +41,9 @@ export class DisplayComponent implements Component {
 
   getId() {
     return this.id;
+  }
+  styles(): ComponentStyles | null {
+    return this.s;
   }
   setMaxH(nmh: number): Component {
     this.maxH = nmh;
@@ -90,11 +93,10 @@ export class DisplayComponent implements Component {
   }
   setHeight(nHeight: number): Component {
     let parentHeight = this.p?.height() || 0;
-    this.h = Math.min(nHeight, parentHeight - this.y);
+    this.h = Math.min(nHeight, parentHeight);
 
     // * should take into account padding and margin at some point
     // * allow for maxHeight at some point but maybe not right now
-
     let remaining = this.h;
     let flexibleRemaining = this.childs.filter(
       (c) => c.maxHeight() == null,
@@ -141,12 +143,12 @@ export class DisplayComponent implements Component {
 
   setWidth(nWidth: number): Component {
     let parentWidth = this.p?.width() || 0;
-    this.w = Math.min(nWidth, parentWidth - this.x);
+    this.w = Math.min(nWidth, parentWidth);
 
     // * should take into account padding and margin at some point
-    // * allow for maxHeight at some point but maybe not right now
+    // * allow for maxHeight at some point but maybe not rght now
 
-    let remaining = this.h;
+    let remaining = this.w;
     let flexibleRemaining = this.childs.filter(
       (c) => c.maxWidth() == null,
     ).length;
@@ -205,18 +207,8 @@ export class DisplayComponent implements Component {
 
     for (let i = this.startY(); i < this.startY() + this.height(); i++) {
       for (let j = this.startX(); j < this.startX() + this.width(); j++) {
-        // console.log(
-        //   "map at",
-        //   i,
-
-        //   map[i][0],
-        //   j,
-        //   this.startY(),
-        //   this.startX(),
-        //   this.width(),
-        //   this.height(),
-        // );
         const tile = map[i][j];
+
         assert(Boolean(tile), `tile should exist at ${j}, ${this.y}`);
         assert(
           j == tile.x,
@@ -226,8 +218,9 @@ export class DisplayComponent implements Component {
           i == tile.y,
           `they should have the same y, expected: ${tile.y}, got: ${j}`,
         );
-        map[i][j].styles.backgroundColor = this.styles.backgroundColor;
-        map[i][j].styles.color = this.styles.color;
+
+        map[i][j].styles.backgroundColor = this.s.backgroundColor;
+        map[i][j].styles.color = this.s.color;
       }
     }
 
@@ -240,13 +233,13 @@ export class DisplayComponent implements Component {
   setStartX(nStartx: number): Component {
     this.x = nStartx;
 
-    this.w = Math.min(this.w, this.p?.width() ?? 0 - this.x);
+    this.w = Math.min(this.w, (this.p?.width() ?? 0) - this.x);
     return this;
   }
 
   setStartY(nStartx: number): Component {
     this.y = nStartx;
-    this.h = Math.min(this.h, this.p?.height() ?? 0 - this.y);
+    this.h = Math.min(this.h, (this.p?.height() ?? 0) - this.y);
     return this;
   }
 
@@ -262,6 +255,13 @@ export class DisplayComponent implements Component {
     this.maxW = nMax;
     return this;
   }
+  setStyles(sty: Partial<ComponentStyles>): Component {
+    this.s = {
+      ...this.s,
+      ...sty,
+    };
+    return this;
+  }
 }
 
 export class TextDisplay extends DisplayComponent {
@@ -272,15 +272,35 @@ export class TextDisplay extends DisplayComponent {
   }
   setText(ntext: string) {
     this.text = ntext;
+    return this;
   }
   build(map: DisplayTile[][]): DisplayTile[][] {
-    console.log("startx", this.startY());
     let textInd = 0;
 
     for (let i = 0; i < this.text.length; i++) {
       map[this.startY()][this.startX() + i].display = this.text[textInd];
+      map[this.startY()][this.startX() + i].styles = blendStyles(
+        this.s,
+        this.parent()?.styles(),
+      );
       textInd++;
     }
     return map;
   }
+}
+
+function blendStyles(
+  first: ComponentStyles,
+  parent: ComponentStyles | null | undefined,
+): ComponentStyles {
+  return {
+    backgroundColor:
+      first.backgroundColor === colors.BACKGROUND_OFF
+        ? parent?.backgroundColor || first.color
+        : first.backgroundColor,
+    color:
+      first.color === colors.BACKGROUND_OFF
+        ? parent?.color || first.color
+        : first.color,
+  };
 }
