@@ -3,8 +3,8 @@ import { assert } from "../assert.js";
 import { DisplayComponent } from "./components.js";
 
 export class Canvas implements Component {
-  private h: number;
-  private w: number;
+  private h: number = 0;
+  private w: number = 0;
   x: number = 0;
   y: number = 0;
 
@@ -14,10 +14,9 @@ export class Canvas implements Component {
   root: Component;
 
   constructor() {
-    this.h = 80;
-    this.w = 80;
+    this.root = new DisplayComponent();
 
-    this.root = new DisplayComponent(this);
+    this.root.setParent(this);
 
     this.canvas = new Array();
   }
@@ -134,5 +133,21 @@ export class Canvas implements Component {
   }
   getId(): number {
     return -1;
+  }
+  setParent(c: Component): Component {
+    return this.root.setParent(c);
+  }
+  parent(): Component | null {
+    return this.root.parent();
+  }
+  setDirection(dir: "horizontal" | "vertical"): Component {
+    return this.root.setDirection(dir);
+  }
+  maxWidth(): number | null {
+    return this.w;
+  }
+  setMaxW(nMax: number): Component {
+    this.w = nMax;
+    return this;
   }
 }

@@ -5,6 +5,7 @@ export class DisplayComponent implements Component {
   private static ID = 0;
   private id: number;
   private maxH: number | null = null;
+  private maxW: number | null = null;
   private w: number;
   private h: number;
   private x: number;
@@ -13,17 +14,14 @@ export class DisplayComponent implements Component {
 
   private childs: Component[];
 
-  parent: Component;
+  p: Component | null;
 
   direction: "vertical" | "horizontal";
 
-  constructor(parent: Component) {
+  constructor() {
     this.id = DisplayComponent.ID;
     DisplayComponent.ID++;
 
-    this.parent = parent;
-    this.h = this.parent.height();
-    this.w = this.parent.width();
     this.childs = [];
     this.direction = "vertical";
     this.styles = {
@@ -31,8 +29,14 @@ export class DisplayComponent implements Component {
       color: colors.FOREGROUND_OFF,
     };
 
-    this.x = this.parent.startX();
-    this.y = this.parent.startY();
+    this.p = null;
+    this.h = 0;
+    this.w = 0;
+    this.x = 0;
+    this.y = 0;
+  }
+  parent(): Component | null {
+    return this.p;
   }
 
   getId() {
@@ -65,10 +69,10 @@ export class DisplayComponent implements Component {
   addChildren(c: Component | Component[]): Component {
     if (Array.isArray(c)) {
       for (const child of c) {
-        this.childs.push(child);
+        this.childs.push(child.setParent(this));
       }
     } else {
-      this.childs.push(c);
+      this.childs.push(c.setParent(this));
     }
 
     this.setHeight(this.h);
@@ -76,8 +80,17 @@ export class DisplayComponent implements Component {
 
     return this;
   }
+  setParent(c: Component): Component {
+    this.p = c;
+    this.h = this.p.height() ?? 0;
+    this.w = this.p.width() ?? 0;
+    this.x = this.p.startX() || 0;
+    this.y = this.p.startY() || 0;
+    return this;
+  }
   setHeight(nHeight: number): Component {
-    this.h = Math.min(nHeight, this.parent.height() - this.y);
+    let parentHeight = this.p?.height() || 0;
+    this.h = Math.min(nHeight, parentHeight - this.y);
 
     // * should take into account padding and margin at some point
     // * allow for maxHeight at some point but maybe not right now
@@ -89,7 +102,8 @@ export class DisplayComponent implements Component {
 
     const b = (c: Component) => {
       if (this.direction === "horizontal") {
-        c.setHeight(this.h);
+        // work on centering
+        c.setHeight(this.maxHeight() || this.h);
       } else {
         const hasMax = c.maxHeight();
         let amount: number;
@@ -117,25 +131,59 @@ export class DisplayComponent implements Component {
     let yOffset = this.startY();
     for (const c of this.childs) {
       c.setStartY(yOffset);
-      yOffset += c.height();
+      if (this.direction !== "horizontal") {
+        yOffset += c.height();
+      }
     }
 
     return this;
   }
 
   setWidth(nWidth: number): Component {
-    this.w = Math.min(nWidth, this.parent.width() - this.x);
+    let parentWidth = this.p?.width() || 0;
+    this.w = Math.min(nWidth, parentWidth - this.x);
 
     // * should take into account padding and margin at some point
     // * allow for maxHeight at some point but maybe not right now
 
-    for (const c of this.childs) {
+    let remaining = this.h;
+    let flexibleRemaining = this.childs.filter(
+      (c) => c.maxWidth() == null,
+    ).length;
+
+    const b = (c: Component) => {
       if (this.direction === "horizontal") {
-        c.setWidth(this.w / this.childs.length);
-      } else if (this.direction === "vertical") {
-        c.setWidth(this.w);
+        // work on centering
+        const hasMax = c.maxWidth();
+        let amount: number;
+
+        if (hasMax != null) {
+          amount = hasMax;
+        } else {
+          amount = Math.floor(remaining / flexibleRemaining);
+          flexibleRemaining -= 1;
+        }
+        c.setWidth(amount);
+        remaining -= amount;
       } else {
-        throw new Error("invalid direction: " + this.direction);
+        const val = this.maxWidth() || this.w;
+        c.setWidth(val);
+      }
+      return c;
+    };
+
+    this.childs = this.childs
+      .sort(
+        (a, b) => Number(b.maxWidth() !== null) - Number(a.maxWidth() !== null),
+      )
+      .map((c) => b(c))
+      .sort((a, b) => a.getId() - b.getId());
+
+    let xOffset = this.startX();
+    for (const c of this.childs) {
+      c.setStartX(xOffset);
+      if (this.direction === "horizontal") {
+        xOffset += c.width();
       }
     }
 
@@ -146,11 +194,28 @@ export class DisplayComponent implements Component {
     return this.childs;
   }
   build(map: DisplayTile[][]): DisplayTile[][] {
-    assert(map.length >= this.height(), "component has more height than map ");
-    assert(map[0].length >= this.width(), "component has more width than map ");
+    assert(
+      map.length >= this.height(),
+      `component has more height than map, got ${map.length}, expected: ${this.height()} `,
+    );
+    assert(
+      map[0].length >= this.width(),
+      `component has more width than map, expected ${this.width()}, got ${map[0].length}`,
+    );
 
     for (let i = this.startY(); i < this.startY() + this.height(); i++) {
       for (let j = this.startX(); j < this.startX() + this.width(); j++) {
+        // console.log(
+        //   "map at",
+        //   i,
+
+        //   map[i][0],
+        //   j,
+        //   this.startY(),
+        //   this.startX(),
+        //   this.width(),
+        //   this.height(),
+        // );
         const tile = map[i][j];
         assert(Boolean(tile), `tile should exist at ${j}, ${this.y}`);
         assert(
@@ -174,21 +239,35 @@ export class DisplayComponent implements Component {
   }
   setStartX(nStartx: number): Component {
     this.x = nStartx;
-    this.w = Math.min(this.w, this.parent.width() - this.x);
+
+    this.w = Math.min(this.w, this.p?.width() ?? 0 - this.x);
     return this;
   }
 
   setStartY(nStartx: number): Component {
     this.y = nStartx;
-    this.h = Math.min(this.h, this.parent.height() - this.y);
+    this.h = Math.min(this.h, this.p?.height() ?? 0 - this.y);
+    return this;
+  }
+
+  setDirection(direction: "vertical" | "horizontal") {
+    this.direction = direction;
+
+    return this;
+  }
+  maxWidth(): number | null {
+    return this.maxW;
+  }
+  setMaxW(nMax: number): Component {
+    this.maxW = nMax;
     return this;
   }
 }
 
 export class TextDisplay extends DisplayComponent {
   private text: string;
-  constructor(parent: Component) {
-    super(parent);
+  constructor() {
+    super();
     this.text = "";
   }
   setText(ntext: string) {

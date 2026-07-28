@@ -7,14 +7,14 @@ enableMouseEvents();
 
 const cnv = new Canvas();
 
-const editorWindow = new DisplayComponent(cnv);
-const commandWindow = new DisplayComponent(cnv);
+const editorWindow = new DisplayComponent();
+const commandWindow = new DisplayComponent();
 editorWindow.styles.backgroundColor = colors.MAGENTA_BACKGROUND;
 commandWindow.styles.backgroundColor = colors.YELLOW_BACKGROUND;
 
 cnv.addChildren([editorWindow, commandWindow]);
 
-const textEditor = new TextDisplay(editorWindow);
+const textEditor = new TextDisplay();
 
 editorWindow.addChildren(textEditor);
 
