@@ -165,8 +165,8 @@ describe("tests the displaying of basic texts in the terminal", () => {
     ).toBe(colors.MAGENTA_BACKGROUND);
   });
   it("the height of the text should be 1 by default", () => {
-    const firstLine = new TextDisplay().setText("this is the first line");
-    const secondLine = new TextDisplay().setText("this is the second line");
+    const firstLine = new TextDisplay().setContent("this is the first line");
+    const secondLine = new TextDisplay().setContent("this is the second line");
 
     const cnv = new Canvas() as Canvas;
 
@@ -178,10 +178,10 @@ describe("tests the displaying of basic texts in the terminal", () => {
     expect(
       cnv.canvas[0][0].display,
       "text should display on the first line",
-    ).toEqual(firstLine.Text().at(0));
+    ).toEqual(firstLine.content().at(0));
     expect(
       cnv.canvas[1][0].display,
       "text should display on the second line",
-    ).toEqual(secondLine.Text().at(0));
+    ).toEqual(secondLine.content().at(0));
   });
 });

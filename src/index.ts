@@ -11,7 +11,7 @@ import colors from "./ui/colors.js";
 disableMouseEvents();
 
 const document = {
-  mode: "visual",
+  mode: "visual" satisfies EditingModes,
   cursor: {
     // this is the relative position
     x: 0,
@@ -27,7 +27,7 @@ const document = {
       if (!newComp) {
         return;
       }
-      cursor.x = Math.min(cursor.x, newComp.Text().length - 1);
+      cursor.x = Math.min(cursor.x, newComp.content().length - 1);
       cursor.y++;
     },
     up: () => {
@@ -50,7 +50,7 @@ const document = {
       if (!newComp) {
         return;
       }
-      cursor.x = Math.min(cursor.x + 1, newComp.Text().length - 1);
+      cursor.x = Math.min(cursor.x + 1, newComp.content().length - 1);
     },
 
     build: () => {
@@ -100,7 +100,7 @@ function traverseTree(
     return;
   }
 
-  cmp.addChildren(new TextDisplay().setText(name).setMaxH(1));
+  cmp.addChildren(new TextDisplay().setContent(name).setMaxH(1));
 
   for (const entry of fs.readdirSync(currentPath, { withFileTypes: true })) {
     if (entry.isDirectory()) {
@@ -109,7 +109,7 @@ function traverseTree(
       if (!ignoreExt.some((ext) => entry.name.endsWith(ext))) {
         cmp.addChildren(
           new TextDisplay()
-            .setText(`${` `.repeat(indentation)}${entry.name}`)
+            .setContent(`${` `.repeat(indentation)}${entry.name}`)
             .setMaxH(1),
         );
       }
@@ -121,7 +121,7 @@ for (const entry of fs.readdirSync(".", { withFileTypes: true })) {
   if (entry.isDirectory()) {
     traverseTree(treeView, entry.name);
   } else {
-    treeView.addChildren(new TextDisplay().setText(entry.name).setMaxH(1));
+    treeView.addChildren(new TextDisplay().setContent(entry.name).setMaxH(1));
   }
 }
 
@@ -141,7 +141,7 @@ const lines = gitignore.split("\n");
 lines.pop();
 
 for (const line of lines) {
-  const txt = new TextDisplay().setText(line);
+  const txt = new TextDisplay().setContent(line);
 
   editorWindow.addChildren(txt.setMaxH(1));
 }
@@ -152,7 +152,7 @@ cnv.setHeight(process.stdout.rows);
 cnv.setWidth(process.stdout.columns);
 
 cnv.build();
-editor.cursor.build();
+document.cursor.build();
 
 process.stdout.write("\x1b[H" + cnv.render());
 
@@ -258,7 +258,7 @@ process.stdin.on("keypress", (str, key) => {
     if (!text) {
       return;
     }
-    text.setText(text.Text() + str);
+    text.setContent(text.content() + str);
   }
 
   cnv.build();

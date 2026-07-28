@@ -96,6 +96,7 @@ export class Canvas implements Component {
 
   render() {
     const rows: string[] = [];
+    // i know theres some optimization that we can do here
     for (let i = this.startY(); i < this.startY() + this.height(); i++) {
       let row = "";
       for (let j = this.startX(); j < this.startX() + this.width(); j++) {

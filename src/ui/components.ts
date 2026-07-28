@@ -274,10 +274,10 @@ export class TextDisplay extends DisplayComponent {
     this.setMaxH(1);
     this.text = "";
   }
-  Text() {
+  content() {
     return this.text;
   }
-  setText(ntext: string) {
+  setContent(ntext: string) {
     this.text = ntext;
     return this;
   }
@@ -305,6 +305,8 @@ export class TextDisplay extends DisplayComponent {
     return map;
   }
 }
+
+export class ListItemComponent extends TextDisplay {}
 
 function blendStyles(
   first: ComponentStyles,

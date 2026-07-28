@@ -26,6 +26,8 @@ interface Component {
   setStyles(sty: Partial<ComponentStyles>): Component;
 }
 
+type EditingModes = "visual" | "insert" | "command";
+
 interface DisplayTile {
   x: number;
   y: number;
