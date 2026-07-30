@@ -1,78 +1,15 @@
-import path from "path";
 import process from "process";
 import readline from "node:readline";
 import fs from "fs";
 import { Canvas } from "./ui/canvas.js";
 import { DisplayComponent, TextDisplay } from "./ui/components.js";
 import colors from "./ui/colors.js";
+import { Renderer } from "./ui/renderer.js";
+import { LayoutEngine } from "./ui/layout.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
 disableMouseEvents();
-
-const document = {
-  mode: "visual" satisfies EditingModes,
-  cursor: {
-    // this is the relative position
-    x: 0,
-    y: 0,
-    down: () => {
-      // todo: this CAN be made simpler, i can feel it
-      const cursor = document.cursor;
-
-      const newComp: TextDisplay | undefined = editorWindow
-        .children()
-        .at(cursor.y + 1) as TextDisplay;
-
-      if (!newComp) {
-        return;
-      }
-      cursor.x = Math.min(cursor.x, newComp.content().length - 1);
-      cursor.y++;
-    },
-    up: () => {
-      const cursor = document.cursor;
-      cursor.y = Math.min(cursor.y - 1, 0);
-    },
-    left: () => {
-      const cursor = document.cursor;
-      cursor.x = Math.max(cursor.x - 1, 0);
-    },
-    right: () => {
-      // todo: this CAN be made simpler, i can feel it
-
-      const cursor = document.cursor;
-
-      const newComp: TextDisplay | undefined = editorWindow
-        .children()
-        .at(cursor.y) as TextDisplay;
-
-      if (!newComp) {
-        return;
-      }
-      cursor.x = Math.min(cursor.x + 1, newComp.content().length - 1);
-    },
-
-    build: () => {
-      const cursor = document.cursor;
-      // assuming this was already built
-      const window = editorWindow;
-      const sy = window.startY();
-      const y = clamp(cursor.y + sy, sy, sy + window.height());
-
-      const sx = window.startX();
-      const x = clamp(cursor.x + sx, sx, sx + window.width());
-
-      cnv.canvas[y][x].styles = {
-        backgroundColor: colors.WHITE_FOREGROUND,
-        color: colors.BLUE_FOREGROUND,
-      };
-    },
-  },
-};
-
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max);
 
 readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) {
@@ -80,50 +17,16 @@ if (process.stdin.isTTY) {
 }
 process.stdin.resume();
 
-const cnv = new Canvas();
+let layout = LayoutEngine.CreateBounds();
+layout.height = process.stdout.rows;
+layout.width = process.stdout.columns;
 
-cnv.setDirection("horizontal");
+const cnv = new Canvas().setLayout(layout);
+const root = new DisplayComponent().setLayout(layout);
+
+root.setDirection("horizontal");
 
 const treeView = new DisplayComponent();
-
-const ignoreDirs = new Set([".git", "node_modules", "dist"]);
-const ignoreExt = [".map"];
-
-function traverseTree(
-  cmp: DisplayComponent,
-  currentPath: string,
-  indentation: number = 1,
-) {
-  const name = path.basename(currentPath);
-
-  if (ignoreDirs.has(name)) {
-    return;
-  }
-
-  cmp.addChildren(new TextDisplay().setContent(name).setMaxH(1));
-
-  for (const entry of fs.readdirSync(currentPath, { withFileTypes: true })) {
-    if (entry.isDirectory()) {
-      traverseTree(cmp, path.join(currentPath, entry.name), indentation + 1);
-    } else {
-      if (!ignoreExt.some((ext) => entry.name.endsWith(ext))) {
-        cmp.addChildren(
-          new TextDisplay()
-            .setContent(`${` `.repeat(indentation)}${entry.name}`)
-            .setMaxH(1),
-        );
-      }
-    }
-  }
-}
-
-for (const entry of fs.readdirSync(".", { withFileTypes: true })) {
-  if (entry.isDirectory()) {
-    traverseTree(treeView, entry.name);
-  } else {
-    treeView.addChildren(new TextDisplay().setContent(entry.name).setMaxH(1));
-  }
-}
 
 treeView.setMaxW(30).setStyles({
   backgroundColor: colors.MAGENTA_BACKGROUND,
@@ -146,15 +49,21 @@ for (const line of lines) {
   editorWindow.addChildren(txt.setMaxH(1));
 }
 
-cnv.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
+root.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
 
-cnv.setHeight(process.stdout.rows);
-cnv.setWidth(process.stdout.columns);
+const initialLayout = LayoutEngine.CreateBounds();
 
-cnv.build();
-document.cursor.build();
+initialLayout.height = process.stdout.rows;
+initialLayout.width = process.stdout.columns;
 
-process.stdout.write("\x1b[H" + cnv.render());
+cnv.setLayout(initialLayout);
+root.setLayout(initialLayout);
+
+LayoutEngine.Measure(root, root.layout());
+
+Renderer.build(root, cnv);
+
+process.stdout.write("\x1b[H" + Renderer.render(cnv));
 
 process.stdout.on("resize", () => handleResize());
 
@@ -220,12 +129,17 @@ async function handleResize(size?: { columns: number; rows: number }) {
 
   clearOutput();
 
-  cnv.setHeight(resolved.rows);
-  cnv.setWidth(resolved.columns);
+  const resizedLayout = LayoutEngine.CreateBounds();
+  resizedLayout.height = resolved.rows;
+  resizedLayout.width = resolved.columns;
+  cnv.setLayout(resizedLayout);
+  root.setLayout(resizedLayout);
+  LayoutEngine.Measure(root, root.layout());
 
-  cnv.build();
-  document.cursor.build();
-  process.stdout.write("\x1b[H" + cnv.render());
+  Renderer.build(root, cnv);
+  const out = Renderer.render(cnv);
+
+  process.stdout.write("\x1b[H" + out);
 }
 
 process.stdout.on("finish", () => {
@@ -237,34 +151,31 @@ process.stdin.on("keypress", (str, key) => {
     return;
   }
 
-  if (document.mode === "visual") {
-    if (key.sequence === "j") {
-      document.cursor.down();
-    } else if (key.sequence === "k") {
-      document.cursor.up();
-    } else if (key.sequence === "h") {
-      document.cursor.left();
-    } else if (key.sequence === "l") {
-      document.cursor.right();
-    } else if (key.sequence === "o") {
-      editorWindow.addChildren(new TextDisplay());
-      document.cursor.down();
-      document.mode = "insert";
-    }
-  } else if (str && str.length === 1 && !key.ctrl && !key.meta) {
-    const text = editorWindow.children().at(document.cursor.y) as
-      | TextDisplay
-      | undefined;
-    if (!text) {
-      return;
-    }
-    text.setContent(text.content() + str);
-  }
+  // if (document.mode === "visual") {
+  //   if (key.sequence === "j") {
+  //     document.cursor.down();
+  //   } else if (key.sequence === "k") {
+  //     document.cursor.up();
+  //   } else if (key.sequence === "h") {
+  //     document.cursor.left();
+  //   } else if (key.sequence === "l") {
+  //     document.cursor.right();
+  //   } else if (key.sequence === "o") {
+  //     editorWindow.addChildren(new TextDisplay());
+  //     document.cursor.down();
+  //     document.mode = "insert";
+  //   }
+  // } else if (str && str.length === 1 && !key.ctrl && !key.meta) {
+  //   const text = editorWindow.children().at(document.cursor.y) as
+  //     | TextDisplay
+  //     | undefined;
+  //   if (!text) {
+  //     return;
+  //   }
+  //   text.setContent(text.content() + str);
+  // }
 
-  cnv.build();
-
-  document.cursor.build();
-  process.stdout.write("\x1b[H" + cnv.render());
+  process.stdout.write("\x1b[H" + Renderer.render(cnv));
 });
 
 function disableMouseEvents() {

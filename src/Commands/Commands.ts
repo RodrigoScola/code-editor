@@ -5,14 +5,7 @@ type Command = {
 
 type EditorCommand = {
   keys: string[];
-    action: () => {
-        
-
-  };
-};
-
-const newLineCommand: EditorCommand = {
-  keys: ["o"],
+  action: () => {};
 };
 
 export class Commands {

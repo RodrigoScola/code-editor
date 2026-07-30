@@ -2,158 +2,209 @@ import colors from "./ui/colors.js";
 import { describe, it, expect } from "vitest";
 import { Canvas } from "./ui/canvas.js";
 import { DisplayComponent, TextDisplay } from "./ui/components.js";
+import { LayoutEngine } from "./ui/layout.js";
+import { assert } from "./assert.js";
+import { Renderer } from "./ui/renderer.js";
 describe("tests the displaying of basic texts in the terminal", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
     const cnv = new Canvas();
+    const layout: LayoutBounds = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 2;
 
-    cnv.setHeight(2).setWidth(2);
+    cnv.setLayout(layout);
+    const root = new DisplayComponent().setLayout(layout);
+    root.setLayout(layout);
+
+    LayoutEngine.Measure(root, root.layout());
+
+    cnv.build();
+
+    Renderer.build(root, cnv);
 
     let out = cnv.build().reduce((all, t) => all.concat(t), []);
 
-    expect(
-      out.length,
-      "canvas dimensions is not being respected on the thing",
-    ).toBe(cnv.width() * cnv.height());
-  });
-  it("tests the default height and width on canvas", () => {
-    const h = 80;
-    const w = 80;
-    const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
-
-    expect(cnv.root.height(), "canvas not applying height to root?").toEqual(h);
-    expect(cnv.root.width(), "canvas not applying width to root?").toEqual(w);
+    expect(out.length, "canvas dimensions is not being respected").toBe(
+      cnv.width() * cnv.height(),
+    );
   });
 
   it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {
-    const h = 80;
-    const w = 80;
-    const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
+    const l = LayoutEngine.CreateBounds();
+    l.height = l.width = 80;
 
-    cnv.root.addChildren([new DisplayComponent(), new DisplayComponent()]);
+    const root = new DisplayComponent().setLayout(l);
 
-    for (const child of cnv.root.children()) {
+    root.addChildren([new DisplayComponent(), new DisplayComponent()]);
+    LayoutEngine.Measure(root, root.layout());
+
+    const h = l.height;
+    const w = l.width;
+
+    for (const child of root.children()) {
       expect(child.parent(), `parent is not defined?`).toBeDefined();
       expect(
-        child.height(),
-        `height is not being properly displayed?, expected ${h / 2}, got ${child.height()}`,
+        child.layout().height,
+        `height is not being properly displayed?, expected ${h / 2}, got ${child.layout().height}`,
       ).toEqual(h / 2);
+
       expect(
-        child.width(),
-        `width is not being properly displayed?, expected ${w}, got ${child.width()}`,
+        child.layout().width,
+        `width is not being properly displayed?, expected ${w}, got ${child.layout().width}`,
       ).toEqual(w);
     }
   });
   it("should create a 4 x 4 and when called render it should display a string of a", () => {
-    const h = 4;
-    const w = 4;
-    const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
+    const l = LayoutEngine.CreateBounds();
+    l.height = l.width = 4;
 
-    const elem = new DisplayComponent();
+    const cnv = new Canvas().setLayout(l);
 
-    elem.setStyles({
-      backgroundColor: colors.BLUE_BACKGROUND,
-    });
+    const elem = new DisplayComponent()
+      .setStyles({
+        backgroundColor: colors.BLUE_BACKGROUND,
+      })
+      .setLayout({
+        height: 0,
+        width: 0,
+        x: 2,
+        y: 3,
+      });
 
-    cnv.root.addChildren(elem.setStartX(2).setStartY(3));
+    const root = new DisplayComponent().setLayout(l).addChildren(elem);
+    LayoutEngine.Measure(root, root.layout());
 
-    const nmap = cnv.build(cnv.canvas);
+    const nmap = cnv.build(root);
 
     expect(nmap[3][2].styles.backgroundColor).toBe(colors.BLUE_BACKGROUND);
   });
   it("sets max render and both the top and bottom respect it", () => {
-    const h = 10;
-    const w = 10;
-    const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
+    const l = LayoutEngine.CreateBounds();
+    l.width = l.height = 10;
 
-    const out = new DisplayComponent();
-    out.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
+    const cnv = new Canvas().setLayout(l);
+    const root = new DisplayComponent().setLayout(l);
 
-    const oneLine = new DisplayComponent();
-    oneLine.setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
-    oneLine.setMaxH(1);
+    root.addChildren([
+      new DisplayComponent().setStyles({
+        backgroundColor: colors.MAGENTA_BACKGROUND,
+      }),
+      new DisplayComponent()
+        .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
+        .setMaxH(1),
+    ]);
 
-    cnv.addChildren([out, oneLine]);
+    LayoutEngine.Measure(root, root.layout());
 
-    const built = cnv.build();
+    cnv.build(root);
 
-    console.log(JSON.stringify(colors.BACKGROUND_OFF));
+    cnv.renderCells();
 
-    console.log(built.map((b) => b[0].styles));
+    const firstCell = cnv.getCell(0, 0);
+    const oneLineCell = cnv.getCell(0, cnv.layout().height - 1);
+    const magentaCell = cnv.getCell(0, cnv.layout().height - 2);
+
+    assert(firstCell, `invalid cell `);
+    assert(oneLineCell, `invalid cell `);
+    assert(magentaCell, `invalid nextCell at `);
+
+    // this is to make sure the first and second most line are the same component
+    expect(
+      firstCell.styles.backgroundColor,
+      "has the same color as the out",
+    ).toBe(colors.MAGENTA_BACKGROUND);
 
     expect(
-      built[h - 1][0].styles.backgroundColor,
+      oneLineCell.styles.backgroundColor,
       "has the same color as the oneline",
     ).toBe(colors.YELLOW_BACKGROUND);
+
     expect(
-      built[h - 2][0].styles.backgroundColor,
+      magentaCell.styles.backgroundColor,
       "has the same color as the out",
     ).toBe(colors.MAGENTA_BACKGROUND);
   });
   it("preserves the order and the height automatically", () => {
-    const h = 9;
-    const w = 3;
-    const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
+    const l = LayoutEngine.CreateBounds();
+    l.height = 9;
+    l.width = 3;
 
-    const out = new DisplayComponent();
-    out.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
+    const cnv = new Canvas().setLayout(l);
+    const root = new DisplayComponent()
+      .setLayout(cnv.layout())
+      .addChildren(
+        new DisplayComponent().setStyles({
+          backgroundColor: colors.MAGENTA_BACKGROUND,
+        }),
+      )
+      .addChildren(
+        new DisplayComponent()
+          .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
+          .setMaxH(1),
+      )
+      .addChildren(
+        new DisplayComponent().setStyles({
+          backgroundColor: colors.MAGENTA_BACKGROUND,
+        }),
+      );
 
-    const oneLine = new DisplayComponent()
-      .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
-      .setMaxH(1);
+    LayoutEngine.Measure(root, root.layout());
 
-    const out2 = new DisplayComponent().setStyles({
-      backgroundColor: colors.MAGENTA_BACKGROUND,
-    });
-
-    cnv.addChildren(out).addChildren(oneLine).addChildren(out2);
-
-    const map = cnv.build();
+    const map = cnv.build(root);
     expect(map[4][0].styles.backgroundColor).eq(colors.YELLOW_BACKGROUND);
     expect(map[3][0].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
     expect(map[5][0].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
-    expect(map[h - 1][0].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
+    expect(map[l.height - 1][0].styles.backgroundColor).eq(
+      colors.MAGENTA_BACKGROUND,
+    );
   });
 
   it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {
     const h = 80;
     const w = 80;
-    const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
+    const layout = LayoutEngine.CreateBounds();
+    layout.width = layout.height = 80;
 
-    cnv.root.setDirection("horizontal");
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("horizontal")
+      .addChildren(new DisplayComponent())
+      .addChildren(new DisplayComponent());
 
-    cnv.root.addChildren([new DisplayComponent(), new DisplayComponent()]);
+    LayoutEngine.Measure(root, root.layout());
 
-    for (const child of cnv.root.children()) {
+    for (const child of root.children()) {
       expect(child.parent(), `parent is not defined?`).toBeDefined();
       expect(
-        child.height(),
-        `height is not being properly displayed?, expected ${h}, got ${child.height()}`,
+        child.layout().height,
+        `height is not being properly displayed?, expected ${h}, got ${child.layout().height}`,
       ).toEqual(h);
       expect(
-        child.width(),
-        `width is not being properly displayed?, expected ${w / 2}, got ${child.width()}`,
+        child.layout().width,
+        `width is not being properly displayed?, expected ${w / 2}, got ${child.layout().width}`,
       ).toEqual(w / 2);
     }
   });
   it("sets max render and both the top and bottom respect it", () => {
-    const h = 10;
-    const w = 10;
-    const cnv = new Canvas().setHeight(h).setWidth(w) as Canvas;
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 10;
 
-    cnv
+    const cnv = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
       .setDirection("horizontal")
-
       .addChildren([
         new DisplayComponent().setStyles({
           backgroundColor: colors.MAGENTA_BACKGROUND,
         }),
-
         new DisplayComponent()
           .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
           .setMaxW(1),
       ]);
 
-    const built = cnv.build();
+    const built = cnv.build(LayoutEngine.Measure(root, root.layout()));
+
+    const w = layout.width;
 
     expect(
       built[0][w - 1].styles.backgroundColor,
@@ -168,19 +219,31 @@ describe("tests the displaying of basic texts in the terminal", () => {
     const firstLine = new TextDisplay().setContent("this is the first line");
     const secondLine = new TextDisplay().setContent("this is the second line");
 
-    const cnv = new Canvas() as Canvas;
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 10;
+    const root = new DisplayComponent().setLayout(layout);
 
-    cnv.setHeight(10).setWidth(10);
-    cnv.addChildren([firstLine, secondLine]);
+    const cnv = new Canvas().setLayout(layout);
 
-    cnv.build();
+    root.addChildren([firstLine, secondLine]);
+
+    cnv.build(LayoutEngine.Measure(root, root.layout()));
+
+    const firstLineCell = cnv.getCell(0, 0);
+    expect(firstLineCell, "invalid cell");
+    expect(firstLineCell).toBeDefined();
+
+    const secondLineCell = cnv.getCell(0, 1);
+    expect(secondLineCell, "invalid cell");
+    expect(secondLineCell).toBeDefined();
 
     expect(
-      cnv.canvas[0][0].display,
+      firstLineCell!.display,
       "text should display on the first line",
     ).toEqual(firstLine.content().at(0));
+
     expect(
-      cnv.canvas[1][0].display,
+      secondLineCell!.display,
       "text should display on the second line",
     ).toEqual(secondLine.content().at(0));
   });

@@ -10,7 +10,7 @@ function isFalse(truthy: boolean, message: string) {
   }
 }
 
-export function assert(truthy: boolean, message: string) {
+export function assert(truthy: any, message: string): asserts truthy is true {
   run(truthy, message);
 }
 

@@ -1,38 +1,48 @@
+import assert from "assert";
 import colors from "./colors.js";
-import { assert } from "../assert.js";
-import { DisplayComponent } from "./components.js";
+import { TextDisplay } from "./components.js";
 
-export class Canvas implements Component {
-  private h: number = 0;
-  private w: number = 0;
-  x: number = 0;
-  y: number = 0;
+const DEFAULT_STYLE: ComponentStyles = {
+  backgroundColor: colors.BACKGROUND_OFF,
+  color: colors.FOREGROUND_OFF,
+};
 
-  canvas: DisplayTile[][];
-  private shadowCanvas: DisplayTile[][] = [];
+export class Canvas {
+  l: LayoutBounds = {
+    x: 0,
+    y: 0,
+    height: 0,
+    width: 0,
+  };
 
-  root: Component;
+  private canvas: DisplayTile[][];
 
-  constructor() {
-    this.root = new DisplayComponent();
-
-    this.root.setParent(this);
-
-    this.canvas = new Array();
+  layout() {
+    return this.l;
   }
-  maxHeight() {
-    return this.h;
-  }
-  setMaxH(nmh: number) {
-    this.h = nmh;
+  setLayout(nl: LayoutBounds) {
+    this.l = nl;
+    this.clear();
     return this;
   }
 
+  constructor() {
+    this.canvas = new Array();
+  }
+
   width(): number {
-    return this.w;
+    return this.l.width;
   }
   height() {
-    return this.h;
+    return this.l.height;
+  }
+
+  startX() {
+    return this.l.x;
+  }
+
+  startY() {
+    return this.l.y;
   }
 
   private createTile(x: number, y: number): DisplayTile {
@@ -55,108 +65,103 @@ export class Canvas implements Component {
       }
     }
   }
-  setHeight(nHeight: number): Component {
-    // this is going to clear the whole previous canvas? do we want that?
-    // just in case we need it in the future
-    this.shadowCanvas = this.canvas.map((i) => ({ ...i })); // ! deep copies
+  setHeight(nHeight: number) {
+    this.setLayout({
+      height: nHeight,
+      width: this.l.width,
+      x: this.l.x,
+      y: this.l.y,
+    });
 
-    this.h = nHeight;
-
-    this.root.setHeight(this.h);
-
-    this.resetCanvas();
-
-    return this;
-  }
-  addChildren(c: Component[]): Component;
-  addChildren(c: Component): Component;
-  addChildren(c: Component | Component[]): Component {
-    if (Array.isArray(c)) {
-      return this.root.addChildren(c);
-    }
-    return this.root.addChildren(c);
-  }
-  children() {
-    return this.root.children();
+    this.clear();
   }
 
   setWidth(nWidth: number): Canvas {
-    // this is going to clear the whole previous canvas? do we want that?
-    // just in case we need it in the future
-    this.shadowCanvas = this.canvas.map((i) => ({ ...i })); // ! deep copies
-    this.w = nWidth;
-    this.root.setWidth(this.w);
+    this.setLayout({
+      height: this.l.height,
+      width: nWidth,
+      x: this.l.x,
+      y: this.l.y,
+    });
 
-    this.canvas = new Array(this.h).map((a) => new Array(this.w));
-
-    this.resetCanvas();
+    this.clear();
 
     return this;
   }
 
-  render() {
-    const rows: string[] = [];
-    // i know theres some optimization that we can do here
-    for (let i = this.startY(); i < this.startY() + this.height(); i++) {
-      let row = "";
-      for (let j = this.startX(); j < this.startX() + this.width(); j++) {
-        let tile = this.canvas[i][j];
-        assert(
-          tile.display.length == 1,
-          "cannot display more things on one cell",
-        );
-
-        row += `${tile.styles.backgroundColor}${tile.styles.color}${tile.display}${colors.BACKGROUND_OFF}${colors.FOREGROUND_OFF}`;
-      }
-      rows.push(row);
+  getCell(x: number, y: number) {
+    try {
+      return this.canvas[y][x];
+    } catch (err) {
+      return;
     }
-    return rows.join("\r\n");
   }
-  startX() {
-    return this.x;
-  }
-  startY() {
-    return this.y;
-  }
-  build(map: DisplayTile[][] = this.canvas): DisplayTile[][] {
-    if (map.length !== this.height()) {
+  clear() {
+    if (
+      this.canvas.length !== this.height() ||
+      this.canvas[0]?.length !== this.width()
+    ) {
       this.resetCanvas();
+      return;
     }
-    map = this.root.build(map);
 
-    return map;
+    for (const row of this.canvas) {
+      for (const cell of row) {
+        cell.display = " ";
+        cell.styles = DEFAULT_STYLE;
+      }
+    }
   }
-  setStartX(nStartx: number): Component {
-    this.x = nStartx;
-    return this;
+
+  public renderCells() {
+    // util function to render the map in tests
+
+    console.log(
+      this.canvas.map((line) => {
+        return line.map(
+          (ch) =>
+            `${ch.styles.backgroundColor} ${ch.styles.color} ${ch.display}`,
+        );
+      }),
+    );
   }
-  setStartY(nStarty: number): Component {
-    this.y = nStarty;
-    return this;
+
+  fillRect(bounds: LayoutBounds, style: ComponentStyles | null) {
+    for (let y = bounds.y; y < bounds.y + bounds.height; y++) {
+      for (let x = bounds.x; x < bounds.x + bounds.width; x++) {
+        const cell = this.getCell(x, y);
+        if (!cell) {
+          continue;
+        }
+        cell.styles = blendStyles(style, DEFAULT_STYLE);
+      }
+    }
   }
-  getId(): number {
-    return -1;
+  drawText(x: number, y: number, text: string, style: ComponentStyles | null) {
+    for (let i = 0; i < text.length; i++) {
+      const cell = this.getCell(x + i, y);
+      if (!cell) {
+        break;
+      }
+      cell.display = text[i];
+
+      cell.styles = blendStyles(cell.styles, blendStyles(style, DEFAULT_STYLE));
+    }
   }
-  setParent(c: Component): Component {
-    return this.root.setParent(c);
-  }
-  parent(): Component | null {
-    return this.root.parent();
-  }
-  setDirection(dir: "horizontal" | "vertical"): Component {
-    return this.root.setDirection(dir);
-  }
-  maxWidth(): number | null {
-    return this.w;
-  }
-  setMaxW(nMax: number): Component {
-    this.w = nMax;
-    return this;
-  }
-  styles(): ComponentStyles | null {
-    return this.root.styles();
-  }
-  setStyles(sty: ComponentStyles): Component {
-    return this.root.setStyles(sty);
-  }
+}
+
+export function blendStyles(
+  first: ComponentStyles | undefined | null,
+  parent: ComponentStyles | null | undefined,
+): ComponentStyles {
+  return {
+    backgroundColor:
+      first?.backgroundColor === colors.BACKGROUND_OFF
+        ? parent?.backgroundColor || first.color
+        : first?.backgroundColor || colors.BACKGROUND_OFF,
+    color:
+      first?.color === colors.BACKGROUND_OFF
+        ? parent?.color || first.color
+        : first?.color || colors.FOREGROUND_OFF,
+  };
 }

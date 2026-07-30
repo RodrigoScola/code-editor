@@ -1,13 +1,10 @@
 interface Component {
   getId(): number;
-  height(): number;
-  width(): number;
-  startX(): number;
-  setStartX(nStartX: number): Component;
-  setStartY(nStartY: number): Component;
-  startY(): number;
-  setHeight(nHeight: number): Component;
-  setWidth(nWidth: number): Component;
+  layout: () => LayoutBounds;
+  setLayout: (nLayout: LayoutBounds) => Component;
+
+  preferredSize(): Size;
+
   maxHeight(): number | null;
   setMaxH(nMax: number): Component;
 
@@ -20,10 +17,18 @@ interface Component {
   setParent(c: Component): Component;
   addChildren(c: Component): Component;
   setDirection(dir: "horizontal" | "vertical"): Component;
+  direction(): "horizontal" | "vertical";
 
-  build(map: DisplayTile[][]): DisplayTile[][];
+  paint(canvas: Canvas): void;
   styles: () => ComponentStyles | null;
   setStyles(sty: Partial<ComponentStyles>): Component;
+
+  measure(bounds: LayoutBounds): Partial<LayoutBounds>;
+}
+
+interface Size {
+  width: number | null;
+  height: number | null;
 }
 
 type EditingModes = "visual" | "insert" | "command";
@@ -33,6 +38,12 @@ interface DisplayTile {
   y: number;
   display: string;
   styles: ComponentStyles;
+}
+interface LayoutBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 interface ComponentStyles {
