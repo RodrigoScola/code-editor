@@ -134,12 +134,15 @@ async function handleResize(size?: { columns: number; rows: number }) {
   resizedLayout.width = resolved.columns;
   cnv.setLayout(resizedLayout);
   root.setLayout(resizedLayout);
+  root.setStyles({ backgroundColor: colors.RED_BACKGROUND });
   LayoutEngine.Measure(root, root.layout());
 
   Renderer.build(root, cnv);
   const out = Renderer.render(cnv);
 
   process.stdout.write("\x1b[H" + out);
+
+  // console.log(cnv.getCell(cnv.width() - 1, cnv.height() - 1));
 }
 
 process.stdout.on("finish", () => {

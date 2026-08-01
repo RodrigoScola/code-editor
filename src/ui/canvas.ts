@@ -148,6 +148,9 @@ export class Canvas {
       cell.styles = blendStyles(cell.styles, blendStyles(style, DEFAULT_STYLE));
     }
   }
+  getCells() {
+    return this.canvas;
+  }
 }
 
 export function blendStyles(

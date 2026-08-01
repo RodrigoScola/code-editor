@@ -1,3 +1,5 @@
+import { assert } from "../assert.js";
+
 export class LayoutEngine {
   static CreateBounds(): LayoutBounds {
     return {
@@ -25,9 +27,9 @@ export class LayoutEngine {
     for (const child of component.children()) {
       const measured = child.measure(parent);
 
-      if (measured.height !== null) {
+      if (Number.isFinite(measured.height)) {
         remaining -= measured.height!;
-      } else if (child.maxHeight() !== null) {
+      } else if (Number.isFinite(child.maxHeight())) {
         remaining -= child.maxHeight()!;
       } else {
         flexible++;
@@ -38,12 +40,14 @@ export class LayoutEngine {
       let measured = child.measure(parent);
 
       let height: number;
-      if (measured.height !== null) {
+      let isFlexible = false;
+      if (Number.isFinite(measured.height)) {
         height = measured.height!;
-      } else if (child.maxHeight() !== null) {
-        height = Math.min(child.maxHeight()!, Math.floor(remaining / flexible));
+      } else if (Number.isFinite(child.maxHeight())) {
+        height = child.maxHeight()!;
       } else {
         height = Math.floor(remaining / flexible);
+        isFlexible = true;
       }
 
       this.Measure(child, {
@@ -54,9 +58,9 @@ export class LayoutEngine {
       });
 
       y += height;
-      remaining -= height;
 
-      if (measured.height == null || child.maxHeight() == null) {
+      if (isFlexible) {
+        remaining -= height;
         flexible--;
       }
     }
@@ -72,13 +76,18 @@ export class LayoutEngine {
     for (const child of component.children()) {
       const measured = child.measure(parent);
 
-      if (measured.width !== null) {
+      if (Number.isFinite(measured.width)) {
         remaining -= measured.width!;
-      } else if (child.maxWidth() !== null) {
+      } else if (Number.isFinite(child.maxWidth())) {
         remaining -= child.maxWidth()!;
       } else {
         flexible++;
       }
+
+      assert(
+        !isNaN(remaining),
+        `remaining is not a number on id ${child.getId()}`,
+      );
     }
     let x = parent.x;
 
@@ -86,14 +95,20 @@ export class LayoutEngine {
       const measured = child.measure(parent);
 
       let w: number;
+      let isFlexible = false;
 
-      if (measured.width !== null) {
+      if (Number.isFinite(measured.width)) {
         w = measured.width!;
-      } else if (child.maxWidth() !== null) {
-        w = Math.min(child.maxWidth()!, Math.floor(remaining / flexible));
+      } else if (Number.isFinite(child.maxWidth())) {
+        w = child.maxWidth()!;
       } else {
         w = Math.floor(remaining / flexible);
+        isFlexible = true;
       }
+      assert(
+        Boolean(w),
+        `width came on undefined on ${child.getId()}. measured: ${measured.width}. maxW: ${child.maxWidth()}, flex: ${Math.floor(remaining / flexible)}, w:${w}`,
+      );
       this.Measure(child, {
         x,
         y: parent.y,
@@ -101,10 +116,14 @@ export class LayoutEngine {
         height: parent.height,
       });
       x += w;
-      remaining -= w;
-      if (measured.width !== null && child.maxWidth() !== null) {
+      if (isFlexible) {
+        remaining -= w;
         flexible--;
       }
     }
+    assert(
+      remaining === 0,
+      `not using all remaining. expected: 0, got ${remaining}`,
+    );
   }
 }

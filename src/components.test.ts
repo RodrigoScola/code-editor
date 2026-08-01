@@ -17,11 +17,9 @@ describe("tests the displaying of basic texts in the terminal", () => {
 
     LayoutEngine.Measure(root, root.layout());
 
-    cnv.build();
-
     Renderer.build(root, cnv);
 
-    let out = cnv.build().reduce((all, t) => all.concat(t), []);
+    let out = cnv.getCells().reduce((all, t) => all.concat(t), []);
 
     expect(out.length, "canvas dimensions is not being respected").toBe(
       cnv.width() * cnv.height(),
@@ -42,6 +40,7 @@ describe("tests the displaying of basic texts in the terminal", () => {
 
     for (const child of root.children()) {
       expect(child.parent(), `parent is not defined?`).toBeDefined();
+
       expect(
         child.layout().height,
         `height is not being properly displayed?, expected ${h / 2}, got ${child.layout().height}`,
@@ -72,8 +71,9 @@ describe("tests the displaying of basic texts in the terminal", () => {
 
     const root = new DisplayComponent().setLayout(l).addChildren(elem);
     LayoutEngine.Measure(root, root.layout());
+    Renderer.build(root, cnv);
 
-    const nmap = cnv.build(root);
+    const nmap = cnv.getCells();
 
     expect(nmap[3][2].styles.backgroundColor).toBe(colors.BLUE_BACKGROUND);
   });
@@ -94,10 +94,7 @@ describe("tests the displaying of basic texts in the terminal", () => {
     ]);
 
     LayoutEngine.Measure(root, root.layout());
-
-    cnv.build(root);
-
-    cnv.renderCells();
+    Renderer.build(root, cnv);
 
     const firstCell = cnv.getCell(0, 0);
     const oneLineCell = cnv.getCell(0, cnv.layout().height - 1);
