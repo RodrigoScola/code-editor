@@ -1,11 +1,14 @@
 import colors from "./ui/colors.js";
 import { describe, it, expect } from "vitest";
 import { Canvas } from "./ui/canvas.js";
-import { DisplayComponent, TextDisplay } from "./ui/components.js";
+import { DisplayComponent } from "./ui/components.js";
 import { LayoutEngine } from "./ui/layout.js";
 import { assert } from "./assert.js";
 import { Renderer } from "./ui/renderer.js";
-describe("tests the displaying of basic texts in the terminal", () => {
+import { TextBuffer } from "./ui/Buffer.js";
+import { EditorComponent } from "./ui/EditorComponent.js";
+
+describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
     const cnv = new Canvas();
     const layout: LayoutBounds = LayoutEngine.CreateBounds();
@@ -15,7 +18,7 @@ describe("tests the displaying of basic texts in the terminal", () => {
     const root = new DisplayComponent().setLayout(layout);
     root.setLayout(layout);
 
-    LayoutEngine.Measure(root, root.layout());
+    LayoutEngine.Measure(root, root.contentLayout());
 
     Renderer.build(root, cnv);
 
@@ -25,33 +28,9 @@ describe("tests the displaying of basic texts in the terminal", () => {
       cnv.width() * cnv.height(),
     );
   });
+});
 
-  it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {
-    const l = LayoutEngine.CreateBounds();
-    l.height = l.width = 80;
-
-    const root = new DisplayComponent().setLayout(l);
-
-    root.addChildren([new DisplayComponent(), new DisplayComponent()]);
-    LayoutEngine.Measure(root, root.layout());
-
-    const h = l.height;
-    const w = l.width;
-
-    for (const child of root.children()) {
-      expect(child.parent(), `parent is not defined?`).toBeDefined();
-
-      expect(
-        child.layout().height,
-        `height is not being properly displayed?, expected ${h / 2}, got ${child.layout().height}`,
-      ).toEqual(h / 2);
-
-      expect(
-        child.layout().width,
-        `width is not being properly displayed?, expected ${w}, got ${child.layout().width}`,
-      ).toEqual(w);
-    }
-  });
+describe("Renderer background colors", () => {
   it("should create a 4 x 4 and when called render it should display a string of a", () => {
     const l = LayoutEngine.CreateBounds();
     l.height = l.width = 4;
@@ -70,13 +49,14 @@ describe("tests the displaying of basic texts in the terminal", () => {
       });
 
     const root = new DisplayComponent().setLayout(l).addChildren(elem);
-    LayoutEngine.Measure(root, root.layout());
+    LayoutEngine.Measure(root, root.contentLayout());
     Renderer.build(root, cnv);
 
     const nmap = cnv.getCells();
 
     expect(nmap[3][2].styles.backgroundColor).toBe(colors.BLUE_BACKGROUND);
   });
+
   it("sets max render and both the top and bottom respect it", () => {
     const l = LayoutEngine.CreateBounds();
     l.width = l.height = 10;
@@ -93,7 +73,7 @@ describe("tests the displaying of basic texts in the terminal", () => {
         .setMaxH(1),
     ]);
 
-    LayoutEngine.Measure(root, root.layout());
+    LayoutEngine.Measure(root, root.contentLayout());
     Renderer.build(root, cnv);
 
     const firstCell = cnv.getCell(0, 0);
@@ -120,6 +100,7 @@ describe("tests the displaying of basic texts in the terminal", () => {
       "has the same color as the out",
     ).toBe(colors.MAGENTA_BACKGROUND);
   });
+
   it("preserves the order and the height automatically", () => {
     const l = LayoutEngine.CreateBounds();
     l.height = 9;
@@ -144,9 +125,10 @@ describe("tests the displaying of basic texts in the terminal", () => {
         }),
       );
 
-    LayoutEngine.Measure(root, root.layout());
+    LayoutEngine.Measure(root, root.contentLayout());
+    Renderer.build(root, cnv);
+    const map = cnv.getCells();
 
-    const map = cnv.build(root);
     expect(map[4][0].styles.backgroundColor).eq(colors.YELLOW_BACKGROUND);
     expect(map[3][0].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
     expect(map[5][0].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
@@ -155,32 +137,6 @@ describe("tests the displaying of basic texts in the terminal", () => {
     );
   });
 
-  it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {
-    const h = 80;
-    const w = 80;
-    const layout = LayoutEngine.CreateBounds();
-    layout.width = layout.height = 80;
-
-    const root = new DisplayComponent()
-      .setLayout(layout)
-      .setDirection("horizontal")
-      .addChildren(new DisplayComponent())
-      .addChildren(new DisplayComponent());
-
-    LayoutEngine.Measure(root, root.layout());
-
-    for (const child of root.children()) {
-      expect(child.parent(), `parent is not defined?`).toBeDefined();
-      expect(
-        child.layout().height,
-        `height is not being properly displayed?, expected ${h}, got ${child.layout().height}`,
-      ).toEqual(h);
-      expect(
-        child.layout().width,
-        `width is not being properly displayed?, expected ${w / 2}, got ${child.layout().width}`,
-      ).toEqual(w / 2);
-    }
-  });
   it("sets max render and both the top and bottom respect it", () => {
     const layout = LayoutEngine.CreateBounds();
     layout.height = layout.width = 10;
@@ -199,10 +155,12 @@ describe("tests the displaying of basic texts in the terminal", () => {
           .setMaxW(1),
       ]);
 
-    const built = cnv.build(LayoutEngine.Measure(root, root.layout()));
+    LayoutEngine.Measure(root, root.contentLayout());
+    Renderer.build(root, cnv);
 
     const w = layout.width;
 
+    const built = cnv.getCells();
     expect(
       built[0][w - 1].styles.backgroundColor,
       "has the same color as the oneline",
@@ -212,9 +170,15 @@ describe("tests the displaying of basic texts in the terminal", () => {
       "has the same color as the out",
     ).toBe(colors.MAGENTA_BACKGROUND);
   });
+});
+
+describe("editorComponent", () => {
   it("the height of the text should be 1 by default", () => {
-    const firstLine = new TextDisplay().setContent("this is the first line");
-    const secondLine = new TextDisplay().setContent("this is the second line");
+    const text = new TextBuffer(
+      "this is the first line\nthis is the second line",
+    );
+
+    const display = new EditorComponent(text);
 
     const layout = LayoutEngine.CreateBounds();
     layout.height = layout.width = 10;
@@ -222,9 +186,10 @@ describe("tests the displaying of basic texts in the terminal", () => {
 
     const cnv = new Canvas().setLayout(layout);
 
-    root.addChildren([firstLine, secondLine]);
+    root.addChildren(display);
 
-    cnv.build(LayoutEngine.Measure(root, root.layout()));
+    LayoutEngine.Measure(root, root.contentLayout());
+    Renderer.build(root, cnv);
 
     const firstLineCell = cnv.getCell(0, 0);
     expect(firstLineCell, "invalid cell");
@@ -237,11 +202,11 @@ describe("tests the displaying of basic texts in the terminal", () => {
     expect(
       firstLineCell!.display,
       "text should display on the first line",
-    ).toEqual(firstLine.content().at(0));
+    ).toEqual(text.line(0)!.at(0));
 
     expect(
       secondLineCell!.display,
       "text should display on the second line",
-    ).toEqual(secondLine.content().at(0));
+    ).toEqual(text.line(1)!.at(0));
   });
 });

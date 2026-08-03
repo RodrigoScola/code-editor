@@ -1,4 +1,4 @@
-import { blendStyles, Canvas } from "./canvas.js";
+import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 
 export class DisplayComponent implements Component {
@@ -10,7 +10,8 @@ export class DisplayComponent implements Component {
 
   private childs: Component[];
 
-  p: Component | null;
+  p: Insets = { bottom: 0, top: 0, left: 0, right: 0 };
+  pr: Component | null;
   private l: LayoutBounds;
 
   private d: "vertical" | "horizontal";
@@ -27,7 +28,23 @@ export class DisplayComponent implements Component {
       color: colors.FOREGROUND_OFF,
     };
 
-    this.p = null;
+    this.pr = null;
+  }
+  padding(): Insets {
+    return this.p;
+  }
+  setPadding(nPadding: Insets): Component {
+    this.p = nPadding;
+    return this;
+  }
+  contentLayout(): LayoutBounds {
+    const layout = this.layout();
+    return {
+      height: layout.height - this.p.top - this.p.bottom,
+      width: layout.width - this.p.left - this.p.right,
+      x: layout.x + this.p.left,
+      y: layout.y + this.p.top,
+    };
   }
   direction(): "horizontal" | "vertical" {
     return this.d;
@@ -41,7 +58,7 @@ export class DisplayComponent implements Component {
   }
 
   parent(): Component | null {
-    return this.p;
+    return this.pr;
   }
 
   getId() {
@@ -72,7 +89,7 @@ export class DisplayComponent implements Component {
     return this;
   }
   setParent(c: Component): Component {
-    this.p = c;
+    this.pr = c;
 
     return this;
   }
@@ -100,6 +117,7 @@ export class DisplayComponent implements Component {
     };
     return this;
   }
+
   paint(canvas: Canvas) {}
   measure(bounds: LayoutBounds): Partial<LayoutBounds> {
     return {};
@@ -112,33 +130,3 @@ export class DisplayComponent implements Component {
   }
 }
 
-export class TextDisplay extends DisplayComponent {
-  private text: string;
-  constructor() {
-    super();
-    this.text = "";
-  }
-  preferredSize(): Size {
-    return {
-      width: this.text.length,
-      height: 1,
-    };
-  }
-  measure(bounds: LayoutBounds): Partial<LayoutBounds> {
-    return {
-      width: Math.min(this.content().length, bounds.width),
-      height: 1,
-    };
-  }
-  content() {
-    return this.text;
-  }
-  paint(canvas: Canvas): void {
-    const l = this.layout();
-    canvas.drawText(l.x, l.y, this.text, this.styles());
-  }
-  setContent(ntext: string) {
-    this.text = ntext;
-    return this;
-  }
-}

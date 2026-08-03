@@ -4,6 +4,10 @@ interface Component {
   setLayout: (nLayout: LayoutBounds) => Component;
 
   preferredSize(): Size;
+  padding(): Insets;
+  contentLayout(): LayoutBounds;
+
+  setPadding(nPadding: Insets): Component;
 
   maxHeight(): number | null;
   setMaxH(nMax: number): Component;
@@ -25,6 +29,13 @@ interface Component {
 
   measure(bounds: LayoutBounds): Partial<LayoutBounds>;
 }
+
+type Insets = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
 
 interface Size {
   width: number | null;

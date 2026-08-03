@@ -2,10 +2,12 @@ import process from "process";
 import readline from "node:readline";
 import fs from "fs";
 import { Canvas } from "./ui/canvas.js";
-import { DisplayComponent, TextDisplay } from "./ui/components.js";
+import { DisplayComponent } from "./ui/components.js";
 import colors from "./ui/colors.js";
 import { Renderer } from "./ui/renderer.js";
 import { LayoutEngine } from "./ui/layout.js";
+import { TextBuffer } from "./ui/Buffer.js";
+import { EditorComponent } from "./ui/EditorComponent.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -36,18 +38,14 @@ const divisor = new DisplayComponent();
 divisor.setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
 divisor.setMaxW(1);
 
-const editorWindow = new DisplayComponent();
+const gitignore = fs.readFileSync(".gitignore", { encoding: "utf-8" });
+
+const editorWindow = new EditorComponent(new TextBuffer(gitignore));
+
 editorWindow.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
 
-const gitignore = fs.readFileSync(".gitignore", { encoding: "utf-8" });
-const lines = gitignore.split("\n");
-lines.pop();
-
-for (const line of lines) {
-  const txt = new TextDisplay().setContent(line);
-
-  editorWindow.addChildren(txt.setMaxH(1));
-}
+editorWindow.cursor.moveRight(editorWindow.buffer);
+editorWindow.cursor.moveRight(editorWindow.buffer);
 
 root.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
 
@@ -59,7 +57,7 @@ initialLayout.width = process.stdout.columns;
 cnv.setLayout(initialLayout);
 root.setLayout(initialLayout);
 
-LayoutEngine.Measure(root, root.layout());
+LayoutEngine.Measure(root, root.contentLayout());
 
 Renderer.build(root, cnv);
 
@@ -135,7 +133,7 @@ async function handleResize(size?: { columns: number; rows: number }) {
   cnv.setLayout(resizedLayout);
   root.setLayout(resizedLayout);
   root.setStyles({ backgroundColor: colors.RED_BACKGROUND });
-  LayoutEngine.Measure(root, root.layout());
+  LayoutEngine.Measure(root, root.contentLayout());
 
   Renderer.build(root, cnv);
   const out = Renderer.render(cnv);

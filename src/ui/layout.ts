@@ -20,7 +20,7 @@ export class LayoutEngine {
     return root;
   }
   private static layoutVertical(component: Component) {
-    let parent = component.layout();
+    let parent = component.contentLayout();
     let flexible = 0;
     let remaining = parent.height;
 
@@ -67,7 +67,7 @@ export class LayoutEngine {
   }
 
   private static layoutHorizontal(component: Component) {
-    const parent = component.layout();
+    const parent = component.contentLayout();
 
     let remaining = parent.width;
 
