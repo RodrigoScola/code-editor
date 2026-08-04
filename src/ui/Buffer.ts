@@ -13,4 +13,25 @@ export class TextBuffer {
   public lineCount() {
     return this.lines.length;
   }
+  public add(line: number, column: number, ch: string) {
+    assert(ch.length === 1, "cannot insert more than one character");
+
+    while (this.lines.length <= line) {
+      this.lines.push("");
+    }
+
+    const current = this.lines[line];
+
+    const clamped = Math.max(0, Math.min(column, current.length));
+
+    this.lines[line] = current.slice(0, clamped) + ch + current.slice(clamped);
+  }
+  newLine() {
+    this.lines.push("");
+  }
+  insertLine(afterLine: number) {
+    const at = Math.max(0, Math.min(afterLine + 1, this.lines.length));
+    this.lines.splice(at, 0, "");
+    return at;
+  }
 }

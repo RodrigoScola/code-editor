@@ -42,7 +42,7 @@ interface Size {
   height: number | null;
 }
 
-type EditingModes = "visual" | "insert" | "command";
+type EditingModes = 'normal' | "visual" | "insert" | "command";
 
 interface DisplayTile {
   x: number;
@@ -60,4 +60,8 @@ interface LayoutBounds {
 interface ComponentStyles {
   backgroundColor: string;
   color: string;
+}
+
+interface EditorMode {
+  handleKey(key: string, ctx: EditorContext);
 }

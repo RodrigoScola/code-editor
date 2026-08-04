@@ -1,6 +1,4 @@
-import assert from "assert";
 import colors from "./colors.js";
-import { TextDisplay } from "./components.js";
 
 const DEFAULT_STYLE: ComponentStyles = {
   backgroundColor: colors.BACKGROUND_OFF,

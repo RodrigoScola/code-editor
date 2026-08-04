@@ -8,10 +8,22 @@ import { Renderer } from "./ui/renderer.js";
 import { LayoutEngine } from "./ui/layout.js";
 import { TextBuffer } from "./ui/Buffer.js";
 import { EditorComponent } from "./ui/EditorComponent.js";
+import { EditorContext } from "./ui/Editor.js";
+import {
+  editorInsertMode,
+  editorInsertModeAfter,
+  moveDownEditorCommand,
+  moveLeftEditorCommand,
+  moveRightEditorCommand,
+  moveUpEditorCommand,
+  newLineEditorCommand,
+} from "./Commands/editorCommands.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
 disableMouseEvents();
+
+const editor = new EditorContext();
 
 readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) {
@@ -42,10 +54,18 @@ const gitignore = fs.readFileSync(".gitignore", { encoding: "utf-8" });
 
 const editorWindow = new EditorComponent(new TextBuffer(gitignore));
 
-editorWindow.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
+editor.activeWindow = editorWindow;
 
-editorWindow.cursor.moveRight(editorWindow.buffer);
-editorWindow.cursor.moveRight(editorWindow.buffer);
+// todo: make a better function for this
+editor.normalMode.bind(["j"], moveDownEditorCommand);
+editor.normalMode.bind(["k"], moveUpEditorCommand);
+editor.normalMode.bind(["h"], moveLeftEditorCommand);
+editor.normalMode.bind(["l"], moveRightEditorCommand);
+editor.normalMode.bind(["i"], editorInsertMode);
+editor.normalMode.bind(["a"], editorInsertModeAfter);
+editor.normalMode.bind(["o"], newLineEditorCommand);
+
+editorWindow.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
 
 root.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
 
@@ -140,42 +160,22 @@ async function handleResize(size?: { columns: number; rows: number }) {
 
   process.stdout.write("\x1b[H" + out);
 
-  // console.log(cnv.getCell(cnv.width() - 1, cnv.height() - 1));
 }
 
 process.stdout.on("finish", () => {
   clearOutput();
   disableMouseEvents();
 });
+
 process.stdin.on("keypress", (str, key) => {
   if (awaitingCPR) {
     return;
   }
 
-  // if (document.mode === "visual") {
-  //   if (key.sequence === "j") {
-  //     document.cursor.down();
-  //   } else if (key.sequence === "k") {
-  //     document.cursor.up();
-  //   } else if (key.sequence === "h") {
-  //     document.cursor.left();
-  //   } else if (key.sequence === "l") {
-  //     document.cursor.right();
-  //   } else if (key.sequence === "o") {
-  //     editorWindow.addChildren(new TextDisplay());
-  //     document.cursor.down();
-  //     document.mode = "insert";
-  //   }
-  // } else if (str && str.length === 1 && !key.ctrl && !key.meta) {
-  //   const text = editorWindow.children().at(document.cursor.y) as
-  //     | TextDisplay
-  //     | undefined;
-  //   if (!text) {
-  //     return;
-  //   }
-  //   text.setContent(text.content() + str);
-  // }
+  editor.handleKey(key);
 
+  LayoutEngine.Measure(root, root.contentLayout());
+  Renderer.build(root, cnv);
   process.stdout.write("\x1b[H" + Renderer.render(cnv));
 });
 
