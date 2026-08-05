@@ -3,8 +3,6 @@ import { Canvas } from "../canvas.js";
 import { DisplayComponent } from "../components.js";
 import { Cursor } from "../Cursor.js";
 
-// const TAB_WIDTH = 4;
-
 // a tab is one buffer character but expands to multiple screen cells, so
 // rendering and cursor placement need the expanded text / a column mapping
 // rather than drawing the raw line 1:1

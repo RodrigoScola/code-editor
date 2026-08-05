@@ -6,6 +6,7 @@ export class EditorContext {
   normalMode: NormalMode = new NormalMode();
   insertMode: InsertMode = new InsertMode();
   mode: EditorMode = this.normalMode;
+  modeName: EditingModes = "normal";
 
   constructor() {}
 
@@ -16,6 +17,7 @@ export class EditorContext {
     this.mode.handleKey(key, this);
   }
   setMode(m: EditingModes) {
+    this.modeName = m;
     if (m === "normal") {
       this.mode = this.normalMode;
     } else if (m === "insert") {

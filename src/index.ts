@@ -8,6 +8,7 @@ import { Renderer } from "./ui/renderer.js";
 import { LayoutEngine } from "./ui/layout.js";
 import { TextBuffer } from "./ui/buffer/Buffer.js";
 import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
+import { StatusWindow } from "./ui/windows/StatusEditor.js";
 import { EditorContext } from "./ui/Editor.js";
 import {
   editorInsertMode,
@@ -39,7 +40,23 @@ layout.width = process.stdout.columns;
 const cnv = new Canvas().setLayout(layout);
 const root = new DisplayComponent().setLayout(layout);
 
-root.setDirection("horizontal");
+const statusWindow = new StatusWindow(editor)
+  .setPadding({ left: 1, right: 0, bottom: 0, top: 0 })
+  .setMaxH(1)
+  .setStyles({
+    backgroundColor: colors.YELLOW_BACKGROUND,
+    color: colors.WHITE_FOREGROUND,
+  });
+
+const window = new DisplayComponent().setLayout({
+  ...layout,
+  height: layout.height - 1,
+});
+
+root.addChildren(window);
+root.addChildren(statusWindow);
+
+window.setDirection("horizontal");
 
 const treeView = new DisplayComponent();
 
@@ -68,7 +85,7 @@ editor.normalMode.bind(["o"], newLineEditorCommand);
 
 editorWindow.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
 
-root.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
+window.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
 
 const initialLayout = LayoutEngine.CreateBounds();
 
