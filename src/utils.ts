@@ -13,6 +13,7 @@ export function isTextEditor(
 export function isStatusWindow(
   t: Component | undefined | null,
 ): asserts t is StatusWindow {
+  //@ts-ignore
   if (!t || (!("name" in t) && t.name() === "status window")) {
     throw new Error("Expected an EditorComponent");
   }

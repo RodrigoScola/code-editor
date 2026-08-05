@@ -1,12 +1,12 @@
-import colors from "./ui/colors.js";
+import colors from "./colors.js";
 import { describe, it, expect } from "vitest";
-import { Canvas } from "./ui/canvas.js";
-import { DisplayComponent } from "./ui/components.js";
-import { LayoutEngine } from "./ui/layout.js";
-import { assert } from "./assert.js";
-import { Renderer } from "./ui/renderer.js";
-import { TextBuffer } from "./ui/buffer/Buffer.js";
-import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
+import { Canvas } from "./canvas.js";
+import { DisplayComponent } from "./components.js";
+import { LayoutEngine } from "./layout.js";
+import { assert } from "../assert.js";
+import { Renderer } from "./renderer.js";
+import { TextBuffer } from "./buffer/Buffer.js";
+import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {

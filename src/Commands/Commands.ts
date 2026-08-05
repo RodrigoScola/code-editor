@@ -1,5 +1,5 @@
 import { assert } from "../assert.js";
-import { InputParser } from "../input/inputParser.js";
+import { InputParser } from "../Input/inputParser.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { isStatusWindow, isTextEditor } from "../utils.js";
 

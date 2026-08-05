@@ -20,7 +20,7 @@ import {
   newLineEditorCommand,
   setCommandMode,
 } from "./Commands/editorCommands.js";
-import { DEFAULT_TOKENS, InputParser } from "./input/inputParser.js";
+import { DEFAULT_TOKENS, InputParser } from "./Input/inputParser.js";
 import { WINDOW_NAMES } from "./constants.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
