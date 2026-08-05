@@ -1,6 +1,6 @@
 import { WINDOW_NAMES } from "./constants.js";
-import { StatusWindow } from "./ui/windows/StatusEditor.js";
-import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
+import { StatusWindow } from "./Editor/windows/StatusEditor.js";
+import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
 
 export function isTextEditor(
   t: Component | undefined | null,

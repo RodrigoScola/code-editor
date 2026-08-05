@@ -6,7 +6,7 @@ import { LayoutEngine } from "./ui/layout.js";
 import { assert } from "./assert.js";
 import { Renderer } from "./ui/renderer.js";
 import { TextBuffer } from "./ui/buffer/Buffer.js";
-import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
+import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {

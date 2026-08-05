@@ -1,5 +1,5 @@
-import { TextBuffer } from "./buffer/Buffer.js";
-import colors from "./colors.js";
+import { TextBuffer } from "../ui/buffer/Buffer.js";
+import colors from "../ui/colors.js";
 
 export class Cursor {
   prefferedColumn: number = 0;

@@ -1,7 +1,7 @@
-import { TextBuffer } from "../buffer/Buffer.js";
-import { Canvas } from "../canvas.js";
-import colors from "../colors.js";
-import { DisplayComponent } from "../components.js";
+import { TextBuffer } from "../../ui/buffer/Buffer.js";
+import { Canvas } from "../../ui/canvas.js";
+import colors from "../../ui/colors.js";
+import { DisplayComponent } from "../../ui/components.js";
 import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor.js";
 

@@ -1,4 +1,4 @@
-import { EditorContext } from "../ui/Editor.js";
+import { EditorContext } from "../Editor/Editor.js";
 import { isTextEditor } from "../utils.js";
 import { log } from "../log.js";
 

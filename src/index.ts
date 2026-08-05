@@ -7,9 +7,9 @@ import colors from "./ui/colors.js";
 import { Renderer } from "./ui/renderer.js";
 import { LayoutEngine } from "./ui/layout.js";
 import { TextBuffer } from "./ui/buffer/Buffer.js";
-import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
-import { StatusWindow } from "./ui/windows/StatusEditor.js";
-import { EditorContext } from "./ui/Editor.js";
+import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
+import { StatusWindow } from "./Editor/windows/StatusEditor.js";
+import { EditorContext } from "./Editor/Editor.js";
 import {
   editorInsertMode,
   editorInsertModeAfter,

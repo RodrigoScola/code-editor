@@ -1,6 +1,6 @@
 import { assert } from "../assert.js";
 import { InputParser } from "../input/inputParser.js";
-import { EditorContext } from "../ui/Editor.js";
+import { EditorContext } from "../Editor/Editor.js";
 import { isStatusWindow, isTextEditor } from "../utils.js";
 
 type Command = (ctx: EditorContext) => void;
