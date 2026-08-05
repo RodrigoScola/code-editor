@@ -1,21 +1,69 @@
+import { TextBuffer } from "../buffer/Buffer.js";
 import { Canvas } from "../canvas.js";
+import colors from "../colors.js";
 import { DisplayComponent } from "../components.js";
+import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor.js";
 
 export class StatusWindow extends DisplayComponent {
   editor: EditorContext;
+  cursor: Cursor = new Cursor();
+  buffer: TextBuffer = new TextBuffer("");
+  currentCommandLine: number = 0;
   constructor(editor: EditorContext) {
     super();
     this.editor = editor;
   }
 
+  previousCommandLine() {
+    this.currentCommandLine = Math.max(0, this.currentCommandLine - 1);
+  }
+
+  nextCommandLine() {
+    this.currentCommandLine = Math.min(
+      this.buffer.lineCount() - 1,
+      this.currentCommandLine + 1,
+    );
+  }
+
   paint(canvas: Canvas): void {
     const cl = this.contentLayout();
     canvas.fillRect(cl, this.styles());
+
     let out = "";
 
-    out += `mode: ${this.editor.modeName}`;
+    if (this.editor.modeName === "command") {
+      out += `command: ${this.buffer.line(this.currentCommandLine)}`;
+    } else {
+      out += `mode: ${this.editor.modeName}`;
+    }
 
     canvas.drawText(cl.x, cl.y, out, this.styles());
+    const line = this.buffer.line(this.cursor.line) ?? "";
+
+    if (this.editor.modeName === "command") {
+      canvas.fillRect(
+        canvas.applyRelative(
+          this.cursor.column + `command: `.length,
+          0,
+          line,
+          this.contentLayout(),
+        ),
+        this.cursor.style,
+      );
+    }
+  }
+  onEvent(event: EditorEvents): void {
+    super.onEvent(event);
+
+    if (event.name === "editorModeChange") {
+      if (event.mode === "command") {
+        this.cursor.style.backgroundColor = colors.RED_BACKGROUND;
+        this.cursor.style.color = colors.WHITE_FOREGROUND;
+
+        this.currentCommandLine = this.buffer.lineCount() - 1;
+        this.cursor.moveDown(this.buffer);
+      }
+    }
   }
 }

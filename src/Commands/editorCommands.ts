@@ -57,6 +57,9 @@ export function newLineEditorCommand(ctx: EditorContext) {
 
   ctx.setMode("insert");
 }
+export function setCommandMode(ctx: EditorContext) {
+  ctx.setMode("command");
+}
 
 export function editorInsertModeAfter(ctx: EditorContext) {
   isTextEditor(ctx.activeWindow);

@@ -7,6 +7,7 @@ export class DisplayComponent implements Component {
   private maxH: number | null = null;
   private maxW: number | null = null;
   s: ComponentStyles;
+  nm: string | null | undefined;
 
   private childs: Component[];
 
@@ -29,6 +30,27 @@ export class DisplayComponent implements Component {
     };
 
     this.pr = null;
+  }
+  name(): string | null | undefined {
+    return this.nm;
+  }
+  findChildrenByName(nm: string): Component | null {
+    if (this.name() === nm) {
+      return this;
+    }
+
+    for (const child of this.children()) {
+      const found = child.findChildrenByName(nm);
+      if (found) {
+        return found;
+      }
+    }
+
+    return null;
+  }
+  setName(newName: string): Component {
+    this.nm = newName;
+    return this;
   }
   padding(): Insets {
     return this.p;
@@ -128,5 +150,42 @@ export class DisplayComponent implements Component {
       width: null,
     };
   }
+  onEvent(event: EditorEvents) {
+    for (const child of this.children()) {
+      child.onEvent(event);
+    }
+  }
 }
 
+
+// a tab is one buffer character but expands to multiple screen cells, so
+// rendering and cursor placement need the expanded text / a column mapping
+// rather than drawing the raw line 1:1
+function expandTabs(line: string, tabWidth: number): string {
+  let out = "";
+  for (const ch of line) {
+    if (ch === "\t") {
+      out += " ".repeat(tabWidth - (out.length % tabWidth));
+    } else {
+      out += ch;
+    }
+  }
+  return out;
+}
+
+function bufferColumnToScreenColumn(
+  line: string,
+  column: number,
+  tabWidth: number,
+): number {
+  let screenCol = 0;
+  const limit = Math.min(column, line.length);
+  for (let i = 0; i < limit; i++) {
+    if (line[i] === "\t") {
+      screenCol += tabWidth - (screenCol % tabWidth);
+    } else {
+      screenCol += 1;
+    }
+  }
+  return screenCol + Math.max(0, column - line.length);
+}

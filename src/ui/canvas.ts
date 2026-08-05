@@ -6,6 +6,7 @@ const DEFAULT_STYLE: ComponentStyles = {
 };
 
 export class Canvas {
+  tab_width: number = 4;
   l: LayoutBounds = {
     x: 0,
     y: 0,
@@ -135,7 +136,23 @@ export class Canvas {
       }
     }
   }
+
+  applyRelative(
+    x: number,
+    y: number,
+    text: string,
+    layout: LayoutBounds,
+  ): LayoutBounds {
+    return {
+      height: 1,
+      width: 1,
+      x: layout.x + bufferColumnToScreenColumn(text, x, this.tab_width),
+      y: layout.y + y,
+    };
+  }
   drawText(x: number, y: number, text: string, style: ComponentStyles | null) {
+    text = expandTabs(text, this.tab_width);
+
     for (let i = 0; i < text.length; i++) {
       const cell = this.getCell(x + i, y);
       if (!cell) {
@@ -149,6 +166,20 @@ export class Canvas {
   getCells() {
     return this.canvas;
   }
+}
+// a tab is one buffer character but expands to multiple screen cells, so
+// rendering and cursor placement need the expanded text / a column mapping
+// rather than drawing the raw line 1:1
+function expandTabs(line: string, tabWidth: number): string {
+  let out = "";
+  for (const ch of line) {
+    if (ch === "\t") {
+      out += " ".repeat(tabWidth - (out.length % tabWidth));
+    } else {
+      out += ch;
+    }
+  }
+  return out;
 }
 
 export function blendStyles(
@@ -165,4 +196,21 @@ export function blendStyles(
         ? parent?.color || first.color
         : first?.color || colors.FOREGROUND_OFF,
   };
+}
+
+function bufferColumnToScreenColumn(
+  line: string,
+  column: number,
+  tabWidth: number,
+): number {
+  let screenCol = 0;
+  const limit = Math.min(column, line.length);
+  for (let i = 0; i < limit; i++) {
+    if (line[i] === "\t") {
+      screenCol += tabWidth - (screenCol % tabWidth);
+    } else {
+      screenCol += 1;
+    }
+  }
+  return screenCol + Math.max(0, column - line.length);
 }

@@ -1,7 +1,18 @@
+type EditorEvents = EditorModeEvent;
+
+type EditorModeEvent = {
+  name: "editorModeChange";
+  mode: EditingModes;
+};
+
 interface Component {
   getId(): number;
   layout: () => LayoutBounds;
   setLayout: (nLayout: LayoutBounds) => Component;
+  onEvent(e: EditorEvents): void;
+  name(): string | null | undefined;
+  setName(newName: string): Component;
+  findChildrenByName(nm: string): Component | null;
 
   preferredSize(): Size;
   padding(): Insets;

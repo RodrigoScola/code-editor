@@ -1,7 +1,7 @@
 import { assert } from "../assert.js";
 import { InputParser } from "../input/inputParser.js";
 import { EditorContext } from "../ui/Editor.js";
-import { isTextEditor } from "../utils.js";
+import { isStatusWindow, isTextEditor } from "../utils.js";
 
 type Command = (ctx: EditorContext) => void;
 
@@ -65,6 +65,52 @@ export class NormalMode implements EditorMode {
   }
   bind(node: string[], command: Command) {
     this.keyMap.bind(node, command);
+  }
+}
+
+export class CommandMode implements EditorMode {
+  handleKey(key: KeyEvent, ctx: EditorContext) {
+    if (!ctx.activeWindow) {
+      return;
+    }
+
+    isStatusWindow(ctx.activeWindow);
+
+    const cursor = ctx.activeWindow.cursor;
+    const buffer = ctx.activeWindow.buffer;
+
+    if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
+      let valid = key.shift ? key.token.toUpperCase() : key.token;
+      buffer.add(cursor.line, cursor.column, valid);
+      cursor.column += 1;
+      cursor.prefferedColumn = cursor.column;
+    } else if (InputParser.isEscape(key.token)) {
+      ctx.setMode("normal");
+    } else if (InputParser.isBackspace(key.token)) {
+      cursor.column -= 1;
+      cursor.prefferedColumn = cursor.column;
+      buffer.remove(cursor.line, cursor.column);
+    } else if (InputParser.isDelete(key.token)) {
+      buffer.remove(cursor.line, cursor.column);
+    } else if (InputParser.isEnter(key.token)) {
+      // todo: execute the command
+      ctx.activeWindow.currentCommandLine++;
+      buffer.newLine();
+      ctx.activeWindow.nextCommandLine();
+      ctx.setMode("normal");
+    } else if (InputParser.isArrowDown(key.token)) {
+      ctx.activeWindow.nextCommandLine();
+    } else if (InputParser.isArrowUp(key.token)) {
+      ctx.activeWindow.previousCommandLine();
+    } else if (InputParser.isArrowLeft(key.token)) {
+      cursor.moveLeft(buffer);
+    } else if (InputParser.isArrowRight(key.token)) {
+      cursor.moveRight(buffer);
+    } else if (InputParser.isTab(key.token)) {
+      buffer.add(cursor.line, cursor.column, "\t");
+      cursor.column += 1;
+      cursor.prefferedColumn = cursor.column;
+    }
   }
 }
 

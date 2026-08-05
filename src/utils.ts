@@ -1,10 +1,19 @@
-import { DisplayComponent } from "./ui/components.js";
+import { WINDOW_NAMES } from "./constants.js";
+import { StatusWindow } from "./ui/windows/StatusEditor.js";
 import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
 
 export function isTextEditor(
-  t: DisplayComponent | undefined | null,
+  t: Component | undefined | null,
 ): asserts t is TextEditorWindow {
-  if (!t || !("cursor" in t)) {
+  if (t?.name() !== WINDOW_NAMES.EDITOR_TEXT_WINDOW) {
+    throw new Error("Expected an EditorComponent");
+  }
+}
+
+export function isStatusWindow(
+  t: Component | undefined | null,
+): asserts t is StatusWindow {
+  if (!t || (!("name" in t) && t.name() === "status window")) {
     throw new Error("Expected an EditorComponent");
   }
 }

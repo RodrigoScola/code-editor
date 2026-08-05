@@ -11,7 +11,7 @@ describe("tests the buffer and rendering", () => {
     layout.height = layout.width = 6;
     const cnv = new Canvas().setLayout(layout);
     const window = new TextEditorWindow(new TextBuffer("t\tb"));
-    window.tab_width = 5;
+    cnv.tab_width = 5;
     window.setLayout(layout);
 
     LayoutEngine.Measure(window, window.layout());

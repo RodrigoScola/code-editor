@@ -18,8 +18,10 @@ import {
   moveRightEditorCommand,
   moveUpEditorCommand,
   newLineEditorCommand,
+  setCommandMode,
 } from "./Commands/editorCommands.js";
-import { InputParser } from "./input/inputParser.js";
+import { DEFAULT_TOKENS, InputParser } from "./input/inputParser.js";
+import { WINDOW_NAMES } from "./constants.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -46,7 +48,8 @@ const statusWindow = new StatusWindow(editor)
   .setStyles({
     backgroundColor: colors.YELLOW_BACKGROUND,
     color: colors.WHITE_FOREGROUND,
-  });
+  })
+  .setName(WINDOW_NAMES.STATUS_WINDOW);
 
 const window = new DisplayComponent().setLayout({
   ...layout,
@@ -70,8 +73,11 @@ divisor.setMaxW(1);
 
 const gitignore = fs.readFileSync(".gitignore", { encoding: "utf-8" });
 
-const editorWindow = new TextEditorWindow(new TextBuffer(gitignore));
+const editorWindow = new TextEditorWindow(new TextBuffer(gitignore)).setName(
+  WINDOW_NAMES.EDITOR_TEXT_WINDOW,
+);
 
+editor.rootWindow = root;
 editor.activeWindow = editorWindow;
 
 // todo: make a better function for this
@@ -82,6 +88,7 @@ editor.normalMode.bind(["l"], moveRightEditorCommand);
 editor.normalMode.bind(["i"], editorInsertMode);
 editor.normalMode.bind(["a"], editorInsertModeAfter);
 editor.normalMode.bind(["o"], newLineEditorCommand);
+editor.normalMode.bind([":"], setCommandMode);
 
 editorWindow.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
 
@@ -184,6 +191,14 @@ process.stdout.on("finish", () => {
   disableMouseEvents();
 });
 
+function dispatchKey(parsedKey: KeyEvent) {
+  editor.handleKey(parsedKey);
+
+  LayoutEngine.Measure(root, root.contentLayout());
+  Renderer.build(root, cnv);
+  process.stdout.write("\x1b[H" + Renderer.render(cnv));
+}
+
 process.stdin.on("keypress", (str, key) => {
   const parsedKey = InputParser.ParseKey(str, key);
 
@@ -191,11 +206,33 @@ process.stdin.on("keypress", (str, key) => {
     return;
   }
 
-  editor.handleKey(parsedKey);
+  // a standalone Escape byte is handled eagerly below, off the raw 'data'
+  // event, since readline holds a lone ESC for up to ~500ms waiting to see
+  // if more bytes follow before it fires this 'keypress' event
+  if (parsedKey.token === DEFAULT_TOKENS.ESCAPE) {
+    return;
+  }
 
-  LayoutEngine.Measure(root, root.contentLayout());
-  Renderer.build(root, cnv);
-  process.stdout.write("\x1b[H" + Renderer.render(cnv));
+  dispatchKey(parsedKey);
+});
+
+process.stdin.on("data", (chunk) => {
+  if (awaitingCPR) {
+    return;
+  }
+
+  // real escape *sequences* (arrows, function keys, etc.) always arrive as
+  // part of one multi-byte chunk written by the terminal in a single go, so
+  // a lone single-byte ESC chunk reliably means the user just pressed
+  // Escape by itself
+  if (chunk.length === 1 && chunk[0] === 0x1b) {
+    dispatchKey({
+      token: DEFAULT_TOKENS.ESCAPE,
+      ctrl: false,
+      alt: false,
+      shift: false,
+    });
+  }
 });
 
 function disableMouseEvents() {
