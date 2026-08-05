@@ -1,10 +1,7 @@
-import readline from "readline";
-import { Mode } from "node:fs";
 import { assert } from "../assert.js";
+import { InputParser } from "../input/inputParser.js";
 import { EditorContext } from "../ui/Editor.js";
-import { EditorComponent } from "../ui/EditorComponent.js";
 import { isTextEditor } from "../utils.js";
-import { log } from "../log.js";
 
 type Command = (ctx: EditorContext) => void;
 
@@ -63,8 +60,8 @@ export class KeyMapCommands {
 export class NormalMode implements EditorMode {
   keyMap: KeyMapCommands = new KeyMapCommands();
 
-  handleKey(key: string, ctx: EditorContext) {
-    this.keyMap.handleKey(key, ctx);
+  handleKey(key: KeyEvent, ctx: EditorContext) {
+    this.keyMap.handleKey(key.token, ctx);
   }
   bind(node: string[], command: Command) {
     this.keyMap.bind(node, command);
@@ -72,7 +69,7 @@ export class NormalMode implements EditorMode {
 }
 
 export class InsertMode implements EditorMode {
-  handleKey(key: string, ctx: EditorContext) {
+  handleKey(key: KeyEvent, ctx: EditorContext) {
     if (!ctx.activeWindow) {
       return;
     }
@@ -82,15 +79,32 @@ export class InsertMode implements EditorMode {
     const cursor = ctx.activeWindow.cursor;
     const buffer = ctx.activeWindow.buffer;
 
-
-    if (key === '\r') {
-
-      buffer.newLine()
+    if (
+      InputParser.isSpace(key.token) ||
+      InputParser.isTab(key.token) ||
+      InputParser.isCharacter(key.token)
+    ) {
+      let valid = key.shift ? key.token.toUpperCase() : key.token;
+      buffer.add(cursor.line, cursor.column, valid);
+      cursor.column += 1;
+      cursor.prefferedColumn = cursor.column;
+    } else if (InputParser.isEscape(key.token)) {
+      ctx.setMode("normal");
+    } else if (InputParser.isBackspace(key.token)) {
+      cursor.column -= 1;
+      cursor.prefferedColumn = cursor.column;
+      buffer.remove(cursor.line, cursor.column);
+    } else if (InputParser.isEnter(key.token)) {
+      buffer.newLine();
+      cursor.moveDown(buffer);
+    } else if (InputParser.isArrowDown(key.token)) {
+      cursor.moveDown(buffer);
+    } else if (InputParser.isArrowUp(key.token)) {
+      cursor.moveUp(buffer);
+    } else if (InputParser.isArrowLeft(key.token)) {
+      cursor.moveLeft(buffer);
+    } else if (InputParser.isArrowRight(key.token)) {
+      cursor.moveRight(buffer);
     }
-
-
-    buffer.add(cursor.line, cursor.column, key);
-    cursor.column += 1;
-    cursor.prefferedColumn = cursor.column;
   }
 }

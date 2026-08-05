@@ -13,6 +13,16 @@ export class TextBuffer {
   public lineCount() {
     return this.lines.length;
   }
+  public remove(line: number, column: number) {
+    assert(line >= 0 && line < this.lines.length, `invalid line number, got: ${line} `);
+
+    const current = this.lines[line];
+    if (column < 0 || column >= current.length) {
+      return;
+    }
+
+    this.lines[line] = current.slice(0, column) + current.slice(column + 1);
+  }
   public add(line: number, column: number, ch: string) {
     assert(ch.length === 1, "cannot insert more than one character");
 

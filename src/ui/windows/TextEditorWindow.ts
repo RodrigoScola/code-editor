@@ -1,9 +1,9 @@
-import { TextBuffer } from "./Buffer.js";
-import { Canvas } from "./canvas.js";
-import { DisplayComponent } from "./components.js";
-import { Cursor } from "./Cursor.js";
+import { TextBuffer } from "../Buffer.js";
+import { Canvas } from "../canvas.js";
+import { DisplayComponent } from "../components.js";
+import { Cursor } from "../Cursor.js";
 
-export class EditorComponent extends DisplayComponent {
+export class TextEditorWindow extends DisplayComponent {
   buffer: TextBuffer;
   cursor: Cursor;
 

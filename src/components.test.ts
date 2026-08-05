@@ -6,7 +6,7 @@ import { LayoutEngine } from "./ui/layout.js";
 import { assert } from "./assert.js";
 import { Renderer } from "./ui/renderer.js";
 import { TextBuffer } from "./ui/Buffer.js";
-import { EditorComponent } from "./ui/EditorComponent.js";
+import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
@@ -178,7 +178,7 @@ describe("editorComponent", () => {
       "this is the first line\nthis is the second line",
     );
 
-    const display = new EditorComponent(text);
+    const display = new TextEditorWindow(text);
 
     const layout = LayoutEngine.CreateBounds();
     layout.height = layout.width = 10;

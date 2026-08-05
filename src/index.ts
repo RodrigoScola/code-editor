@@ -7,7 +7,7 @@ import colors from "./ui/colors.js";
 import { Renderer } from "./ui/renderer.js";
 import { LayoutEngine } from "./ui/layout.js";
 import { TextBuffer } from "./ui/Buffer.js";
-import { EditorComponent } from "./ui/EditorComponent.js";
+import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
 import { EditorContext } from "./ui/Editor.js";
 import {
   editorInsertMode,
@@ -18,6 +18,7 @@ import {
   moveUpEditorCommand,
   newLineEditorCommand,
 } from "./Commands/editorCommands.js";
+import { InputParser } from "./input/inputParser.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -52,7 +53,7 @@ divisor.setMaxW(1);
 
 const gitignore = fs.readFileSync(".gitignore", { encoding: "utf-8" });
 
-const editorWindow = new EditorComponent(new TextBuffer(gitignore));
+const editorWindow = new TextEditorWindow(new TextBuffer(gitignore));
 
 editor.activeWindow = editorWindow;
 
@@ -159,7 +160,6 @@ async function handleResize(size?: { columns: number; rows: number }) {
   const out = Renderer.render(cnv);
 
   process.stdout.write("\x1b[H" + out);
-
 }
 
 process.stdout.on("finish", () => {
@@ -168,11 +168,13 @@ process.stdout.on("finish", () => {
 });
 
 process.stdin.on("keypress", (str, key) => {
-  if (awaitingCPR) {
+  const parsedKey = InputParser.ParseKey(str, key);
+
+  if (awaitingCPR && !InputParser.isEscape(parsedKey.token)) {
     return;
   }
 
-  editor.handleKey(key);
+  editor.handleKey(parsedKey);
 
   LayoutEngine.Measure(root, root.contentLayout());
   Renderer.build(root, cnv);

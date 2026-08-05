@@ -1,11 +1,5 @@
-import readline from "node:readline";
-import {
-  InsertMode,
-  KeyMapCommands,
-  NormalMode,
-} from "../Commands/Commands.js";
+import { InsertMode, NormalMode } from "../Commands/Commands.js";
 import { DisplayComponent } from "./components.js";
-import { EditorComponent } from "./EditorComponent.js";
 
 export class EditorContext {
   activeWindow: DisplayComponent | null = null;
@@ -15,11 +9,11 @@ export class EditorContext {
 
   constructor() {}
 
-  handleKey(key: readline.Key) {
-    if (!key.sequence) {
+  handleKey(key: KeyEvent) {
+    if (!key.token) {
       return;
     }
-    this.mode.handleKey(key.sequence, this);
+    this.mode.handleKey(key, this);
   }
   setMode(m: EditingModes) {
     if (m === "normal") {

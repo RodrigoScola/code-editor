@@ -42,7 +42,7 @@ interface Size {
   height: number | null;
 }
 
-type EditingModes = 'normal' | "visual" | "insert" | "command";
+type EditingModes = "normal" | "visual" | "insert" | "command";
 
 interface DisplayTile {
   x: number;
@@ -63,5 +63,12 @@ interface ComponentStyles {
 }
 
 interface EditorMode {
-  handleKey(key: string, ctx: EditorContext);
+  handleKey(key: KeyEvent, ctx: EditorContext);
+}
+
+interface KeyEvent {
+  token: string;
+  ctrl: boolean;
+  alt: boolean;
+  shift: boolean;
 }

@@ -4,6 +4,7 @@ import colors from "./colors.js";
 
 export class Renderer {
   static build(root: Component, canvas: Canvas) {
+    canvas.clear();
     this.paint(root, canvas);
   }
   private static paint(root: Component, canvas: Canvas) {
