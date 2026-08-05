@@ -6,7 +6,7 @@ import { DisplayComponent } from "./ui/components.js";
 import colors from "./ui/colors.js";
 import { Renderer } from "./ui/renderer.js";
 import { LayoutEngine } from "./ui/layout.js";
-import { TextBuffer } from "./ui/Buffer.js";
+import { TextBuffer } from "./ui/buffer/Buffer.js";
 import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
 import { EditorContext } from "./ui/Editor.js";
 import {

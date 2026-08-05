@@ -1,4 +1,4 @@
-import { TextBuffer } from "./Buffer.js";
+import { TextBuffer } from "./buffer/Buffer.js";
 import colors from "./colors.js";
 
 export class Cursor {

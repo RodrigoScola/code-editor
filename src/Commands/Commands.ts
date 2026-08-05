@@ -79,11 +79,7 @@ export class InsertMode implements EditorMode {
     const cursor = ctx.activeWindow.cursor;
     const buffer = ctx.activeWindow.buffer;
 
-    if (
-      InputParser.isSpace(key.token) ||
-      InputParser.isTab(key.token) ||
-      InputParser.isCharacter(key.token)
-    ) {
+    if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;
       buffer.add(cursor.line, cursor.column, valid);
       cursor.column += 1;
@@ -93,6 +89,8 @@ export class InsertMode implements EditorMode {
     } else if (InputParser.isBackspace(key.token)) {
       cursor.column -= 1;
       cursor.prefferedColumn = cursor.column;
+      buffer.remove(cursor.line, cursor.column);
+    } else if (InputParser.isDelete(key.token)) {
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isEnter(key.token)) {
       buffer.newLine();
@@ -105,6 +103,10 @@ export class InsertMode implements EditorMode {
       cursor.moveLeft(buffer);
     } else if (InputParser.isArrowRight(key.token)) {
       cursor.moveRight(buffer);
+    } else if (InputParser.isTab(key.token)) {
+      buffer.add(cursor.line, cursor.column, "\t");
+      cursor.column += 1;
+      cursor.prefferedColumn = cursor.column;
     }
   }
 }

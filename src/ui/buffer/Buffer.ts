@@ -1,4 +1,4 @@
-import { assert } from "../assert.js";
+import { assert } from "../../assert.js";
 
 export class TextBuffer {
   private lines: string[];
@@ -14,7 +14,10 @@ export class TextBuffer {
     return this.lines.length;
   }
   public remove(line: number, column: number) {
-    assert(line >= 0 && line < this.lines.length, `invalid line number, got: ${line} `);
+    assert(
+      line >= 0 && line < this.lines.length,
+      `invalid line number, got: ${line} `,
+    );
 
     const current = this.lines[line];
     if (column < 0 || column >= current.length) {
@@ -24,7 +27,16 @@ export class TextBuffer {
     this.lines[line] = current.slice(0, column) + current.slice(column + 1);
   }
   public add(line: number, column: number, ch: string) {
-    assert(ch.length === 1, "cannot insert more than one character");
+    if (ch.length == 2) {
+      assert(
+        ch.includes(`\\`),
+        `has to insert a valid character one at a time. got: ${ch} `,
+      );
+    } else if (ch.length == 1) {
+      // success
+    } else {
+      assert(false, "cannot insert invalid character: " + ch);
+    }
 
     while (this.lines.length <= line) {
       this.lines.push("");

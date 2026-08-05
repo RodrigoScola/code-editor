@@ -5,7 +5,7 @@ import { DisplayComponent } from "./ui/components.js";
 import { LayoutEngine } from "./ui/layout.js";
 import { assert } from "./assert.js";
 import { Renderer } from "./ui/renderer.js";
-import { TextBuffer } from "./ui/Buffer.js";
+import { TextBuffer } from "./ui/buffer/Buffer.js";
 import { TextEditorWindow } from "./ui/windows/TextEditorWindow.js";
 
 describe("Canvas", () => {
