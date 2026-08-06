@@ -39,14 +39,12 @@ export class StatusWindow extends DisplayComponent {
     }
 
     canvas.drawText(cl.x, cl.y, out, this.styles());
-    const line = this.buffer.line(this.cursor.line) ?? "";
 
     if (this.editor.modeName === "command") {
       canvas.fillRect(
         canvas.applyRelative(
           this.cursor.column + `command: `.length,
           0,
-          line,
           this.contentLayout(),
         ),
         this.cursor.style,

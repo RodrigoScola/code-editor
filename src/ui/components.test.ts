@@ -7,6 +7,8 @@ import { assert } from "../assert.js";
 import { Renderer } from "./renderer.js";
 import { TextBuffer } from "./buffer/Buffer.js";
 import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";
+import { MemoryFile, Textdocument } from "../Editor/Documents/TextDocument.js";
+import { text } from "stream/consumers";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
@@ -27,6 +29,20 @@ describe("Canvas", () => {
     expect(out.length, "canvas dimensions is not being respected").toBe(
       cnv.width() * cnv.height(),
     );
+  });
+
+  it("applies relative positions using tab-expanded text", () => {
+    const cnv = new Canvas();
+    const layout: LayoutBounds = LayoutEngine.CreateBounds();
+    layout.x = 2;
+    layout.y = 3;
+    layout.height = 1;
+    layout.width = 10;
+
+    const bounds = cnv.applyRelative(3, 1, layout, "a\tb");
+
+    expect(bounds.x).toBe(7);
+    expect(bounds.y).toBe(4);
   });
 });
 
@@ -174,11 +190,11 @@ describe("Renderer background colors", () => {
 
 describe("editorComponent", () => {
   it("the height of the text should be 1 by default", () => {
-    const text = new TextBuffer(
-      "this is the first line\nthis is the second line",
-    );
+    const content = "this is the first line\nthis is the second line";
 
-    const display = new TextEditorWindow(text);
+    const display = new TextEditorWindow(
+      new Textdocument(new MemoryFile("doc", content)),
+    );
 
     const layout = LayoutEngine.CreateBounds();
     layout.height = layout.width = 10;
@@ -202,11 +218,11 @@ describe("editorComponent", () => {
     expect(
       firstLineCell!.display,
       "text should display on the first line",
-    ).toEqual(text.line(0)!.at(0));
+    ).toEqual(display.document.buffer.line(0)!.at(0));
 
     expect(
       secondLineCell!.display,
       "text should display on the second line",
-    ).toEqual(text.line(1)!.at(0));
+    ).toEqual(display.document.buffer.line(1)!.at(0));
   });
 });

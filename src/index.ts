@@ -11,6 +11,7 @@ import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { EditorContext } from "./Editor/Editor.js";
 import {
+  deleteLine,
   editorInsertMode,
   editorInsertModeAfter,
   moveDownEditorCommand,
@@ -22,6 +23,12 @@ import {
 } from "./Commands/editorCommands.js";
 import { DEFAULT_TOKENS, InputParser } from "./Input/inputParser.js";
 import { WINDOW_NAMES } from "./constants.js";
+import {
+  DiskFile,
+  MemoryFile,
+  Textdocument,
+} from "./Editor/Documents/TextDocument.js";
+import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -61,7 +68,9 @@ root.addChildren(statusWindow);
 
 window.setDirection("horizontal");
 
-const treeView = new DisplayComponent();
+const treeView = new FileTreeWindow(".")
+  .setIgnoreDirs(["node_modules", ".git", "dist"])
+  .setIgnoreFileExt([".js.map"]);
 
 treeView.setMaxW(30).setStyles({
   backgroundColor: colors.MAGENTA_BACKGROUND,
@@ -71,11 +80,11 @@ const divisor = new DisplayComponent();
 divisor.setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
 divisor.setMaxW(1);
 
-const gitignore = fs.readFileSync(".gitignore", { encoding: "utf-8" });
-
-const editorWindow = new TextEditorWindow(new TextBuffer(gitignore)).setName(
-  WINDOW_NAMES.EDITOR_TEXT_WINDOW,
+const editorWindow: TextEditorWindow = new TextEditorWindow(
+  new Textdocument(new DiskFile(".gitignore")),
 );
+
+editorWindow.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
 
 editor.rootWindow = root;
 editor.activeWindow = editorWindow;
@@ -90,7 +99,25 @@ editor.normalMode.bind(["a"], editorInsertModeAfter);
 editor.normalMode.bind(["o"], newLineEditorCommand);
 editor.normalMode.bind([":"], setCommandMode);
 
+editor.normalMode.bind(["d", "d"], deleteLine);
+editor.normalMode.bind(["r", "r"], () => {
+  treeView.refresh();
+});
+editor.commandMode.bind("log", (ctx) => {
+  console.log("this command is working");
+});
+
+function saveCommand(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  activeEditor.document.save();
+}
+
+editor.commandMode.bind("w", saveCommand);
+editor.commandMode.bind("wq", saveCommand);
+
 editorWindow.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
+editorWindow.viewPort.visibleColumns = editorWindow.contentLayout().height;
+editorWindow.viewPort.visibleLines = 3;
 
 window.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
 
@@ -110,36 +137,14 @@ process.stdout.write("\x1b[H" + Renderer.render(cnv));
 
 process.stdout.on("resize", () => handleResize());
 
-// process.stdout.columns/rows is a cached value that some terminals never
-// update (e.g. moving the window to a monitor with different DPI scaling
-// often doesn't fire a real console resize event on Windows), so instead of
-// trusting it we actively ask the terminal for its real size via a cursor
-// position report, and poll that.
-let lastCols = process.stdout.columns;
-let lastRows = process.stdout.rows;
-// while true, a cursor-position-report request is in flight: the terminal's
-// raw reply lands on stdin and readline's keypress parser (which can't
-// recognize it) breaks it into spurious per-character keypress events, so
-// real input handling is paused until the reply is consumed
-let awaitingCPR = false;
-setInterval(async () => {
-  const size = (await queryTerminalSize()) ?? {
-    columns: process.stdout.columns,
-    rows: process.stdout.rows,
-  };
-  if (size.columns !== lastCols || size.rows !== lastRows) {
-    lastCols = size.columns;
-    lastRows = size.rows;
-    handleResize(size);
-  }
-}, 250);
+// Resize handling stays event-driven so normal typing is never paused by a
+// background terminal-size probe.
 
 function queryTerminalSize(
   timeoutMs = 150,
 ): Promise<{ columns: number; rows: number } | null> {
   return new Promise((resolve) => {
     let settled = false;
-    awaitingCPR = true;
     const onData = (chunk: Buffer) => {
       const match = chunk.toString("utf8").match(/\x1b\[(\d+);(\d+)R/);
       if (match) {
@@ -150,7 +155,6 @@ function queryTerminalSize(
     function settle(result: { columns: number; rows: number } | null) {
       if (settled) return;
       settled = true;
-      awaitingCPR = false;
       clearTimeout(timer);
       process.stdin.off("data", onData);
       resolve(result);
@@ -202,10 +206,6 @@ function dispatchKey(parsedKey: KeyEvent) {
 process.stdin.on("keypress", (str, key) => {
   const parsedKey = InputParser.ParseKey(str, key);
 
-  if (awaitingCPR && !InputParser.isEscape(parsedKey.token)) {
-    return;
-  }
-
   // a standalone Escape byte is handled eagerly below, off the raw 'data'
   // event, since readline holds a lone ESC for up to ~500ms waiting to see
   // if more bytes follow before it fires this 'keypress' event
@@ -217,10 +217,6 @@ process.stdin.on("keypress", (str, key) => {
 });
 
 process.stdin.on("data", (chunk) => {
-  if (awaitingCPR) {
-    return;
-  }
-
   // real escape *sequences* (arrows, function keys, etc.) always arrive as
   // part of one multi-byte chunk written by the terminal in a single go, so
   // a lone single-byte ESC chunk reliably means the user just pressed

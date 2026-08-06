@@ -1,46 +1,88 @@
-import { TextBuffer } from "../../ui/buffer/Buffer.js";
+import { text } from "node:stream/consumers";
 import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components.js";
 import { Cursor } from "../Cursor.js";
+import { Textdocument } from "../Documents/TextDocument.js";
+
+export class ViewPort {
+  firstLine: number = 0;
+  firstColumn: number = 0;
+
+  visibleLines: number = 0;
+  visibleColumns: number = 0;
+
+  bufferToViewPort(bufferPosition: Point): Point {
+    return {
+      y: bufferPosition.y - this.firstLine,
+      x: bufferPosition.x - this.firstColumn,
+    };
+  }
+  screenToBuffer(screenPosition: Point): Point {
+    return {
+      x: screenPosition.x + this.firstColumn,
+      y: screenPosition.y + this.firstLine,
+    };
+  }
+}
 
 export class TextEditorWindow extends DisplayComponent {
-  buffer: TextBuffer;
+  document: Textdocument;
   cursor: Cursor;
+  viewPort: ViewPort = new ViewPort();
 
-  constructor(buffer: TextBuffer) {
+  constructor(document: Textdocument) {
     super();
-    this.buffer = buffer;
+    this.document = document;
     this.cursor = new Cursor();
   }
 
   paint(canvas: Canvas): void {
+    const cl = this.contentLayout();
+
     canvas.fillRect(this.contentLayout(), this.styles());
 
-    for (let i = 0; i < this.buffer.lineCount(); i++) {
-      const line = this.buffer.line(i);
-      if (this.contentLayout().y + i >= this.contentLayout().height) {
-        break;
-      }
+    const firstLine = this.viewPort.firstLine;
+    const lastLine = Math.min(
+      firstLine + this.viewPort.visibleLines,
+      this.document.buffer.lineCount(),
+    );
+
+    for (let lineNumber = firstLine; lineNumber < lastLine; lineNumber++) {
+      const line = this.document.buffer.line(lineNumber);
       if (!line) {
         continue;
       }
-      canvas.drawText(
-        this.contentLayout().x,
-        this.contentLayout().y + i,
-        line,
-        this.styles(),
-      );
+
+      const screenY = cl.y + (lineNumber - firstLine);
+
+      canvas.drawText(cl.x, screenY, line, this.styles());
     }
 
-    const line = this.buffer.line(this.cursor.line) ?? "";
+    const cursorLine = this.document.buffer.line(this.cursor.line);
+    if (!cursorLine) {
+      return;
+    }
+
+    const cursor = canvas.applyRelative(
+      this.cursor.column,
+      this.cursor.line - this.viewPort.firstLine,
+      cl,
+      cursorLine,
+    );
+
+    if (
+      cursor.x < cl.x ||
+      cursor.y < cl.y ||
+      cursor.x >= cl.x + cl.width ||
+      cursor.y >= cl.y + cl.height
+    ) {
+      return;
+    }
+
     canvas.fillRect(
-      canvas.applyRelative(
-        this.cursor.column,
-        this.cursor.line,
-        line,
-        this.contentLayout(),
-      ),
+      cursor,
+
       this.cursor.style,
     );
   }

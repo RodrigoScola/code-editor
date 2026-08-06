@@ -6,6 +6,9 @@ export class TextBuffer {
   constructor(text: string) {
     this.lines = text.split("\n");
   }
+  content() {
+    return this.lines.join("\n");
+  }
   public line(i: number) {
     assert(i >= 0, `invalid line number, got: ${i} `);
     return this.lines.at(i);
@@ -13,6 +16,13 @@ export class TextBuffer {
   public lineCount() {
     return this.lines.length;
   }
+  removeLine(line: number) {
+    const at = Math.max(0, Math.min(line, this.lines.length - 1));
+
+    this.lines.splice(at, 1);
+    return at;
+  }
+
   public remove(line: number, column: number) {
     assert(
       line >= 0 && line < this.lines.length,

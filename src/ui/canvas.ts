@@ -117,10 +117,7 @@ export class Canvas {
 
     console.log(
       this.canvas.map((line) => {
-        return line.map(
-          (ch) =>
-            `${ch.styles.backgroundColor} ${ch.styles.color} ${ch.display}`,
-        );
+        return line.map((ch) => `${ch.display}`);
       }),
     );
   }
@@ -137,11 +134,18 @@ export class Canvas {
     }
   }
 
+  applyRelative(x: number, y: number, layout: LayoutBounds): LayoutBounds;
   applyRelative(
     x: number,
     y: number,
-    text: string,
     layout: LayoutBounds,
+    text: string,
+  ): LayoutBounds;
+  applyRelative(
+    x: number,
+    y: number,
+    layout: LayoutBounds,
+    text: string = "",
   ): LayoutBounds {
     return {
       height: 1,

@@ -9,7 +9,7 @@ export function moveDownEditorCommand(ctx: EditorContext) {
   }
   isTextEditor(ctx.activeWindow);
   const cursor = ctx.activeWindow.cursor;
-  cursor.moveDown(ctx.activeWindow.buffer);
+  cursor.moveDown(ctx.activeWindow.document.buffer);
 }
 
 export function moveUpEditorCommand(ctx: EditorContext) {
@@ -19,7 +19,7 @@ export function moveUpEditorCommand(ctx: EditorContext) {
   }
   isTextEditor(ctx.activeWindow);
   const cursor = ctx.activeWindow.cursor;
-  cursor.moveUp(ctx.activeWindow.buffer);
+  cursor.moveUp(ctx.activeWindow.document.buffer);
 }
 
 export function moveLeftEditorCommand(ctx: EditorContext) {
@@ -29,7 +29,7 @@ export function moveLeftEditorCommand(ctx: EditorContext) {
   }
   isTextEditor(ctx.activeWindow);
   const cursor = ctx.activeWindow.cursor;
-  cursor.moveLeft(ctx.activeWindow.buffer);
+  cursor.moveLeft(ctx.activeWindow.document.buffer);
 }
 
 export function moveRightEditorCommand(ctx: EditorContext) {
@@ -39,7 +39,7 @@ export function moveRightEditorCommand(ctx: EditorContext) {
   }
   isTextEditor(ctx.activeWindow);
   const cursor = ctx.activeWindow.cursor;
-  cursor.moveRight(ctx.activeWindow.buffer);
+  cursor.moveRight(ctx.activeWindow.document.buffer);
 }
 
 export function editorInsertMode(ctx: EditorContext) {
@@ -49,7 +49,7 @@ export function newLineEditorCommand(ctx: EditorContext) {
   isTextEditor(ctx.activeWindow);
 
   const cursor = ctx.activeWindow.cursor;
-  const newLine = ctx.activeWindow.buffer.insertLine(cursor.line);
+  const newLine = ctx.activeWindow.document.buffer.insertLine(cursor.line);
 
   cursor.line = newLine;
   cursor.column = 0;
@@ -61,9 +61,17 @@ export function setCommandMode(ctx: EditorContext) {
   ctx.setMode("command");
 }
 
+export function deleteLine(ctx: EditorContext) {
+  isTextEditor(ctx.activeWindow);
+  const buffer = ctx.activeWindow.document.buffer;
+  const cursor = ctx.activeWindow.cursor;
+
+  buffer.removeLine(cursor.line);
+}
+
 export function editorInsertModeAfter(ctx: EditorContext) {
   isTextEditor(ctx.activeWindow);
 
-  ctx.activeWindow?.cursor.moveRight(ctx.activeWindow.buffer);
+  ctx.activeWindow?.cursor.moveRight(ctx.activeWindow.document.buffer);
   ctx.setMode("insert");
 }

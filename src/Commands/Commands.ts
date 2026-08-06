@@ -69,6 +69,20 @@ export class NormalMode implements EditorMode {
 }
 
 export class CommandMode implements EditorMode {
+  commands: Map<string, Command> = new Map<string, Command>();
+
+  bind(name: string, command: Command) {
+    this.commands.set(name, command);
+  }
+
+  executeCommand(name: string, ctx: EditorContext) {
+    const command = this.commands.get(name);
+    if (!command) {
+      return;
+    }
+    command(ctx);
+  }
+
   handleKey(key: KeyEvent, ctx: EditorContext) {
     if (!ctx.activeWindow) {
       return;
@@ -94,6 +108,8 @@ export class CommandMode implements EditorMode {
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isEnter(key.token)) {
       // todo: execute the command
+      this.executeCommand(buffer.line(buffer.lineCount() - 1) || "", ctx);
+
       ctx.activeWindow.currentCommandLine++;
       buffer.newLine();
       ctx.activeWindow.nextCommandLine();
@@ -123,7 +139,7 @@ export class InsertMode implements EditorMode {
     isTextEditor(ctx.activeWindow);
 
     const cursor = ctx.activeWindow.cursor;
-    const buffer = ctx.activeWindow.buffer;
+    const buffer = ctx.activeWindow.document.buffer;
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;
@@ -139,6 +155,7 @@ export class InsertMode implements EditorMode {
     } else if (InputParser.isDelete(key.token)) {
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isEnter(key.token)) {
+      // todo: need to add more edge cases, very buggy
       buffer.newLine();
       cursor.moveDown(buffer);
     } else if (InputParser.isArrowDown(key.token)) {

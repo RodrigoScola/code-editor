@@ -1,5 +1,6 @@
 import { CommandMode, InsertMode, NormalMode } from "../Commands/Commands.js";
 import { WINDOW_NAMES } from "../constants.js";
+import { isTextEditor } from "../utils.js";
 
 export class EditorContext {
   activeWindow: Component | null = null;
@@ -17,6 +18,14 @@ export class EditorContext {
       return;
     }
     this.mode.handleKey(key, this);
+  }
+  getActiveTextEditor() {
+    const textEditorWindow = this.rootWindow?.findChildrenByName(
+      WINDOW_NAMES.EDITOR_TEXT_WINDOW,
+    );
+
+    isTextEditor(textEditorWindow);
+    return textEditorWindow;
   }
   setMode(m: EditingModes) {
     this.modeName = m;

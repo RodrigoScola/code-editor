@@ -77,9 +77,17 @@ interface EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext);
 }
 
+type Point = { x: number; y: number };
+
 interface KeyEvent {
   token: string;
   ctrl: boolean;
   alt: boolean;
   shift: boolean;
+}
+
+interface EditorFile {
+  read(): string;
+  write(content: string): void;
+  path(): string;
 }

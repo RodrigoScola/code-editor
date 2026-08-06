@@ -7,6 +7,9 @@ export class Renderer {
     canvas.clear();
     this.paint(root, canvas);
   }
+
+  static currentBackground: string = colors.BACKGROUND_OFF;
+  static currentForeGround: string = colors.FOREGROUND_OFF;
   private static paint(root: Component, canvas: Canvas) {
     canvas.fillRect(
       root.layout(),
@@ -31,8 +34,16 @@ export class Renderer {
           tile.display.length == 1,
           "cannot display more things on one cell",
         );
+        if (this.currentBackground !== tile.styles.backgroundColor) {
+          this.currentBackground = tile.styles.backgroundColor;
+          row += tile.styles.backgroundColor;
+        }
 
-        row += `${tile.styles.backgroundColor}${tile.styles.color}${tile.display}${colors.BACKGROUND_OFF}${colors.FOREGROUND_OFF}`;
+        if (this.currentBackground !== tile.styles.color) {
+          this.currentBackground = tile.styles.color;
+          row += tile.styles.color;
+        }
+        row += tile.display;
       }
       rows.push(row);
     }
