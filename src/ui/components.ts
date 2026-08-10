@@ -16,6 +16,7 @@ export class DisplayComponent implements Component {
   private l: LayoutBounds;
 
   private d: "vertical" | "horizontal";
+  private paintHook: ((canvas: Canvas) => void) | null = null;
 
   constructor() {
     this.id = DisplayComponent.ID;
@@ -140,7 +141,14 @@ export class DisplayComponent implements Component {
     return this;
   }
 
-  paint(canvas: Canvas) {}
+  setPaintHook(paintHook: (canvas: Canvas) => void): Component {
+    this.paintHook = paintHook;
+    return this;
+  }
+
+  paint(canvas: Canvas) {
+    this.paintHook?.(canvas);
+  }
   measure(bounds: LayoutBounds): Partial<LayoutBounds> {
     return {};
   }
@@ -156,7 +164,6 @@ export class DisplayComponent implements Component {
     }
   }
 }
-
 
 // a tab is one buffer character but expands to multiple screen cells, so
 // rendering and cursor placement need the expanded text / a column mapping

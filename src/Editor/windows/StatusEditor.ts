@@ -1,11 +1,11 @@
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
-import { DisplayComponent } from "../../ui/components.js";
 import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor.js";
+import { EditorWindow } from "./EditorWindow.js";
 
-export class StatusWindow extends DisplayComponent {
+export class StatusWindow extends EditorWindow {
   editor: EditorContext;
   cursor: Cursor = new Cursor();
   buffer: TextBuffer = new TextBuffer("");
@@ -21,32 +21,31 @@ export class StatusWindow extends DisplayComponent {
 
   nextCommandLine() {
     this.currentCommandLine = Math.min(
-      this.buffer.lineCount() - 1,
+      this.buffer.count() - 1,
       this.currentCommandLine + 1,
     );
   }
 
   paint(canvas: Canvas): void {
-    const cl = this.contentLayout();
-    canvas.fillRect(cl, this.styles());
+    const cl = this.window.contentLayout();
+    canvas.fillRect(cl, this.window.styles());
 
     let out = "";
 
     if (this.editor.modeName === "command") {
-      out += `command: ${this.buffer.line(this.currentCommandLine)}`;
+      out += `command: ${this.buffer.at(this.currentCommandLine)}`;
     } else {
       out += `mode: ${this.editor.modeName}`;
     }
 
-    canvas.drawText(cl.x, cl.y, out, this.styles());
+    canvas.drawText(cl.x, cl.y, out, this.window.styles());
 
     if (this.editor.modeName === "command") {
+      const content = this.buffer.at(this.cursor.line);
+      let len = `command: `.length + (content?.length ?? 0);
+
       canvas.fillRect(
-        canvas.applyRelative(
-          this.cursor.column + `command: `.length,
-          0,
-          this.contentLayout(),
-        ),
+        canvas.applyRelative(len, 0, this.window.contentLayout()),
         this.cursor.style,
       );
     }
@@ -59,9 +58,14 @@ export class StatusWindow extends DisplayComponent {
         this.cursor.style.backgroundColor = colors.RED_BACKGROUND;
         this.cursor.style.color = colors.WHITE_FOREGROUND;
 
-        this.currentCommandLine = this.buffer.lineCount() - 1;
+        this.currentCommandLine = this.buffer.count() - 1;
         this.cursor.moveDown(this.buffer);
       }
+    }
+    if (event.name === "submitCommand") {
+      this.currentCommandLine++;
+      this.nextCommandLine();
+      this.buffer.newLine();
     }
   }
 }

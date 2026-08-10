@@ -1,7 +1,7 @@
 import { assert } from "../assert.js";
 import { InputParser } from "../Input/inputParser.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { isStatusWindow, isTextEditor } from "../utils.js";
+import { isStatusWindow, isEditorWindow } from "../utils.js";
 
 type Command = (ctx: EditorContext) => void;
 
@@ -108,11 +108,14 @@ export class CommandMode implements EditorMode {
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isEnter(key.token)) {
       // todo: execute the command
-      this.executeCommand(buffer.line(buffer.lineCount() - 1) || "", ctx);
 
-      ctx.activeWindow.currentCommandLine++;
-      buffer.newLine();
-      ctx.activeWindow.nextCommandLine();
+      ctx.focusTextWindow();
+      this.executeCommand(buffer.at(buffer.count() - 1) || "", ctx);
+
+      if (ctx.statusWindow) {
+        ctx.statusWindow.onEvent({ name: "submitCommand" });
+      }
+
       ctx.setMode("normal");
     } else if (InputParser.isArrowDown(key.token)) {
       ctx.activeWindow.nextCommandLine();
@@ -136,10 +139,10 @@ export class InsertMode implements EditorMode {
       return;
     }
 
-    isTextEditor(ctx.activeWindow);
+    isEditorWindow(ctx.activeWindow);
 
     const cursor = ctx.activeWindow.cursor;
-    const buffer = ctx.activeWindow.document.buffer;
+    const buffer = ctx.activeWindow.buffer;
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;

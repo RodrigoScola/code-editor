@@ -1,55 +1,75 @@
 import { EditorContext } from "../Editor/Editor.js";
-import { isTextEditor } from "../utils.js";
+import { isEditorWindow } from "../utils.js";
 import { log } from "../log.js";
+import { assert } from "../assert.js";
 
-export function moveDownEditorCommand(ctx: EditorContext) {
+export const textEditorCommands = {
+  textEditor: {
+    saveFile: saveFileCommand,
+    moveDown: moveDownEditorCommand,
+    moveUp: moveUpEditorCommand,
+    moveLeft: moveLeftEditorCommand,
+    moveRight: moveRightEditorCommand,
+    insertMode: editorInsertMode,
+    newLine: newLineEditorCommand,
+    commandMode: setCommandMode,
+    deleteLine: deleteLine,
+    insertAfter: editorInsertModeAfter,
+    nextWordStart: nextWordStart,
+    nextCompleteWordStart: nextCompleteWordStart,
+    goToEndLine,
+    goToBeginLine,
+    prevWordStart,
+  },
+};
+
+function moveDownEditorCommand(ctx: EditorContext) {
   if (!ctx.activeWindow) {
     log("invalid active window");
     return;
   }
-  isTextEditor(ctx.activeWindow);
-  const cursor = ctx.activeWindow.cursor;
-  cursor.moveDown(ctx.activeWindow.document.buffer);
+  isEditorWindow(ctx.activeWindow);
+  ctx.activeWindow.moveCursorDown();
 }
 
-export function moveUpEditorCommand(ctx: EditorContext) {
+function moveUpEditorCommand(ctx: EditorContext) {
   if (!ctx.activeWindow) {
     log("invalid active window");
     return;
   }
-  isTextEditor(ctx.activeWindow);
+  isEditorWindow(ctx.activeWindow);
   const cursor = ctx.activeWindow.cursor;
-  cursor.moveUp(ctx.activeWindow.document.buffer);
+  cursor.moveUp(ctx.activeWindow.buffer);
 }
 
-export function moveLeftEditorCommand(ctx: EditorContext) {
+function moveLeftEditorCommand(ctx: EditorContext) {
   if (!ctx.activeWindow) {
     log("invalid active window");
     return;
   }
-  isTextEditor(ctx.activeWindow);
+  isEditorWindow(ctx.activeWindow);
   const cursor = ctx.activeWindow.cursor;
-  cursor.moveLeft(ctx.activeWindow.document.buffer);
+  cursor.moveLeft(ctx.activeWindow.buffer);
 }
 
-export function moveRightEditorCommand(ctx: EditorContext) {
+function moveRightEditorCommand(ctx: EditorContext) {
   if (!ctx.activeWindow) {
     log("invalid active window");
     return;
   }
-  isTextEditor(ctx.activeWindow);
+  isEditorWindow(ctx.activeWindow);
   const cursor = ctx.activeWindow.cursor;
-  cursor.moveRight(ctx.activeWindow.document.buffer);
+  cursor.moveRight(ctx.activeWindow.buffer);
 }
 
-export function editorInsertMode(ctx: EditorContext) {
+function editorInsertMode(ctx: EditorContext) {
   ctx.setMode("insert");
 }
-export function newLineEditorCommand(ctx: EditorContext) {
-  isTextEditor(ctx.activeWindow);
+function newLineEditorCommand(ctx: EditorContext) {
+  isEditorWindow(ctx.activeWindow);
 
   const cursor = ctx.activeWindow.cursor;
-  const newLine = ctx.activeWindow.document.buffer.insertLine(cursor.line);
+  const newLine = ctx.activeWindow.buffer.insertLine(cursor.line);
 
   cursor.line = newLine;
   cursor.column = 0;
@@ -57,21 +77,326 @@ export function newLineEditorCommand(ctx: EditorContext) {
 
   ctx.setMode("insert");
 }
-export function setCommandMode(ctx: EditorContext) {
+function setCommandMode(ctx: EditorContext) {
   ctx.setMode("command");
 }
 
-export function deleteLine(ctx: EditorContext) {
-  isTextEditor(ctx.activeWindow);
-  const buffer = ctx.activeWindow.document.buffer;
+function deleteLine(ctx: EditorContext) {
+  isEditorWindow(ctx.activeWindow);
+  const buffer = ctx.activeWindow.buffer;
   const cursor = ctx.activeWindow.cursor;
 
   buffer.removeLine(cursor.line);
 }
 
-export function editorInsertModeAfter(ctx: EditorContext) {
-  isTextEditor(ctx.activeWindow);
+function editorInsertModeAfter(ctx: EditorContext) {
+  isEditorWindow(ctx.activeWindow);
 
-  ctx.activeWindow?.cursor.moveRight(ctx.activeWindow.document.buffer);
+  const buffer = ctx.activeWindow.buffer;
+  const cursor = ctx.activeWindow.cursor;
+  // check if at the end of the line
+
+  const line = buffer.at(cursor.line);
+  assert(line, "invalid line");
+  if (!line.endsWith(" ")) {
+    buffer.update(cursor.line, line + " ");
+  }
+
+  ctx.activeWindow?.cursor.moveRight(ctx.activeWindow.buffer);
   ctx.setMode("insert");
 }
+
+function saveFileCommand(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  activeEditor.save();
+}
+
+function nextWordStart(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  const buffer = activeEditor.buffer;
+  const cursor = activeEditor.cursor;
+
+  const currentLine = buffer.at(cursor.line);
+  assert(
+    currentLine !== undefined,
+    "invalid line to go to the next word command",
+  );
+
+  let nextColumn = cursor.column;
+
+  if (nextColumn >= currentLine.length) {
+    const nextLine = buffer.at(cursor.line + 1);
+    if (nextLine !== undefined) {
+      cursor.line += 1;
+      cursor.column = 0;
+      cursor.prefferedColumn = 0;
+      return;
+    }
+
+    cursor.column = Math.max(0, currentLine.length - 1);
+    cursor.prefferedColumn = cursor.column;
+    return;
+  }
+
+  const initialChar = currentLine[nextColumn];
+  if (isWhitespace(initialChar)) {
+    while (
+      nextColumn < currentLine.length &&
+      isWhitespace(currentLine[nextColumn])
+    ) {
+      nextColumn += 1;
+    }
+  } else if (isWordChar(currentLine[nextColumn])) {
+    while (
+      nextColumn < currentLine.length &&
+      isWordChar(currentLine[nextColumn])
+    ) {
+      nextColumn += 1;
+    }
+
+    while (
+      nextColumn < currentLine.length &&
+      isWhitespace(currentLine[nextColumn])
+    ) {
+      nextColumn += 1;
+    }
+  } else {
+    while (
+      nextColumn < currentLine.length &&
+      !isWordChar(currentLine[nextColumn]) &&
+      !isWhitespace(currentLine[nextColumn])
+    ) {
+      nextColumn += 1;
+    }
+
+    while (
+      nextColumn < currentLine.length &&
+      isWhitespace(currentLine[nextColumn])
+    ) {
+      nextColumn += 1;
+    }
+  }
+
+  if (nextColumn >= currentLine.length) {
+    const nextLine = buffer.at(cursor.line + 1);
+    if (nextLine !== undefined) {
+      cursor.line += 1;
+      cursor.column = 0;
+      cursor.prefferedColumn = 0;
+      return;
+    }
+  }
+
+  cursor.column = Math.max(
+    0,
+    Math.min(nextColumn, Math.max(currentLine.length - 1, 0)),
+  );
+  cursor.prefferedColumn = cursor.column;
+}
+function nextCompleteWordStart(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  const buffer = activeEditor.buffer;
+  const cursor = activeEditor.cursor;
+
+  const currentLine = buffer.at(cursor.line);
+  assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
+
+  let nextColumn = cursor.column;
+
+  if (nextColumn >= currentLine.length) {
+    cursor.column = Math.max(0, currentLine.length - 1);
+    cursor.prefferedColumn = cursor.column;
+    return;
+  }
+
+  if (/\s/.test(currentLine[nextColumn])) {
+    while (
+      nextColumn < currentLine.length &&
+      /\s/.test(currentLine[nextColumn])
+    ) {
+      nextColumn += 1;
+    }
+  } else {
+    while (
+      nextColumn < currentLine.length &&
+      !/\s/.test(currentLine[nextColumn])
+    ) {
+      nextColumn += 1;
+    }
+
+    while (
+      nextColumn < currentLine.length &&
+      /\s/.test(currentLine[nextColumn])
+    ) {
+      nextColumn += 1;
+    }
+  }
+
+  cursor.column = Math.max(
+    0,
+    Math.min(nextColumn, Math.max(currentLine.length - 1, 0)),
+  );
+  cursor.prefferedColumn = cursor.column;
+}
+
+function isWhitespace(char: string | undefined) {
+  return /\s/.test(char ?? "");
+}
+
+function isWordChar(char: string | undefined) {
+  return /\w/.test(char ?? "");
+}
+
+function goToEndLine(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  const buffer = activeEditor.buffer;
+  const cursor = activeEditor.cursor;
+
+  const currentLine = buffer.at(cursor.line);
+  assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
+
+  cursor.column = currentLine.length - 1;
+}
+function goToBeginLine(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  const buffer = activeEditor.buffer;
+  const cursor = activeEditor.cursor;
+
+  const currentLine = buffer.at(cursor.line);
+  assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
+
+  cursor.column = 0;
+}
+
+function nextWordEnd(ctx: EditorContext) {}
+function nextCompleteWordEnd(ctx: EditorContext) {}
+function prevWordStart(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  const buffer = activeEditor.buffer;
+  const cursor = activeEditor.cursor;
+
+  const currentLine = buffer.at(cursor.line);
+  assert(
+    currentLine !== undefined,
+    "invalid line to go to the next word command",
+  );
+
+  let prevColumn = cursor.column;
+
+  if (prevColumn <= 0) {
+    const nextLine = buffer.at(cursor.line - 1);
+    if (nextLine !== undefined) {
+      cursor.line -= 1;
+      cursor.column = nextLine.length - 1;
+      cursor.prefferedColumn = 0;
+      return;
+    }
+
+    cursor.column = Math.max(0, currentLine.length - 1);
+    cursor.prefferedColumn = cursor.column;
+    return;
+  }
+
+  const initialChar = currentLine[prevColumn];
+  if (isWhitespace(initialChar)) {
+    while (
+      prevColumn < currentLine.length &&
+      isWhitespace(currentLine[prevColumn])
+    ) {
+      prevColumn += 1;
+    }
+  } else if (isWordChar(currentLine[prevColumn])) {
+    while (
+      prevColumn < currentLine.length &&
+      isWordChar(currentLine[prevColumn])
+    ) {
+      prevColumn += 1;
+    }
+
+    while (
+      prevColumn < currentLine.length &&
+      isWhitespace(currentLine[prevColumn])
+    ) {
+      prevColumn += 1;
+    }
+  } else {
+    while (
+      prevColumn < currentLine.length &&
+      !isWordChar(currentLine[prevColumn]) &&
+      !isWhitespace(currentLine[prevColumn])
+    ) {
+      prevColumn += 1;
+    }
+
+    while (
+      prevColumn < currentLine.length &&
+      isWhitespace(currentLine[prevColumn])
+    ) {
+      prevColumn += 1;
+    }
+  }
+
+  if (prevColumn >= currentLine.length) {
+    const nextLine = buffer.at(cursor.line + 1);
+    if (nextLine !== undefined) {
+      cursor.line += 1;
+      cursor.column = 0;
+      cursor.prefferedColumn = 0;
+      return;
+    }
+  }
+
+  cursor.column = Math.max(
+    0,
+    Math.min(prevColumn, Math.max(currentLine.length - 1, 0)),
+  );
+  cursor.prefferedColumn = cursor.column;
+}
+function prevCompleteWord(ctx: EditorContext) {}
+
+// w - jump forwards to the start of a word
+// W - jump forwards to the start of a word (words can contain punctuation)
+// e - jump forwards to the end of a word
+// E - jump forwards to the end of a word (words can contain punctuation)
+// b - jump backwards to the start of a word
+// B - jump backwards to the start of a word (words can contain punctuation)
+
+// ✅  h - move cursor left
+// ✅ j - move cursor down
+// ✅ k - move cursor up
+// ✅ l - move cursor right
+// ✅$ - jump to the end of the line
+//✅ 0 - jump to the start of the line
+
+// gj - move cursor down (multi-line text)
+// gk - move cursor up (multi-line text)
+// H - move to top of screen
+// M - move to middle of screen
+// L - move to bottom of screen
+// ge - jump backwards to the end of a word
+// gE - jump backwards to the end of a word (words can contain punctuation)
+// % - move cursor to matching character (default supported pairs: '()', '{}', '[]' - use :h matchpairs in vim for more info)
+// ^ - jump to the first non-blank character of the line
+// g_ - jump to the last non-blank character of the line
+// gg - go to the first line of the document
+// G - go to the last line of the document
+// 5gg or 5G - go to line 5
+// gd - move to local declaration
+// gD - move to global declaration
+// fx - jump to next occurrence of character x
+// tx - jump to before next occurrence of character x
+// Fx - jump to the previous occurrence of character x
+// Tx - jump to after previous occurrence of character x
+// ; - repeat previous f, t, F or T movement
+// , - repeat previous f, t, F or T movement, backwards
+// } - jump to next paragraph (or function/block, when editing code)
+// { - jump to previous paragraph (or function/block, when editing code)
+// zz - center cursor on screen
+// zt - position cursor on top of the screen
+// zb - position cursor on bottom of the screen
+// Ctrl + e - move screen down one line (without moving cursor)
+// Ctrl + y - move screen up one line (without moving cursor)
+// Ctrl + b - move screen up one page (cursor to last line)
+// Ctrl + f - move screen down one page (cursor to first line)
+// Ctrl + d - move cursor and screen down 1/2 page
+// Ctrl + u - move cursor and screen up 1/2 page

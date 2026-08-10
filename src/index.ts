@@ -10,17 +10,7 @@ import { TextBuffer } from "./ui/buffer/Buffer.js";
 import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { EditorContext } from "./Editor/Editor.js";
-import {
-  deleteLine,
-  editorInsertMode,
-  editorInsertModeAfter,
-  moveDownEditorCommand,
-  moveLeftEditorCommand,
-  moveRightEditorCommand,
-  moveUpEditorCommand,
-  newLineEditorCommand,
-  setCommandMode,
-} from "./Commands/editorCommands.js";
+import { textEditorCommands } from "./Commands/editorCommands.js";
 import { DEFAULT_TOKENS, InputParser } from "./Input/inputParser.js";
 import { WINDOW_NAMES } from "./constants.js";
 import {
@@ -47,9 +37,11 @@ layout.height = process.stdout.rows;
 layout.width = process.stdout.columns;
 
 const cnv = new Canvas().setLayout(layout);
+
 const root = new DisplayComponent().setLayout(layout);
 
-const statusWindow = new StatusWindow(editor)
+const statusWindow: StatusWindow = new StatusWindow(editor);
+statusWindow.window
   .setPadding({ left: 1, right: 0, bottom: 0, top: 0 })
   .setMaxH(1)
   .setStyles({
@@ -64,7 +56,7 @@ const window = new DisplayComponent().setLayout({
 });
 
 root.addChildren(window);
-root.addChildren(statusWindow);
+root.addChildren(statusWindow.window);
 
 window.setDirection("horizontal");
 
@@ -72,9 +64,12 @@ const treeView = new FileTreeWindow(".")
   .setIgnoreDirs(["node_modules", ".git", "dist"])
   .setIgnoreFileExt([".js.map"]);
 
-treeView.setMaxW(30).setStyles({
-  backgroundColor: colors.MAGENTA_BACKGROUND,
-});
+treeView.window
+  .setMaxW(30)
+  .setStyles({
+    backgroundColor: colors.MAGENTA_BACKGROUND,
+  })
+  .setName(WINDOW_NAMES.TREE_WINDOW);
 
 const divisor = new DisplayComponent();
 divisor.setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
@@ -84,42 +79,59 @@ const editorWindow: TextEditorWindow = new TextEditorWindow(
   new Textdocument(new DiskFile(".gitignore")),
 );
 
-editorWindow.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
+editorWindow.window.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
 
 editor.rootWindow = root;
+editor.textEditorWindow = editorWindow;
+editor.statusWindow = statusWindow;
 editor.activeWindow = editorWindow;
 
 // todo: make a better function for this
-editor.normalMode.bind(["j"], moveDownEditorCommand);
-editor.normalMode.bind(["k"], moveUpEditorCommand);
-editor.normalMode.bind(["h"], moveLeftEditorCommand);
-editor.normalMode.bind(["l"], moveRightEditorCommand);
-editor.normalMode.bind(["i"], editorInsertMode);
-editor.normalMode.bind(["a"], editorInsertModeAfter);
-editor.normalMode.bind(["o"], newLineEditorCommand);
-editor.normalMode.bind([":"], setCommandMode);
-
-editor.normalMode.bind(["d", "d"], deleteLine);
-editor.normalMode.bind(["r", "r"], () => {
-  treeView.refresh();
+editor.normalMode.bind(["j"], textEditorCommands.textEditor.moveDown);
+editor.normalMode.bind(["k"], textEditorCommands.textEditor.moveUp);
+editor.normalMode.bind(["h"], textEditorCommands.textEditor.moveLeft);
+editor.normalMode.bind(["l"], textEditorCommands.textEditor.moveRight);
+editor.normalMode.bind(["i"], textEditorCommands.textEditor.insertMode);
+editor.normalMode.bind(["a"], textEditorCommands.textEditor.insertAfter);
+editor.normalMode.bind(["o"], textEditorCommands.textEditor.newLine);
+editor.normalMode.bind(["$"], textEditorCommands.textEditor.goToEndLine);
+editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
+editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
+editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
+editor.normalMode.bind(
+  ["W"],
+  textEditorCommands.textEditor.nextCompleteWordStart,
+);
+editor.normalMode.bind([":"], textEditorCommands.textEditor.commandMode);
+editor.normalMode.bind(["<CR>"], (ctx) => {
+  if (!ctx.activeWindow) {
+    return;
+  }
+  ctx.activeWindow.onEnter(ctx);
 });
+
+editor.normalMode.bind(["d", "d"], textEditorCommands.textEditor.deleteLine);
+
 editor.commandMode.bind("log", (ctx) => {
   console.log("this command is working");
 });
 
-function saveCommand(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
-  activeEditor.document.save();
-}
+editor.commandMode.bind("tree", (ctx) => {
+  editor.activeWindow = treeView;
+});
 
-editor.commandMode.bind("w", saveCommand);
-editor.commandMode.bind("wq", saveCommand);
+editor.commandMode.bind("w", textEditorCommands.textEditor.saveFile);
+editor.commandMode.bind("wq", textEditorCommands.textEditor.saveFile);
 
-editorWindow.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
-editorWindow.viewPort.visibleColumns = editorWindow.contentLayout().height;
-editorWindow.viewPort.visibleLines = 3;
+editorWindow.window.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
+editorWindow.viewPort.visibleColumns =
+  editorWindow.window.contentLayout().width;
+editorWindow.viewPort.visibleLines = editorWindow.window.contentLayout().height;
 
-window.addChildren(treeView).addChildren(divisor).addChildren(editorWindow);
+window
+  .addChildren(treeView.window)
+  .addChildren(divisor)
+  .addChildren(editorWindow.window);
 
 const initialLayout = LayoutEngine.CreateBounds();
 

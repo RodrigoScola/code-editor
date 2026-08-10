@@ -1,6 +1,6 @@
 import { assert } from "../../assert.js";
 
-export class TextBuffer {
+export class TextBuffer implements BufferLike {
   private lines: string[];
 
   constructor(text: string) {
@@ -9,12 +9,19 @@ export class TextBuffer {
   content() {
     return this.lines.join("\n");
   }
-  public line(i: number) {
+  public at(i: number) {
     assert(i >= 0, `invalid line number, got: ${i} `);
     return this.lines.at(i);
   }
-  public lineCount() {
+  public count() {
     return this.lines.length;
+  }
+  update(lineNumber: number, content: string) {
+    let ln = this.at(lineNumber);
+    if (!ln) {
+      return;
+    }
+    this.lines[lineNumber] = content;
   }
   removeLine(line: number) {
     const at = Math.max(0, Math.min(line, this.lines.length - 1));

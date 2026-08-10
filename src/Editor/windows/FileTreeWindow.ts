@@ -3,17 +3,23 @@ import path from "path";
 import { Canvas } from "../../ui/canvas.js";
 import { DisplayComponent } from "../../ui/components.js";
 import { Cursor } from "../Cursor.js";
+import { ViewPort } from "../../ui/windows/viewport.js";
+import { EditorWindow } from "./EditorWindow.js";
+import colors from "../../ui/colors.js";
+import { EditorContext } from "../Editor.js";
 
 type TreeNode = {
   name: string;
   path: string;
+  isDirectory: boolean;
   children: TreeNode[];
   parent: TreeNode | null;
 };
 
-export class FileTreeWindow extends DisplayComponent {
+export class FileTreeWindow extends EditorWindow {
   root: TreeNode;
   ignoreDirs: string[] = [];
+  viewPort = new ViewPort();
 
   cursor: Cursor = new Cursor();
 
@@ -25,6 +31,7 @@ export class FileTreeWindow extends DisplayComponent {
     this.root = {
       path: "",
       children: [],
+      isDirectory: true,
       name: dir,
       parent: null,
     };
@@ -45,6 +52,7 @@ export class FileTreeWindow extends DisplayComponent {
   refresh() {
     this.walkTree(this.root.name, this.root);
   }
+
   walkTree(
     dir: string,
     node: TreeNode,
@@ -58,7 +66,8 @@ export class FileTreeWindow extends DisplayComponent {
       const child: TreeNode = {
         name: entry.name,
         children: [],
-        path: path.join(node.path, entry.path),
+        isDirectory: entry.isDirectory(),
+        path: path.join(dir, entry.name),
         parent: node,
       };
 
@@ -78,9 +87,10 @@ export class FileTreeWindow extends DisplayComponent {
   }
 
   paint(canvas: Canvas): void {
-    let total = 0 + this.contentLayout().y;
+    let total = 0 + this.window.contentLayout().y;
 
     this.paintChild(this.root, total, 0, canvas);
+    this.paintCursor(canvas, this, this.at(this.cursor.line));
   }
   private paintChild(
     node: TreeNode,
@@ -88,27 +98,97 @@ export class FileTreeWindow extends DisplayComponent {
     indent: number,
     canvas: Canvas,
   ): number {
-    if (y >= this.contentLayout().y + this.contentLayout().height) {
+    const layout = this.window.contentLayout();
+    if (y >= layout.y + layout.height) {
       return y;
     }
 
-    canvas.drawText(
-      this.contentLayout().x + indent * 2,
-      y,
-      node.name,
-      this.styles(),
-    );
+    canvas.drawText(layout.x + indent * 2, y, node.name, this.window.styles());
+
+    if (y === this.cursor.line) {
+      canvas.fillRect(
+        {
+          height: 1,
+          width: layout.width,
+          x: layout.x,
+          y: y,
+        },
+        {
+          backgroundColor: colors.CYAN_BACKGROUND,
+          color: colors.WHITE_FOREGROUND,
+        },
+      );
+    }
 
     y++;
 
     for (const child of node.children) {
       y = this.paintChild(child, y, indent + 1, canvas);
 
-      if (y >= this.contentLayout().y + this.contentLayout().height) {
+      if (y >= layout.y + layout.height) {
         break;
       }
     }
 
     return y;
+  }
+  at(line: number): string | undefined {
+    return this.getNodeAtIndex(this.root, line)?.name;
+  }
+  count(): number {
+    return this.getNodeCount(this.root);
+  }
+  private getNodeCount(node: TreeNode): number {
+    let count = 1; // count this node
+
+    for (const child of node.children) {
+      count += this.getNodeCount(child);
+    }
+
+    return count;
+  }
+
+  private getNodeAtIndex(
+    node: TreeNode,
+    target: number,
+    index = { value: 0 },
+  ): TreeNode | null {
+    if (index.value === target) {
+      return node;
+    }
+
+    index.value++;
+
+    for (const child of node.children) {
+      const result = this.getNodeAtIndex(child, target, index);
+
+      if (result) {
+        return result;
+      }
+    }
+
+    return null;
+  }
+  moveCursorDown(): void {
+    return this.cursor.moveDown(this);
+  }
+
+  moveCursorUp(): void {
+    return this.cursor.moveUp(this);
+  }
+  onEvent(event: EditorEvents): void {
+    console.log("");
+  }
+  onEnter(ctx: EditorContext): void {
+    const node = this.getNodeAtIndex(this.root, this.cursor.line);
+    if (!node || node.isDirectory) {
+      return;
+    }
+
+    const newWindow = ctx.openNewTextWindow(node?.path);
+
+    if (newWindow) {
+      ctx.focus(newWindow);
+    }
   }
 }

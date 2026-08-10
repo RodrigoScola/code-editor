@@ -1,8 +1,12 @@
-type EditorEvents = EditorModeEvent;
+type EditorEvents = EditorModeEvent | SubmitCommandEvent;
 
 type EditorModeEvent = {
   name: "editorModeChange";
   mode: EditingModes;
+};
+
+type SubmitCommandEvent = {
+  name: "submitCommand";
 };
 
 interface Component {
@@ -90,4 +94,9 @@ interface EditorFile {
   read(): string;
   write(content: string): void;
   path(): string;
+}
+
+interface BufferLike {
+  at(line: number): string | undefined;
+  count(): number;
 }

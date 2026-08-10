@@ -18,11 +18,11 @@ describe("tests the buffer and rendering", () => {
       new Textdocument(new MemoryFile("doc", "t\tb")),
     );
     cnv.tab_width = 5;
-    window.setLayout(layout);
+    window.window.setLayout(layout);
 
-    LayoutEngine.Measure(window, window.layout());
+    LayoutEngine.Measure(window.window, window.window.layout());
 
-    Renderer.build(window, cnv);
+    Renderer.build(window.window, cnv);
     cnv.renderCells();
 
     const first = cnv.getCell(0, 0);

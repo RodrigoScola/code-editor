@@ -202,7 +202,7 @@ describe("editorComponent", () => {
 
     const cnv = new Canvas().setLayout(layout);
 
-    root.addChildren(display);
+    root.addChildren(display.window);
 
     LayoutEngine.Measure(root, root.contentLayout());
     Renderer.build(root, cnv);
@@ -218,11 +218,26 @@ describe("editorComponent", () => {
     expect(
       firstLineCell!.display,
       "text should display on the first line",
-    ).toEqual(display.document.buffer.line(0)!.at(0));
+    ).toEqual(display.buffer.at(0)!.at(0));
 
     expect(
       secondLineCell!.display,
       "text should display on the second line",
-    ).toEqual(display.document.buffer.line(1)!.at(0));
+    ).toEqual(display.buffer.at(1)!.at(0));
+  });
+
+  it("keeps the cursor visible by scrolling the viewport", () => {
+    const content = ["one", "two", "three", "four"].join("\n");
+    const display = new TextEditorWindow(
+      new Textdocument(new MemoryFile("doc", content)),
+    );
+
+    display.viewPort.visibleLines = 3;
+    display.viewPort.visibleColumns = 10;
+    display.cursor.line = 3;
+
+    display.cursor.ensureCursorVisible(display.viewPort);
+
+    expect(display.viewPort.firstLine).toBe(1);
   });
 });

@@ -1,10 +1,16 @@
 import { CommandMode, InsertMode, NormalMode } from "../Commands/Commands.js";
-import { WINDOW_NAMES } from "../constants.js";
-import { isTextEditor } from "../utils.js";
+import { assert } from "../assert.js";
+import { TextBuffer } from "../ui/buffer/Buffer.js";
+import { DiskFile, Textdocument } from "./Documents/TextDocument.js";
+import { EditorWindow } from "./windows/EditorWindow.js";
+import { StatusWindow } from "./windows/StatusEditor.js";
+import { TextEditorWindow } from "./windows/TextEditorWindow.js";
 
 export class EditorContext {
-  activeWindow: Component | null = null;
+  activeWindow: EditorWindow | null = null;
   rootWindow: Component | null = null;
+  textEditorWindow: TextEditorWindow | null = null;
+  statusWindow: StatusWindow | null = null;
   normalMode: NormalMode = new NormalMode();
   insertMode: InsertMode = new InsertMode();
   commandMode: CommandMode = new CommandMode();
@@ -19,33 +25,45 @@ export class EditorContext {
     }
     this.mode.handleKey(key, this);
   }
-  getActiveTextEditor() {
-    const textEditorWindow = this.rootWindow?.findChildrenByName(
-      WINDOW_NAMES.EDITOR_TEXT_WINDOW,
+  focus(window: EditorWindow) {
+    this.activeWindow = window;
+  }
+  openNewTextWindow(path: string) {
+    if (!this.textEditorWindow) {
+      return;
+    }
+    this.textEditorWindow.document = new Textdocument(new DiskFile(path));
+    this.textEditorWindow.buffer = new TextBuffer(
+      this.textEditorWindow.document.read(),
     );
+    this.textEditorWindow.reset();
 
-    isTextEditor(textEditorWindow);
-    return textEditorWindow;
+    return this.textEditorWindow;
+  }
+  getActiveTextEditor(): TextEditorWindow {
+    if (this.activeWindow instanceof TextEditorWindow) {
+      return this.activeWindow;
+    }
+
+    assert(this.textEditorWindow, "missing active text editor");
+    return this.textEditorWindow;
+  }
+  focusTextWindow() {
+    assert(this.textEditorWindow, "missing active text editor");
+    this.activeWindow = this.textEditorWindow;
   }
   setMode(m: EditingModes) {
     this.modeName = m;
     if (m === "normal") {
       this.mode = this.normalMode;
-      const textEditorWindow = this.rootWindow?.findChildrenByName(
-        WINDOW_NAMES.EDITOR_TEXT_WINDOW,
-      );
-
-      this.activeWindow = textEditorWindow
-        ? textEditorWindow
-        : this.activeWindow;
     } else if (m === "insert") {
       this.mode = this.insertMode;
+      assert(this.textEditorWindow, "missing active text editor");
+      // this.activeWindow = this.textEditorWindow;
     } else if (m === "command") {
       this.mode = this.commandMode;
-      const statusWindow = this.rootWindow?.findChildrenByName(
-        WINDOW_NAMES.STATUS_WINDOW,
-      );
-      this.activeWindow = statusWindow ? statusWindow : this.activeWindow;
+      assert(this.statusWindow, "missing status window");
+      this.activeWindow = this.statusWindow;
     } else {
       throw new Error(`mode: ${m} has not been made yet`);
     }

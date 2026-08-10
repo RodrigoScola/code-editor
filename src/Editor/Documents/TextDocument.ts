@@ -1,5 +1,4 @@
 import fs from "fs";
-import { TextBuffer } from "../../ui/buffer/Buffer.js";
 
 export class DiskFile implements EditorFile {
   private p: string;
@@ -42,18 +41,15 @@ export class MemoryFile implements EditorFile {
 
 export class Textdocument {
   readonly file: EditorFile;
-  buffer: TextBuffer;
 
   dirty = false;
   constructor(file: EditorFile) {
     this.file = file;
-    this.buffer = new TextBuffer(file.read());
   }
-  save() {
-    this.file.write(this.buffer.content());
+  read() {
+    return this.file.read();
   }
-  reload() {
-    // todo: make this better
-    this.buffer = new TextBuffer(this.file.read());
+  save(buffer: string) {
+    this.file.write(buffer);
   }
 }
