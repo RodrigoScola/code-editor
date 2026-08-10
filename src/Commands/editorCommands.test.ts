@@ -64,6 +64,18 @@ describe("textEditorCommands", () => {
     textEditorCommands.textEditor.nextWordStart(ctx);
     expect(editorWindow.cursor.column).toBe(4);
   });
+  it("moves to a previous word start", () => {
+    const sentence = "simple word";
+
+    const { ctx, editorWindow } = setupContext({ fileContent: sentence });
+
+    editorWindow.cursor.column = sentence.length - 1;
+    textEditorCommands.textEditor.prevWordStart(ctx);
+
+    console.log(sentence[editorWindow.cursor.column], "this ");
+
+    expect(editorWindow.cursor.column).eq(7);
+  });
 });
 
 function setupContext({ fileContent }: { fileContent: string }) {

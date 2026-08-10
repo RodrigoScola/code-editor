@@ -270,6 +270,7 @@ function goToBeginLine(ctx: EditorContext) {
 
 function nextWordEnd(ctx: EditorContext) {}
 function nextCompleteWordEnd(ctx: EditorContext) {}
+
 function prevWordStart(ctx: EditorContext) {
   const activeEditor = ctx.getActiveTextEditor();
   const buffer = activeEditor.buffer;
@@ -284,10 +285,10 @@ function prevWordStart(ctx: EditorContext) {
   let prevColumn = cursor.column;
 
   if (prevColumn <= 0) {
-    const nextLine = buffer.at(cursor.line - 1);
-    if (nextLine !== undefined) {
+    const prevLine = buffer.at(cursor.line - 1);
+    if (prevLine !== undefined) {
       cursor.line -= 1;
-      cursor.column = nextLine.length - 1;
+      cursor.column = prevLine.length - 1;
       cursor.prefferedColumn = 0;
       return;
     }
@@ -299,47 +300,35 @@ function prevWordStart(ctx: EditorContext) {
 
   const initialChar = currentLine[prevColumn];
   if (isWhitespace(initialChar)) {
-    while (
-      prevColumn < currentLine.length &&
-      isWhitespace(currentLine[prevColumn])
-    ) {
-      prevColumn += 1;
+    while (prevColumn > 0 && isWhitespace(currentLine[prevColumn])) {
+      prevColumn -= 1;
     }
   } else if (isWordChar(currentLine[prevColumn])) {
-    while (
-      prevColumn < currentLine.length &&
-      isWordChar(currentLine[prevColumn])
-    ) {
-      prevColumn += 1;
+    while (prevColumn > 0 && isWordChar(currentLine[prevColumn])) {
+      prevColumn -= 1;
     }
 
-    while (
-      prevColumn < currentLine.length &&
-      isWhitespace(currentLine[prevColumn])
-    ) {
-      prevColumn += 1;
+    while (prevColumn > 0 && isWhitespace(currentLine[prevColumn])) {
+      prevColumn -= 1;
     }
   } else {
     while (
-      prevColumn < currentLine.length &&
+      prevColumn > 0 &&
       !isWordChar(currentLine[prevColumn]) &&
       !isWhitespace(currentLine[prevColumn])
     ) {
-      prevColumn += 1;
+      prevColumn -= 1;
     }
 
-    while (
-      prevColumn < currentLine.length &&
-      isWhitespace(currentLine[prevColumn])
-    ) {
-      prevColumn += 1;
+    while (prevColumn > 0 && isWhitespace(currentLine[prevColumn])) {
+      prevColumn -= 1;
     }
   }
 
-  if (prevColumn >= currentLine.length) {
-    const nextLine = buffer.at(cursor.line + 1);
+  if (prevColumn <= 0) {
+    const nextLine = buffer.at(cursor.line - 1);
     if (nextLine !== undefined) {
-      cursor.line += 1;
+      cursor.line -= 1;
       cursor.column = 0;
       cursor.prefferedColumn = 0;
       return;
