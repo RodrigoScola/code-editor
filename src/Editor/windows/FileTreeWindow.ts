@@ -7,6 +7,7 @@ import { ViewPort } from "../../ui/windows/viewport.js";
 import { EditorWindow } from "./EditorWindow.js";
 import colors from "../../ui/colors.js";
 import { EditorContext } from "../Editor.js";
+import { ComponentStyle } from "../../ui/ComponentStyles.js";
 
 type TreeNode = {
   name: string;
@@ -113,10 +114,9 @@ export class FileTreeWindow extends EditorWindow {
           x: layout.x,
           y: y,
         },
-        {
-          backgroundColor: colors.CYAN_BACKGROUND,
-          color: colors.WHITE_FOREGROUND,
-        },
+        ComponentStyle.Create()
+          .setBackgroundColor(colors.CYAN_BACKGROUND)
+          .setColor(colors.WHITE_FOREGROUND),
       );
     }
 

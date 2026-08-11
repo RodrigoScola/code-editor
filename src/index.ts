@@ -19,6 +19,7 @@ import {
   Textdocument,
 } from "./Editor/Documents/TextDocument.js";
 import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
+import { ComponentStyle } from "./ui/ComponentStyles.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -44,10 +45,11 @@ const statusWindow: StatusWindow = new StatusWindow(editor);
 statusWindow.window
   .setPadding({ left: 1, right: 0, bottom: 0, top: 0 })
   .setMaxH(1)
-  .setStyles({
-    backgroundColor: colors.YELLOW_BACKGROUND,
-    color: colors.WHITE_FOREGROUND,
-  })
+  .setStyles(
+    ComponentStyle.Create()
+      .setBackgroundColor(colors.YELLOW_BACKGROUND)
+      .setColor(colors.WHITE_FOREGROUND),
+  )
   .setName(WINDOW_NAMES.STATUS_WINDOW);
 
 const window = new DisplayComponent().setLayout({
@@ -66,13 +68,16 @@ const treeView = new FileTreeWindow(".")
 
 treeView.window
   .setMaxW(30)
-  .setStyles({
-    backgroundColor: colors.MAGENTA_BACKGROUND,
-  })
+
+  .setStyles(
+    ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+  )
   .setName(WINDOW_NAMES.TREE_WINDOW);
 
 const divisor = new DisplayComponent();
-divisor.setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
+divisor.setStyles(
+  ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+);
 divisor.setMaxW(1);
 
 const editorWindow: TextEditorWindow = new TextEditorWindow(
@@ -123,7 +128,9 @@ editor.commandMode.bind("tree", (ctx) => {
 editor.commandMode.bind("w", textEditorCommands.textEditor.saveFile);
 editor.commandMode.bind("wq", textEditorCommands.textEditor.saveFile);
 
-editorWindow.window.setStyles({ backgroundColor: colors.MAGENTA_BACKGROUND });
+editorWindow.window.setStyles(
+  ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+);
 editorWindow.viewPort.visibleColumns =
   editorWindow.window.contentLayout().width;
 editorWindow.viewPort.visibleLines = editorWindow.window.contentLayout().height;
@@ -193,7 +200,10 @@ async function handleResize(size?: { columns: number; rows: number }) {
   resizedLayout.width = resolved.columns;
   cnv.setLayout(resizedLayout);
   root.setLayout(resizedLayout);
-  root.setStyles({ backgroundColor: colors.RED_BACKGROUND });
+  root.setStyles(
+    ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+  );
+
   LayoutEngine.Measure(root, root.contentLayout());
 
   Renderer.build(root, cnv);

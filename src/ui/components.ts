@@ -1,5 +1,6 @@
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
+import { ComponentStyle } from "./ComponentStyles.js";
 
 export class DisplayComponent implements Component {
   private static ID = 0;
@@ -25,10 +26,9 @@ export class DisplayComponent implements Component {
 
     this.childs = [];
     this.d = "vertical";
-    this.s = {
-      backgroundColor: colors.BACKGROUND_OFF,
-      color: colors.FOREGROUND_OFF,
-    };
+    this.s = ComponentStyle.Create()
+      .setBackgroundColor(colors.BACKGROUND_OFF)
+      .setColor(colors.FOREGROUND_OFF);
 
     this.pr = null;
   }
@@ -134,10 +134,17 @@ export class DisplayComponent implements Component {
     return this;
   }
   setStyles(sty: Partial<ComponentStyles>): Component {
-    this.s = {
-      ...this.s,
-      ...sty,
-    };
+    this.s = ComponentStyle.Create()
+      .setBackgroundColor(sty.backgroundColor?.() ?? this.s.backgroundColor())
+      .setColor(sty.color?.() ?? this.s.color())
+      .setBold(sty.isBold?.() ?? this.s.isBold())
+      .setDim(sty.isDim?.() ?? this.s.isDim())
+      .setItalic(sty.isItalic?.() ?? this.s.isItalic())
+      .setUnderline(sty.isUnderline?.() ?? this.s.isUnderline())
+      .setStrikeThrough(sty.isStrikeThrough?.() ?? this.s.isStrikeThrough())
+      .setInverse(sty.isInverse?.() ?? this.s.isInverse())
+      .setBlink(sty.isBlink?.() ?? this.s.isBlink())
+      .setHidden(sty.isHidden?.() ?? this.s.isHidden());
     return this;
   }
 

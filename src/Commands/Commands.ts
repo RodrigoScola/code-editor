@@ -5,8 +5,13 @@ import { isStatusWindow, isEditorWindow } from "../utils.js";
 
 type Command = (ctx: EditorContext) => void;
 
+type TrieNodeKey = {
+  key: string;
+  hasControl: boolean;
+};
+
 class TrieNode {
-  children: Map<string, TrieNode> = new Map<string, TrieNode>();
+  children: Map<TrieNodeKey, TrieNode> = new Map<string, TrieNode>();
 
   command?: Command;
 }
@@ -15,14 +20,32 @@ export class KeyMapCommands {
   private root: TrieNode = new TrieNode();
   private current = this.root;
 
+  private parse(str: string): TrieNodeKey {
+    // "<C-b>": false,
+    let key: TrieNodeKey = {
+      hasControl: false,
+      key: "",
+    };
+
+    if (str.includes("<C-")) {
+      key.hasControl = true;
+      key.key = str.slice("<C-".length, str.indexOf(">"));
+    } else {
+      key.key = str;
+    }
+
+    return key;
+  }
+
   bind(node: string[], command: Command) {
     let current = this.root;
 
     for (let i = 0; i < node.length; i++) {
-      if (!current.children.has(node[i])) {
-        current.children.set(node[i], new TrieNode());
+      const parsed = this.parse(node[i]);
+      if (!current.children.has(parsed)) {
+        current.children.set(parsed, new TrieNode());
       }
-      let created = current.children.get(node[i]);
+      let created = current.children.get(parsed);
       assert(created, "invalid node created");
       current = created;
     }
@@ -32,12 +55,13 @@ export class KeyMapCommands {
     if (!key) {
       return;
     }
-    const next = this.current.children.get(key);
+    const parsed = this.parse(key);
+    const next = this.current.children.get(parsed);
 
     if (!next) {
       this.reset();
 
-      const retry = this.current.children.get(key);
+      const retry = this.current.children.get(parsed);
 
       if (!retry) {
         return;

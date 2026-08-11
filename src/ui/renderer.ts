@@ -1,19 +1,21 @@
 import assert from "assert";
-import { blendStyles, Canvas } from "./canvas.js";
+import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
+import { ComponentStyle } from "./ComponentStyles.js";
 
 export class Renderer {
   static build(root: Component, canvas: Canvas) {
     canvas.clear();
     this.paint(root, canvas);
   }
+  static style: ComponentStyles = ComponentStyle.Create()
+    .setBackgroundColor(colors.BACKGROUND_OFF)
+    .setColor(colors.FOREGROUND_OFF);
 
-  static currentBackground: string = colors.BACKGROUND_OFF;
-  static currentForeGround: string = colors.FOREGROUND_OFF;
   private static paint(root: Component, canvas: Canvas) {
     canvas.fillRect(
       root.layout(),
-      blendStyles(root.styles(), root.parent()?.styles()),
+      ComponentStyle.Blend(root.styles(), root.parent()?.styles()),
     );
     root.paint(canvas);
 
@@ -34,14 +36,48 @@ export class Renderer {
           tile.display.length == 1,
           "cannot display more things on one cell",
         );
-        if (this.currentBackground !== tile.styles.backgroundColor) {
-          this.currentBackground = tile.styles.backgroundColor;
+        if (this.style.backgroundColor() !== tile.styles.backgroundColor()) {
+          this.style.setBackgroundColor(tile.styles.backgroundColor());
           row += tile.styles.backgroundColor;
         }
 
-        if (this.currentBackground !== tile.styles.color) {
-          this.currentBackground = tile.styles.color;
+        if (this.style.color() !== tile.styles.color()) {
+          this.style.setColor(tile.styles.color());
           row += tile.styles.color;
+        }
+
+        if (this.style.isDim() !== tile.styles.isDim()) {
+          this.style.setDim(tile.styles.isDim());
+          row += tile.styles.isDim;
+        }
+
+        if (this.style.isItalic() !== tile.styles.isItalic()) {
+          this.style.setItalic(tile.styles.isItalic());
+          row += tile.styles.isItalic;
+        }
+        if (this.style.isUnderline() !== tile.styles.isUnderline()) {
+          this.style.setUnderline(tile.styles.isUnderline());
+          row += tile.styles.isUnderline;
+        }
+        if (this.style.isStrikeThrough() !== tile.styles.isStrikeThrough()) {
+          this.style.setStrikeThrough(tile.styles.isStrikeThrough());
+          row += tile.styles.isStrikeThrough;
+        }
+        if (this.style.isInverse() !== tile.styles.isInverse()) {
+          this.style.setInverse(tile.styles.isInverse());
+          row += tile.styles.isInverse;
+        }
+        if (this.style.isBlink() !== tile.styles.isBlink()) {
+          this.style.setBlink(tile.styles.isBlink());
+          row += tile.styles.isBlink;
+        }
+        if (this.style.isHidden() !== tile.styles.isHidden()) {
+          this.style.setHidden(tile.styles.isHidden());
+          row += tile.styles.isHidden;
+        }
+        if (this.style.isBold() !== tile.styles.isBold()) {
+          this.style.setBold(tile.styles.isBold());
+          row += tile.styles.isBold;
         }
         row += tile.display;
       }

@@ -5,6 +5,7 @@ import { Renderer } from "./renderer.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 import { assert } from "../assert.js";
+import { ComponentStyle } from "./ComponentStyles.js";
 
 describe("LayoutEngine measurement", () => {
   it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {
@@ -74,7 +75,9 @@ describe("LayoutEngine measurement", () => {
         top: 1,
         bottom: 1,
       })
-      .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND });
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+      );
 
     root.addChildren(square);
     LayoutEngine.Measure(root, root.contentLayout());
@@ -86,6 +89,6 @@ describe("LayoutEngine measurement", () => {
     const cell = cnv.getCell(2, 2);
     assert(cell, "invalid cell at x: 2 y : 2");
 
-    expect(cell.styles.backgroundColor).eq(colors.YELLOW_BACKGROUND);
+    expect(cell.styles.backgroundColor()).eq(colors.YELLOW_BACKGROUND);
   });
 });

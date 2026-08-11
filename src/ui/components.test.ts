@@ -5,10 +5,9 @@ import { DisplayComponent } from "./components.js";
 import { LayoutEngine } from "./layout.js";
 import { assert } from "../assert.js";
 import { Renderer } from "./renderer.js";
-import { TextBuffer } from "./buffer/Buffer.js";
 import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";
 import { MemoryFile, Textdocument } from "../Editor/Documents/TextDocument.js";
-import { text } from "stream/consumers";
+import { ComponentStyle } from "./ComponentStyles.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
@@ -54,9 +53,9 @@ describe("Renderer background colors", () => {
     const cnv = new Canvas().setLayout(l);
 
     const elem = new DisplayComponent()
-      .setStyles({
-        backgroundColor: colors.BLUE_BACKGROUND,
-      })
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
+      )
       .setLayout({
         height: 0,
         width: 0,
@@ -70,7 +69,7 @@ describe("Renderer background colors", () => {
 
     const nmap = cnv.getCells();
 
-    expect(nmap[3][2].styles.backgroundColor).toBe(colors.BLUE_BACKGROUND);
+    expect(nmap[3][2].styles.backgroundColor()).toBe(colors.BLUE_BACKGROUND);
   });
 
   it("sets max render and both the top and bottom respect it", () => {
@@ -81,11 +80,13 @@ describe("Renderer background colors", () => {
     const root = new DisplayComponent().setLayout(l);
 
     root.addChildren([
-      new DisplayComponent().setStyles({
-        backgroundColor: colors.MAGENTA_BACKGROUND,
-      }),
+      new DisplayComponent().setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+      ),
       new DisplayComponent()
-        .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
+        .setStyles(
+          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+        )
         .setMaxH(1),
     ]);
 
@@ -102,17 +103,17 @@ describe("Renderer background colors", () => {
 
     // this is to make sure the first and second most line are the same component
     expect(
-      firstCell.styles.backgroundColor,
+      firstCell.styles.backgroundColor(),
       "has the same color as the out",
     ).toBe(colors.MAGENTA_BACKGROUND);
 
     expect(
-      oneLineCell.styles.backgroundColor,
+      oneLineCell.styles.backgroundColor(),
       "has the same color as the oneline",
     ).toBe(colors.YELLOW_BACKGROUND);
 
     expect(
-      magentaCell.styles.backgroundColor,
+      magentaCell.styles.backgroundColor(),
       "has the same color as the out",
     ).toBe(colors.MAGENTA_BACKGROUND);
   });
@@ -126,29 +127,33 @@ describe("Renderer background colors", () => {
     const root = new DisplayComponent()
       .setLayout(cnv.layout())
       .addChildren(
-        new DisplayComponent().setStyles({
-          backgroundColor: colors.MAGENTA_BACKGROUND,
-        }),
+        new DisplayComponent().setStyles(
+          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+        ),
       )
       .addChildren(
         new DisplayComponent()
-          .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
+          .setStyles(
+            ComponentStyle.Create().setBackgroundColor(
+              colors.YELLOW_BACKGROUND,
+            ),
+          )
           .setMaxH(1),
       )
       .addChildren(
-        new DisplayComponent().setStyles({
-          backgroundColor: colors.MAGENTA_BACKGROUND,
-        }),
+        new DisplayComponent().setStyles(
+          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+        ),
       );
 
     LayoutEngine.Measure(root, root.contentLayout());
     Renderer.build(root, cnv);
     const map = cnv.getCells();
 
-    expect(map[4][0].styles.backgroundColor).eq(colors.YELLOW_BACKGROUND);
-    expect(map[3][0].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
-    expect(map[5][0].styles.backgroundColor).eq(colors.MAGENTA_BACKGROUND);
-    expect(map[l.height - 1][0].styles.backgroundColor).eq(
+    expect(map[4][0].styles.backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(map[3][0].styles.backgroundColor()).eq(colors.MAGENTA_BACKGROUND);
+    expect(map[5][0].styles.backgroundColor()).eq(colors.MAGENTA_BACKGROUND);
+    expect(map[l.height - 1][0].styles.backgroundColor()).eq(
       colors.MAGENTA_BACKGROUND,
     );
   });
@@ -163,11 +168,15 @@ describe("Renderer background colors", () => {
       .setLayout(layout)
       .setDirection("horizontal")
       .addChildren([
-        new DisplayComponent().setStyles({
-          backgroundColor: colors.MAGENTA_BACKGROUND,
-        }),
+        new DisplayComponent().setStyles(
+          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+        ),
         new DisplayComponent()
-          .setStyles({ backgroundColor: colors.YELLOW_BACKGROUND })
+          .setStyles(
+            ComponentStyle.Create().setBackgroundColor(
+              colors.YELLOW_BACKGROUND,
+            ),
+          )
           .setMaxW(1),
       ]);
 
@@ -178,11 +187,11 @@ describe("Renderer background colors", () => {
 
     const built = cnv.getCells();
     expect(
-      built[0][w - 1].styles.backgroundColor,
+      built[0][w - 1].styles.backgroundColor(),
       "has the same color as the oneline",
     ).toBe(colors.YELLOW_BACKGROUND);
     expect(
-      built[0][w - 2].styles.backgroundColor,
+      built[0][w - 2].styles.backgroundColor(),
       "has the same color as the out",
     ).toBe(colors.MAGENTA_BACKGROUND);
   });

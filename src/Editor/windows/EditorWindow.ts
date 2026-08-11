@@ -4,7 +4,7 @@ import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components.js";
 import { ViewPort } from "../../ui/windows/viewport.js";
 import { Cursor } from "../Cursor.js";
-import { EditorContext } from '../Editor.js';
+import { EditorContext } from "../Editor.js";
 import { TextEditorWindow } from "./TextEditorWindow.js";
 
 export class EditorWindow {
@@ -38,17 +38,17 @@ export class EditorWindow {
     }
 
     if (event.mode === "normal") {
-      this.cursor.style.backgroundColor = colors.RED_BACKGROUND;
-      this.cursor.style.color = colors.WHITE_FOREGROUND;
+      this.cursor.style.setBackgroundColor(colors.RED_BACKGROUND);
+      this.cursor.style.setColor(colors.WHITE_FOREGROUND);
     } else if (event.mode === "insert") {
-      this.cursor.style.backgroundColor = colors.GREEN_BACKGROUND;
-      this.cursor.style.color = colors.WHITE_FOREGROUND;
+      this.cursor.style.setBackgroundColor(colors.GREEN_BACKGROUND);
+      this.cursor.style.setColor(colors.WHITE_FOREGROUND);
     } else if (event.mode === "visual") {
-      this.cursor.style.backgroundColor = colors.CYAN_BACKGROUND;
-      this.cursor.style.color = colors.WHITE_FOREGROUND;
+      this.cursor.style.setBackgroundColor(colors.CYAN_BACKGROUND);
+      this.cursor.style.setColor(colors.WHITE_FOREGROUND);
     } else {
-      this.cursor.style.backgroundColor = colors.RED_BACKGROUND;
-      this.cursor.style.color = colors.WHITE_FOREGROUND;
+      this.cursor.style.setBackgroundColor(colors.RED_BACKGROUND);
+      this.cursor.style.setColor(colors.WHITE_FOREGROUND);
     }
   }
 
@@ -113,5 +113,5 @@ export class EditorWindow {
   moveCursorRight() {
     return this.cursor.moveRight(this.buffer);
   }
-  onEnter(ctx:EditorContext) {}
+  onEnter(ctx: EditorContext) {}
 }

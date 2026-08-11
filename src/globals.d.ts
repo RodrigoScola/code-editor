@@ -72,11 +72,6 @@ interface LayoutBounds {
   height: number;
 }
 
-interface ComponentStyles {
-  backgroundColor: string;
-  color: string;
-}
-
 interface EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext);
 }
@@ -99,4 +94,27 @@ interface EditorFile {
 interface BufferLike {
   at(line: number): string | undefined;
   count(): number;
+}
+
+interface ComponentStyles {
+  backgroundColor: () => string;
+  setBackgroundColor: (nval: string) => ComponentStyles;
+  color: () => string;
+  setColor: (nval: string) => ComponentStyles;
+  isBold: () => boolean;
+  setBold: (nval: boolean) => ComponentStyles;
+  isDim: () => boolean;
+  setDim: (nval: boolean) => ComponentStyles;
+  isItalic: () => boolean;
+  setItalic: (nval: boolean) => ComponentStyles;
+  isUnderline: () => boolean;
+  setUnderline: (nval: boolean) => ComponentStyles;
+  isStrikeThrough: () => boolean;
+  setStrikeThrough: (nval: boolean) => ComponentStyles;
+  isInverse: () => boolean;
+  setInverse: (nval: boolean) => ComponentStyles;
+  isBlink: () => boolean;
+  setBlink: (nval: boolean) => ComponentStyles;
+  isHidden: () => boolean;
+  setHidden: (nval: boolean) => ComponentStyles;
 }

@@ -1,15 +1,15 @@
 import { TextBuffer } from "../ui/buffer/Buffer.js";
 import colors from "../ui/colors.js";
+import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { ViewPort } from "../ui/windows/viewport.js";
 
 export class Cursor {
   prefferedColumn: number = 0;
   line: number = 0;
   column: number = 0;
-  style: ComponentStyles = {
-    backgroundColor: colors.RED_BACKGROUND,
-    color: colors.WHITE_FOREGROUND,
-  };
+  style: ComponentStyles = ComponentStyle.Create()
+    .setBackgroundColor(colors.RED_BACKGROUND)
+    .setColor(colors.WHITE_FOREGROUND);
 
   ensureCursorVisible(viewPort: ViewPort) {
     const lastVisibleLine = viewPort.firstLine + viewPort.visibleLines - 1;

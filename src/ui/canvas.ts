@@ -1,9 +1,9 @@
 import colors from "./colors.js";
+import { ComponentStyle } from "./ComponentStyles.js";
 
-const DEFAULT_STYLE: ComponentStyles = {
-  backgroundColor: colors.BACKGROUND_OFF,
-  color: colors.FOREGROUND_OFF,
-};
+const DEFAULT_STYLE: ComponentStyles = ComponentStyle.Create()
+  .setBackgroundColor(colors.BACKGROUND_OFF)
+  .setColor(colors.FOREGROUND_OFF);
 
 export class Canvas {
   tab_width: number = 4;
@@ -49,10 +49,7 @@ export class Canvas {
       x: x,
       display: " ",
       y: y,
-      styles: {
-        backgroundColor: colors.BACKGROUND_OFF,
-        color: colors.FOREGROUND_OFF,
-      },
+      styles: ComponentStyle.Create(),
     };
   }
   private resetCanvas() {
@@ -129,7 +126,7 @@ export class Canvas {
         if (!cell) {
           continue;
         }
-        cell.styles = blendStyles(style, DEFAULT_STYLE);
+        cell.styles = ComponentStyle.Blend(style, DEFAULT_STYLE);
       }
     }
   }
@@ -163,8 +160,10 @@ export class Canvas {
         break;
       }
       cell.display = text[i];
-
-      cell.styles = blendStyles(cell.styles, blendStyles(style, DEFAULT_STYLE));
+      cell.styles = ComponentStyle.Blend(
+        cell.styles,
+        ComponentStyle.Blend(style, DEFAULT_STYLE),
+      );
     }
   }
   getCells() {
@@ -184,22 +183,6 @@ function expandTabs(line: string, tabWidth: number): string {
     }
   }
   return out;
-}
-
-export function blendStyles(
-  first: ComponentStyles | undefined | null,
-  parent: ComponentStyles | null | undefined,
-): ComponentStyles {
-  return {
-    backgroundColor:
-      first?.backgroundColor === colors.BACKGROUND_OFF
-        ? parent?.backgroundColor || first.color
-        : first?.backgroundColor || colors.BACKGROUND_OFF,
-    color:
-      first?.color === colors.BACKGROUND_OFF
-        ? parent?.color || first.color
-        : first?.color || colors.FOREGROUND_OFF,
-  };
 }
 
 function bufferColumnToScreenColumn(

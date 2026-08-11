@@ -55,8 +55,8 @@ export class StatusWindow extends EditorWindow {
 
     if (event.name === "editorModeChange") {
       if (event.mode === "command") {
-        this.cursor.style.backgroundColor = colors.RED_BACKGROUND;
-        this.cursor.style.color = colors.WHITE_FOREGROUND;
+        this.cursor.style.setBackgroundColor(colors.RED_BACKGROUND);
+        this.cursor.style.setColor(colors.WHITE_FOREGROUND);
 
         this.currentCommandLine = this.buffer.count() - 1;
         this.cursor.moveDown(this.buffer);
