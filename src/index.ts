@@ -20,12 +20,23 @@ import {
 } from "./Editor/Documents/TextDocument.js";
 import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
 import { ComponentStyle } from "./ui/ComponentStyles.js";
+import { GitEditorWindow } from "./Editor/windows/GitEditorWindow.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
 disableMouseEvents();
 
+enableKeyboardProtocol();
+
 const editor = new EditorContext();
+
+const gitEditor = new GitEditorWindow();
+
+gitEditor.window.setName(WINDOW_NAMES.GIT_WINDOW);
+
+editor.gitEditorWindow = gitEditor;
+
+gitEditor.window.styles()?.setBackgroundColor(colors.BLUE_BACKGROUND);
 
 readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) {
@@ -37,9 +48,9 @@ let layout = LayoutEngine.CreateBounds();
 layout.height = process.stdout.rows;
 layout.width = process.stdout.columns;
 
-const cnv = new Canvas().setLayout(layout);
+editor.canvas = new Canvas().setLayout(layout);
 
-const root = new DisplayComponent().setLayout(layout);
+editor.rootWindow = new DisplayComponent().setLayout(layout);
 
 const statusWindow: StatusWindow = new StatusWindow(editor);
 statusWindow.window
@@ -57,8 +68,8 @@ const window = new DisplayComponent().setLayout({
   height: layout.height - 1,
 });
 
-root.addChildren(window);
-root.addChildren(statusWindow.window);
+editor.rootWindow.addChildren(window);
+editor.rootWindow.addChildren(statusWindow.window);
 
 window.setDirection("horizontal");
 
@@ -68,7 +79,6 @@ const treeView = new FileTreeWindow(".")
 
 treeView.window
   .setMaxW(30)
-
   .setStyles(
     ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
   )
@@ -86,12 +96,13 @@ const editorWindow: TextEditorWindow = new TextEditorWindow(
 
 editorWindow.window.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
 
-editor.rootWindow = root;
 editor.textEditorWindow = editorWindow;
 editor.statusWindow = statusWindow;
 editor.activeWindow = editorWindow;
 
 // todo: make a better function for this
+editor.commandMode.bind("w", textEditorCommands.textEditor.saveFile);
+editor.commandMode.bind("wq", textEditorCommands.textEditor.saveFile);
 editor.normalMode.bind(["j"], textEditorCommands.textEditor.moveDown);
 editor.normalMode.bind(["k"], textEditorCommands.textEditor.moveUp);
 editor.normalMode.bind(["h"], textEditorCommands.textEditor.moveLeft);
@@ -120,16 +131,9 @@ editor.normalMode.bind(["<CR>"], (ctx) => {
 
 editor.normalMode.bind(["d", "d"], textEditorCommands.textEditor.deleteLine);
 
-editor.commandMode.bind("log", (ctx) => {
-  console.log("this command is working");
-});
-
 editor.commandMode.bind("tree", (ctx) => {
   editor.activeWindow = treeView;
 });
-
-editor.commandMode.bind("w", textEditorCommands.textEditor.saveFile);
-editor.commandMode.bind("wq", textEditorCommands.textEditor.saveFile);
 
 editorWindow.window.setStyles(
   ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
@@ -141,21 +145,18 @@ editorWindow.viewPort.visibleLines = editorWindow.window.contentLayout().height;
 window
   .addChildren(treeView.window)
   .addChildren(divisor)
-  .addChildren(editorWindow.window);
+  .addChildren(editorWindow.window)
+  .addChildren(gitEditor.window);
 
 const initialLayout = LayoutEngine.CreateBounds();
 
 initialLayout.height = process.stdout.rows;
 initialLayout.width = process.stdout.columns;
 
-cnv.setLayout(initialLayout);
-root.setLayout(initialLayout);
+editor.canvas.setLayout(initialLayout);
+editor.rootWindow.setLayout(initialLayout);
 
-LayoutEngine.Measure(root, root.contentLayout());
-
-Renderer.build(root, cnv);
-
-process.stdout.write("\x1b[H" + Renderer.render(cnv));
+process.stdout.write("\x1b[H" + editor.render());
 
 process.stdout.on("resize", () => handleResize());
 
@@ -167,25 +168,48 @@ function queryTerminalSize(
 ): Promise<{ columns: number; rows: number } | null> {
   return new Promise((resolve) => {
     let settled = false;
+    let buffer = Buffer.alloc(0);
+
     const onData = (chunk: Buffer) => {
-      const match = chunk.toString("utf8").match(/\x1b\[(\d+);(\d+)R/);
-      if (match) {
-        settle({ rows: Number(match[1]), columns: Number(match[2]) });
+      buffer = Buffer.concat([buffer, chunk]);
+
+      const match = buffer.toString("utf8").match(/\x1b\[(\d+);(\d+)R/);
+
+      if (!match) {
+        return;
       }
+
+      const rows = Number(match[1]);
+      const columns = Number(match[2]);
+
+      settle({
+        rows,
+        columns,
+      });
     };
-    const timer = setTimeout(() => settle(null), timeoutMs);
+
+    const timer = setTimeout(() => {
+      settle(null);
+    }, timeoutMs);
+
     function settle(result: { columns: number; rows: number } | null) {
-      if (settled) return;
+      if (settled) {
+        return;
+      }
+
       settled = true;
+
       clearTimeout(timer);
       process.stdin.off("data", onData);
+
+      process.stdout.write("\x1b[u");
+
       resolve(result);
     }
+
     process.stdin.on("data", onData);
-    // save cursor, jump to a coordinate past any real terminal size (it
-    // clamps to the actual last row/col), ask for the cursor position, then
-    // restore the cursor to where it was
-    process.stdout.write("\x1b[s\x1b[999;999H\x1b[6n\x1b[u");
+
+    process.stdout.write("\x1b[s" + "\x1b[999;999H" + "\x1b[6n");
   });
 }
 
@@ -201,18 +225,11 @@ async function handleResize(size?: { columns: number; rows: number }) {
   const resizedLayout = LayoutEngine.CreateBounds();
   resizedLayout.height = resolved.rows;
   resizedLayout.width = resolved.columns;
-  cnv.setLayout(resizedLayout);
-  root.setLayout(resizedLayout);
-  root.setStyles(
-    ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
-  );
+  editor.canvas.setLayout(resizedLayout);
 
-  LayoutEngine.Measure(root, root.contentLayout());
+  editor.rootWindow.setLayout(resizedLayout);
 
-  Renderer.build(root, cnv);
-  const out = Renderer.render(cnv);
-
-  process.stdout.write("\x1b[H" + out);
+  process.stdout.write("\x1b[H" + editor.render());
 }
 
 process.stdout.on("finish", () => {
@@ -223,36 +240,28 @@ process.stdout.on("finish", () => {
 function dispatchKey(parsedKey: KeyEvent) {
   editor.handleKey(parsedKey);
 
-  LayoutEngine.Measure(root, root.contentLayout());
-  Renderer.build(root, cnv);
-  process.stdout.write("\x1b[H" + Renderer.render(cnv));
+  process.stdout.write("\x1b[H" + editor.render());
 }
-
-process.stdin.on("keypress", (str, key) => {
-  const parsedKey = InputParser.ParseKey(str, key);
-
-  // a standalone Escape byte is handled eagerly below, off the raw 'data'
-  // event, since readline holds a lone ESC for up to ~500ms waiting to see
-  // if more bytes follow before it fires this 'keypress' event
-  if (parsedKey.token === DEFAULT_TOKENS.ESCAPE) {
-    return;
-  }
-
-  dispatchKey(parsedKey);
-});
 
 process.stdin.on("data", (chunk) => {
   // real escape *sequences* (arrows, function keys, etc.) always arrive as
   // part of one multi-byte chunk written by the terminal in a single go, so
   // a lone single-byte ESC chunk reliably means the user just pressed
   // Escape by itself
-  if (chunk.length === 1 && chunk[0] === 0x1b) {
-    dispatchKey({
-      token: DEFAULT_TOKENS.ESCAPE,
-      ctrl: false,
-      alt: false,
-      shift: false,
-    });
+  // old one ---
+  // if (chunk.length === 1 && chunk[0] === 0x1b) {
+  //   dispatchKey({
+  //     token: DEFAULT_TOKENS.ESCAPE,
+  //     ctrl: false,
+  //     alt: false,
+  //     shift: false,
+  //   });
+  // }
+
+  const events = InputParser.parse(chunk);
+
+  for (const event of events) {
+    dispatchKey(event);
   }
 });
 
@@ -265,6 +274,17 @@ function clearOutput() {
   process.stdout.write("\x1b[?1049l");
 }
 
+process.on("exit", () => {
+  disableKeyboardProtocol();
+});
+
 //add a test case that the text color should not be reset after the letter color
 
 // handy color palette for future components
+
+export function enableKeyboardProtocol() {
+  process.stdout.write("\x1b[>1u");
+}
+export function disableKeyboardProtocol() {
+  process.stdout.write("\x1b[<u");
+}

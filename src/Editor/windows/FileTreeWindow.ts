@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { Canvas } from "../../ui/canvas.js";
-import { DisplayComponent } from "../../ui/components.js";
 import { Cursor } from "../Cursor.js";
 import { ViewPort } from "../../ui/windows/viewport.js";
 import { EditorWindow } from "./EditorWindow.js";
@@ -91,7 +90,6 @@ export class FileTreeWindow extends EditorWindow {
     let total = 0 + this.window.contentLayout().y;
 
     this.paintChild(this.root, total, 0, canvas);
-    this.paintCursor(canvas, this, this.at(this.cursor.line));
   }
   private paintChild(
     node: TreeNode,

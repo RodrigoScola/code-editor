@@ -1,4 +1,11 @@
-import readline from "readline";
+import { start } from "repl";
+
+export interface KeyEvent {
+  token: string;
+  ctrl: boolean;
+  alt: boolean;
+  shift: boolean;
+}
 
 export const DEFAULT_TOKENS = {
   RETURN: "<CR>",
@@ -16,143 +23,382 @@ export const DEFAULT_TOKENS = {
   PAGE_UP: "<PageUp>",
   PAGE_DOWN: "<PageDown>",
 } as const;
+
 const SPECIAL_TOKENS = new Set(Object.values(DEFAULT_TOKENS));
 
 export abstract class InputParser {
-  static isEnter(str: string): boolean {
-    return str === DEFAULT_TOKENS.RETURN;
+  static isEnter(token: string): boolean {
+    return token === DEFAULT_TOKENS.RETURN;
   }
 
-  static isEscape(str: string): boolean {
-    return str === DEFAULT_TOKENS.ESCAPE;
+  static isEscape(token: string): boolean {
+    return token === DEFAULT_TOKENS.ESCAPE;
   }
 
-  static isBackspace(str: string): boolean {
-    return str === DEFAULT_TOKENS.BACKSPACE;
+  static isBackspace(token: string): boolean {
+    return token === DEFAULT_TOKENS.BACKSPACE;
   }
 
-  static isDelete(str: string): boolean {
-    return str === DEFAULT_TOKENS.DELETE;
+  static isDelete(token: string): boolean {
+    return token === DEFAULT_TOKENS.DELETE;
   }
 
-  static isTab(str: string): boolean {
-    return str === DEFAULT_TOKENS.TAB;
+  static isTab(token: string): boolean {
+    return token === DEFAULT_TOKENS.TAB;
   }
 
-  static isSpace(str: string): boolean {
-    return str === DEFAULT_TOKENS.SPACE;
+  static isSpace(token: string): boolean {
+    return token === DEFAULT_TOKENS.SPACE;
   }
 
-  static isArrowUp(str: string): boolean {
-    return str === DEFAULT_TOKENS.UP;
+  static isArrowUp(token: string): boolean {
+    return token === DEFAULT_TOKENS.UP;
   }
 
-  static isArrowDown(str: string): boolean {
-    return str === DEFAULT_TOKENS.DOWN;
+  static isArrowDown(token: string): boolean {
+    return token === DEFAULT_TOKENS.DOWN;
   }
 
-  static isArrowLeft(str: string): boolean {
-    return str === DEFAULT_TOKENS.LEFT;
+  static isArrowLeft(token: string): boolean {
+    return token === DEFAULT_TOKENS.LEFT;
   }
 
-  static isArrowRight(str: string): boolean {
-    return str === DEFAULT_TOKENS.RIGHT;
+  static isArrowRight(token: string): boolean {
+    return token === DEFAULT_TOKENS.RIGHT;
   }
 
-  static isHome(str: string): boolean {
-    return str === DEFAULT_TOKENS.HOME;
+  static isHome(token: string): boolean {
+    return token === DEFAULT_TOKENS.HOME;
   }
 
-  static isEnd(str: string): boolean {
-    return str === DEFAULT_TOKENS.END;
+  static isEnd(token: string): boolean {
+    return token === DEFAULT_TOKENS.END;
   }
 
-  static isPageUp(str: string): boolean {
-    return str === DEFAULT_TOKENS.PAGE_UP;
+  static isPageUp(token: string): boolean {
+    return token === DEFAULT_TOKENS.PAGE_UP;
   }
 
-  static isPageDown(str: string): boolean {
-    return str === DEFAULT_TOKENS.PAGE_DOWN;
-  }
-  static isSpecialToken(str: string): boolean {
-    //@ts-ignore
-    return SPECIAL_TOKENS.has(str);
+  static isPageDown(token: string): boolean {
+    return token === DEFAULT_TOKENS.PAGE_DOWN;
   }
 
-  static isCharacter(str: string): boolean {
-    //@ts-ignore
-    return !SPECIAL_TOKENS.has(str);
+  static isSpecialToken(token: string): boolean {
+    return SPECIAL_TOKENS.has(token);
   }
 
-  static ParseKey(str: string, key: readline.Key): KeyEvent {
-    let token: string;
+  static isCharacter(token: string): boolean {
+    return !SPECIAL_TOKENS.has(token);
+  }
 
-    switch (key.name) {
-      case "return":
-        token = DEFAULT_TOKENS.RETURN;
-        break;
+  static parse(chunk: Buffer | string): KeyEvent[] {
+    const events: KeyEvent[] = [];
 
-      case "escape":
-        token = DEFAULT_TOKENS.ESCAPE;
-        break;
+    /*
+     * If another layer has already converted the input into a
+     * terminal token, handle that token directly.
+     */
+    if (typeof chunk === "string") {
+      switch (chunk) {
+        case DEFAULT_TOKENS.RETURN:
+          return [
+            {
+              token: DEFAULT_TOKENS.RETURN,
+              ctrl: false,
+              alt: false,
+              shift: false,
+            },
+          ];
 
-      case "backspace":
-        token = key.ctrl ? "h" : DEFAULT_TOKENS.BACKSPACE;
-        break;
+        case DEFAULT_TOKENS.ESCAPE:
+          return [
+            {
+              token: DEFAULT_TOKENS.ESCAPE,
+              ctrl: false,
+              alt: false,
+              shift: false,
+            },
+          ];
 
-      case "delete":
-        token = DEFAULT_TOKENS.DELETE;
-        break;
+        case DEFAULT_TOKENS.BACKSPACE:
+          return [
+            {
+              token: DEFAULT_TOKENS.BACKSPACE,
+              ctrl: false,
+              alt: false,
+              shift: false,
+            },
+          ];
 
-      case "tab":
-        token = DEFAULT_TOKENS.TAB;
-        break;
+        case DEFAULT_TOKENS.DELETE:
+          return [
+            {
+              token: DEFAULT_TOKENS.DELETE,
+              ctrl: false,
+              alt: false,
+              shift: false,
+            },
+          ];
 
-      case "space":
-        token = DEFAULT_TOKENS.SPACE;
-        break;
-
-      case "up":
-        token = DEFAULT_TOKENS.UP;
-        break;
-
-      case "down":
-        token = DEFAULT_TOKENS.DOWN;
-        break;
-
-      case "left":
-        token = DEFAULT_TOKENS.LEFT;
-        break;
-
-      case "right":
-        token = DEFAULT_TOKENS.RIGHT;
-        break;
-
-      case "home":
-        token = DEFAULT_TOKENS.HOME;
-        break;
-
-      case "end":
-        token = DEFAULT_TOKENS.END;
-        break;
-
-      case "pageup":
-        token = DEFAULT_TOKENS.PAGE_UP;
-        break;
-
-      case "pagedown":
-        token = DEFAULT_TOKENS.PAGE_DOWN;
-        break;
-
-      default:
-        token = key.name ?? str;
+        case DEFAULT_TOKENS.TAB:
+          return [
+            {
+              token: DEFAULT_TOKENS.TAB,
+              ctrl: false,
+              alt: false,
+              shift: false,
+            },
+          ];
+      }
     }
 
-    return {
-      token,
-      ctrl: !!key.ctrl,
-      alt: !!key.meta,
-      shift: !!key.shift,
-    };
+    /*
+     * From this point onward we work with raw bytes.
+     */
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+
+    let i = 0;
+
+    while (i < buffer.length) {
+      const byte = buffer[i];
+
+      /*
+       * ESC
+       */
+      if (byte === 0x1b) {
+        /*
+         * Lone ESC
+         */
+        if (i + 1 >= buffer.length) {
+          events.push({
+            token: DEFAULT_TOKENS.ESCAPE,
+            ctrl: false,
+            alt: false,
+            shift: false,
+          });
+
+          i++;
+          continue;
+        }
+
+        /*
+         * CSI sequence:
+         *
+         * ESC [
+         */
+        if (buffer[i + 1] === 0x5b) {
+          const sequence = this.parseEscapeSequence(buffer, i);
+
+          if (sequence) {
+            events.push(sequence.event);
+            i = sequence.nextIndex;
+            continue;
+          }
+        }
+
+        /*
+         * ESC + printable character = Alt + character
+         */
+        const next = buffer[i + 1];
+
+        if (next >= 0x20 && next <= 0x7e) {
+          const character = String.fromCharCode(next);
+
+          events.push({
+            token: character.toLowerCase(),
+            ctrl: false,
+            alt: true,
+            shift: character >= "A" && character <= "Z",
+          });
+
+          i += 2;
+          continue;
+        }
+
+        i++;
+        continue;
+      }
+
+      /*
+       * Enter
+       *
+       * CR = 0x0D
+       * LF = 0x0A
+       */
+      if (byte === 0x0d || byte === 0x0a) {
+        events.push({
+          token: DEFAULT_TOKENS.RETURN,
+          ctrl: false,
+          alt: false,
+          shift: false,
+        });
+
+        i++;
+        continue;
+      }
+
+      /*
+       * Tab
+       */
+      if (byte === 0x09) {
+        events.push({
+          token: DEFAULT_TOKENS.TAB,
+          ctrl: false,
+          alt: false,
+          shift: false,
+        });
+
+        i++;
+        continue;
+      }
+
+      /*
+       * Backspace
+       */
+      if (byte === 0x7f) {
+        events.push({
+          token: DEFAULT_TOKENS.BACKSPACE,
+          ctrl: false,
+          alt: false,
+          shift: false,
+        });
+
+        i++;
+        continue;
+      }
+
+      /*
+       * Ctrl+A through Ctrl+Z
+       */
+      if (byte >= 0x01 && byte <= 0x1a) {
+        const character = String.fromCharCode(byte + 0x60);
+
+        events.push({
+          token: character,
+          ctrl: true,
+          alt: false,
+          shift: false,
+        });
+
+        i++;
+        continue;
+      }
+
+      /*
+       * Printable ASCII
+       */
+      if (byte >= 0x20 && byte <= 0x7e) {
+        const character = String.fromCharCode(byte);
+
+        events.push({
+          token: character,
+          ctrl: false,
+          alt: false,
+          shift: character >= "A" && character <= "Z",
+        });
+
+        i++;
+        continue;
+      }
+
+      /*
+       * Unknown / unsupported byte.
+       */
+      i++;
+    }
+
+    return events;
+  }
+
+  private static parseEscapeSequence(
+    chunk: Buffer,
+    start: number,
+  ): {
+    event: KeyEvent;
+    nextIndex: number;
+  } | null {
+    /*
+     * We know:
+     *
+     * chunk[start]     = ESC
+     * chunk[start + 1] = [
+     */
+
+    if (start + 2 >= chunk.length) {
+      return null;
+    }
+
+    const code = chunk[start + 2];
+
+    switch (code) {
+      case 0x41: // A
+        return {
+          event: {
+            token: DEFAULT_TOKENS.UP,
+            ctrl: false,
+            alt: false,
+            shift: false,
+          },
+          nextIndex: start + 3,
+        };
+
+      case 0x42: // B
+        return {
+          event: {
+            token: DEFAULT_TOKENS.DOWN,
+            ctrl: false,
+            alt: false,
+            shift: false,
+          },
+          nextIndex: start + 3,
+        };
+
+      case 0x43: // C
+        return {
+          event: {
+            token: DEFAULT_TOKENS.RIGHT,
+            ctrl: false,
+            alt: false,
+            shift: false,
+          },
+          nextIndex: start + 3,
+        };
+
+      case 0x44: // D
+        return {
+          event: {
+            token: DEFAULT_TOKENS.LEFT,
+            ctrl: false,
+            alt: false,
+            shift: false,
+          },
+          nextIndex: start + 3,
+        };
+
+      case 0x48: // H
+        return {
+          event: {
+            token: DEFAULT_TOKENS.HOME,
+            ctrl: false,
+            alt: false,
+            shift: false,
+          },
+          nextIndex: start + 3,
+        };
+
+      case 0x46: // F
+        return {
+          event: {
+            token: DEFAULT_TOKENS.END,
+            ctrl: false,
+            alt: false,
+            shift: false,
+          },
+          nextIndex: start + 3,
+        };
+
+      default:
+        return null;
+    }
   }
 }

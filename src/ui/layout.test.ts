@@ -82,7 +82,7 @@ describe("LayoutEngine measurement", () => {
     root.addChildren(square);
     LayoutEngine.Measure(root, root.contentLayout());
     const cnv = new Canvas().setLayout(layout);
-    Renderer.build(root, cnv);
+    Renderer.Create().build(root, cnv);
 
     cnv.renderCells();
 

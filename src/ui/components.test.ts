@@ -21,7 +21,7 @@ describe("Canvas", () => {
 
     LayoutEngine.Measure(root, root.contentLayout());
 
-    Renderer.build(root, cnv);
+    Renderer.Create().build(root, cnv);
 
     let out = cnv.getCells().reduce((all, t) => all.concat(t), []);
 
@@ -65,7 +65,7 @@ describe("Renderer background colors", () => {
 
     const root = new DisplayComponent().setLayout(l).addChildren(elem);
     LayoutEngine.Measure(root, root.contentLayout());
-    Renderer.build(root, cnv);
+    Renderer.Create().build(root, cnv);
 
     const nmap = cnv.getCells();
 
@@ -91,7 +91,7 @@ describe("Renderer background colors", () => {
     ]);
 
     LayoutEngine.Measure(root, root.contentLayout());
-    Renderer.build(root, cnv);
+    Renderer.Create().build(root, cnv);
 
     const firstCell = cnv.getCell(0, 0);
     const oneLineCell = cnv.getCell(0, cnv.layout().height - 1);
@@ -147,7 +147,7 @@ describe("Renderer background colors", () => {
       );
 
     LayoutEngine.Measure(root, root.contentLayout());
-    Renderer.build(root, cnv);
+    Renderer.Create().build(root, cnv);
     const map = cnv.getCells();
 
     expect(map[4][0].styles.backgroundColor()).eq(colors.YELLOW_BACKGROUND);
@@ -181,7 +181,7 @@ describe("Renderer background colors", () => {
       ]);
 
     LayoutEngine.Measure(root, root.contentLayout());
-    Renderer.build(root, cnv);
+    Renderer.Create().build(root, cnv);
 
     const w = layout.width;
 
@@ -214,7 +214,7 @@ describe("editorComponent", () => {
     root.addChildren(display.window);
 
     LayoutEngine.Measure(root, root.contentLayout());
-    Renderer.build(root, cnv);
+    Renderer.Create().build(root, cnv);
 
     const firstLineCell = cnv.getCell(0, 0);
     expect(firstLineCell, "invalid cell");

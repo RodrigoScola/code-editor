@@ -22,7 +22,7 @@ describe("tests the buffer and rendering", () => {
 
     LayoutEngine.Measure(window.window, window.window.layout());
 
-    Renderer.build(window.window, cnv);
+    Renderer.Create().build(window.window, cnv);
     cnv.renderCells();
 
     const first = cnv.getCell(0, 0);

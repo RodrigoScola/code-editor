@@ -43,7 +43,10 @@ export class TextBuffer implements BufferLike {
 
     this.lines[line] = current.slice(0, column) + current.slice(column + 1);
   }
-  public add(line: number, column: number, ch: string) {
+  public addLine(content: string) {
+    this.lines.push(content);
+  }
+  public addCharacter(line: number, column: number, ch: string) {
     if (ch.length == 2) {
       assert(
         ch.includes(`\\`),

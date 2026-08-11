@@ -1,14 +1,23 @@
 import { CommandMode, InsertMode, NormalMode } from "../Commands/Commands.js";
 import { assert } from "../assert.js";
 import { TextBuffer } from "../ui/buffer/Buffer.js";
+import { Canvas } from "../ui/canvas.js";
+import { DisplayComponent } from "../ui/components.js";
+import { LayoutEngine } from "../ui/layout.js";
+import { Renderer } from "../ui/renderer.js";
 import { DiskFile, Textdocument } from "./Documents/TextDocument.js";
 import { EditorWindow } from "./windows/EditorWindow.js";
+import { GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
 import { TextEditorWindow } from "./windows/TextEditorWindow.js";
 
 export class EditorContext {
+  static instance: EditorContext | null;
+  canvas: Canvas = new Canvas();
+  renderer: Renderer = new Renderer();
   activeWindow: EditorWindow | null = null;
-  rootWindow: Component | null = null;
+  rootWindow: Component = new DisplayComponent();
+  gitEditorWindow: GitEditorWindow | null = null;
   textEditorWindow: TextEditorWindow | null = null;
   statusWindow: StatusWindow | null = null;
   normalMode: NormalMode = new NormalMode();
@@ -17,7 +26,9 @@ export class EditorContext {
   mode: EditorMode = this.normalMode;
   modeName: EditingModes = "normal";
 
-  constructor() {}
+  constructor() {
+    EditorContext.instance = this;
+  }
 
   handleKey(key: KeyEvent) {
     if (!key.token) {
@@ -68,5 +79,13 @@ export class EditorContext {
       throw new Error(`mode: ${m} has not been made yet`);
     }
     this.activeWindow?.onEvent({ name: "editorModeChange", mode: m });
+  }
+  repaint() {}
+  render() {
+    assert(this.rootWindow, "cannot render anything without a root window");
+
+    LayoutEngine.Measure(this.rootWindow, this.rootWindow.contentLayout());
+    this.renderer.build(this.rootWindow, this.canvas);
+    return this.renderer.render(this.canvas);
   }
 }

@@ -4,15 +4,19 @@ import colors from "./colors.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 
 export class Renderer {
-  static build(root: Component, canvas: Canvas) {
+  static Create() {
+    return new Renderer();
+  }
+  build(root: Component, canvas: Canvas) {
     canvas.clear();
     this.paint(root, canvas);
   }
-  static style: ComponentStyles = ComponentStyle.Create()
+
+  style: ComponentStyles = ComponentStyle.Create()
     .setBackgroundColor(colors.BACKGROUND_OFF)
     .setColor(colors.FOREGROUND_OFF);
 
-  private static paint(root: Component, canvas: Canvas) {
+  private paint(root: Component, canvas: Canvas) {
     canvas.fillRect(
       root.layout(),
       ComponentStyle.Blend(root.styles(), root.parent()?.styles()),
@@ -23,7 +27,7 @@ export class Renderer {
       this.paint(child, canvas);
     }
   }
-  static render(canvas: Canvas) {
+  render(canvas: Canvas) {
     const rows: string[] = [];
     // i know theres some optimization that we can do here
     for (let i = canvas.startY(); i < canvas.startY() + canvas.height(); i++) {

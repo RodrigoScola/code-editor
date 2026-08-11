@@ -37,7 +37,7 @@ function keyFromEvent(key: KeyEvent): TrieNodeKey {
       key: key.token,
     };
   }
-  
+
   return {
     hasControl: true,
     key: controlTokenToKey(key.token),
@@ -149,7 +149,7 @@ export class CommandMode implements EditorMode {
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;
-      buffer.add(cursor.line, cursor.column, valid);
+      buffer.addCharacter(cursor.line, cursor.column, valid);
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     } else if (InputParser.isEscape(key.token)) {
@@ -180,7 +180,7 @@ export class CommandMode implements EditorMode {
     } else if (InputParser.isArrowRight(key.token)) {
       cursor.moveRight(buffer);
     } else if (InputParser.isTab(key.token)) {
-      buffer.add(cursor.line, cursor.column, "\t");
+      buffer.addCharacter(cursor.line, cursor.column, "\t");
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     }
@@ -200,7 +200,7 @@ export class InsertMode implements EditorMode {
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;
-      buffer.add(cursor.line, cursor.column, valid);
+      buffer.addCharacter(cursor.line, cursor.column, valid);
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     } else if (InputParser.isEscape(key.token)) {
@@ -224,7 +224,7 @@ export class InsertMode implements EditorMode {
     } else if (InputParser.isArrowRight(key.token)) {
       cursor.moveRight(buffer);
     } else if (InputParser.isTab(key.token)) {
-      buffer.add(cursor.line, cursor.column, "\t");
+      buffer.addCharacter(cursor.line, cursor.column, "\t");
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     }
