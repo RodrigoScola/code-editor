@@ -38,46 +38,46 @@ export class Renderer {
         );
         if (this.style.backgroundColor() !== tile.styles.backgroundColor()) {
           this.style.setBackgroundColor(tile.styles.backgroundColor());
-          row += tile.styles.backgroundColor;
+          row += tile.styles.backgroundColor();
         }
 
         if (this.style.color() !== tile.styles.color()) {
           this.style.setColor(tile.styles.color());
-          row += tile.styles.color;
+          row += tile.styles.color();
         }
 
         if (this.style.isDim() !== tile.styles.isDim()) {
           this.style.setDim(tile.styles.isDim());
-          row += tile.styles.isDim;
+          row += tile.styles.isDim();
         }
 
         if (this.style.isItalic() !== tile.styles.isItalic()) {
           this.style.setItalic(tile.styles.isItalic());
-          row += tile.styles.isItalic;
+          row += tile.styles.isItalic();
         }
         if (this.style.isUnderline() !== tile.styles.isUnderline()) {
           this.style.setUnderline(tile.styles.isUnderline());
-          row += tile.styles.isUnderline;
+          row += tile.styles.isUnderline();
         }
         if (this.style.isStrikeThrough() !== tile.styles.isStrikeThrough()) {
           this.style.setStrikeThrough(tile.styles.isStrikeThrough());
-          row += tile.styles.isStrikeThrough;
+          row += tile.styles.isStrikeThrough();
         }
         if (this.style.isInverse() !== tile.styles.isInverse()) {
           this.style.setInverse(tile.styles.isInverse());
-          row += tile.styles.isInverse;
+          row += tile.styles.isInverse();
         }
         if (this.style.isBlink() !== tile.styles.isBlink()) {
           this.style.setBlink(tile.styles.isBlink());
-          row += tile.styles.isBlink;
+          row += tile.styles.isBlink();
         }
         if (this.style.isHidden() !== tile.styles.isHidden()) {
           this.style.setHidden(tile.styles.isHidden());
-          row += tile.styles.isHidden;
+          row += tile.styles.isHidden();
         }
         if (this.style.isBold() !== tile.styles.isBold()) {
           this.style.setBold(tile.styles.isBold());
-          row += tile.styles.isBold;
+          row += tile.styles.isBold();
         }
         row += tile.display;
       }

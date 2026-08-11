@@ -103,6 +103,9 @@ editor.normalMode.bind(["$"], textEditorCommands.textEditor.goToEndLine);
 editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
 editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
 editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
+editor.normalMode.bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
+  editor.activeWindow = treeView;
+});
 editor.normalMode.bind(
   ["W"],
   textEditorCommands.textEditor.nextCompleteWordStart,

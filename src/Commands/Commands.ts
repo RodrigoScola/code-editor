@@ -10,8 +10,53 @@ type TrieNodeKey = {
   hasControl: boolean;
 };
 
+function keyId(key: TrieNodeKey): string {
+  return `${key.hasControl ? "C" : "N"}:${key.key}`;
+}
+
+function keyFromBinding(binding: string): TrieNodeKey {
+  const controlKey = binding.match(/^<C-(.+)>$/);
+
+  if (controlKey) {
+    return {
+      hasControl: true,
+      key: controlKey[1],
+    };
+  }
+
+  return {
+    hasControl: false,
+    key: binding,
+  };
+}
+
+function keyFromEvent(key: KeyEvent): TrieNodeKey {
+  if (!key.ctrl) {
+    return {
+      hasControl: false,
+      key: key.token,
+    };
+  }
+  
+  return {
+    hasControl: true,
+    key: controlTokenToKey(key.token),
+  };
+}
+
+function controlTokenToKey(token: string): string {
+  if (token.length === 1) {
+    const code = token.charCodeAt(0);
+    if (code >= 1 && code <= 26) {
+      return String.fromCharCode(code + 96);
+    }
+  }
+
+  return token;
+}
+
 class TrieNode {
-  children: Map<TrieNodeKey, TrieNode> = new Map<string, TrieNode>();
+  children: Map<string, TrieNode> = new Map<string, TrieNode>();
 
   command?: Command;
 }
@@ -20,48 +65,33 @@ export class KeyMapCommands {
   private root: TrieNode = new TrieNode();
   private current = this.root;
 
-  private parse(str: string): TrieNodeKey {
-    // "<C-b>": false,
-    let key: TrieNodeKey = {
-      hasControl: false,
-      key: "",
-    };
-
-    if (str.includes("<C-")) {
-      key.hasControl = true;
-      key.key = str.slice("<C-".length, str.indexOf(">"));
-    } else {
-      key.key = str;
-    }
-
-    return key;
-  }
-
   bind(node: string[], command: Command) {
     let current = this.root;
 
     for (let i = 0; i < node.length; i++) {
-      const parsed = this.parse(node[i]);
-      if (!current.children.has(parsed)) {
-        current.children.set(parsed, new TrieNode());
+      const parsed = keyFromBinding(node[i]);
+      const id = keyId(parsed);
+      if (!current.children.has(id)) {
+        current.children.set(id, new TrieNode());
       }
-      let created = current.children.get(parsed);
+      let created = current.children.get(id);
       assert(created, "invalid node created");
       current = created;
     }
     current.command = command;
   }
-  handleKey(key: string | undefined, ctx: EditorContext) {
+  handleKey(key: KeyEvent | undefined, ctx: EditorContext) {
     if (!key) {
       return;
     }
-    const parsed = this.parse(key);
-    const next = this.current.children.get(parsed);
+    const parsed = keyFromEvent(key);
+    const id = keyId(parsed);
+    const next = this.current.children.get(id);
 
     if (!next) {
       this.reset();
 
-      const retry = this.current.children.get(parsed);
+      const retry = this.current.children.get(id);
 
       if (!retry) {
         return;
@@ -85,7 +115,7 @@ export class NormalMode implements EditorMode {
   keyMap: KeyMapCommands = new KeyMapCommands();
 
   handleKey(key: KeyEvent, ctx: EditorContext) {
-    this.keyMap.handleKey(key.token, ctx);
+    this.keyMap.handleKey(key, ctx);
   }
   bind(node: string[], command: Command) {
     this.keyMap.bind(node, command);

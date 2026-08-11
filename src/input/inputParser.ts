@@ -97,7 +97,7 @@ export abstract class InputParser {
         break;
 
       case "backspace":
-        token = DEFAULT_TOKENS.BACKSPACE;
+        token = key.ctrl ? "h" : DEFAULT_TOKENS.BACKSPACE;
         break;
 
       case "delete":
@@ -145,7 +145,7 @@ export abstract class InputParser {
         break;
 
       default:
-        token = str;
+        token = key.name ?? str;
     }
 
     return {
