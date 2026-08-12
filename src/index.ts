@@ -115,7 +115,19 @@ editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
 editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
 editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
 editor.normalMode.bind(["r", "r"], (ctx) => {
-  ctx.requestRepaint();
+  editor.rootWindow.addChildren(
+    new DisplayComponent()
+      .setPositionMode("absolute")
+      .setLayout({
+        height: 20,
+        width: 20,
+        x: 0,
+        y: 0,
+      })
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+      ),
+  );
 });
 editor.normalMode.bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
   editor.activeWindow = treeView;

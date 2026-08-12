@@ -109,15 +109,6 @@ export class Canvas {
     }
   }
 
-  public renderCells() {
-    // util function to render the map in tests
-
-    console.log(
-      this.canvas.map((line) => {
-        return line.map((ch) => `${ch.display}`);
-      }),
-    );
-  }
   public renderBoard() {
     // util function to render the map in tests
 
@@ -125,7 +116,10 @@ export class Canvas {
       this.canvas
         .map((line) => {
           return line
-            .map((ch) => `${ch.styles.backgroundColor()}${ch.display}`)
+            .map(
+              (ch) =>
+                `${ch.styles.backgroundColor()}${ch.styles.color()}${ch.display}`,
+            )
             .join("");
         })
         .join("\n"),
