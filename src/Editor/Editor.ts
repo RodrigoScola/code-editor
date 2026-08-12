@@ -7,7 +7,7 @@ import { LayoutEngine } from "../ui/layout/layout.js";
 import { Renderer } from "../ui/renderer.js";
 import { DiskFile, Textdocument } from "./Documents/TextDocument.js";
 import { EditorWindow } from "./windows/EditorWindow.js";
-import { GitEditorWindow } from "./windows/GitEditorWindow.js";
+import { GitCommitWindow, GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
 import { TextEditorWindow } from "./windows/TextEditorWindow.js";
 
@@ -17,7 +17,8 @@ export class EditorContext {
   renderer: Renderer = new Renderer();
   activeWindow: EditorWindow | null = null;
   rootWindow: Component = new DisplayComponent();
-  gitEditorWindow: GitEditorWindow | null = null;
+  gitEditor: GitEditorWindow | null = null;
+  gitCommit: GitCommitWindow = new GitCommitWindow();
   textEditorWindow: TextEditorWindow | null = null;
   statusWindow: StatusWindow | null = null;
   normalMode: NormalMode = new NormalMode();

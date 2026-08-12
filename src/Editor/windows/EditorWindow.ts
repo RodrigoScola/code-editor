@@ -29,7 +29,7 @@ export class EditorWindow {
     const cursorLine = this.buffer.at(this.cursor.line);
     this.drawBuffer(canvas, this);
 
-    this.paintCursor(canvas, this, cursorLine);
+    this.cursor.paint(canvas, this, cursorLine);
   }
   onEvent(event: EditorEvents): void {
     // todo: when adding config, this is needing a change
@@ -75,35 +75,13 @@ export class EditorWindow {
       canvas.drawText(cl.x, screenY, line, editor.window.styles());
     }
   }
-  paintCursor(
-    canvas: Canvas,
-    editor: EditorWindow,
-    content: string | null | undefined,
-  ) {
-    const cl = editor.window.contentLayout();
-
-    if (!content) {
-      return;
-    }
-
-    const cursor = canvas.applyRelative(
-      editor.cursor.column,
-      editor.cursor.line - editor.viewPort.firstLine,
-      cl,
-      content,
-    );
-
-    if (
-      cursor.x < cl.x ||
-      cursor.y < cl.y ||
-      cursor.x >= cl.x + cl.width ||
-      cursor.y >= cl.y + cl.height
-    ) {
-      return;
-    }
-
-    canvas.fillRect(cursor, editor.cursor.style);
+  visible(): boolean {
+    return this.window.visible();
   }
+  setVisible(newVal: boolean) {
+    this.window.setVisible(newVal);
+  }
+
   moveCursorDown() {
     return this.cursor.moveDown(this.buffer);
   }

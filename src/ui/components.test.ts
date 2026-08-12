@@ -225,12 +225,12 @@ describe("editorComponent", () => {
     expect(secondLineCell).toBeDefined();
 
     expect(
-      firstLineCell!.display,
+      firstLineCell!.styles.display(),
       "text should display on the first line",
     ).toEqual(display.buffer.at(0)!.at(0));
 
     expect(
-      secondLineCell!.display,
+      secondLineCell!.styles.display(),
       "text should display on the second line",
     ).toEqual(display.buffer.at(1)!.at(0));
   });

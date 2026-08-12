@@ -55,6 +55,8 @@ class GitFile {
     }
   }
 }
+export class GitCommitWindow extends EditorWindow {
+}
 
 export class GitEditorWindow extends EditorWindow {
   private files: GitFile[] = [];

@@ -12,20 +12,31 @@ export class Renderer {
     this.paint(root, canvas);
     return canvas;
   }
+  getComponents(root: Component) {
+    const components = [root];
+
+    for (const child of root.children()) {
+      components.push(...this.getComponents(child));
+    }
+    return components;
+  }
 
   style: ComponentStyles = ComponentStyle.Create()
     .setBackgroundColor(colors.BACKGROUND_OFF)
     .setColor(colors.FOREGROUND_OFF);
 
   private paint(root: Component, canvas: Canvas) {
-    canvas.fillRect(
-      root.layout(),
-      ComponentStyle.Blend(root.styles(), root.parent()?.styles()),
-    );
-    root.paint(canvas);
+    const components = this.getComponents(root);
 
-    for (const child of root.children()) {
-      this.paint(child, canvas);
+    components.sort((a, b) => a.index() - b.index());
+
+    for (const component of components) {
+      canvas.fillRect(
+        component.layout(),
+        ComponentStyle.Blend(component.styles(), component.parent()?.styles()),
+      );
+
+      component.paint(canvas);
     }
   }
   render(canvas: Canvas) {
@@ -38,7 +49,7 @@ export class Renderer {
 
         assert(tile, `invalid tile came out at x:${j}, y:${i}`);
         assert(
-          tile.display.length == 1,
+          tile.styles.display().length == 1,
           "cannot display more things on one cell",
         );
         if (this.style.backgroundColor() !== tile.styles.backgroundColor()) {
@@ -90,7 +101,7 @@ export class Renderer {
           this.style.setBold(tile.styles.isBold());
           row += tile.styles.isBold() ? "\x1b[1m" : "\x1b[22m";
         }
-        row += tile.display;
+        row += tile.styles.display();
       }
       rows.push(row);
     }

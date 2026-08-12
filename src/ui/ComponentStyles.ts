@@ -4,6 +4,7 @@ export class ComponentStyle implements ComponentStyles {
   private bg: string = colors.BACKGROUND_OFF;
   private cl: string = colors.FOREGROUND_OFF;
   private bld: boolean = false;
+  private dsp: string = " ";
 
   private dm: boolean = false;
   private itc: boolean = false;
@@ -15,6 +16,13 @@ export class ComponentStyle implements ComponentStyles {
 
   public isBold(): boolean {
     return this.bld;
+  }
+  display() {
+    return this.dsp;
+  }
+  setDisplay(nval: string): ComponentStyles {
+    this.dsp = nval;
+    return this;
   }
 
   public setBold(nval: boolean): ComponentStyles {
@@ -106,7 +114,11 @@ export class ComponentStyle implements ComponentStyles {
     const firstForeground = first?.color() ?? colors.FOREGROUND_OFF;
     const mergeFlag = (child?: boolean, inherited?: boolean) =>
       (child ?? false) || (inherited ?? false);
+    const firstDisplay = first?.display() ?? " ";
 
+    st.setDisplay(
+      firstDisplay === " " ? (parent?.display() ?? firstDisplay) : firstDisplay,
+    );
     st.setBackgroundColor(
       firstBackground === colors.BACKGROUND_OFF
         ? (parent?.backgroundColor() ?? firstBackground)

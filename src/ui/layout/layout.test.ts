@@ -84,8 +84,6 @@ describe("LayoutEngine measurement", () => {
     const cnv = new Canvas().setLayout(layout);
     Renderer.Create().build(root, cnv);
 
-    cnv.renderCells();
-
     const cell = cnv.getCell(2, 2);
     assert(cell, "invalid cell at x: 2 y : 2");
 

@@ -14,6 +14,8 @@ type TodoPositionModes = "relative" | "sticky";
 
 interface Component {
   index(): number;
+  visible(): boolean;
+  setVisible: (nval: boolean) => Component;
 
   positionMode(): PositionMode;
   setPositionMode(nval: PositionMode): Component;
@@ -70,7 +72,6 @@ type EditingModes = "normal" | "visual" | "insert" | "command";
 interface DisplayTile {
   x: number;
   y: number;
-  display: string;
   styles: ComponentStyles;
 }
 interface LayoutBounds {
@@ -105,6 +106,8 @@ interface BufferLike {
 }
 
 interface ComponentStyles {
+  display(): string;
+  setDisplay: (nval: string) => ComponentStyles;
   backgroundColor: () => string;
   setBackgroundColor: (nval: string) => ComponentStyles;
   color: () => string;

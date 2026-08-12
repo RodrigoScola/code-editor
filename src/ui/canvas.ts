@@ -3,7 +3,8 @@ import { ComponentStyle } from "./ComponentStyles.js";
 
 const DEFAULT_STYLE: ComponentStyles = ComponentStyle.Create()
   .setBackgroundColor(colors.BACKGROUND_OFF)
-  .setColor(colors.FOREGROUND_OFF);
+  .setColor(colors.FOREGROUND_OFF)
+  .setDisplay(" ");
 
 export class Canvas {
   tab_width: number = 4;
@@ -47,7 +48,6 @@ export class Canvas {
   private createTile(x: number, y: number): DisplayTile {
     return {
       x: x,
-      display: " ",
       y: y,
       styles: ComponentStyle.Create(),
     };
@@ -103,7 +103,6 @@ export class Canvas {
 
     for (const row of this.canvas) {
       for (const cell of row) {
-        cell.display = " ";
         cell.styles = DEFAULT_STYLE;
       }
     }
@@ -118,13 +117,16 @@ export class Canvas {
           return line
             .map(
               (ch) =>
-                `${ch.styles.backgroundColor()}${ch.styles.color()}${ch.display}`,
+                `${ch.styles.backgroundColor()}${ch.styles.color()}${ch.styles.display()}`,
             )
             .join("");
         })
         .join("\n"),
     );
     console.log(colors.BACKGROUND_OFF);
+  }
+  setCell(x: number, y: number, style: ComponentStyles) {
+    this.canvas[y][x].styles = style;
   }
 
   fillRect(bounds: LayoutBounds, style: ComponentStyles | null) {
@@ -160,6 +162,9 @@ export class Canvas {
     };
   }
   drawText(x: number, y: number, text: string, style: ComponentStyles | null) {
+    if (!text) {
+      return;
+    }
     text = expandTabs(text, this.tab_width);
 
     for (let i = 0; i < text.length; i++) {
@@ -167,11 +172,10 @@ export class Canvas {
       if (!cell) {
         break;
       }
-      cell.display = text[i];
       cell.styles = ComponentStyle.Blend(
         cell.styles,
         ComponentStyle.Blend(style, DEFAULT_STYLE),
-      );
+      ).setDisplay(text[i]);
     }
   }
   getCells() {

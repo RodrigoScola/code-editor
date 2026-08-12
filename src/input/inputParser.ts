@@ -84,10 +84,12 @@ export abstract class InputParser {
   }
 
   static isSpecialToken(token: string): boolean {
+    //@ts-ignore
     return SPECIAL_TOKENS.has(token);
   }
 
   static isCharacter(token: string): boolean {
+    //@ts-ignore
     return !SPECIAL_TOKENS.has(token);
   }
 

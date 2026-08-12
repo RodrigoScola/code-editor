@@ -23,13 +23,14 @@ describe("tests the buffer and rendering", () => {
     LayoutEngine.Measure(window.window, window.window.layout());
 
     Renderer.Create().build(window.window, cnv);
-    cnv.renderCells();
 
     const first = cnv.getCell(0, 0);
 
-    expect(first?.display, `should equal the same`).eq("t");
+    cnv.renderBoard();
+
+    expect(first?.styles.display(), `should equal the same`).eq("t");
     const last = cnv.getCell(5, 0);
 
-    expect(last?.display, `should equal the same`).eq("b");
+    expect(last?.styles.display(), `should equal the same`).eq("b");
   });
 });
