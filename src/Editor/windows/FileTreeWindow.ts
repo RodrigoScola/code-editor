@@ -174,9 +174,7 @@ export class FileTreeWindow extends EditorWindow {
   moveCursorUp(): void {
     return this.cursor.moveUp(this);
   }
-  onEvent(event: EditorEvents): void {
-    console.log("");
-  }
+  onEvent(event: EditorEvents): void {}
   onEnter(ctx: EditorContext): void {
     const node = this.getNodeAtIndex(this.root, this.cursor.line);
     if (!node || node.isDirectory) {

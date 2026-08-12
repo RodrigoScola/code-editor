@@ -26,6 +26,8 @@ export class EditorContext {
   mode: EditorMode = this.normalMode;
   modeName: EditingModes = "normal";
 
+  private renderPending: boolean = false;
+
   constructor() {
     EditorContext.instance = this;
   }
@@ -80,7 +82,19 @@ export class EditorContext {
     }
     this.activeWindow?.onEvent({ name: "editorModeChange", mode: m });
   }
-  repaint() {}
+  requestRepaint() {
+    if (this.renderPending) {
+      return;
+    }
+    this.renderPending = true;
+    setImmediate(() => {
+      this.renderPending = false;
+      this.repaint();
+    });
+  }
+  private repaint() {
+    process.stdout.write("\x1b[H" + this.render());
+  }
   render() {
     assert(this.rootWindow, "cannot render anything without a root window");
 
