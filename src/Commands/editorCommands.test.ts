@@ -76,6 +76,18 @@ describe("textEditorCommands", () => {
 
     expect(editorWindow.cursor.column).eq(7);
   });
+  it("moves previous word start with punctuation", () => {
+    const sentence = "things.md";
+
+    const { ctx, editorWindow } = setupContext({ fileContent: sentence });
+
+    editorWindow.cursor.column = sentence.indexOf(".");
+
+    textEditorCommands.textEditor.prevWordStart(ctx);
+    console.log(sentence[editorWindow.cursor.column], "this ");
+
+    expect(editorWindow.cursor.column).eq(0);
+  });
 });
 
 function setupContext({ fileContent }: { fileContent: string }) {

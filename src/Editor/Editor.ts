@@ -3,7 +3,7 @@ import { assert } from "../assert.js";
 import { TextBuffer } from "../ui/buffer/Buffer.js";
 import { Canvas } from "../ui/canvas.js";
 import { DisplayComponent } from "../ui/components.js";
-import { LayoutEngine } from "../ui/layout.js";
+import { LayoutEngine } from "../ui/layout/layout.js";
 import { Renderer } from "../ui/renderer.js";
 import { DiskFile, Textdocument } from "./Documents/TextDocument.js";
 import { EditorWindow } from "./windows/EditorWindow.js";

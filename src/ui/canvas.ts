@@ -118,6 +118,20 @@ export class Canvas {
       }),
     );
   }
+  public renderBoard() {
+    // util function to render the map in tests
+
+    console.log(
+      this.canvas
+        .map((line) => {
+          return line
+            .map((ch) => `${ch.styles.backgroundColor()}${ch.display}`)
+            .join("");
+        })
+        .join("\n"),
+    );
+    console.log(colors.BACKGROUND_OFF);
+  }
 
   fillRect(bounds: LayoutBounds, style: ComponentStyles | null) {
     for (let y = bounds.y; y < bounds.y + bounds.height; y++) {

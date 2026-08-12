@@ -199,6 +199,12 @@ export class InsertMode implements EditorMode {
     const buffer = ctx.activeWindow.buffer;
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
+      if (key.token === "h" && key.ctrl) {
+        cursor.column -= 1;
+        cursor.prefferedColumn = cursor.column;
+        buffer.remove(cursor.line, cursor.column);
+        return;
+      }
       let valid = key.shift ? key.token.toUpperCase() : key.token;
       buffer.addCharacter(cursor.line, cursor.column, valid);
       cursor.column += 1;

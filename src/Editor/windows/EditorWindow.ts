@@ -37,9 +37,12 @@ export class EditorWindow {
       return;
     }
 
+    const cursor = this.cursor.style;
+
     if (event.mode === "normal") {
-      this.cursor.style.setBackgroundColor(colors.RED_BACKGROUND);
-      this.cursor.style.setColor(colors.WHITE_FOREGROUND);
+      cursor
+        .setBackgroundColor(colors.RED_BACKGROUND)
+        .setColor(colors.WHITE_FOREGROUND);
     } else if (event.mode === "insert") {
       this.cursor.style.setBackgroundColor(colors.GREEN_BACKGROUND);
       this.cursor.style.setColor(colors.WHITE_FOREGROUND);

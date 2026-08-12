@@ -9,7 +9,8 @@ export class Cursor {
   column: number = 0;
   style: ComponentStyles = ComponentStyle.Create()
     .setBackgroundColor(colors.RED_BACKGROUND)
-    .setColor(colors.WHITE_FOREGROUND);
+    .setColor(colors.WHITE_FOREGROUND)
+    .setBold(true);
 
   ensureCursorVisible(viewPort: ViewPort) {
     const lastVisibleLine = viewPort.firstLine + viewPort.visibleLines - 1;

@@ -4,3 +4,9 @@ export const WINDOW_NAMES = {
   TREE_WINDOW: "EDITOR_TREE_WINDOW",
   GIT_WINDOW: "GIT_WINDOW",
 } as const;
+
+export const POSITION_ORDER: Record<PositionMode, number> = {
+  normal: 0,
+  absolute: 1,
+  fixed: 2,
+};

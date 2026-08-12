@@ -1,23 +1,16 @@
 import process from "process";
 import readline from "node:readline";
-import fs from "fs";
 import { Canvas } from "./ui/canvas.js";
 import { DisplayComponent } from "./ui/components.js";
 import colors from "./ui/colors.js";
-import { Renderer } from "./ui/renderer.js";
-import { LayoutEngine } from "./ui/layout.js";
-import { TextBuffer } from "./ui/buffer/Buffer.js";
+import { LayoutEngine } from "./ui/layout/layout.js";
 import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { EditorContext } from "./Editor/Editor.js";
 import { textEditorCommands } from "./Commands/editorCommands.js";
-import { DEFAULT_TOKENS, InputParser } from "./Input/inputParser.js";
+import { InputParser } from "./Input/inputParser.js";
 import { WINDOW_NAMES } from "./constants.js";
-import {
-  DiskFile,
-  MemoryFile,
-  Textdocument,
-} from "./Editor/Documents/TextDocument.js";
+import { DiskFile, Textdocument } from "./Editor/Documents/TextDocument.js";
 import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
 import { ComponentStyle } from "./ui/ComponentStyles.js";
 import { GitEditorWindow } from "./Editor/windows/GitEditorWindow.js";
@@ -29,6 +22,13 @@ disableMouseEvents();
 enableKeyboardProtocol();
 
 const editor = new EditorContext();
+
+const dp = new DisplayComponent();
+
+dp.setStyles(
+  ComponentStyle.Create().setBackgroundColor(colors.GREEN_BACKGROUND),
+);
+dp.setIndex(2);
 
 const gitEditor = new GitEditorWindow();
 
@@ -114,8 +114,15 @@ editor.normalMode.bind(["$"], textEditorCommands.textEditor.goToEndLine);
 editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
 editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
 editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
+editor.normalMode.bind(["r", "r"], (ctx) => {
+  ctx.requestRepaint();
+});
 editor.normalMode.bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
   editor.activeWindow = treeView;
+});
+
+editor.normalMode.bind(["<C-w>", "<C-l>"], (ctx: EditorContext) => {
+  editor.activeWindow = gitEditor;
 });
 editor.normalMode.bind(
   ["W"],
@@ -156,7 +163,7 @@ initialLayout.width = process.stdout.columns;
 editor.canvas.setLayout(initialLayout);
 editor.rootWindow.setLayout(initialLayout);
 
-process.stdout.write("\x1b[H" + editor.render());
+editor.requestRepaint();
 
 process.stdout.on("resize", () => handleResize());
 
@@ -228,8 +235,14 @@ async function handleResize(size?: { columns: number; rows: number }) {
   editor.canvas.setLayout(resizedLayout);
 
   editor.rootWindow.setLayout(resizedLayout);
+  dp.setLayout({
+    height: resizedLayout.height - 3,
+    width: resizedLayout.width - 4,
+    x: 0,
+    y: 0,
+  });
 
-  process.stdout.write("\x1b[H" + editor.render());
+  editor.requestRepaint();
 }
 
 process.stdout.on("finish", () => {
@@ -239,8 +252,7 @@ process.stdout.on("finish", () => {
 
 function dispatchKey(parsedKey: KeyEvent) {
   editor.handleKey(parsedKey);
-
-  process.stdout.write("\x1b[H" + editor.render());
+  editor.requestRepaint();
 }
 
 process.stdin.on("data", (chunk) => {
@@ -288,3 +300,7 @@ export function enableKeyboardProtocol() {
 export function disableKeyboardProtocol() {
   process.stdout.write("\x1b[<u");
 }
+
+setInterval(() => {
+  editor.requestRepaint();
+}, 50);

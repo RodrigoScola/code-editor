@@ -1,3 +1,4 @@
+import { assert } from "../assert.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 import { ComponentStyle } from "./ComponentStyles.js";
@@ -7,6 +8,8 @@ export class DisplayComponent implements Component {
   private id: number;
   private maxH: number | null = null;
   private maxW: number | null = null;
+  private ind: number = 0;
+  private pm: PositionMode = "normal";
   s: ComponentStyles;
   nm: string | null | undefined;
 
@@ -169,6 +172,26 @@ export class DisplayComponent implements Component {
     for (const child of this.children()) {
       child.onEvent(event);
     }
+  }
+  index(): number {
+    return this.ind;
+  }
+  setIndex(nval: number) {
+    const p = this.parent();
+    if (p) {
+      assert(nval >= p.index(), "index cannot be less than parent");
+    }
+
+    this.ind = nval;
+
+    return this;
+  }
+  positionMode(): PositionMode {
+    return this.pm;
+  }
+  setPositionMode(nval: PositionMode): Component {
+    this.pm = nval;
+    return this;
   }
 }
 

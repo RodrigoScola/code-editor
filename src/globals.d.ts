@@ -9,7 +9,15 @@ type SubmitCommandEvent = {
   name: "submitCommand";
 };
 
+type PositionMode = "normal" | "absolute" | "fixed";
+type TodoPositionModes = "relative" | "sticky";
+
 interface Component {
+  index(): number;
+
+  positionMode(): PositionMode;
+  setPositionMode(nval: PositionMode): Component;
+  setIndex: (nval: number) => Component;
   getId(): number;
   layout: () => LayoutBounds;
   setLayout: (nLayout: LayoutBounds) => Component;

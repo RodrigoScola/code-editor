@@ -2,7 +2,7 @@ import colors from "./colors.js";
 import { describe, it, expect } from "vitest";
 import { Canvas } from "./canvas.js";
 import { DisplayComponent } from "./components.js";
-import { LayoutEngine } from "./layout.js";
+import { LayoutEngine } from "./layout/layout.js";
 import { assert } from "../assert.js";
 import { Renderer } from "./renderer.js";
 import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";

@@ -277,77 +277,70 @@ function prevWordStart(ctx: EditorContext) {
   const cursor = activeEditor.cursor;
 
   const currentLine = buffer.at(cursor.line);
+
   assert(
     currentLine !== undefined,
-    "invalid line to go to the next word command",
+    "invalid line to go to the previous word command",
   );
 
-  let prevColumn = cursor.column;
+  let column = cursor.column;
 
-  if (prevColumn <= 0) {
+  // Move left at least once.
+  if (column > 0) {
+    column--;
+  } else {
+    // At the beginning of the line: go to previous line.
     const prevLine = buffer.at(cursor.line - 1);
+
     if (prevLine !== undefined) {
-      cursor.line -= 1;
-      cursor.column = prevLine.length - 1;
-      cursor.prefferedColumn = 0;
-      return;
+      cursor.line--;
+      cursor.column = Math.max(0, prevLine.length - 1);
+      cursor.prefferedColumn = cursor.column;
     }
 
-    cursor.column = Math.max(0, currentLine.length - 1);
-    cursor.prefferedColumn = cursor.column;
     return;
   }
 
-  const initialChar = currentLine[prevColumn];
-  if (isWhitespace(initialChar)) {
-    while (prevColumn > 0 && isWhitespace(currentLine[prevColumn])) {
-      prevColumn -= 1;
-    }
-  } else if (isWordChar(currentLine[prevColumn])) {
-    while (prevColumn > 0 && isWordChar(currentLine[prevColumn])) {
-      prevColumn -= 1;
-    }
+  // Skip whitespace.
+  while (column > 0 && isWhitespace(currentLine[column])) {
+    column--;
+  }
 
-    while (prevColumn > 0 && isWhitespace(currentLine[prevColumn])) {
-      prevColumn -= 1;
+  // If we're inside a word, move to its beginning.
+  if (isWordChar(currentLine[column])) {
+    while (column > 0 && isWordChar(currentLine[column - 1])) {
+      column--;
     }
   } else {
-    while (
-      prevColumn > 0 &&
-      !isWordChar(currentLine[prevColumn]) &&
-      !isWhitespace(currentLine[prevColumn])
-    ) {
-      prevColumn -= 1;
+    // We're on punctuation.
+    // Move across punctuation until we reach whitespace,
+    // then find the beginning of the previous word.
+    while (column > 0 && !isWhitespace(currentLine[column - 1])) {
+      column--;
     }
 
-    while (prevColumn > 0 && isWhitespace(currentLine[prevColumn])) {
-      prevColumn -= 1;
+    while (column > 0 && isWhitespace(currentLine[column - 1])) {
+      column--;
     }
-  }
 
-  if (prevColumn <= 0) {
-    const nextLine = buffer.at(cursor.line - 1);
-    if (nextLine !== undefined) {
-      cursor.line -= 1;
-      cursor.column = 0;
-      cursor.prefferedColumn = 0;
-      return;
+    if (isWordChar(currentLine[column])) {
+      while (column > 0 && isWordChar(currentLine[column - 1])) {
+        column--;
+      }
     }
   }
 
-  cursor.column = Math.max(
-    0,
-    Math.min(prevColumn, Math.max(currentLine.length - 1, 0)),
-  );
-  cursor.prefferedColumn = cursor.column;
+  cursor.column = column;
+  cursor.prefferedColumn = column;
 }
+
 function prevCompleteWord(ctx: EditorContext) {}
 
-// w - jump forwards to the start of a word
+// ✅w - jump forwards to the start of a word
 // W - jump forwards to the start of a word (words can contain punctuation)
 // e - jump forwards to the end of a word
 // E - jump forwards to the end of a word (words can contain punctuation)
-// b - jump backwards to the start of a word
+// ✅b - jump backwards to the start of a word
 // B - jump backwards to the start of a word (words can contain punctuation)
 
 // ✅  h - move cursor left

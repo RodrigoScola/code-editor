@@ -58,47 +58,15 @@ class GitFile {
 
 export class GitEditorWindow extends EditorWindow {
   private files: GitFile[] = [];
+
   constructor() {
     super();
-
-    // const shell =
-    //   process.platform === "win32" ? "cmd.exe" : process.env.SHELL || "/bin/sh";
-
-    // const child = cp.spawn(shell, [], {
-    //   stdio: ["pipe", "pipe", "pipe"],
-    // });
-
-    // setTimeout(() => {
-    //   child.stdout.on("data", (data: Buffer) => {
-    //     const lines = data.toString().split(/\r?\n/);
-
-    //     for (const line of lines) {
-    //       this.buffer.addLine(line);
-    //     }
-    //   });
-
-    //   child.stderr.on("data", (data: Buffer) => {
-    //     const lines = data.toString().split(/\r?\n/);
-
-    //     for (const line of lines) {
-    //       this.buffer.addLine(line);
-    //     }
-    //   });
-
-    //   child.on("error", (error) => {
-    //     this.buffer.addLine(error.toString());
-    //   });
-    // }, 100);
-
     this.requestData();
-
-    // for (const line of out) {
-    //   this.buffer.addLine(line.trim());
-    // }
   }
+
   requestData() {
     this.files = [];
-    this.buffer = new TextBuffer("");
+    this.buffer = new TextBuffer();
 
     const gitFiles = cp
       .execSync("git status --short", { encoding: "utf-8" })
@@ -119,6 +87,9 @@ export class GitEditorWindow extends EditorWindow {
       this.files.push(f);
     }
 
+    this.display();
+  }
+  display() {
     this.buffer.addLine("Staged Files: ");
     const staged = this.files.filter((file) => file.isStaged());
 

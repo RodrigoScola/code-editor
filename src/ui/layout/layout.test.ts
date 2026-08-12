@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { DisplayComponent } from "./components.js";
+import { DisplayComponent } from "../components.js";
 import { LayoutEngine } from "./layout.js";
-import { Renderer } from "./renderer.js";
-import { Canvas } from "./canvas.js";
-import colors from "./colors.js";
-import { assert } from "../assert.js";
-import { ComponentStyle } from "./ComponentStyles.js";
+import { Renderer } from "../renderer.js";
+import { Canvas } from "../canvas.js";
+import colors from "../colors.js";
+import { assert } from "../../assert.js";
+import { ComponentStyle } from "../ComponentStyles.js";
 
 describe("LayoutEngine measurement", () => {
   it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {

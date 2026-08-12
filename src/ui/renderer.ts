@@ -7,9 +7,10 @@ export class Renderer {
   static Create() {
     return new Renderer();
   }
-  build(root: Component, canvas: Canvas) {
+  build(root: Component, canvas: Canvas): Canvas {
     canvas.clear();
     this.paint(root, canvas);
+    return canvas;
   }
 
   style: ComponentStyles = ComponentStyle.Create()
@@ -52,36 +53,42 @@ export class Renderer {
 
         if (this.style.isDim() !== tile.styles.isDim()) {
           this.style.setDim(tile.styles.isDim());
-          row += tile.styles.isDim();
+          row += tile.styles.isDim() ? "\x1b[2m" : "\x1b[22m";
         }
 
         if (this.style.isItalic() !== tile.styles.isItalic()) {
           this.style.setItalic(tile.styles.isItalic());
-          row += tile.styles.isItalic();
+          row += tile.styles.isItalic() ? "\x1b[3m" : "\x1b[23m";
         }
+
         if (this.style.isUnderline() !== tile.styles.isUnderline()) {
           this.style.setUnderline(tile.styles.isUnderline());
-          row += tile.styles.isUnderline();
+          row += tile.styles.isUnderline() ? "\x1b[4m" : "\x1b[24m";
         }
+
         if (this.style.isStrikeThrough() !== tile.styles.isStrikeThrough()) {
           this.style.setStrikeThrough(tile.styles.isStrikeThrough());
-          row += tile.styles.isStrikeThrough();
+          row += tile.styles.isStrikeThrough() ? "\x1b[9m" : "\x1b[29m";
         }
+
         if (this.style.isInverse() !== tile.styles.isInverse()) {
           this.style.setInverse(tile.styles.isInverse());
-          row += tile.styles.isInverse();
+          row += tile.styles.isInverse() ? "\x1b[7m" : "\x1b[27m";
         }
+
         if (this.style.isBlink() !== tile.styles.isBlink()) {
           this.style.setBlink(tile.styles.isBlink());
-          row += tile.styles.isBlink();
+          row += tile.styles.isBlink() ? "\x1b[5m" : "\x1b[25m";
         }
+
         if (this.style.isHidden() !== tile.styles.isHidden()) {
           this.style.setHidden(tile.styles.isHidden());
-          row += tile.styles.isHidden();
+          row += tile.styles.isHidden() ? "\x1b[8m" : "\x1b[28m";
         }
+
         if (this.style.isBold() !== tile.styles.isBold()) {
           this.style.setBold(tile.styles.isBold());
-          row += tile.styles.isBold();
+          row += tile.styles.isBold() ? "\x1b[1m" : "\x1b[22m";
         }
         row += tile.display;
       }

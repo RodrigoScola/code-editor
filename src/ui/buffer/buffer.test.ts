@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { TextEditorWindow } from "../../Editor/windows/TextEditorWindow.js";
-import { LayoutEngine } from "../layout.js";
+import { LayoutEngine } from "../layout/layout.js";
 import { Canvas } from "../canvas.js";
 import { Renderer } from "../renderer.js";
 import {

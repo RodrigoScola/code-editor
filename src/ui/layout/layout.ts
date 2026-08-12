@@ -1,4 +1,5 @@
-import { assert } from "../assert.js";
+import { assert } from "../../assert.js";
+import { POSITION_ORDER } from "../../constants.js";
 
 export class LayoutEngine {
   static CreateBounds(): LayoutBounds {
@@ -19,12 +20,23 @@ export class LayoutEngine {
     }
     return root;
   }
+  private static OrderLayoutComponents(components: Component[]) {
+    return components.sort(
+      (a, b) =>
+        POSITION_ORDER[a.positionMode()] - POSITION_ORDER[b.positionMode()],
+    );
+  }
   private static layoutVertical(component: Component) {
     let parent = component.contentLayout();
     let flexible = 0;
     let remaining = parent.height;
 
-    for (const child of component.children()) {
+    const ordered = LayoutEngine.OrderLayoutComponents(component.children());
+
+    for (const child of ordered) {
+      if (child.positionMode() === "absolute") {
+        continue;
+      }
       const measured = child.measure(parent);
 
       if (Number.isFinite(measured.height)) {
@@ -36,7 +48,7 @@ export class LayoutEngine {
       }
     }
     let y = parent.y;
-    for (const child of component.children()) {
+    for (const child of ordered) {
       let measured = child.measure(parent);
 
       let height: number;
@@ -48,6 +60,9 @@ export class LayoutEngine {
       } else {
         height = Math.floor(remaining / flexible);
         isFlexible = true;
+      }
+      if (child.positionMode() === "absolute") {
+        continue;
       }
 
       this.Measure(child, {
@@ -73,7 +88,12 @@ export class LayoutEngine {
 
     let flexible = 0;
 
-    for (const child of component.children()) {
+    const ordered = LayoutEngine.OrderLayoutComponents(component.children());
+
+    for (const child of ordered) {
+      if (child.positionMode() === "absolute") {
+        continue;
+      }
       const measured = child.measure(parent);
 
       if (Number.isFinite(measured.width)) {
@@ -91,7 +111,11 @@ export class LayoutEngine {
     }
     let x = parent.x;
 
-    for (const child of component.children()) {
+    for (const child of ordered) {
+      if (child.positionMode() !== "normal") {
+        continue;
+      }
+
       const measured = child.measure(parent);
 
       let w: number;

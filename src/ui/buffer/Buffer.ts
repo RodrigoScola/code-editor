@@ -1,10 +1,12 @@
 import { assert } from "../../assert.js";
 
 export class TextBuffer implements BufferLike {
-  private lines: string[];
+  private lines: string[] = [];
 
-  constructor(text: string) {
-    this.lines = text.split("\n");
+  constructor(text?: string | undefined) {
+    if (text) {
+      this.lines = text.split("\n");
+    }
   }
   content() {
     return this.lines.join("\n");
