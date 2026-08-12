@@ -11,13 +11,13 @@ export class DisplayComponent implements Component {
   private ind: number = 0;
   private pm: PositionMode = "normal";
   private vs: boolean = true;
-  s: ComponentStyles;
-  nm: string | null | undefined;
+  private s: ComponentStyles;
+  private nm: string | null | undefined;
 
   private childs: Component[];
 
-  p: Insets = { bottom: 0, top: 0, left: 0, right: 0 };
-  pr: Component | null;
+  private p: Insets = { bottom: 0, top: 0, left: 0, right: 0 };
+  private pr: Component | null;
   private l: LayoutBounds;
 
   private d: "vertical" | "horizontal";

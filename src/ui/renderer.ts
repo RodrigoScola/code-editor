@@ -13,6 +13,9 @@ export class Renderer {
     return canvas;
   }
   getComponents(root: Component) {
+    if (!root.visible()) {
+      return [];
+    }
     const components = [root];
 
     for (const child of root.children()) {

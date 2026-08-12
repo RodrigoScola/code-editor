@@ -20,6 +20,9 @@ export class LayoutEngine {
     }
     return root;
   }
+  static visibleChildren(root: Component) {
+    return root.children().filter((c) => c.visible());
+  }
   private static OrderLayoutComponents(components: Component[]) {
     return components.sort(
       (a, b) =>
@@ -31,7 +34,9 @@ export class LayoutEngine {
     let flexible = 0;
     let remaining = parent.height;
 
-    const ordered = LayoutEngine.OrderLayoutComponents(component.children());
+    const ordered = LayoutEngine.OrderLayoutComponents(
+      this.visibleChildren(component),
+    );
 
     for (const child of ordered) {
       if (child.positionMode() === "absolute") {
@@ -88,7 +93,9 @@ export class LayoutEngine {
 
     let flexible = 0;
 
-    const ordered = LayoutEngine.OrderLayoutComponents(component.children());
+    const ordered = LayoutEngine.OrderLayoutComponents(
+      this.visibleChildren(component),
+    );
 
     for (const child of ordered) {
       if (child.positionMode() === "absolute") {

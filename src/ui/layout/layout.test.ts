@@ -90,3 +90,76 @@ describe("LayoutEngine measurement", () => {
     expect(cell.styles.backgroundColor()).eq(colors.YELLOW_BACKGROUND);
   });
 });
+describe("tests the invisible of component", () => {
+  it("if invisible should not show or be calculated", () => {
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 10;
+
+    const root = new DisplayComponent().setLayout(layout);
+
+    root
+      .addChildren(
+        new DisplayComponent().setStyles(
+          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+        ),
+      )
+      .addChildren(
+        new DisplayComponent()
+          .setVisible(false)
+          .setStyles(
+            ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+          ),
+      );
+    LayoutEngine.Measure(root, root.contentLayout());
+    const cnv = new Canvas().setLayout(layout);
+    Renderer.Create().build(root, cnv);
+
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
+      colors.YELLOW_BACKGROUND,
+    );
+
+    expect(cnv.getCell(0, layout.height - 1)?.styles.backgroundColor()).eq(
+      colors.YELLOW_BACKGROUND,
+    );
+  });
+  it("if invisible should not show or be calculated", () => {
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 10;
+
+    const root = new DisplayComponent().setLayout(layout);
+
+    root
+      .addChildren(
+        new DisplayComponent().setStyles(
+          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+        ),
+      )
+      .addChildren(
+        new DisplayComponent()
+          .setPositionMode("absolute")
+          .setLayout({
+            height: layout.height,
+            width: layout.width,
+            x: 0,
+            y: layout.height / 2,
+          })
+          .setVisible(true)
+          .setStyles(
+            ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+          ),
+      );
+    LayoutEngine.Measure(root, root.contentLayout());
+    const cnv = new Canvas().setLayout(layout);
+    Renderer.Create().build(root, cnv);
+
+    cnv.renderBoard();
+
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
+      colors.YELLOW_BACKGROUND,
+    );
+
+    expect(cnv.getCell(0, layout.height - 1)?.styles.backgroundColor()).eq(
+      colors.RED_BACKGROUND,
+    );
+  });
+});

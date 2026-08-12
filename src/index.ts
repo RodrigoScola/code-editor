@@ -13,7 +13,10 @@ import { WINDOW_NAMES } from "./constants.js";
 import { DiskFile, Textdocument } from "./Editor/Documents/TextDocument.js";
 import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
 import { ComponentStyle } from "./ui/ComponentStyles.js";
-import { GitEditorWindow } from "./Editor/windows/GitEditorWindow.js";
+import {
+  GitCommitWindow,
+  GitEditorWindow,
+} from "./Editor/windows/GitEditorWindow.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -23,15 +26,9 @@ enableKeyboardProtocol();
 
 const editor = new EditorContext();
 
-const dp = new DisplayComponent();
-
-dp.setStyles(
-  ComponentStyle.Create().setBackgroundColor(colors.GREEN_BACKGROUND),
-);
-dp.setIndex(2);
-
 editor.gitCommit.window
   .setPositionMode("absolute")
+  .setIndex(2)
   .setVisible(false)
   .setLayout({
     height: 20,
@@ -79,7 +76,6 @@ const window = new DisplayComponent().setLayout({
   height: layout.height - 1,
 });
 
-editor.rootWindow.addChildren(editor.gitCommit.window);
 editor.rootWindow.addChildren(window);
 editor.rootWindow.addChildren(statusWindow.window);
 
@@ -127,7 +123,15 @@ editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
 editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
 editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
 editor.normalMode.bind(["r", "r"], (ctx) => {
-  editor.gitCommit.setVisible(true);
+  ctx.gitCommit.window.setLayout({
+    height: ctx.rootWindow.layout().height,
+    width: ctx.rootWindow.layout().width,
+    x: ctx.gitCommit.window.layout().x,
+    y: ctx.gitCommit.window.layout().y,
+  });
+  ctx.gitCommit.setVisible(!ctx.gitCommit.visible());
+
+  console.log("this is good");
 });
 editor.normalMode.bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
   editor.activeWindow = treeView;
@@ -165,7 +169,8 @@ window
   .addChildren(treeView.window)
   .addChildren(divisor)
   .addChildren(editorWindow.window)
-  .addChildren(gitEditor.window);
+  .addChildren(gitEditor.window)
+  .addChildren(editor.gitCommit.window);
 
 const initialLayout = LayoutEngine.CreateBounds();
 
@@ -247,12 +252,6 @@ async function handleResize(size?: { columns: number; rows: number }) {
   editor.canvas.setLayout(resizedLayout);
 
   editor.rootWindow.setLayout(resizedLayout);
-  dp.setLayout({
-    height: resizedLayout.height - 3,
-    width: resizedLayout.width - 4,
-    x: 0,
-    y: 0,
-  });
 
   editor.requestRepaint();
 }
