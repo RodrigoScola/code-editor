@@ -113,7 +113,7 @@ export class Canvas {
 
     console.log(
       this.canvas
-        .map((line) => {
+        .map((line, ind) => {
           return line
             .map(
               (ch) =>

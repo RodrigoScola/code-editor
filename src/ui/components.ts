@@ -16,6 +16,7 @@ export class DisplayComponent implements Component {
 
   private childs: Component[];
 
+  private m: Insets = { bottom: 0, top: 0, left: 0, right: 0 };
   private p: Insets = { bottom: 0, top: 0, left: 0, right: 0 };
   private pr: Component | null;
   private l: LayoutBounds;
@@ -182,6 +183,11 @@ export class DisplayComponent implements Component {
     if (p) {
       assert(nval >= p.index(), "index cannot be less than parent");
     }
+    for (const child of this.children()) {
+      if (nval >= child.index()) {
+        child.setIndex(nval);
+      }
+    }
 
     this.ind = nval;
 
@@ -201,5 +207,12 @@ export class DisplayComponent implements Component {
   }
   visible(): boolean {
     return this.vs;
+  }
+  margin(): Insets {
+    return this.m;
+  }
+  setMargin(nmargin: Insets): Component {
+    this.m = nmargin;
+    return this;
   }
 }

@@ -1,7 +1,9 @@
-import assert from "assert";
+import { assert } from "../assert.js";
+import { POSITION_ORDER } from "../constants.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 import { ComponentStyle } from "./ComponentStyles.js";
+import { LayoutEngine } from "./layout/layout.js";
 
 export class Renderer {
   static Create() {
@@ -31,11 +33,16 @@ export class Renderer {
   private paint(root: Component, canvas: Canvas) {
     const components = this.getComponents(root);
 
-    components.sort((a, b) => a.index() - b.index());
+    components.sort(
+      (a, b) =>
+        a.index() - b.index() ||
+        POSITION_ORDER[a.positionMode()] - POSITION_ORDER[b.positionMode()],
+    );
 
     for (const component of components) {
+      assert(component.visible(), "component should not be visible");
       canvas.fillRect(
-        component.layout(),
+        component.contentLayout(),
         ComponentStyle.Blend(component.styles(), component.parent()?.styles()),
       );
 

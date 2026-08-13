@@ -27,16 +27,11 @@ enableKeyboardProtocol();
 const editor = new EditorContext();
 
 editor.gitCommit.window
+
+  // .setVisible(false)
   .setPositionMode("absolute")
   .setIndex(2)
-  .setVisible(false)
-  .setLayout({
-    height: 20,
-    width: 20,
-    x: 0,
-    y: 0,
-  })
-  .setStyles(ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND));
+  .setMargin({ bottom: 2, left: 2, right: 2, top: 2 });
 
 const gitEditor = new GitEditorWindow();
 
@@ -122,13 +117,14 @@ editor.normalMode.bind(["$"], textEditorCommands.textEditor.goToEndLine);
 editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
 editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
 editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
-editor.normalMode.bind(["r", "r"], (ctx) => {
+editor.normalMode.bind(["c", "m"], (ctx) => {
   ctx.gitCommit.window.setLayout({
     height: ctx.rootWindow.layout().height,
     width: ctx.rootWindow.layout().width,
     x: ctx.gitCommit.window.layout().x,
     y: ctx.gitCommit.window.layout().y,
   });
+  ctx.focus(ctx.gitCommit);
   ctx.gitCommit.setVisible(!ctx.gitCommit.visible());
 
   console.log("this is good");

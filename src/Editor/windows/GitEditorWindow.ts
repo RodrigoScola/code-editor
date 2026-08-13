@@ -3,6 +3,9 @@ import { EditorContext } from "../Editor.js";
 import { EditorWindow } from "./EditorWindow.js";
 import path from "path";
 import cp from "child_process";
+import { ComponentStyle } from "../../ui/ComponentStyles.js";
+import colors from "../../ui/colors.js";
+import { DisplayComponent } from "../../ui/components.js";
 
 type GitFileStatus =
   | "added"
@@ -14,6 +17,32 @@ type GitFileStatus =
   | "unmerged/conflict"
   | "unknown"
   | "broken pairing";
+
+export class Git {
+  static getStatusFiles() {
+    const files: GitFile[] = [];
+
+    const gitFiles = cp
+      .execSync("git status --short", { encoding: "utf-8" })
+      .split(/\r?\n/)
+      .filter(Boolean);
+
+    for (const line of gitFiles) {
+      const f = new GitFile();
+
+      const stagedKey = line[0];
+      const unstagedKey = line[1];
+
+      f.stagedStatus = GitFile.GetFileStatusByKey(stagedKey);
+      f.unstagedStatus = GitFile.GetFileStatusByKey(unstagedKey);
+
+      f.path = line.slice(3);
+
+      files.push(f);
+    }
+    return files;
+  }
+}
 
 class GitFile {
   stagedStatus: GitFileStatus | null = null;
@@ -56,6 +85,27 @@ class GitFile {
   }
 }
 export class GitCommitWindow extends EditorWindow {
+  private files: GitFile[] = [];
+  constructor() {
+    super();
+
+    this.window
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+      )
+
+      .addChildren(
+        new DisplayComponent()
+          .setPadding({ bottom: 0, left: 3, right: 3, top: 3 })
+          .setMaxH(3)
+          .setStyles(
+            ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
+          ),
+      );
+
+    this.files = Git.getStatusFiles();
+    this.buffer = new TextBuffer(this.files.map((f) => f.path).join("\n"));
+  }
 }
 
 export class GitEditorWindow extends EditorWindow {
@@ -70,24 +120,7 @@ export class GitEditorWindow extends EditorWindow {
     this.files = [];
     this.buffer = new TextBuffer();
 
-    const gitFiles = cp
-      .execSync("git status --short", { encoding: "utf-8" })
-      .split(/\r?\n/)
-      .filter(Boolean);
-
-    for (const line of gitFiles) {
-      const f = new GitFile();
-
-      const stagedKey = line[0];
-      const unstagedKey = line[1];
-
-      f.stagedStatus = GitFile.GetFileStatusByKey(stagedKey);
-      f.unstagedStatus = GitFile.GetFileStatusByKey(unstagedKey);
-
-      f.path = line.slice(3);
-
-      this.files.push(f);
-    }
+    this.files = Git.getStatusFiles();
 
     this.display();
   }

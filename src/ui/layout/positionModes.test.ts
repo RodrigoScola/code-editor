@@ -37,7 +37,7 @@ describe("tests normal position mode", () => {
 });
 
 describe("tests the absolute mode", () => {
-  it("overlays the absoluted component", () => {
+  it("can place anywhere ", () => {
     const { root, build, cnv } = setupTests(10, 10);
 
     root
@@ -53,6 +53,7 @@ describe("tests the absolute mode", () => {
               colors.YELLOW_BACKGROUND,
             ),
           )
+          .setName("absolute")
           .setPositionMode("absolute")
           .setLayout({
             width: 4,
@@ -63,8 +64,12 @@ describe("tests the absolute mode", () => {
       )
       .setDirection("horizontal");
 
+    expect(root.children().at(1)?.contentLayout().height).eq(4);
+    expect(root.children().at(1)?.contentLayout().width).eq(4);
+
     build(root, cnv);
 
+    cnv.renderBoard();
     testCnv(cnv);
   });
   it("overlays the absoluted component on inverted order", () => {

@@ -6,43 +6,50 @@ export class LayoutEngine {
     return {
       x: 0,
       y: 0,
-      height: 0,
       width: 0,
+      height: 0,
     };
   }
+
   static Measure(root: Component, layout: LayoutBounds): Component {
     root.setLayout(layout);
 
     if (root.direction() === "vertical") {
       this.layoutVertical(root);
-    } else if (root.direction() === "horizontal") {
+    } else {
       this.layoutHorizontal(root);
     }
+
     return root;
   }
-  static visibleChildren(root: Component) {
-    return root.children().filter((c) => c.visible());
+
+  private static visibleChildren(component: Component) {
+    return component.children().filter((child) => child.visible());
   }
-  private static OrderLayoutComponents(components: Component[]) {
-    return components.sort(
-      (a, b) =>
-        POSITION_ORDER[a.positionMode()] - POSITION_ORDER[b.positionMode()],
+
+  private static normalChildren(component: Component) {
+    return this.visibleChildren(component).filter(
+      (child) => child.positionMode() === "normal",
     );
   }
+
+  private static absoluteChildren(component: Component) {
+    return this.visibleChildren(component).filter(
+      (child) => child.positionMode() === "absolute",
+    );
+  }
+
   private static layoutVertical(component: Component) {
-    let parent = component.contentLayout();
-    let flexible = 0;
+    const parent = component.contentLayout();
+    const children = this.normalChildren(component);
+
     let remaining = parent.height;
+    let flexible = 0;
 
-    const ordered = LayoutEngine.OrderLayoutComponents(
-      this.visibleChildren(component),
-    );
-
-    for (const child of ordered) {
-      if (child.positionMode() === "absolute") {
-        continue;
-      }
+    // Find remaining space
+    for (const child of children) {
       const measured = child.measure(parent);
+      const margin = child.margin();
 
       if (Number.isFinite(measured.height)) {
         remaining -= measured.height!;
@@ -51,57 +58,58 @@ export class LayoutEngine {
       } else {
         flexible++;
       }
+
+      remaining -= margin.top + margin.bottom;
     }
+
     let y = parent.y;
-    for (const child of ordered) {
-      let measured = child.measure(parent);
+
+    // Layout normal children
+    for (const child of children) {
+      const measured = child.measure(parent);
+      const margin = child.margin();
 
       let height: number;
-      let isFlexible = false;
+
       if (Number.isFinite(measured.height)) {
         height = measured.height!;
       } else if (Number.isFinite(child.maxHeight())) {
         height = child.maxHeight()!;
       } else {
         height = Math.floor(remaining / flexible);
-        isFlexible = true;
-      }
-      if (child.positionMode() === "absolute") {
-        continue;
-      }
-
-      this.Measure(child, {
-        height: height,
-        y: y,
-        width: parent.width,
-        x: parent.x,
-      });
-
-      y += height;
-
-      if (isFlexible) {
         remaining -= height;
         flexible--;
       }
+
+      y += margin.top;
+
+      this.Measure(child, {
+        x: parent.x + margin.left,
+        y,
+        width: parent.width - margin.left - margin.right,
+        height,
+      });
+
+      y += height + margin.bottom;
+    }
+
+    // Absolute children keep their own layout
+    for (const child of this.absoluteChildren(component)) {
+      this.Measure(child, child.layout());
     }
   }
 
   private static layoutHorizontal(component: Component) {
     const parent = component.contentLayout();
+    const children = this.normalChildren(component);
 
     let remaining = parent.width;
-
     let flexible = 0;
 
-    const ordered = LayoutEngine.OrderLayoutComponents(
-      this.visibleChildren(component),
-    );
-
-    for (const child of ordered) {
-      if (child.positionMode() === "absolute") {
-        continue;
-      }
+    // Find remaining space
+    for (const child of children) {
       const measured = child.measure(parent);
+      const margin = child.margin();
 
       if (Number.isFinite(measured.width)) {
         remaining -= measured.width!;
@@ -111,50 +119,48 @@ export class LayoutEngine {
         flexible++;
       }
 
-      assert(
-        !isNaN(remaining),
-        `remaining is not a number on id ${child.getId()}`,
-      );
+      remaining -= margin.left + margin.right;
     }
+
     let x = parent.x;
 
-    for (const child of ordered) {
-      if (child.positionMode() !== "normal") {
-        continue;
-      }
-
+    // Layout normal children
+    for (const child of children) {
       const measured = child.measure(parent);
+      const margin = child.margin();
 
-      let w: number;
-      let isFlexible = false;
+      let width: number;
 
       if (Number.isFinite(measured.width)) {
-        w = measured.width!;
+        width = measured.width!;
       } else if (Number.isFinite(child.maxWidth())) {
-        w = child.maxWidth()!;
+        width = child.maxWidth()!;
       } else {
-        w = Math.floor(remaining / flexible);
-        isFlexible = true;
-      }
-      assert(
-        Boolean(w),
-        `width came on undefined on ${child.getId()}. measured: ${measured.width}. maxW: ${child.maxWidth()}, flex: ${Math.floor(remaining / flexible)}, w:${w}`,
-      );
-      this.Measure(child, {
-        x,
-        y: parent.y,
-        width: w,
-        height: parent.height,
-      });
-      x += w;
-      if (isFlexible) {
-        remaining -= w;
+        width = Math.floor(remaining / flexible);
+        remaining -= width;
         flexible--;
       }
+
+      x += margin.left;
+
+      this.Measure(child, {
+        x,
+        y: parent.y + margin.top,
+        width,
+        height: parent.height - margin.top - margin.bottom,
+      });
+
+      x += width + margin.right;
     }
+
     assert(
       remaining === 0,
       `not using all remaining. expected: 0, got ${remaining}`,
     );
+
+    // Absolute children keep their own layout
+    for (const child of this.absoluteChildren(component)) {
+      this.Measure(child, child.layout());
+    }
   }
 }

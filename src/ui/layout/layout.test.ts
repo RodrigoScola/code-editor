@@ -68,6 +68,8 @@ describe("LayoutEngine measurement", () => {
 
     const root = new DisplayComponent().setLayout(layout);
 
+    root.styles()?.setBackgroundColor(colors.RED_BACKGROUND);
+
     const square = new DisplayComponent()
       .setPadding({
         left: 1,
@@ -84,7 +86,9 @@ describe("LayoutEngine measurement", () => {
     const cnv = new Canvas().setLayout(layout);
     Renderer.Create().build(root, cnv);
 
-    const cell = cnv.getCell(2, 2);
+    cnv.renderBoard();
+
+    const cell = cnv.getCell(1, 1);
     assert(cell, "invalid cell at x: 2 y : 2");
 
     expect(cell.styles.backgroundColor()).eq(colors.YELLOW_BACKGROUND);
@@ -122,7 +126,54 @@ describe("tests the invisible of component", () => {
       colors.YELLOW_BACKGROUND,
     );
   });
-  it("if invisible should not show or be calculated", () => {
+  it("should keep the layout set on absolute", () => {
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 10;
+
+    const root = new DisplayComponent().setLayout(layout);
+
+    root
+      .addChildren(
+        new DisplayComponent()
+          .setStyles(
+            ComponentStyle.Create().setBackgroundColor(
+              colors.YELLOW_BACKGROUND,
+            ),
+          )
+          .setName("first"),
+      )
+      .addChildren(
+        new DisplayComponent()
+          .setPositionMode("absolute")
+          .setName("absolute")
+          .setLayout({
+            height: layout.height,
+            width: layout.width,
+            x: 0,
+            y: layout.height / 2,
+          })
+          .setVisible(true)
+          .setStyles(
+            ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+          ),
+      );
+    LayoutEngine.Measure(root, root.layout());
+    const cnv = new Canvas().setLayout(layout);
+    Renderer.Create().build(root, cnv);
+
+    cnv.renderBoard();
+
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
+      colors.YELLOW_BACKGROUND,
+    );
+
+    expect(cnv.getCell(0, layout.height - 1)?.styles.backgroundColor()).eq(
+      colors.RED_BACKGROUND,
+    );
+  });
+});
+describe("tests the margin", () => {
+  it("has margin on default behaviour", () => {
     const layout = LayoutEngine.CreateBounds();
     layout.height = layout.width = 10;
 
@@ -136,29 +187,31 @@ describe("tests the invisible of component", () => {
       )
       .addChildren(
         new DisplayComponent()
-          .setPositionMode("absolute")
-          .setLayout({
-            height: layout.height,
-            width: layout.width,
-            x: 0,
-            y: layout.height / 2,
+          .setMargin({
+            left: 2,
+            right: 0,
+            top: 0,
+            bottom: 0,
           })
-          .setVisible(true)
           .setStyles(
             ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
           ),
-      );
+      )
+      .setDirection("vertical");
     LayoutEngine.Measure(root, root.contentLayout());
     const cnv = new Canvas().setLayout(layout);
     Renderer.Create().build(root, cnv);
-
-    cnv.renderBoard();
 
     expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
       colors.YELLOW_BACKGROUND,
     );
 
     expect(cnv.getCell(0, layout.height - 1)?.styles.backgroundColor()).eq(
+      colors.BACKGROUND_OFF,
+    );
+
+    cnv.renderBoard();
+    expect(cnv.getCell(2, layout.height - 1)?.styles.backgroundColor()).eq(
       colors.RED_BACKGROUND,
     );
   });

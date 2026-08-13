@@ -29,9 +29,11 @@ interface Component {
   findChildrenByName(nm: string): Component | null;
 
   preferredSize(): Size;
-  padding(): Insets;
   contentLayout(): LayoutBounds;
 
+  margin(): Insets;
+  setMargin(nmargin: Insets): Component;
+  padding(): Insets;
   setPadding(nPadding: Insets): Component;
 
   maxHeight(): number | null;
