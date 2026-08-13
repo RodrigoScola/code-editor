@@ -1,4 +1,3 @@
-import { Canvas } from "../../ui/canvas.js";
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Textdocument } from "../Documents/TextDocument.js";
 import { EditorWindow } from "./EditorWindow.js";
