@@ -28,9 +28,9 @@ const editor = new EditorContext();
 
 editor.gitCommit.window
 
-  // .setVisible(false)
+  .setVisible(false)
   .setPositionMode("absolute")
-  .setIndex(2)
+  .setIndex(5)
   .setMargin({ bottom: 2, left: 2, right: 2, top: 2 });
 
 const gitEditor = new GitEditorWindow();
@@ -118,12 +118,14 @@ editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
 editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
 editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
 editor.normalMode.bind(["c", "m"], (ctx) => {
-  ctx.gitCommit.window.setLayout({
-    height: ctx.rootWindow.layout().height,
-    width: ctx.rootWindow.layout().width,
-    x: ctx.gitCommit.window.layout().x,
-    y: ctx.gitCommit.window.layout().y,
-  });
+  ctx.gitCommit.window
+    .setPadding({ bottom: 5, top: 5, left: 10, right: 10 })
+    .setLayout({
+      height: ctx.rootWindow.layout().height,
+      width: ctx.rootWindow.layout().width,
+      x: ctx.gitCommit.window.layout().x,
+      y: ctx.gitCommit.window.layout().y,
+    });
   ctx.focus(ctx.gitCommit);
   ctx.gitCommit.setVisible(!ctx.gitCommit.visible());
 

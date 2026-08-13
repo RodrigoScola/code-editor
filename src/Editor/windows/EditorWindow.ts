@@ -17,6 +17,12 @@ export class EditorWindow {
     this.window = new DisplayComponent();
     this.cursor = new Cursor();
     this.window.setPaintHook(this.paint.bind(this));
+    this.window.setPrePaintHook(this.onPrePaint.bind(this));
+  }
+  onPrePaint() {
+    const cl = this.window.contentLayout();
+    this.viewPort.ensureVisible(cl.width, cl.height);
+    this.cursor.ensureCursorVisible(this.viewPort);
   }
 
   paint(canvas: Canvas): void {

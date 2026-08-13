@@ -6,6 +6,7 @@ import cp from "child_process";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components.js";
+import { Canvas } from "../../ui/canvas.js";
 
 type GitFileStatus =
   | "added"
@@ -93,11 +94,14 @@ export class GitCommitWindow extends EditorWindow {
       .setStyles(
         ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
       )
+      .setName("git_commit_window")
 
       .addChildren(
         new DisplayComponent()
-          .setPadding({ bottom: 0, left: 3, right: 3, top: 3 })
-          .setMaxH(3)
+          .setName("gitCommit_input")
+          .setIndex(5)
+          .setMargin({ bottom: 1, left: 1, right: 1, top: 1 })
+          .setMaxH(8)
           .setStyles(
             ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
           ),
@@ -105,6 +109,14 @@ export class GitCommitWindow extends EditorWindow {
 
     this.files = Git.getStatusFiles();
     this.buffer = new TextBuffer(this.files.map((f) => f.path).join("\n"));
+  }
+  paint(canvas: Canvas): void {
+    canvas.fillRect(this.window.contentLayout(), this.window.styles());
+
+    const cursorLine = this.buffer.at(this.cursor.line);
+    this.drawBuffer(canvas, this);
+
+    this.cursor.paint(canvas, this, cursorLine);
   }
 }
 

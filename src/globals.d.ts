@@ -50,6 +50,7 @@ interface Component {
   setDirection(dir: "horizontal" | "vertical"): Component;
   direction(): "horizontal" | "vertical";
 
+  onPrePaint(canvas:Canvas): void
   paint(canvas: Canvas): void;
   styles: () => ComponentStyles | null;
   setStyles(sty: Partial<ComponentStyles>): Component;

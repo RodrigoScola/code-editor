@@ -23,6 +23,7 @@ export class DisplayComponent implements Component {
 
   private d: "vertical" | "horizontal";
   private paintHook: ((canvas: Canvas) => void) | null = null;
+  private prePaintHook: ((canvas: Canvas) => void) | null = null;
 
   constructor() {
     this.id = DisplayComponent.ID;
@@ -161,6 +162,15 @@ export class DisplayComponent implements Component {
   paint(canvas: Canvas) {
     this.paintHook?.(canvas);
   }
+
+  setPrePaintHook(paintHook: (canvas: Canvas) => void): Component {
+    this.prePaintHook= paintHook;
+    return this;
+  }
+  onPrePaint(canvas: Canvas): void {
+    this.prePaintHook?.(canvas)
+    
+  }
   measure(bounds: LayoutBounds): Partial<LayoutBounds> {
     return {};
   }
@@ -185,7 +195,7 @@ export class DisplayComponent implements Component {
     }
     for (const child of this.children()) {
       if (nval >= child.index()) {
-        child.setIndex(nval);
+        child.setIndex(nval + 1);
       }
     }
 

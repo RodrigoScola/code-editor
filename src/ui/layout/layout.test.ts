@@ -93,6 +93,36 @@ describe("LayoutEngine measurement", () => {
 
     expect(cell.styles.backgroundColor()).eq(colors.YELLOW_BACKGROUND);
   });
+
+  it("absolute and padding doesnt take up all of the screen", () => {
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 20;
+
+    const root = new DisplayComponent().setLayout(layout);
+
+    root
+      .addChildren(
+        new DisplayComponent().setStyles(
+          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+        ),
+      )
+      .addChildren(
+        new DisplayComponent()
+          .setPositionMode("absolute")
+          .setIndex(2)
+          .setLayout(layout)
+          .setPadding({ bottom: 4, top: 4, left: 1, right: 1 })
+          .setStyles(
+            ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+          ),
+      )
+      .setDirection("vertical");
+    LayoutEngine.Measure(root, root.contentLayout());
+    const cnv = new Canvas().setLayout(layout);
+    Renderer.Create().build(root, cnv);
+
+    cnv.renderBoard();
+  });
 });
 describe("tests the invisible of component", () => {
   it("if invisible should not show or be calculated", () => {

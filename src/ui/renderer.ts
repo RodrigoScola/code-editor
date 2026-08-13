@@ -46,6 +46,7 @@ export class Renderer {
         ComponentStyle.Blend(component.styles(), component.parent()?.styles()),
       );
 
+      component.onPrePaint(canvas);
       component.paint(canvas);
     }
   }
