@@ -75,7 +75,16 @@ export class EditorWindow {
 
       const screenY = cl.y + (lineNumber - firstLine);
 
-      canvas.drawText(cl.x, screenY, line, editor.window.styles());
+      canvas.drawText(
+        {
+          height: cl.height,
+          width: cl.width,
+          x: cl.x,
+          y: screenY,
+        },
+        line,
+        editor.window.styles(),
+      );
     }
   }
   visible(): boolean {

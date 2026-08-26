@@ -38,7 +38,7 @@ export class StatusWindow extends EditorWindow {
       out += `mode: ${this.editor.modeName}`;
     }
 
-    canvas.drawText(cl.x, cl.y, out, this.window.styles());
+    canvas.drawText(cl, out, this.window.styles());
 
     if (this.editor.modeName === "command") {
       const content = this.buffer.at(this.cursor.line);

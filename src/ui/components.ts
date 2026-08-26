@@ -16,6 +16,7 @@ export class DisplayComponent {
   private nm: string | null | undefined;
   private vp: ViewPorts = new ViewPort();
   private _focusable: boolean = false;
+  private _text: string | undefined;
 
   private childs: DisplayComponent[];
 
@@ -239,5 +240,12 @@ export class DisplayComponent {
   }
   setFocusable(val: boolean) {
     this._focusable = val;
+  }
+  text() {
+    return this._text;
+  }
+  setText(vl: string) {
+    this._text = vl;
+    return this;
   }
 }

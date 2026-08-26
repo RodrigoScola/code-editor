@@ -26,7 +26,7 @@ export class Input extends DisplayComponent {
       text = this.placeholder;
     }
 
-    canvas.drawText(this.layout().x, this.layout().y, text, this.styles());
+    canvas.drawText(this.layout(), text, this.styles());
   }
   setText(text: string) {
     this.buffer.addLine(text);

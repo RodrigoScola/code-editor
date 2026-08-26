@@ -41,12 +41,7 @@ export class Cursor {
     }
 
     canvas.fillRect(relativePosition, this.style);
-    canvas.drawText(
-      relativePosition.x,
-      relativePosition.y,
-      content[relativePosition.x],
-      this.style,
-    );
+    canvas.drawText(relativePosition, content[relativePosition.x], this.style);
   }
 
   ensureVisible(viewPort: ViewPort) {

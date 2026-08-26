@@ -100,8 +100,14 @@ export class FileTreeWindow extends EditorWindow {
     if (y >= layout.y + layout.height) {
       return y;
     }
+    const bd: LayoutBounds = {
+      x: layout.x + indent * 2,
+      y,
+      width: layout.width,
+      height: layout.height,
+    };
 
-    canvas.drawText(layout.x + indent * 2, y, node.name, this.window.styles());
+    canvas.drawText(bd, node.name, this.window.styles());
 
     if (y === this.cursor.line) {
       canvas.fillRect(

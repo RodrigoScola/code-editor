@@ -1,6 +1,6 @@
 import { assert } from "../../assert.js";
-import { POSITION_ORDER } from "../../constants.js";
 import { DisplayComponent } from "../components.js";
+import { POSITION_ORDER } from "../../constants.js";
 
 export class LayoutEngine {
   static CreateBounds(): LayoutBounds {
@@ -12,7 +12,10 @@ export class LayoutEngine {
     };
   }
 
-  static Measure(root: DisplayComponent, layout: LayoutBounds): Component {
+  static Measure(
+    root: DisplayComponent,
+    layout: LayoutBounds,
+  ): DisplayComponent {
     root.setLayout(layout);
 
     if (root.direction() === "vertical") {
@@ -24,23 +27,23 @@ export class LayoutEngine {
     return root;
   }
 
-  private static visibleChildren(component: Component) {
+  private static visibleChildren(component: DisplayComponent) {
     return component.children().filter((child) => child.visible());
   }
 
-  private static normalChildren(component: Component) {
+  private static normalChildren(component: DisplayComponent) {
     return this.visibleChildren(component).filter(
       (child) => child.positionMode() === "normal",
     );
   }
 
-  private static absoluteChildren(component: Component) {
+  private static absoluteChildren(component: DisplayComponent) {
     return this.visibleChildren(component).filter(
       (child) => child.positionMode() === "absolute",
     );
   }
 
-  private static layoutVertical(component: Component) {
+  private static layoutVertical(component: DisplayComponent) {
     const parent = component.layout();
     const children = this.normalChildren(component);
 
@@ -100,7 +103,7 @@ export class LayoutEngine {
     }
   }
 
-  private static layoutHorizontal(component: Component) {
+  private static layoutHorizontal(component: DisplayComponent) {
     const parent = component.layout();
     const children = this.normalChildren(component);
 

@@ -161,14 +161,19 @@ export class Canvas {
       y: layout.y + y,
     };
   }
-  drawText(x: number, y: number, text: string, style: ComponentStyles | null) {
+  drawText(bounds: LayoutBounds, text: string, style: ComponentStyles | null) {
     if (!text) {
       return;
     }
     text = expandTabs(text, this.tab_width);
 
     for (let i = 0; i < text.length; i++) {
-      const cell = this.getCell(x + i, y);
+      const xpos = bounds.x + i;
+      if (xpos > bounds.x + bounds.width) {
+        continue;
+      }
+
+      const cell = this.getCell(xpos, bounds.y);
       if (!cell) {
         break;
       }

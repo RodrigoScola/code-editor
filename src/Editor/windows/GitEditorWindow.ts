@@ -111,6 +111,13 @@ export class GitCommitWindow extends EditorWindow {
       )
       .setName("git_commit_window");
 
+    const dp = new DisplayComponent().setStyles(
+      ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+    );
+    dp.setText("this is tes");
+
+    this.window.addChildren(dp);
+
     this.files = Git.getStatusFiles();
     this.buffer = new TextBuffer(this.files.map((f) => f.path).join("\n"));
   }
