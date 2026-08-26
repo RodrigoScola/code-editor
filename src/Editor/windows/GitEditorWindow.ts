@@ -109,19 +109,7 @@ export class GitCommitWindow extends EditorWindow {
       .setStyles(
         ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
       )
-      .setName("git_commit_window")
-
-      .addChildren(
-        new DisplayComponent()
-          .setName("gitCommit_input")
-          .setIndex(5)
-          .setMargin({ bottom: 1, left: 1, right: 1, top: 1 })
-          .setMaxH(8)
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
-          ),
-      )
-      .addChildren(new Input().setMaxH(3));
+      .setName("git_commit_window");
 
     this.files = Git.getStatusFiles();
     this.buffer = new TextBuffer(this.files.map((f) => f.path).join("\n"));
