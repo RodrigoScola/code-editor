@@ -1,5 +1,6 @@
 import { assert } from "../../assert.js";
 import { POSITION_ORDER } from "../../constants.js";
+import { DisplayComponent } from "../components.js";
 
 export class LayoutEngine {
   static CreateBounds(): LayoutBounds {
@@ -11,7 +12,7 @@ export class LayoutEngine {
     };
   }
 
-  static Measure(root: Component, layout: LayoutBounds): Component {
+  static Measure(root: DisplayComponent, layout: LayoutBounds): Component {
     root.setLayout(layout);
 
     if (root.direction() === "vertical") {
@@ -40,7 +41,7 @@ export class LayoutEngine {
   }
 
   private static layoutVertical(component: Component) {
-    const parent = component.contentLayout();
+    const parent = component.layout();
     const children = this.normalChildren(component);
 
     let remaining = parent.height;
@@ -100,7 +101,7 @@ export class LayoutEngine {
   }
 
   private static layoutHorizontal(component: Component) {
-    const parent = component.contentLayout();
+    const parent = component.layout();
     const children = this.normalChildren(component);
 
     let remaining = parent.width;

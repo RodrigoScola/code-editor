@@ -1,4 +1,4 @@
-export class ViewPort {
+export class ViewPort implements ViewPorts {
   firstLine: number = 0;
   firstColumn: number = 0;
 

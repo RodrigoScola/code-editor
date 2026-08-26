@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Canvas } from "../../ui/canvas.js";
 import { Cursor } from "../Cursor.js";
-import { ViewPort } from "../../ui/windows/viewport.js";
+
 import { EditorWindow } from "./EditorWindow.js";
 import colors from "../../ui/colors.js";
 import { EditorContext } from "../Editor.js";
@@ -19,7 +19,6 @@ type TreeNode = {
 export class FileTreeWindow extends EditorWindow {
   root: TreeNode;
   ignoreDirs: string[] = [];
-  viewPort = new ViewPort();
 
   cursor: Cursor = new Cursor();
 

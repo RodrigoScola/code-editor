@@ -7,6 +7,7 @@ import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components.js";
 import { Canvas } from "../../ui/canvas.js";
+import { Input } from "../../ui/input/input.js";
 
 type GitFileStatus =
   | "added"
@@ -17,6 +18,7 @@ type GitFileStatus =
   | "type changed"
   | "unmerged/conflict"
   | "unknown"
+  | "untracked"
   | "broken pairing";
 
 export class Git {
@@ -34,14 +36,54 @@ export class Git {
       const stagedKey = line[0];
       const unstagedKey = line[1];
 
-      f.stagedStatus = GitFile.GetFileStatusByKey(stagedKey);
-      f.unstagedStatus = GitFile.GetFileStatusByKey(unstagedKey);
+      f.stagedStatus = Git.GetFileStatusByKey(stagedKey);
+      f.unstagedStatus = Git.GetFileStatusByKey(unstagedKey);
 
       f.path = line.slice(3);
 
       files.push(f);
     }
     return files;
+  }
+
+  static GetFileStatusByKey(key: string): GitFileStatus | null {
+    switch (key) {
+      case "A":
+        return "added";
+
+      case "M":
+        return "modified";
+
+      case "D":
+        return "deleted";
+
+      case "R":
+        return "renamed";
+
+      case "C":
+        return "copied";
+
+      case "T":
+        return "type changed";
+
+      case "U":
+        return "unmerged/conflict";
+
+      case "X":
+        return "unknown";
+
+      case "B":
+        return "broken pairing";
+
+      case "?":
+        return "untracked";
+
+      case " ":
+        return null;
+
+      default:
+        throw new Error(`invalid key status ${key}`);
+    }
   }
 }
 
@@ -56,33 +98,6 @@ class GitFile {
 
   isUnstaged(): boolean {
     return Boolean(this.unstagedStatus);
-  }
-
-  static GetFileStatusByKey(key: string): GitFileStatus | null {
-    switch (key) {
-      case "A":
-        return "added";
-      case "M":
-        return "modified";
-      case "D":
-        return "deleted";
-      case "R":
-        return "renamed";
-      case "C":
-        return "copied";
-      case "T":
-        return "type changed";
-      case "U":
-        return "unmerged/conflict";
-      case "X":
-        return "unknown";
-      case "B":
-        return "broken pairing";
-      case " ":
-        return null;
-      default:
-        throw new Error(`invalid key status ${key}`);
-    }
   }
 }
 export class GitCommitWindow extends EditorWindow {
@@ -105,7 +120,8 @@ export class GitCommitWindow extends EditorWindow {
           .setStyles(
             ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
           ),
-      );
+      )
+      .addChildren(new Input().setMaxH(3));
 
     this.files = Git.getStatusFiles();
     this.buffer = new TextBuffer(this.files.map((f) => f.path).join("\n"));

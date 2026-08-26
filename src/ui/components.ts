@@ -2,8 +2,9 @@ import { assert } from "../assert.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 import { ComponentStyle } from "./ComponentStyles.js";
+import { ViewPort } from "./windows/viewport.js";
 
-export class DisplayComponent implements Component {
+export class DisplayComponent {
   private static ID = 0;
   private id: number;
   private maxH: number | null = null;
@@ -13,12 +14,14 @@ export class DisplayComponent implements Component {
   private vs: boolean = true;
   private s: ComponentStyles;
   private nm: string | null | undefined;
+  private vp: ViewPorts = new ViewPort();
+  private _focusable: boolean = false;
 
-  private childs: Component[];
+  private childs: DisplayComponent[];
 
   private m: Insets = { bottom: 0, top: 0, left: 0, right: 0 };
   private p: Insets = { bottom: 0, top: 0, left: 0, right: 0 };
-  private pr: Component | null;
+  private pr: DisplayComponent | null;
   private l: LayoutBounds;
 
   private d: "vertical" | "horizontal";
@@ -41,7 +44,7 @@ export class DisplayComponent implements Component {
   name(): string | null | undefined {
     return this.nm;
   }
-  findChildrenByName(nm: string): Component | null {
+  findChildrenByName(nm: string): DisplayComponent | null {
     if (this.name() === nm) {
       return this;
     }
@@ -55,14 +58,14 @@ export class DisplayComponent implements Component {
 
     return null;
   }
-  setName(newName: string): Component {
+  setName(newName: string): DisplayComponent {
     this.nm = newName;
     return this;
   }
   padding(): Insets {
     return this.p;
   }
-  setPadding(nPadding: Insets): Component {
+  setPadding(nPadding: Insets): DisplayComponent {
     this.p = nPadding;
     return this;
   }
@@ -78,7 +81,7 @@ export class DisplayComponent implements Component {
   direction(): "horizontal" | "vertical" {
     return this.d;
   }
-  setLayout(nLayout: LayoutBounds): Component {
+  setLayout(nLayout: LayoutBounds): DisplayComponent {
     this.l = nLayout;
     return this;
   }
@@ -86,7 +89,7 @@ export class DisplayComponent implements Component {
     return this.l;
   }
 
-  parent(): Component | null {
+  parent(): DisplayComponent | null {
     return this.pr;
   }
 
@@ -96,7 +99,7 @@ export class DisplayComponent implements Component {
   styles(): ComponentStyles | null {
     return this.s;
   }
-  setMaxH(nmh: number): Component {
+  setMaxH(nmh: number): DisplayComponent {
     this.maxH = nmh;
     return this;
   }
@@ -104,9 +107,9 @@ export class DisplayComponent implements Component {
     return this.maxH;
   }
 
-  addChildren(c: Component[]): Component;
-  addChildren(c: Component): Component;
-  addChildren(c: Component | Component[]): Component {
+  addChildren(c: DisplayComponent[]): DisplayComponent;
+  addChildren(c: DisplayComponent): DisplayComponent;
+  addChildren(c: DisplayComponent | DisplayComponent[]): DisplayComponent {
     if (Array.isArray(c)) {
       for (const child of c) {
         this.childs.push(child.setParent(this));
@@ -117,17 +120,17 @@ export class DisplayComponent implements Component {
 
     return this;
   }
-  setParent(c: Component): Component {
+  setParent(c: DisplayComponent): DisplayComponent {
     this.pr = c;
 
     return this;
   }
 
-  children(): Component[] {
+  children(): DisplayComponent[] {
     return this.childs;
   }
 
-  setDirection(direction: "vertical" | "horizontal"): Component {
+  setDirection(direction: "vertical" | "horizontal"): DisplayComponent {
     this.d = direction;
 
     return this;
@@ -135,11 +138,11 @@ export class DisplayComponent implements Component {
   maxWidth(): number | null {
     return this.maxW;
   }
-  setMaxW(nMax: number): Component {
+  setMaxW(nMax: number): DisplayComponent {
     this.maxW = nMax;
     return this;
   }
-  setStyles(sty: Partial<ComponentStyles>): Component {
+  setStyles(sty: Partial<ComponentStyles>): DisplayComponent {
     this.s = ComponentStyle.Create()
       .setBackgroundColor(sty.backgroundColor?.() ?? this.s.backgroundColor())
       .setColor(sty.color?.() ?? this.s.color())
@@ -154,7 +157,7 @@ export class DisplayComponent implements Component {
     return this;
   }
 
-  setPaintHook(paintHook: (canvas: Canvas) => void): Component {
+  setPaintHook(paintHook: (canvas: Canvas) => void): DisplayComponent {
     this.paintHook = paintHook;
     return this;
   }
@@ -163,13 +166,12 @@ export class DisplayComponent implements Component {
     this.paintHook?.(canvas);
   }
 
-  setPrePaintHook(paintHook: (canvas: Canvas) => void): Component {
-    this.prePaintHook= paintHook;
+  setPrePaintHook(paintHook: (canvas: Canvas) => void): DisplayComponent {
+    this.prePaintHook = paintHook;
     return this;
   }
   onPrePaint(canvas: Canvas): void {
-    this.prePaintHook?.(canvas)
-    
+    this.prePaintHook?.(canvas);
   }
   measure(bounds: LayoutBounds): Partial<LayoutBounds> {
     return {};
@@ -206,11 +208,11 @@ export class DisplayComponent implements Component {
   positionMode(): PositionMode {
     return this.pm;
   }
-  setPositionMode(nval: PositionMode): Component {
+  setPositionMode(nval: PositionMode): DisplayComponent {
     this.pm = nval;
     return this;
   }
-  setVisible(nval: boolean): Component {
+  setVisible(nval: boolean): DisplayComponent {
     this.vs = nval;
 
     return this;
@@ -221,8 +223,21 @@ export class DisplayComponent implements Component {
   margin(): Insets {
     return this.m;
   }
-  setMargin(nmargin: Insets): Component {
+  setMargin(nmargin: Insets): DisplayComponent {
     this.m = nmargin;
     return this;
+  }
+  viewport(): ViewPorts {
+    return this.vp;
+  }
+  setViewport(vp: ViewPort) {
+    this.vp = vp;
+    return this;
+  }
+  focusable() {
+    return this._focusable;
+  }
+  setFocusable(val: boolean) {
+    this._focusable = val;
   }
 }

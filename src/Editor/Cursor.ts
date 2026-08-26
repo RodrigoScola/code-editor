@@ -26,7 +26,7 @@ export class Cursor {
 
     const relativePosition = canvas.applyRelative(
       this.column,
-      this.line - editor.viewPort.firstLine,
+      this.line - editor.window.viewport().firstLine,
       cl,
       content,
     );
@@ -49,7 +49,7 @@ export class Cursor {
     );
   }
 
-  ensureCursorVisible(viewPort: ViewPort) {
+  ensureVisible(viewPort: ViewPort) {
     const lastVisibleLine = viewPort.firstLine + viewPort.visibleLines - 1;
     if (this.line < viewPort.firstLine) {
       viewPort.firstLine = this.line;

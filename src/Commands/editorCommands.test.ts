@@ -101,7 +101,7 @@ function setupContext({ fileContent }: { fileContent: string }) {
   root.addChildren(editorWindow.window);
 
   ctx.rootWindow = root;
-  ctx.textEditorWindow = editorWindow;
+  ctx.textEditor = editorWindow;
   ctx.activeWindow = editorWindow;
 
   editorWindow.cursor.column = 0;

@@ -2,14 +2,11 @@ import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components.js";
-import { ViewPort } from "../../ui/windows/viewport.js";
 import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor.js";
-import { TextEditorWindow } from "./TextEditorWindow.js";
 
 export class EditorWindow {
   cursor: Cursor;
-  viewPort: ViewPort = new ViewPort();
   window: DisplayComponent;
   buffer: TextBuffer = new TextBuffer("");
 
@@ -21,14 +18,14 @@ export class EditorWindow {
   }
   onPrePaint() {
     const cl = this.window.contentLayout();
-    this.viewPort.ensureVisible(cl.width, cl.height);
-    this.cursor.ensureCursorVisible(this.viewPort);
+    this.window.viewport().ensureVisible(cl.width, cl.height);
+    this.cursor.ensureVisible(this.window.viewport());
   }
 
   paint(canvas: Canvas): void {
     const cl = this.window.contentLayout();
-    this.viewPort.ensureVisible(cl.width, cl.height);
-    this.cursor.ensureCursorVisible(this.viewPort);
+    this.window.viewport().ensureVisible(cl.width, cl.height);
+    this.cursor.ensureVisible(this.window.viewport());
 
     canvas.fillRect(this.window.contentLayout(), this.window.styles());
 
@@ -64,9 +61,9 @@ export class EditorWindow {
   drawBuffer(canvas: Canvas, editor: EditorWindow) {
     const cl = editor.window.contentLayout();
 
-    const firstLine = editor.viewPort.firstLine;
+    const firstLine = editor.window.viewport().firstLine;
     const lastLine = Math.min(
-      firstLine + editor.viewPort.visibleLines,
+      firstLine + editor.window.viewport().visibleLines,
       editor.buffer.count(),
     );
 

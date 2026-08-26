@@ -7,22 +7,26 @@ import { LayoutEngine } from "../ui/layout/layout.js";
 import { Renderer } from "../ui/renderer.js";
 import { DiskFile, Textdocument } from "./Documents/TextDocument.js";
 import { EditorWindow } from "./windows/EditorWindow.js";
+import { FileTreeWindow } from "./windows/FileTreeWindow.js";
 import { GitCommitWindow, GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
 import { TextEditorWindow } from "./windows/TextEditorWindow.js";
 
 export class EditorContext {
+  layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
   static instance: EditorContext | null;
   canvas: Canvas = new Canvas();
   renderer: Renderer = new Renderer();
   activeWindow: EditorWindow | null = null;
-  rootWindow: Component = new DisplayComponent();
+  rootWindow: DisplayComponent = new DisplayComponent();
   gitEditor: GitEditorWindow | null = null;
-  gitCommit: GitCommitWindow = new GitCommitWindow();
-  textEditorWindow: TextEditorWindow | null = null;
+  gitCommit: GitCommitWindow | null = null;
+  textEditor: TextEditorWindow | null = null;
+  fileTree: FileTreeWindow | null = null;
   statusWindow: StatusWindow | null = null;
   normalMode: NormalMode = new NormalMode();
   insertMode: InsertMode = new InsertMode();
+
   commandMode: CommandMode = new CommandMode();
   mode: EditorMode = this.normalMode;
   modeName: EditingModes = "normal";
@@ -43,28 +47,26 @@ export class EditorContext {
     this.activeWindow = window;
   }
   openNewTextWindow(path: string) {
-    if (!this.textEditorWindow) {
+    if (!this.textEditor) {
       return;
     }
-    this.textEditorWindow.document = new Textdocument(new DiskFile(path));
-    this.textEditorWindow.buffer = new TextBuffer(
-      this.textEditorWindow.document.read(),
-    );
-    this.textEditorWindow.reset();
+    this.textEditor.document = new Textdocument(new DiskFile(path));
+    this.textEditor.buffer = new TextBuffer(this.textEditor.document.read());
+    this.textEditor.reset();
 
-    return this.textEditorWindow;
+    return this.textEditor;
   }
   getActiveTextEditor(): TextEditorWindow {
     if (this.activeWindow instanceof TextEditorWindow) {
       return this.activeWindow;
     }
 
-    assert(this.textEditorWindow, "missing active text editor");
-    return this.textEditorWindow;
+    assert(this.textEditor, "missing active text editor");
+    return this.textEditor;
   }
   focusTextWindow() {
-    assert(this.textEditorWindow, "missing active text editor");
-    this.activeWindow = this.textEditorWindow;
+    assert(this.textEditor, "missing active text editor");
+    this.activeWindow = this.textEditor;
   }
   setMode(m: EditingModes) {
     this.modeName = m;
@@ -72,7 +74,7 @@ export class EditorContext {
       this.mode = this.normalMode;
     } else if (m === "insert") {
       this.mode = this.insertMode;
-      assert(this.textEditorWindow, "missing active text editor");
+      assert(this.textEditor, "missing active text editor");
       // this.activeWindow = this.textEditorWindow;
     } else if (m === "command") {
       this.mode = this.commandMode;
@@ -102,5 +104,7 @@ export class EditorContext {
     LayoutEngine.Measure(this.rootWindow, this.rootWindow.contentLayout());
     this.renderer.build(this.rootWindow, this.canvas);
     return this.renderer.render(this.canvas);
+  }
+  executeCommand() {
   }
 }

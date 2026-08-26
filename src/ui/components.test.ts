@@ -241,12 +241,12 @@ describe("editorComponent", () => {
       new Textdocument(new MemoryFile("doc", content)),
     );
 
-    display.viewPort.visibleLines = 3;
-    display.viewPort.visibleColumns = 10;
+    display.window.viewport().visibleLines = 3;
+    display.window.viewport().visibleColumns = 10;
     display.cursor.line = 3;
 
-    display.cursor.ensureCursorVisible(display.viewPort);
+    display.cursor.ensureVisible(display.window.viewport());
 
-    expect(display.viewPort.firstLine).toBe(1);
+    expect(display.window.viewport().firstLine).toBe(1);
   });
 });

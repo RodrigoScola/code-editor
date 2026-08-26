@@ -2,6 +2,7 @@ import { assert } from "../assert.js";
 import { POSITION_ORDER } from "../constants.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
+import { DisplayComponent } from './components.js';
 import { ComponentStyle } from "./ComponentStyles.js";
 import { LayoutEngine } from "./layout/layout.js";
 
@@ -9,12 +10,12 @@ export class Renderer {
   static Create() {
     return new Renderer();
   }
-  build(root: Component, canvas: Canvas): Canvas {
+  build(root: DisplayComponent, canvas: Canvas): Canvas {
     canvas.clear();
     this.paint(root, canvas);
     return canvas;
   }
-  getComponents(root: Component) {
+  getComponents(root: DisplayComponent) {
     if (!root.visible()) {
       return [];
     }
@@ -30,7 +31,7 @@ export class Renderer {
     .setBackgroundColor(colors.BACKGROUND_OFF)
     .setColor(colors.FOREGROUND_OFF);
 
-  private paint(root: Component, canvas: Canvas) {
+  private paint(root: DisplayComponent, canvas: Canvas) {
     const components = this.getComponents(root);
 
     components.sort(

@@ -12,52 +12,6 @@ type SubmitCommandEvent = {
 type PositionMode = "normal" | "absolute" | "fixed";
 type TodoPositionModes = "relative" | "sticky";
 
-interface Component {
-  index(): number;
-  visible(): boolean;
-  setVisible: (nval: boolean) => Component;
-
-  positionMode(): PositionMode;
-  setPositionMode(nval: PositionMode): Component;
-  setIndex: (nval: number) => Component;
-  getId(): number;
-  layout: () => LayoutBounds;
-  setLayout: (nLayout: LayoutBounds) => Component;
-  onEvent(e: EditorEvents): void;
-  name(): string | null | undefined;
-  setName(newName: string): Component;
-  findChildrenByName(nm: string): Component | null;
-
-  preferredSize(): Size;
-  contentLayout(): LayoutBounds;
-
-  margin(): Insets;
-  setMargin(nmargin: Insets): Component;
-  padding(): Insets;
-  setPadding(nPadding: Insets): Component;
-
-  maxHeight(): number | null;
-  setMaxH(nMax: number): Component;
-
-  maxWidth(): number | null;
-  setMaxW(nMax: number): Component;
-  children(): Component[];
-  parent(): Component | null;
-
-  addChildren(c: Component[]): Component;
-  setParent(c: Component): Component;
-  addChildren(c: Component): Component;
-  setDirection(dir: "horizontal" | "vertical"): Component;
-  direction(): "horizontal" | "vertical";
-
-  onPrePaint(canvas:Canvas): void
-  paint(canvas: Canvas): void;
-  styles: () => ComponentStyles | null;
-  setStyles(sty: Partial<ComponentStyles>): Component;
-
-  measure(bounds: LayoutBounds): Partial<LayoutBounds>;
-}
-
 type Insets = {
   left: number;
   right: number;
@@ -131,4 +85,13 @@ interface ComponentStyles {
   setBlink: (nval: boolean) => ComponentStyles;
   isHidden: () => boolean;
   setHidden: (nval: boolean) => ComponentStyles;
+}
+interface ViewPorts {
+  firstLine: number;
+  firstColumn: number;
+  visibleLines: number;
+  visibleColumns: number;
+  bufferToViewPort(bufferPosition: Point): Point;
+  ensureVisible(width: number, height: number): void;
+  screenToBuffer(screenPosition: Point): Point;
 }

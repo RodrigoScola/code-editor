@@ -131,7 +131,7 @@ function setupTests(height: number = 10, width: number = 10) {
     layout,
     root,
     cnv,
-    build: (root: Component, canvas: Canvas) => {
+    build: (root: DisplayComponent, canvas: Canvas) => {
       LayoutEngine.Measure(root, root.contentLayout());
 
       Renderer.Create().build(root, canvas);
