@@ -2,7 +2,7 @@ import { assert } from "../assert.js";
 import { POSITION_ORDER } from "../constants.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
-import { DisplayComponent } from './components.js';
+import { DisplayComponent } from "./components.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 import { LayoutEngine } from "./layout/layout.js";
 
@@ -46,6 +46,17 @@ export class Renderer {
         component.contentLayout(),
         ComponentStyle.Blend(component.styles(), component.parent()?.styles()),
       );
+      const txt = component.text();
+      if (txt) {
+        canvas.drawText(
+          component.contentLayout(),
+          txt,
+          ComponentStyle.Blend(
+            component.styles(),
+            component.parent()?.styles(),
+          ),
+        );
+      }
 
       component.onPrePaint(canvas);
       component.paint(canvas);

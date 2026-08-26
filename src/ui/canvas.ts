@@ -165,22 +165,38 @@ export class Canvas {
     if (!text) {
       return;
     }
-    text = expandTabs(text, this.tab_width);
 
-    for (let i = 0; i < text.length; i++) {
-      const xpos = bounds.x + i;
-      if (xpos > bounds.x + bounds.width) {
-        continue;
-      }
+    const lines = text.split("\n");
 
-      const cell = this.getCell(xpos, bounds.y);
-      if (!cell) {
+    for (let lineOffset = 0; lineOffset < lines.length; lineOffset++) {
+      const line = expandTabs(lines[lineOffset], this.tab_width);
+
+      const y = bounds.y + lineOffset;
+
+      // Outside the drawing area vertically.
+      if (y >= bounds.y + bounds.height) {
         break;
       }
-      cell.styles = ComponentStyle.Blend(
-        cell.styles,
-        ComponentStyle.Blend(style, DEFAULT_STYLE),
-      ).setDisplay(text[i]);
+
+      for (let i = 0; i < line.length; i++) {
+        const x = bounds.x + i;
+
+        // Outside the drawing area horizontally.
+        if (x >= bounds.x + bounds.width) {
+          break;
+        }
+
+        const cell = this.getCell(x, y);
+
+        if (!cell) {
+          break;
+        }
+
+        cell.styles = ComponentStyle.Blend(
+          cell.styles,
+          ComponentStyle.Blend(style, DEFAULT_STYLE),
+        ).setDisplay(line[i]);
+      }
     }
   }
   getCells() {

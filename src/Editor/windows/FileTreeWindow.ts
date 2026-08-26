@@ -8,12 +8,22 @@ import colors from "../../ui/colors.js";
 import { EditorContext } from "../Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 
-type TreeNode = {
+type TreeNode = DirectoryTreeNode | FileTreeNode;
+
+type TreeNodeBase = {
   name: string;
   path: string;
-  isDirectory: boolean;
   children: TreeNode[];
   parent: TreeNode | null;
+};
+
+type DirectoryTreeNode = TreeNodeBase & {
+  isDirectory: true;
+  folded: boolean;
+};
+
+type FileTreeNode = TreeNodeBase & {
+  isDirectory: false;
 };
 
 export class FileTreeWindow extends EditorWindow {
@@ -37,6 +47,13 @@ export class FileTreeWindow extends EditorWindow {
 
     this.walkTree(dir, this.root);
   }
+  isDirectoryNode(node: TreeNode): node is DirectoryTreeNode {
+    return node.isDirectory === true;
+  }
+  isFileNode(node: TreeNode): node is FileTreeNode {
+    return node.isDirectory === false;
+  }
+
   setIgnoreDirs(newVal: string[]) {
     this.ignoreDirs = newVal;
     this.walkTree(this.root.name, this.root);
@@ -107,8 +124,6 @@ export class FileTreeWindow extends EditorWindow {
       height: layout.height,
     };
 
-    canvas.drawText(bd, node.name, this.window.styles());
-
     if (y === this.cursor.line) {
       canvas.fillRect(
         {
@@ -123,7 +138,13 @@ export class FileTreeWindow extends EditorWindow {
       );
     }
 
+    canvas.drawText(bd, node.name, this.window.styles());
+
     y++;
+
+    // if (this.isDirectoryNode(node) && node.folded) {
+    //   return y;
+    // }
 
     for (const child of node.children) {
       y = this.paintChild(child, y, indent + 1, canvas);
@@ -182,14 +203,17 @@ export class FileTreeWindow extends EditorWindow {
   onEvent(event: EditorEvents): void {}
   onEnter(ctx: EditorContext): void {
     const node = this.getNodeAtIndex(this.root, this.cursor.line);
-    if (!node || node.isDirectory) {
-      return;
-    }
 
-    const newWindow = ctx.openNewTextWindow(node?.path);
+    if (!node) return;
 
-    if (newWindow) {
-      ctx.focus(newWindow);
+    if (this.isDirectoryNode(node)) {
+      node.folded = !node.folded;
+    } else if (this.isFileNode(node)) {
+      const newWindow = ctx.openNewTextWindow(node?.path);
+
+      if (newWindow) {
+        ctx.focus(newWindow);
+      }
     }
   }
 }
