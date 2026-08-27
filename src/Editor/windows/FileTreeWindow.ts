@@ -1,12 +1,12 @@
 import fs from "fs";
 import path from "path";
+import colors from "../../ui/colors.js";
 import { Canvas } from "../../ui/canvas.js";
 import { Cursor } from "../Cursor.js";
-
 import { EditorWindow } from "./EditorWindow.js";
-import colors from "../../ui/colors.js";
 import { EditorContext } from "../Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
+import { ICONS } from "../../constants.js";
 
 type TreeNode = DirectoryTreeNode | FileTreeNode;
 
@@ -105,7 +105,7 @@ export class FileTreeWindow extends EditorWindow {
   paint(canvas: Canvas): void {
     let total = 0 + this.window.contentLayout().y;
 
-    this.paintChild(this.root, total, 0, canvas);
+    this.paintChild(this.root, total, -1, canvas);
   }
   private paintChild(
     node: TreeNode,
@@ -133,18 +133,26 @@ export class FileTreeWindow extends EditorWindow {
           y: y,
         },
         ComponentStyle.Create()
-          .setBackgroundColor(colors.CYAN_BACKGROUND)
+          .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
           .setColor(colors.WHITE_FOREGROUND),
       );
     }
 
-    canvas.drawText(bd, node.name, this.window.styles());
+    let label = node.name;
+
+    if (this.isDirectoryNode(node)) {
+      label =
+        (node.folded ? ICONS.arrow.triangleRight : ICONS.arrow.triangleDown) +
+        label;
+    }
+
+    canvas.drawText(bd, label, this.window.styles());
 
     y++;
 
-    // if (this.isDirectoryNode(node) && node.folded) {
-    //   return y;
-    // }
+    if (this.isDirectoryNode(node) && node.folded) {
+      return y;
+    }
 
     for (const child of node.children) {
       y = this.paintChild(child, y, indent + 1, canvas);
@@ -209,11 +217,9 @@ export class FileTreeWindow extends EditorWindow {
     if (this.isDirectoryNode(node)) {
       node.folded = !node.folded;
     } else if (this.isFileNode(node)) {
-      const newWindow = ctx.openNewTextWindow(node?.path);
+      const editor = ctx.openFile(node?.path);
 
-      if (newWindow) {
-        ctx.focus(newWindow);
-      }
+      if (editor) ctx.focus(editor);
     }
   }
 }

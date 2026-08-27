@@ -46,15 +46,17 @@ export class EditorContext {
   focus(window: EditorWindow) {
     this.activeWindow = window;
   }
-  openNewTextWindow(path: string) {
-    if (!this.textEditor) {
-      return;
-    }
-    this.textEditor.document = new Textdocument(new DiskFile(path));
-    this.textEditor.buffer = new TextBuffer(this.textEditor.document.read());
-    this.textEditor.reset();
+  openFile(path: string) {
+    try {
+      this.textEditor?.openDocument(new Textdocument(new DiskFile(path)));
 
-    return this.textEditor;
+      this.textEditor?.reset();
+
+      return this.textEditor;
+    } catch (err) {
+      console.error(`could not open ${path}`, err);
+      return null;
+    }
   }
   getActiveTextEditor(): TextEditorWindow {
     if (this.activeWindow instanceof TextEditorWindow) {
@@ -66,6 +68,7 @@ export class EditorContext {
   }
   focusTextWindow() {
     assert(this.textEditor, "missing active text editor");
+
     this.activeWindow = this.textEditor;
   }
   setMode(m: EditingModes) {
@@ -105,6 +108,5 @@ export class EditorContext {
     this.renderer.build(this.rootWindow, this.canvas);
     return this.renderer.render(this.canvas);
   }
-  executeCommand() {
-  }
+  executeCommand() {}
 }

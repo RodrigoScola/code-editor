@@ -1,3 +1,4 @@
+import { assert } from "../assert.js";
 import { TextBuffer } from "../ui/buffer/Buffer.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";

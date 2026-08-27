@@ -20,6 +20,8 @@ export const textEditorCommands = {
     goToEndLine,
     goToBeginLine,
     prevWordStart,
+    goToDocumentStart,
+    goToDocumentEnd,
   },
 };
 
@@ -333,6 +335,21 @@ function prevWordStart(ctx: EditorContext) {
   cursor.column = column;
   cursor.prefferedColumn = column;
 }
+function goToDocumentStart(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  const cursor = activeEditor.cursor;
+
+  cursor.line = 0;
+  cursor.column = 0;
+}
+function goToDocumentEnd(ctx: EditorContext) {
+  const activeEditor = ctx.getActiveTextEditor();
+  const cursor = activeEditor.cursor;
+  const buffer = activeEditor.buffer;
+
+  cursor.line = Math.max(buffer.count() - 1, 0);
+  cursor.column = 0;
+}
 
 function prevCompleteWord(ctx: EditorContext) {}
 
@@ -343,6 +360,8 @@ function prevCompleteWord(ctx: EditorContext) {}
 // ✅b - jump backwards to the start of a word
 // B - jump backwards to the start of a word (words can contain punctuation)
 
+// ✅G - go to the last line of the document
+// ✅gg - go to the first line of the document
 // ✅  h - move cursor left
 // ✅ j - move cursor down
 // ✅ k - move cursor up
@@ -360,8 +379,6 @@ function prevCompleteWord(ctx: EditorContext) {}
 // % - move cursor to matching character (default supported pairs: '()', '{}', '[]' - use :h matchpairs in vim for more info)
 // ^ - jump to the first non-blank character of the line
 // g_ - jump to the last non-blank character of the line
-// gg - go to the first line of the document
-// G - go to the last line of the document
 // 5gg or 5G - go to line 5
 // gd - move to local declaration
 // gD - move to global declaration

@@ -114,6 +114,11 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
   editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
   editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
+  editor.normalMode.bind(["G"], textEditorCommands.textEditor.goToDocumentEnd);
+  editor.normalMode.bind(
+    ["g", "g"],
+    textEditorCommands.textEditor.goToDocumentStart,
+  );
   editor.normalMode.bind(["c", "m"], (ctx) => {
     assert(ctx.gitCommit?.window, "invalid git commit window");
     ctx.gitCommit.window

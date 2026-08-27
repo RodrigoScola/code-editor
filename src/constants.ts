@@ -10,3 +10,32 @@ export const POSITION_ORDER: Record<PositionMode, number> = {
   absolute: 1,
   fixed: 2,
 };
+
+export const ICONS = {
+  arrow: {
+    left: "←",
+    right: "→",
+    up: "↑",
+    down: "↓",
+    upLeft: "↖",
+    upRight: "↗",
+    downRight: "↘",
+    downLeft: "↙",
+    leftRight: "↔",
+    upDown: "↕",
+    doubleLeft: "⇐",
+    doubleRight: "⇒",
+    doubleUp: "⇑",
+    doubleDown: "⇓",
+    doubleLr: "⇔",
+    doubleUd: "⇕",
+    returnLeft: "↩",
+    returnRight: "↪",
+    arcUp: "⤴",
+    arcDown: "⤵",
+    triangleUp: "▲",
+    triangleDown: "▼",
+    triangleRight: "▶",
+    triangleLeft: "◀",
+  },
+};
