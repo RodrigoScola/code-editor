@@ -109,12 +109,12 @@ function editorInsertModeAfter(ctx: EditorContext) {
 }
 
 function saveFileCommand(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
+  const activeEditor = ctx.getActiveWindow();
   activeEditor.save();
 }
 
 function nextWordStart(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
+  const activeEditor = ctx.getActiveWindow();
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -196,7 +196,7 @@ function nextWordStart(ctx: EditorContext) {
   cursor.prefferedColumn = cursor.column;
 }
 function nextCompleteWordStart(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
+  const activeEditor = ctx.getActiveWindow();
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -250,7 +250,7 @@ function isWordChar(char: string | undefined) {
 }
 
 function goToEndLine(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
+  const activeEditor = ctx.getActiveWindow();
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -260,7 +260,7 @@ function goToEndLine(ctx: EditorContext) {
   cursor.prefferedColumn = cursor.column = currentLine.length - 1;
 }
 function goToBeginLine(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
+  const activeEditor = ctx.getActiveWindow();
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -271,9 +271,8 @@ function goToBeginLine(ctx: EditorContext) {
   cursor.prefferedColumn = 0;
 }
 
-
 function prevWordStart(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
+  const activeEditor = ctx.getActiveWindow();
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -335,14 +334,14 @@ function prevWordStart(ctx: EditorContext) {
   cursor.prefferedColumn = column;
 }
 function goToDocumentStart(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
+  const activeEditor = ctx.getActiveWindow();
   const cursor = activeEditor.cursor;
 
   cursor.line = 0;
   cursor.column = 0;
 }
 function goToDocumentEnd(ctx: EditorContext) {
-  const activeEditor = ctx.getActiveTextEditor();
+  const activeEditor = ctx.getActiveWindow();
   const cursor = activeEditor.cursor;
   const buffer = activeEditor.buffer;
 

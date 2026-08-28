@@ -112,7 +112,7 @@ function setupVisualModeCommands(editor: EditorContext) {
   });
 
   editor.visualMode.bind(["d"], (ctx) => {
-    const activeEditor = ctx.getActiveTextEditor();
+    const activeEditor = ctx.getActiveWindow();
     const cursor = activeEditor.cursor;
     const buffer = activeEditor.buffer;
 
@@ -180,7 +180,7 @@ function setupNormalModeCommands(editor: EditorContext) {
   });
 
   editor.normalMode.bind(["V"], (ctx) => {
-    const activeEditor = ctx.getActiveTextEditor();
+    const activeEditor = ctx.getActiveWindow();
 
     const cursor = activeEditor.cursor;
     cursor.startSelection();
@@ -217,8 +217,9 @@ function setupNormalModeCommands(editor: EditorContext) {
     ctx.gitCommit.setVisible(!ctx.gitCommit.visible());
   });
   editor.normalMode.bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
-    assert(ctx.fileTree, "invalid file tree and trying to active window");
-    editor.activeWindow = ctx.fileTree;
+    let activeWndow = ctx.getActiveWindow();
+
+    const layout = activeWndow.window.contentLayout();
   });
 
   editor.normalMode.bind(["<C-w>", "<C-l>"], (ctx: EditorContext) => {

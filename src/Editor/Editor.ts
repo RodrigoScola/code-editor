@@ -63,7 +63,7 @@ export class EditorContext {
       return null;
     }
   }
-  getActiveTextEditor(): TextEditorWindow {
+  getActiveWindow(): TextEditorWindow {
     if (this.activeWindow instanceof TextEditorWindow) {
       return this.activeWindow;
     }
