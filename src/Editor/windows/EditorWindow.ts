@@ -1,9 +1,12 @@
+import { text } from "stream/consumers";
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components.js";
+import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor.js";
+import { LayoutEngine } from "../../ui/layout/layout.js";
 
 export class EditorWindow {
   cursor: Cursor;
@@ -33,6 +36,42 @@ export class EditorWindow {
     this.drawBuffer(canvas, this);
 
     this.cursor.paint(canvas, this, cursorLine);
+
+    this.paintSelection(canvas);
+  }
+
+  paintSelection(canvas: Canvas) {
+    const selection = this.cursor.selection;
+    if (!selection) {
+      return;
+    }
+
+    const cl = this.window.contentLayout();
+
+    const bounds = canvas.selectionBounds(
+      selection.startSelection(),
+      selection.endSelection(),
+      this.buffer,
+    );
+
+    for (const bound of bounds) {
+      let content = this.buffer.at(bound.y) ?? "";
+      content = content.slice(bound.x, bound.width);
+
+      const position = canvas.applyRelative(
+        bound.x,
+        bound.y - this.window.viewport().firstLine,
+        cl,
+        content,
+      );
+      const nb = {
+        ...position,
+        width: bound.width,
+        height: bound.height,
+      };
+      canvas.fillRect(nb, selection.styles);
+      canvas.drawText(nb, content);
+    }
   }
   onEvent(event: EditorEvents): void {
     // todo: when adding config, this is needing a change
@@ -41,21 +80,6 @@ export class EditorWindow {
     }
 
     const cursor = this.cursor.style;
-
-    if (event.mode === "normal") {
-      cursor
-        .setBackgroundColor(colors.RED_BACKGROUND)
-        .setColor(colors.WHITE_FOREGROUND);
-    } else if (event.mode === "insert") {
-      this.cursor.style.setBackgroundColor(colors.GREEN_BACKGROUND);
-      this.cursor.style.setColor(colors.WHITE_FOREGROUND);
-    } else if (event.mode === "visual") {
-      this.cursor.style.setBackgroundColor(colors.CYAN_BACKGROUND);
-      this.cursor.style.setColor(colors.WHITE_FOREGROUND);
-    } else {
-      this.cursor.style.setBackgroundColor(colors.RED_BACKGROUND);
-      this.cursor.style.setColor(colors.WHITE_FOREGROUND);
-    }
   }
 
   drawBuffer(canvas: Canvas, editor: EditorWindow) {

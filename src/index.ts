@@ -56,6 +56,7 @@ window.addChildren(editor.gitCommit.window);
 // ---------
 
 setup.commands.normalMode(editor);
+setup.commands.visualMode(editor);
 setup.commands.commandMode(editor);
 
 editor.activeWindow = editor.textEditor;

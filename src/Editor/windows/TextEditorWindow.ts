@@ -1,6 +1,5 @@
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
-import { Canvas } from "../../ui/canvas.js";
-import { Cursor } from '../Cursor.js';
+import { Cursor } from "../Cursor.js";
 import { Textdocument } from "../Documents/TextDocument.js";
 import { EditorWindow } from "./EditorWindow.js";
 
@@ -11,9 +10,6 @@ export class TextEditorWindow extends EditorWindow implements BufferLike {
     super();
     this.document = document;
     this.buffer = new TextBuffer(document.read());
-  }
-  paint(canvas: Canvas): void {
-    super.paint(canvas);
   }
 
   save() {
@@ -34,6 +30,6 @@ export class TextEditorWindow extends EditorWindow implements BufferLike {
   openDocument(document: Textdocument) {
     this.document = document;
     this.buffer = new TextBuffer(document.read());
-    this.cursor = new Cursor()
+    this.cursor = new Cursor();
   }
 }

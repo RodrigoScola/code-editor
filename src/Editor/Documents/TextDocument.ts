@@ -7,15 +7,17 @@ export class DiskFile implements EditorFile {
     this.p = path;
   }
   path(): string {
-    return this.p;
+    return "";
+    // return this.p;
   }
   write(content: string): void {
-    fs.writeFileSync(this.path(), content);
+    fs.writeFileSync(this.p, content);
   }
 
   read() {
     try {
-      const content = fs.readFileSync(this.path(), { encoding: "utf-8" });
+      const content = fs.readFileSync(this.p, { encoding: "utf-8" });
+
       return content;
     } catch (err) {
       throw new Error("invalid file");

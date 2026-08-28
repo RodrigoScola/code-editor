@@ -257,7 +257,7 @@ function goToEndLine(ctx: EditorContext) {
   const currentLine = buffer.at(cursor.line);
   assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
 
-  cursor.column = currentLine.length - 1;
+  cursor.prefferedColumn = cursor.column = currentLine.length - 1;
 }
 function goToBeginLine(ctx: EditorContext) {
   const activeEditor = ctx.getActiveTextEditor();
@@ -268,10 +268,9 @@ function goToBeginLine(ctx: EditorContext) {
   assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
 
   cursor.column = 0;
+  cursor.prefferedColumn = 0;
 }
 
-function nextWordEnd(ctx: EditorContext) {}
-function nextCompleteWordEnd(ctx: EditorContext) {}
 
 function prevWordStart(ctx: EditorContext) {
   const activeEditor = ctx.getActiveTextEditor();
@@ -351,6 +350,8 @@ function goToDocumentEnd(ctx: EditorContext) {
   cursor.column = 0;
 }
 
+function nextWordEnd(ctx: EditorContext) {}
+function nextCompleteWordEnd(ctx: EditorContext) {}
 function prevCompleteWord(ctx: EditorContext) {}
 
 // ✅w - jump forwards to the start of a word

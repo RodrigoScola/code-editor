@@ -121,6 +121,16 @@ export class NormalMode implements EditorMode {
     this.keyMap.bind(node, command);
   }
 }
+export class VisualMode implements EditorMode {
+  keyMap: KeyMapCommands = new KeyMapCommands();
+
+  handleKey(key: KeyEvent, ctx: EditorContext) {
+    this.keyMap.handleKey(key, ctx);
+  }
+  bind(node: string[], command: Command) {
+    this.keyMap.bind(node, command);
+  }
+}
 
 export class CommandMode implements EditorMode {
   commands: Map<string, Command> = new Map<string, Command>();

@@ -44,6 +44,9 @@ export class Canvas {
   startY() {
     return this.l.y;
   }
+  getRow(at: number) {
+    return this.canvas.at(at);
+  }
 
   private createTile(x: number, y: number): DisplayTile {
     return {
@@ -140,6 +143,31 @@ export class Canvas {
       }
     }
   }
+  selectionBounds(
+    start: Point,
+    end: Point,
+    buffer: BufferLike,
+  ): LayoutBounds[] {
+    const bounds: LayoutBounds[] = [];
+
+    for (let y = start.y; y <= end.y; y++) {
+      const content = buffer.at(y) ?? "";
+
+      const from = y === start.y ? start.x : 0;
+      const to = y === end.y ? end.x : content.length;
+
+      if (to <= from) continue;
+
+      bounds.push({
+        x: from,
+        y,
+        width: to - from,
+        height: 1,
+      });
+    }
+
+    return bounds;
+  }
 
   applyRelative(x: number, y: number, layout: LayoutBounds): LayoutBounds;
   applyRelative(
@@ -161,7 +189,19 @@ export class Canvas {
       y: layout.y + y,
     };
   }
-  drawText(bounds: LayoutBounds, text: string, style: ComponentStyles | null) {
+  drawText(bounds: LayoutBounds, text: string): void;
+
+  drawText(
+    bounds: LayoutBounds,
+    text: string,
+    style: ComponentStyles | null | undefined,
+  ): void;
+
+  drawText(
+    bounds: LayoutBounds,
+    text: string,
+    style?: ComponentStyles | null,
+  ): void {
     if (!text) {
       return;
     }
@@ -170,7 +210,6 @@ export class Canvas {
 
     for (let lineOffset = 0; lineOffset < lines.length; lineOffset++) {
       const line = expandTabs(lines[lineOffset], this.tab_width);
-
       const y = bounds.y + lineOffset;
 
       // Outside the drawing area vertically.

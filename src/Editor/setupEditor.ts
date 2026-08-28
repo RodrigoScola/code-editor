@@ -86,7 +86,7 @@ function setupDivisor() {
 
 function setupTextEditor(editor: EditorContext) {
   const editorWindow: TextEditorWindow = new TextEditorWindow(
-    new Textdocument(new DiskFile(".gitignore")),
+    new Textdocument(new DiskFile("./src/globals.d.ts")),
   );
 
   editorWindow.window.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
@@ -98,6 +98,65 @@ function setupTextEditor(editor: EditorContext) {
 
   editorWindow.window.viewport().visibleLines =
     editorWindow.window.contentLayout().height;
+}
+
+function setupVisualModeCommands(editor: EditorContext) {
+  editor.visualMode.bind(["j"], textEditorCommands.textEditor.moveDown);
+  editor.visualMode.bind(["k"], textEditorCommands.textEditor.moveUp);
+  editor.visualMode.bind(["h"], textEditorCommands.textEditor.moveLeft);
+  editor.visualMode.bind(["l"], textEditorCommands.textEditor.moveRight);
+
+  editor.visualMode.bind(["v"], (ctx) => {
+    ctx.textEditor?.cursor.clearSelection();
+    ctx.setMode("normal");
+  });
+
+  editor.visualMode.bind(["d"], (ctx) => {
+    const activeEditor = ctx.getActiveTextEditor();
+    const cursor = activeEditor.cursor;
+    const buffer = activeEditor.buffer;
+
+    const startPos = cursor.selection?.startSelection();
+    assert(startPos, "if visual mode has to have start position");
+
+    const endPos = cursor.selection?.endSelection();
+    assert(endPos, "if visual mode has to have end position");
+
+    if (startPos.y === endPos.y) {
+      buffer.removeLine(startPos.y);
+    }
+
+    for (let i = startPos.y; i < endPos.y; i++) {
+      const line = buffer.at(i) ?? " ";
+      if (i === startPos.y || i === endPos.y) {
+        let startAt = 0;
+        let endAt = line.length;
+
+        if (i === startPos.y) {
+          endAt = startPos.x;
+        } else {
+          startAt = endPos.x;
+        }
+
+        const l = line?.slice(startAt, endAt);
+
+        if (!l) {
+          buffer.removeLine(startPos.y);
+        } else {
+          buffer.update(i, l);
+        }
+      } else {
+        buffer.removeLine(i);
+      }
+    }
+
+    cursor.line = cursor.selection?.startSelection().y ?? cursor.line;
+    cursor.column = cursor.selection?.startSelection().x ?? cursor.column;
+
+    cursor.clearSelection();
+
+    ctx.setMode("normal");
+  });
 }
 
 function setupNormalModeCommands(editor: EditorContext) {
@@ -115,6 +174,31 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
   editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
   editor.normalMode.bind(["G"], textEditorCommands.textEditor.goToDocumentEnd);
+  editor.normalMode.bind(["v"], (ctx) => {
+    ctx.textEditor?.cursor.startSelection();
+    ctx.setMode("visual");
+  });
+
+  editor.normalMode.bind(["V"], (ctx) => {
+    const activeEditor = ctx.getActiveTextEditor();
+
+    const cursor = activeEditor.cursor;
+    cursor.startSelection();
+    cursor.selection?.setAnchor({
+      x: 0,
+      y: cursor.selection.anchor().y,
+    });
+
+    const buffer = activeEditor.buffer;
+    const line = buffer.at(cursor.line);
+    if (!line) return;
+
+    cursor.selection?.setHead({
+      x: line.length,
+      y: cursor.selection.head().y,
+    });
+    ctx.setMode("visual");
+  });
   editor.normalMode.bind(
     ["g", "g"],
     textEditorCommands.textEditor.goToDocumentStart,
@@ -131,8 +215,6 @@ function setupNormalModeCommands(editor: EditorContext) {
       });
     ctx.focus(ctx.gitCommit);
     ctx.gitCommit.setVisible(!ctx.gitCommit.visible());
-
-    console.log("this is good");
   });
   editor.normalMode.bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
     assert(ctx.fileTree, "invalid file tree and trying to active window");
@@ -263,6 +345,7 @@ export const setupEditor = {
   commands: {
     normalMode: setupNormalModeCommands,
     commandMode: setupCommandModes,
+    visualMode: setupVisualModeCommands,
   },
 
   windows: {

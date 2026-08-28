@@ -5,7 +5,7 @@ export class TextBuffer implements BufferLike {
 
   constructor(text?: string | undefined) {
     if (text) {
-      this.lines = text.split("\n");
+      this.lines = text.split(/\r?\n/);
     }
   }
   content() {

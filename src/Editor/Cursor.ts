@@ -1,9 +1,12 @@
+import { start } from "repl";
+import { buffer } from "stream/consumers";
 import { assert } from "../assert.js";
 import { TextBuffer } from "../ui/buffer/Buffer.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { ViewPort } from "../ui/windows/viewport.js";
+import { EditorSelection } from "./Selection.js";
 import { EditorWindow } from "./windows/EditorWindow.js";
 
 export class Cursor {
@@ -12,7 +15,23 @@ export class Cursor {
   column: number = 0;
   style: ComponentStyles = ComponentStyle.Create()
     .setBackgroundColor(colors.RED_BACKGROUND)
-    .setColor(colors.BLACK_FOREGROUND);
+    .setColor(colors.BRIGHT_WHITE_FOREGROUND);
+  selection: EditorSelection | null = null;
+
+  startSelection() {
+    const point: Point = {
+      x: this.column,
+      y: this.line,
+    };
+    this.selection = new EditorSelection(point, point);
+  }
+  updateSelection() {
+    assert(this.selection, "cannot update selection if there is no selection");
+    this.selection?.setHead({ x: this.column, y: this.line });
+  }
+  clearSelection() {
+    this.selection = null;
+  }
 
   paint(
     canvas: Canvas,
@@ -21,9 +40,7 @@ export class Cursor {
   ) {
     const cl = editor.window.contentLayout();
 
-    if (!content) {
-      return;
-    }
+    content ||= " ";
 
     const relativePosition = canvas.applyRelative(
       this.column,
@@ -41,8 +58,10 @@ export class Cursor {
       return;
     }
 
-    canvas.fillRect(relativePosition, this.style);
-    canvas.drawText(relativePosition, content[relativePosition.x], this.style);
+    canvas.fillRect(
+      relativePosition,
+      this.style.setDisplay(content[this.column]),
+    );
   }
 
   ensureVisible(viewPort: ViewPort) {
@@ -72,10 +91,15 @@ export class Cursor {
     const line = buffer.at(this.line);
     if (line) {
       nextLinePos = line.length - 1;
+    } else {
+      nextLinePos = 0;
     }
 
     this.column = Math.min(this.prefferedColumn, nextLinePos);
 
+    if (this.selection) {
+      this.updateSelection();
+    }
     if (line) {
       this.style.setDisplay(line[this.column]);
     }
@@ -89,9 +113,13 @@ export class Cursor {
     const line = buffer.at(this.line);
     if (line) {
       nextLinePos = line.length - 1;
+    } else {
+      nextLinePos = 0;
     }
 
     this.column = Math.min(this.prefferedColumn, nextLinePos);
+
+    if (this.selection) this.updateSelection();
     if (line) {
       this.style.setDisplay(line[this.column]);
     }
@@ -113,6 +141,8 @@ export class Cursor {
     this.column = Math.min(this.column + 1, Math.max(lineLength, 0));
 
     this.prefferedColumn = this.column;
+
+    if (this.selection) this.updateSelection();
 
     if (line) {
       this.style.setDisplay(line[this.column]);
