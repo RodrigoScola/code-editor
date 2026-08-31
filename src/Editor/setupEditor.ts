@@ -12,6 +12,7 @@ import { GitCommitWindow, GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
 import { TextEditorWindow } from "./windows/TextEditorWindow.js";
 import { LayoutEngine } from "../ui/layout/layout.js";
+import { ListMenuWindow } from "./windows/ListMenuWindow.js";
 
 function setupGit(editor: EditorContext) {
   const commit = new GitCommitWindow();
@@ -205,6 +206,11 @@ function setupNormalModeCommands(editor: EditorContext) {
     ["g", "g"],
     textEditorCommands.textEditor.goToDocumentStart,
   );
+  editor.normalMode.bind(["<C-p>"], (ctx) => {
+    const window = ctx.findWindow(ListMenuWindow);
+    assert(window);
+    ctx.focus(window);
+  });
   editor.normalMode
     .bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
       const success = ctx.windowManager.focusLeft();

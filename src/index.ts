@@ -12,6 +12,8 @@ import {
   GitCommitWindow,
   GitEditorWindow,
 } from "./Editor/windows/GitEditorWindow.js";
+import { ListMenuWindow } from "./Editor/windows/ListMenuWindow.js";
+import colors from "./ui/colors.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -64,6 +66,26 @@ assert(gitCommit, "invalid git commit window");
 // assert(git, "invalid git window");
 // window.addChildren(git.window);
 window.addChildren(gitCommit.window);
+
+// todo: cleanup
+const list = new ListMenuWindow();
+
+list.window
+  .setLayout({
+    height: 30,
+    width: 90,
+    x: 30,
+    y: 0,
+  })
+  .setMaxW(30)
+  .setIndex(10)
+  .setPositionMode("absolute")
+  .styles()
+  ?.setBackgroundColor(colors.YELLOW_BACKGROUND);
+
+editor.windowManager.add(list);
+editor.rootWindow.addChildren(list.window);
+
 // ---------
 
 setup.commands.normalMode(editor);
@@ -84,9 +106,8 @@ setInterval(() => {
   editor.requestRepaint();
 }, 50);
 
-
 function dispatchKey(parsedKey: KeyEvent) {
-   editor.handleKey(parsedKey);
+  editor.handleKey(parsedKey);
   editor.requestRepaint();
 }
 

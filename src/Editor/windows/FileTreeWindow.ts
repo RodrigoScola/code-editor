@@ -38,6 +38,7 @@ export class FileTreeWindow extends EditorWindow {
   constructor(dir: string) {
     super();
 
+    // @ts-expect-error
     this.root = {
       path: "",
       children: [],
@@ -80,6 +81,7 @@ export class FileTreeWindow extends EditorWindow {
     node.children = [];
 
     for (const entry of entries) {
+      // @ts-expect-error
       const child: TreeNode = {
         name: entry.name,
         children: [],
