@@ -1,4 +1,3 @@
-import { WINDOW_NAMES } from "./constants.js";
 import { EditorWindow } from "./Editor/windows/EditorWindow.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
@@ -7,6 +6,13 @@ export function isEditorWindow(
   t: EditorWindow | undefined | null,
 ): asserts t is EditorWindow {
   if (!(t instanceof EditorWindow)) {
+    throw new Error("Expected an EditorComponent");
+  }
+}
+export function isTextEditorWindow(
+  t: EditorWindow | undefined | null,
+): asserts t is TextEditorWindow {
+  if (!(t instanceof TextEditorWindow)) {
     throw new Error("Expected an EditorComponent");
   }
 }

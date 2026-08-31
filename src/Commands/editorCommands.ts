@@ -1,7 +1,8 @@
-import { EditorContext } from "../Editor/Editor.js";
-import { isEditorWindow } from "../utils.js";
+import { EditorContext } from "../Editor/Editor/Editor.js";
+import { isEditorWindow, isTextEditorWindow } from "../utils.js";
 import { log } from "../log.js";
 import { assert } from "../assert.js";
+import { isatty } from "node:tty";
 
 export const textEditorCommands = {
   textEditor: {
@@ -26,52 +27,57 @@ export const textEditorCommands = {
 };
 
 function moveDownEditorCommand(ctx: EditorContext) {
-  if (!ctx.activeWindow) {
+  const window = ctx.getActiveWindow();
+  if (!window) {
     log("invalid active window");
     return;
   }
-  isEditorWindow(ctx.activeWindow);
-  ctx.activeWindow.moveCursorDown();
+  isEditorWindow(window);
+  window.moveCursorDown();
 }
 
 function moveUpEditorCommand(ctx: EditorContext) {
-  if (!ctx.activeWindow) {
+  const window = ctx.getActiveWindow();
+  if (!window) {
     log("invalid active window");
     return;
   }
-  isEditorWindow(ctx.activeWindow);
-  const cursor = ctx.activeWindow.cursor;
-  cursor.moveUp(ctx.activeWindow.buffer);
+  isEditorWindow(window);
+  const cursor = window.cursor;
+  cursor.moveUp(window.buffer);
 }
 
 function moveLeftEditorCommand(ctx: EditorContext) {
-  if (!ctx.activeWindow) {
+  const window = ctx.getActiveWindow();
+  if (!window) {
     log("invalid active window");
     return;
   }
-  isEditorWindow(ctx.activeWindow);
-  const cursor = ctx.activeWindow.cursor;
-  cursor.moveLeft(ctx.activeWindow.buffer);
+  isEditorWindow(window);
+  const cursor = window.cursor;
+  cursor.moveLeft(window.buffer);
 }
 
 function moveRightEditorCommand(ctx: EditorContext) {
-  if (!ctx.activeWindow) {
+  const window = ctx.getActiveWindow();
+  if (!window) {
     log("invalid active window");
     return;
   }
-  isEditorWindow(ctx.activeWindow);
-  const cursor = ctx.activeWindow.cursor;
-  cursor.moveRight(ctx.activeWindow.buffer);
+  isEditorWindow(window);
+  const cursor = window.cursor;
+  cursor.moveRight(window.buffer);
 }
 
 function editorInsertMode(ctx: EditorContext) {
   ctx.setMode("insert");
 }
 function newLineEditorCommand(ctx: EditorContext) {
-  isEditorWindow(ctx.activeWindow);
+  const window = ctx.getActiveWindow();
+  isEditorWindow(window);
 
-  const cursor = ctx.activeWindow.cursor;
-  const newLine = ctx.activeWindow.buffer.insertLine(cursor.line);
+  const cursor = window.cursor;
+  const newLine = window.buffer.insertLine(cursor.line);
 
   cursor.line = newLine;
   cursor.column = 0;
@@ -84,18 +90,20 @@ function setCommandMode(ctx: EditorContext) {
 }
 
 function deleteLine(ctx: EditorContext) {
-  isEditorWindow(ctx.activeWindow);
-  const buffer = ctx.activeWindow.buffer;
-  const cursor = ctx.activeWindow.cursor;
+  const window = ctx.getActiveWindow();
+  isEditorWindow(window);
+  const buffer = window.buffer;
+  const cursor = window.cursor;
 
   buffer.removeLine(cursor.line);
 }
 
 function editorInsertModeAfter(ctx: EditorContext) {
-  isEditorWindow(ctx.activeWindow);
+  const window = ctx.getActiveWindow();
+  isEditorWindow(window);
 
-  const buffer = ctx.activeWindow.buffer;
-  const cursor = ctx.activeWindow.cursor;
+  const buffer = window.buffer;
+  const cursor = window.cursor;
   // check if at the end of the line
 
   const line = buffer.at(cursor.line);
@@ -104,17 +112,21 @@ function editorInsertModeAfter(ctx: EditorContext) {
     buffer.update(cursor.line, line + " ");
   }
 
-  ctx.activeWindow?.cursor.moveRight(ctx.activeWindow.buffer);
+  window?.cursor.moveRight(window.buffer);
   ctx.setMode("insert");
 }
 
 function saveFileCommand(ctx: EditorContext) {
   const activeEditor = ctx.getActiveWindow();
+  isTextEditorWindow(activeEditor);
+
   activeEditor.save();
 }
 
 function nextWordStart(ctx: EditorContext) {
   const activeEditor = ctx.getActiveWindow();
+
+  if (!activeEditor) return;
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -197,6 +209,9 @@ function nextWordStart(ctx: EditorContext) {
 }
 function nextCompleteWordStart(ctx: EditorContext) {
   const activeEditor = ctx.getActiveWindow();
+
+  if (!activeEditor) return;
+
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -251,6 +266,7 @@ function isWordChar(char: string | undefined) {
 
 function goToEndLine(ctx: EditorContext) {
   const activeEditor = ctx.getActiveWindow();
+  if (!activeEditor) return;
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -261,6 +277,7 @@ function goToEndLine(ctx: EditorContext) {
 }
 function goToBeginLine(ctx: EditorContext) {
   const activeEditor = ctx.getActiveWindow();
+  if (!activeEditor) return;
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -273,6 +290,7 @@ function goToBeginLine(ctx: EditorContext) {
 
 function prevWordStart(ctx: EditorContext) {
   const activeEditor = ctx.getActiveWindow();
+  if (!activeEditor) return;
   const buffer = activeEditor.buffer;
   const cursor = activeEditor.cursor;
 
@@ -335,6 +353,7 @@ function prevWordStart(ctx: EditorContext) {
 }
 function goToDocumentStart(ctx: EditorContext) {
   const activeEditor = ctx.getActiveWindow();
+  if (!activeEditor) return;
   const cursor = activeEditor.cursor;
 
   cursor.line = 0;
@@ -342,6 +361,8 @@ function goToDocumentStart(ctx: EditorContext) {
 }
 function goToDocumentEnd(ctx: EditorContext) {
   const activeEditor = ctx.getActiveWindow();
+  if (!activeEditor) return;
+
   const cursor = activeEditor.cursor;
   const buffer = activeEditor.buffer;
 

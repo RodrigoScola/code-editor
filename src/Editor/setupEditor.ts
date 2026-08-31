@@ -6,7 +6,7 @@ import colors from "../ui/colors.js";
 import { DisplayComponent } from "../ui/components.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { Textdocument, DiskFile } from "./Documents/TextDocument.js";
-import { EditorContext } from "./Editor.js";
+import { EditorContext } from "./Editor/Editor.js";
 import { FileTreeWindow } from "./windows/FileTreeWindow.js";
 import { GitCommitWindow, GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
@@ -14,23 +14,28 @@ import { TextEditorWindow } from "./windows/TextEditorWindow.js";
 import { LayoutEngine } from "../ui/layout/layout.js";
 
 function setupGit(editor: EditorContext) {
-  editor.gitCommit = new GitCommitWindow();
+  const commit = new GitCommitWindow();
 
-  editor.gitCommit.window
+  commit.window
     .setVisible(false)
     .setPositionMode("absolute")
     .setIndex(5)
     .setMargin({ bottom: 2, left: 2, right: 2, top: 2 });
 
+  const text = editor.findWindow(TextEditorWindow);
+  assert(text, "text should be first");
+
+  editor.addWindow(commit);
+
   const gitEditor = new GitEditorWindow();
 
-  gitEditor.window.setName(WINDOW_NAMES.GIT_WINDOW);
+  gitEditor.window
+    .setName(WINDOW_NAMES.GIT_WINDOW)
+    .setPadding({ left: 1, right: 0, bottom: 0, top: 0 })
+    .styles()
+    ?.setBackgroundColor(colors.BLUE_BACKGROUND);
 
-  editor.gitEditor = gitEditor;
-
-  gitEditor.window.setPadding({ left: 1, right: 0, bottom: 0, top: 0 });
-
-  gitEditor.window.styles()?.setBackgroundColor(colors.BLUE_BACKGROUND);
+  editor.windowManager.split(text, gitEditor, "vertical");
 }
 
 function setupWindows(editor: EditorContext) {
@@ -39,9 +44,9 @@ function setupWindows(editor: EditorContext) {
 }
 
 function statusWindow(editor: EditorContext) {
-  editor.statusWindow = new StatusWindow(editor);
+  const statusWindow = new StatusWindow(editor);
 
-  editor.statusWindow.window
+  statusWindow.window
     .setPadding({ left: 1, right: 0, bottom: 0, top: 0 })
     .setMaxH(1)
     .setStyles(
@@ -49,7 +54,10 @@ function statusWindow(editor: EditorContext) {
         .setBackgroundColor(colors.YELLOW_BACKGROUND)
         .setColor(colors.WHITE_FOREGROUND),
     )
+
     .setName(WINDOW_NAMES.STATUS_WINDOW);
+
+  editor.addWindow(statusWindow);
 }
 
 function editorWindow(editor: EditorContext) {
@@ -71,17 +79,7 @@ function setupFileTree(editor: EditorContext) {
     )
     .setName(WINDOW_NAMES.TREE_WINDOW);
 
-  editor.fileTree = treeView;
-}
-
-function setupDivisor() {
-  const divisor = new DisplayComponent();
-  divisor.setStyles(
-    ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-  );
-  divisor.setMaxW(1);
-
-  return divisor;
+  editor.addWindow(treeView);
 }
 
 function setupTextEditor(editor: EditorContext) {
@@ -90,7 +88,7 @@ function setupTextEditor(editor: EditorContext) {
   );
 
   editorWindow.window.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
-  editor.textEditor = editorWindow;
+  editor.addWindow(editorWindow);
 
   editorWindow.window.setStyles(
     ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
@@ -107,12 +105,14 @@ function setupVisualModeCommands(editor: EditorContext) {
   editor.visualMode.bind(["l"], textEditorCommands.textEditor.moveRight);
 
   editor.visualMode.bind(["v"], (ctx) => {
-    ctx.textEditor?.cursor.clearSelection();
+    const textEditor = editor.findWindow(TextEditorWindow);
+    textEditor?.cursor.clearSelection();
     ctx.setMode("normal");
   });
 
   editor.visualMode.bind(["d"], (ctx) => {
     const activeEditor = ctx.getActiveWindow();
+    if (!activeEditor) return;
     const cursor = activeEditor.cursor;
     const buffer = activeEditor.buffer;
 
@@ -175,12 +175,14 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
   editor.normalMode.bind(["G"], textEditorCommands.textEditor.goToDocumentEnd);
   editor.normalMode.bind(["v"], (ctx) => {
-    ctx.textEditor?.cursor.startSelection();
+    const textEditor = ctx.findWindow(TextEditorWindow);
+    textEditor?.cursor.startSelection();
     ctx.setMode("visual");
   });
 
   editor.normalMode.bind(["V"], (ctx) => {
     const activeEditor = ctx.getActiveWindow();
+    if (!activeEditor) return;
 
     const cursor = activeEditor.cursor;
     cursor.startSelection();
@@ -203,27 +205,20 @@ function setupNormalModeCommands(editor: EditorContext) {
     ["g", "g"],
     textEditorCommands.textEditor.goToDocumentStart,
   );
-  editor.normalMode.bind(["c", "m"], (ctx) => {
-    assert(ctx.gitCommit?.window, "invalid git commit window");
-    ctx.gitCommit.window
-      .setPadding({ bottom: 5, top: 5, left: 10, right: 10 })
-      .setLayout({
-        height: ctx.rootWindow.layout().height,
-        width: ctx.rootWindow.layout().width,
-        x: ctx.gitCommit.window.layout().x,
-        y: ctx.gitCommit.window.layout().y,
-      });
-    ctx.focus(ctx.gitCommit);
-    ctx.gitCommit.setVisible(!ctx.gitCommit.visible());
-  });
   editor.normalMode.bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
-    let activeWndow = ctx.getActiveWindow();
-
-    const layout = activeWndow.window.contentLayout();
+    const tree = editor.findWindow(FileTreeWindow);
+    if (tree) {
+      editor.focus(tree);
+    }
   });
 
   editor.normalMode.bind(["<C-w>", "<C-l>"], (ctx: EditorContext) => {
-    editor.activeWindow = ctx.gitEditor;
+    const editor = ctx.findWindow(GitEditorWindow);
+
+    if (!editor) {
+      return;
+    }
+    ctx.focus(editor);
   });
   editor.normalMode.bind(
     ["W"],
@@ -231,10 +226,11 @@ function setupNormalModeCommands(editor: EditorContext) {
   );
   editor.normalMode.bind([":"], textEditorCommands.textEditor.commandMode);
   editor.normalMode.bind(["<CR>"], (ctx) => {
-    if (!ctx.activeWindow) {
+    const window = ctx.getActiveWindow();
+    if (!window) {
       return;
     }
-    ctx.activeWindow.onEnter(ctx);
+    window.onEnter(ctx);
   });
 
   editor.normalMode.bind(["d", "d"], textEditorCommands.textEditor.deleteLine);
@@ -329,9 +325,26 @@ function queryTerminalSize(
 
 function setupCommandModes(editor: EditorContext) {
   editor.commandMode.bind("tree", (ctx) => {
-    assert(ctx.fileTree, "invalid file tree and trying to active window");
-    editor.activeWindow = ctx.fileTree;
+    const fileTree = ctx.findWindow(FileTreeWindow);
+
+    assert(fileTree, "invalid file tree and trying to active window");
+    editor.focus(fileTree);
   });
+
+  editor.commandMode.bind("split", (ctx) => split(ctx, "vertical"));
+  editor.commandMode.bind("split v", (ctx) => split(ctx, "vertical"));
+  editor.commandMode.bind("split h", (ctx) => split(ctx, "horizontal"));
+}
+
+function split(ctx: EditorContext, direction: Direction) {
+  const active = ctx.getActiveWindow();
+  if (!active) return;
+
+  const demoWindow =
+    ctx.windowManager.previousWindow(TextEditorWindow) ||
+    new TextEditorWindow(new Textdocument(new DiskFile(".gitignore")));
+  ctx.windowManager.split(active, demoWindow, direction);
+  ctx.focus(demoWindow);
 }
 
 export const setupEditor = {
@@ -354,7 +367,6 @@ export const setupEditor = {
     status: statusWindow,
     git: setupGit,
     fileTree: setupFileTree,
-    divisor: setupDivisor,
     textEditor: setupTextEditor,
   },
 };

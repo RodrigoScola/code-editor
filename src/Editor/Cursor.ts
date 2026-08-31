@@ -84,7 +84,7 @@ export class Cursor {
     }
   }
   moveDown(buffer: BufferLike) {
-    this.line = Math.min(this.line + 1, buffer.count() - 1);
+    this.line = Math.max(Math.min(this.line + 1, buffer.count() - 1), 0);
 
     let nextLinePos = this.prefferedColumn;
 

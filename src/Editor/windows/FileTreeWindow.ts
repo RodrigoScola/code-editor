@@ -4,9 +4,10 @@ import colors from "../../ui/colors.js";
 import { Canvas } from "../../ui/canvas.js";
 import { Cursor } from "../Cursor.js";
 import { EditorWindow } from "./EditorWindow.js";
-import { EditorContext } from "../Editor.js";
+import { EditorContext } from "../Editor/Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
+import { ViewPort } from "../../ui/windows/viewport.js";
 
 type TreeNode = DirectoryTreeNode | FileTreeNode;
 
@@ -103,6 +104,9 @@ export class FileTreeWindow extends EditorWindow {
   }
 
   paint(canvas: Canvas): void {
+    const cl = this.window.contentLayout();
+    this.window.viewport().ensureVisible(cl.width, cl.height);
+    this.cursor.ensureVisible(this.window.viewport());
     let total = 0 + this.window.contentLayout().y;
 
     this.paintChild(this.root, total, -1, canvas);
@@ -114,39 +118,57 @@ export class FileTreeWindow extends EditorWindow {
     canvas: Canvas,
   ): number {
     const layout = this.window.contentLayout();
-    if (y >= layout.y + layout.height) {
+    const viewport = this.window.viewport();
+
+    const viewportPosition = viewport.bufferToViewPort({
+      x: indent * 2,
+      y,
+    });
+
+    const screenX = layout.x + viewportPosition.x;
+    const screenY = layout.y + viewportPosition.y;
+
+    const viewportBottom = layout.y + layout.height;
+
+    // The node is below the viewport. Since children come after
+    // their parent, nothing further down can be visible either.
+    if (screenY >= viewportBottom) {
       return y;
     }
-    const bd: LayoutBounds = {
-      x: layout.x + indent * 2,
-      y,
-      width: layout.width,
-      height: layout.height,
-    };
 
-    if (y === this.cursor.line) {
-      canvas.fillRect(
-        {
-          height: 1,
-          width: layout.width,
-          x: layout.x,
-          y: y,
-        },
-        ComponentStyle.Create()
-          .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
-          .setColor(colors.WHITE_FOREGROUND),
-      );
+    // Only paint when the node is inside the visible area.
+    if (screenY >= layout.y && screenY < viewportBottom) {
+      const bounds: LayoutBounds = {
+        x: screenX,
+        y: screenY,
+        width: layout.width - viewportPosition.x,
+        height: 1,
+      };
+
+      if (y === this.cursor.line) {
+        canvas.fillRect(
+          {
+            x: layout.x,
+            y: screenY,
+            width: layout.width,
+            height: 1,
+          },
+          ComponentStyle.Create()
+            .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
+            .setColor(colors.WHITE_FOREGROUND),
+        );
+      }
+
+      let label = node.name;
+
+      if (this.isDirectoryNode(node)) {
+        label =
+          (node.folded ? ICONS.arrow.triangleRight : ICONS.arrow.triangleDown) +
+          label;
+      }
+
+      canvas.drawText(bounds, label, this.window.styles());
     }
-
-    let label = node.name;
-
-    if (this.isDirectoryNode(node)) {
-      label =
-        (node.folded ? ICONS.arrow.triangleRight : ICONS.arrow.triangleDown) +
-        label;
-    }
-
-    canvas.drawText(bd, label, this.window.styles());
 
     y++;
 
@@ -157,7 +179,13 @@ export class FileTreeWindow extends EditorWindow {
     for (const child of node.children) {
       y = this.paintChild(child, y, indent + 1, canvas);
 
-      if (y >= layout.y + layout.height) {
+      // Once we've gone past the viewport, stop traversing.
+      const childViewportPosition = viewport.bufferToViewPort({
+        x: 0,
+        y,
+      });
+
+      if (layout.y + childViewportPosition.y >= viewportBottom) {
         break;
       }
     }

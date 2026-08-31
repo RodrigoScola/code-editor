@@ -1,7 +1,9 @@
 import { assert } from "../assert.js";
 import { InputParser } from "../Input/inputParser.js";
-import { EditorContext } from "../Editor/Editor.js";
+import { EditorContext } from "../Editor/Editor/Editor.js";
 import { isStatusWindow, isEditorWindow } from "../utils.js";
+import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";
+import { StatusWindow } from "../Editor/windows/StatusEditor.js";
 
 type Command = (ctx: EditorContext) => void;
 
@@ -148,14 +150,15 @@ export class CommandMode implements EditorMode {
   }
 
   handleKey(key: KeyEvent, ctx: EditorContext) {
-    if (!ctx.activeWindow) {
+    const window = ctx.getActiveWindow();
+    if (!window) {
       return;
     }
 
-    isStatusWindow(ctx.activeWindow);
+    isStatusWindow(window);
 
-    const cursor = ctx.activeWindow.cursor;
-    const buffer = ctx.activeWindow.buffer;
+    const cursor = window.cursor;
+    const buffer = window.buffer;
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;
@@ -173,18 +176,23 @@ export class CommandMode implements EditorMode {
     } else if (InputParser.isEnter(key.token)) {
       // todo: execute the command
 
-      ctx.focusTextWindow();
+      const previousWindow = ctx.windowManager.previousWindow();
+      if (previousWindow) {
+        ctx.focus(previousWindow);
+      }
       this.executeCommand(buffer.at(buffer.count() - 1) || "", ctx);
 
-      if (ctx.statusWindow) {
-        ctx.statusWindow.onEvent({ name: "submitCommand" });
+      const statusWindow = ctx.findWindow(StatusWindow);
+
+      if (statusWindow) {
+        statusWindow.onEvent({ name: "submitCommand" });
       }
 
       ctx.setMode("normal");
     } else if (InputParser.isArrowDown(key.token)) {
-      ctx.activeWindow.nextCommandLine();
+      window.nextCommandLine();
     } else if (InputParser.isArrowUp(key.token)) {
-      ctx.activeWindow.previousCommandLine();
+      window.previousCommandLine();
     } else if (InputParser.isArrowLeft(key.token)) {
       cursor.moveLeft(buffer);
     } else if (InputParser.isArrowRight(key.token)) {
@@ -199,14 +207,15 @@ export class CommandMode implements EditorMode {
 
 export class InsertMode implements EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext) {
-    if (!ctx.activeWindow) {
+    const window = ctx.getActiveWindow();
+    if (!window) {
       return;
     }
 
-    isEditorWindow(ctx.activeWindow);
+    isEditorWindow(window);
 
-    const cursor = ctx.activeWindow.cursor;
-    const buffer = ctx.activeWindow.buffer;
+    const cursor = window.cursor;
+    const buffer = window.buffer;
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       if (key.token === "h" && key.ctrl) {

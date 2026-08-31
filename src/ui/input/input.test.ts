@@ -6,7 +6,7 @@ import colors from "../colors.js";
 import { LayoutEngine } from "../layout/layout.js";
 import { Renderer } from "../renderer.js";
 import { Canvas } from "../canvas.js";
-import { EditorContext } from "../../Editor/Editor.js";
+import { EditorContext } from "../../Editor/Editor/Editor.js";
 import { TextEditorWindow } from "../../Editor/windows/TextEditorWindow.js";
 import {
   MemoryFile,
@@ -44,8 +44,7 @@ describe("tests the input behaviour", () => {
     const window = new TextEditorWindow(
       new Textdocument(new MemoryFile("doc", "keymoment")),
     );
-
-    editor.textEditor = window;
+    editor.addWindow(window);
 
     editor.setMode("insert");
 

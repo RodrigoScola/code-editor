@@ -35,7 +35,7 @@ export class TextBuffer implements BufferLike {
   public remove(line: number, column: number) {
     assert(
       line >= 0 && line < this.lines.length,
-      `invalid line number, got: ${line} `,
+      `trying to remove line, invalid line number, got: ${line} `,
     );
 
     const current = this.lines[line];

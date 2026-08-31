@@ -70,6 +70,13 @@ export class DisplayComponent {
     this.p = nPadding;
     return this;
   }
+  removeChild(dp: DisplayComponent) {
+    this.childs = this.childs.filter((ch) => ch !== dp);
+    return this;
+  }
+  addChildAt(dp: DisplayComponent, ind: number) {
+    this.childs.splice(ind, 0, dp);
+  }
   contentLayout(): LayoutBounds {
     const layout = this.layout();
     return {

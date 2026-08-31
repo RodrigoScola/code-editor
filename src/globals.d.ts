@@ -1,5 +1,7 @@
 type EditorEvents = EditorModeEvent | SubmitCommandEvent;
 
+type Direction = "vertical" | "horizontal";
+
 type EditorModeEvent = {
   name: "editorModeChange";
   mode: EditingModes;

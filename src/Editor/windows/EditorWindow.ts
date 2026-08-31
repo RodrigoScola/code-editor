@@ -5,13 +5,28 @@ import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { Cursor } from "../Cursor.js";
-import { EditorContext } from "../Editor.js";
+import { EditorContext } from "../Editor/Editor.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
+import { WindowManager } from "../WindowManager.js";
+
+type WindowId = string;
 
 export class EditorWindow {
   cursor: Cursor;
   window: DisplayComponent;
   buffer: TextBuffer = new TextBuffer("");
+  private active: boolean = false;
+  readonly id: WindowId = crypto.randomUUID();
+
+  blur() {
+    this.active = false;
+  }
+  focus() {
+    this.active = true;
+  }
+  focused() {
+    return this.active;
+  }
 
   constructor() {
     this.window = new DisplayComponent();
@@ -34,6 +49,8 @@ export class EditorWindow {
 
     const cursorLine = this.buffer.at(this.cursor.line);
     this.drawBuffer(canvas, this);
+
+    if (!this.focused()) return;
 
     this.cursor.paint(canvas, this, cursorLine);
 

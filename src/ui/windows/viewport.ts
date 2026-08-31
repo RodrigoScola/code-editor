@@ -12,12 +12,8 @@ export class ViewPort implements ViewPorts {
     };
   }
   ensureVisible(width: number, height: number) {
-    if (this.visibleColumns <= 0) {
-      this.visibleColumns = width;
-    }
-    if (this.visibleLines <= 0) {
-      this.visibleLines = height;
-    }
+    this.visibleColumns = width;
+    this.visibleLines = height;
   }
   screenToBuffer(screenPosition: Point): Point {
     return {

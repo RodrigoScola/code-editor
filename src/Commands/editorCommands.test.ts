@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EditorContext } from "../Editor/Editor.js";
+import { EditorContext } from "../Editor/Editor/Editor.js";
 import { Textdocument, MemoryFile } from "../Editor/Documents/TextDocument.js";
 import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";
 import { DisplayComponent } from "../ui/components.js";
@@ -101,8 +101,7 @@ function setupContext({ fileContent }: { fileContent: string }) {
   root.addChildren(editorWindow.window);
 
   ctx.rootWindow = root;
-  ctx.textEditor = editorWindow;
-  ctx.activeWindow = editorWindow;
+  ctx.addWindow(editorWindow).focus(editorWindow);
 
   editorWindow.cursor.column = 0;
   return {

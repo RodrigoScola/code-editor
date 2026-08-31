@@ -1,5 +1,5 @@
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
-import { EditorContext } from "../Editor.js";
+import { EditorContext } from "../Editor/Editor.js";
 import { EditorWindow } from "./EditorWindow.js";
 import path from "path";
 import cp from "child_process";
