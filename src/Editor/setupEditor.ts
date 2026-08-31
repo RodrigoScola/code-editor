@@ -205,21 +205,29 @@ function setupNormalModeCommands(editor: EditorContext) {
     ["g", "g"],
     textEditorCommands.textEditor.goToDocumentStart,
   );
-  editor.normalMode.bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
-    const tree = editor.findWindow(FileTreeWindow);
-    if (tree) {
-      editor.focus(tree);
-    }
-  });
+  editor.normalMode
+    .bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
+      const success = ctx.windowManager.focusLeft();
+      if (!success) {
+        const previous = ctx.windowManager.previousWindow();
+        if (previous) ctx.windowManager.focus(previous);
+      }
+    })
+    .bind(["<C-w>", "<C-l>"], (ctx: EditorContext) => {
+      ctx.windowManager.focusRight();
+    })
 
-  editor.normalMode.bind(["<C-w>", "<C-l>"], (ctx: EditorContext) => {
-    const editor = ctx.findWindow(GitEditorWindow);
+    .bind(["<C-w>", "<C-k>"], (ctx: EditorContext) => {
+      ctx.windowManager.focusUp();
+    })
+    .bind(["<C-w>", "<C-j>"], (ctx: EditorContext) => {
+      const success = ctx.windowManager.focusDown();
+      if (!success) {
+        const previous = ctx.windowManager.previousWindow();
+        if (previous) ctx.windowManager.focus(previous);
+      }
+    });
 
-    if (!editor) {
-      return;
-    }
-    ctx.focus(editor);
-  });
   editor.normalMode.bind(
     ["W"],
     textEditorCommands.textEditor.nextCompleteWordStart,
@@ -336,7 +344,7 @@ function setupCommandModes(editor: EditorContext) {
   editor.commandMode.bind("split h", (ctx) => split(ctx, "horizontal"));
 }
 
-function split(ctx: EditorContext, direction: Direction) {
+function split(ctx: EditorContext, direction: DisplayDirection) {
   const active = ctx.getActiveWindow();
   if (!active) return;
 

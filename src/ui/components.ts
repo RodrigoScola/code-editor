@@ -138,7 +138,7 @@ export class DisplayComponent {
     return this.childs;
   }
 
-  setDirection(direction: "vertical" | "horizontal"): DisplayComponent {
+  setDirection(direction: DisplayDirection): DisplayComponent {
     this.d = direction;
 
     return this;

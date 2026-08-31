@@ -84,8 +84,9 @@ setInterval(() => {
   editor.requestRepaint();
 }, 50);
 
+
 function dispatchKey(parsedKey: KeyEvent) {
-  editor.handleKey(parsedKey);
+   editor.handleKey(parsedKey);
   editor.requestRepaint();
 }
 

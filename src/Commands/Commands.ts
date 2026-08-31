@@ -10,45 +10,59 @@ type Command = (ctx: EditorContext) => void;
 type TrieNodeKey = {
   key: string;
   hasControl: boolean;
+  hasShift: boolean;
+  hasAlt: boolean;
 };
 
 function keyId(key: TrieNodeKey): string {
-  return `${key.hasControl ? "C" : "N"}:${key.key}`;
+  return [
+    key.hasControl ? "C" : "N",
+    key.hasShift ? "S" : "N",
+    key.hasAlt ? "A" : "N",
+    key.key,
+  ].join(":");
 }
 
 function keyFromBinding(binding: string): TrieNodeKey {
-  const controlKey = binding.match(/^<C-(.+)>$/);
+  const match = binding.match(/^<(.+)>$/);
 
-  if (controlKey) {
+  if (!match) {
     return {
-      hasControl: true,
-      key: controlKey[1],
+      key: binding,
+      hasControl: false,
+      hasShift: false,
+      hasAlt: false,
     };
   }
 
+  const parts = match[1].split("-");
+
+  const key = parts.pop();
+
+  assert(key, `invalid key binding: ${binding}`);
+
   return {
-    hasControl: false,
-    key: binding,
+    key,
+    hasControl: parts.includes("C"),
+    hasShift: parts.includes("S"),
+    hasAlt: parts.includes("A"),
   };
 }
 
 function keyFromEvent(key: KeyEvent): TrieNodeKey {
-  if (!key.ctrl) {
-    return {
-      hasControl: false,
-      key: key.token,
-    };
-  }
-
   return {
-    hasControl: true,
-    key: controlTokenToKey(key.token),
+    key: key.ctrl ? controlTokenToKey(key.token) : key.token,
+
+    hasControl: key.ctrl,
+    hasShift: key.shift,
+    hasAlt: key.alt,
   };
 }
 
 function controlTokenToKey(token: string): string {
   if (token.length === 1) {
     const code = token.charCodeAt(0);
+
     if (code >= 1 && code <= 26) {
       return String.fromCharCode(code + 96);
     }
@@ -58,13 +72,13 @@ function controlTokenToKey(token: string): string {
 }
 
 class TrieNode {
-  children: Map<string, TrieNode> = new Map<string, TrieNode>();
-
+  children: Map<string, TrieNode> = new Map();
   command?: Command;
 }
 
 export class KeyMapCommands {
   private root: TrieNode = new TrieNode();
+
   private current = this.root;
 
   bind(node: string[], command: Command) {
@@ -73,21 +87,29 @@ export class KeyMapCommands {
     for (let i = 0; i < node.length; i++) {
       const parsed = keyFromBinding(node[i]);
       const id = keyId(parsed);
+
       if (!current.children.has(id)) {
         current.children.set(id, new TrieNode());
       }
-      let created = current.children.get(id);
+
+      const created = current.children.get(id);
+
       assert(created, "invalid node created");
+
       current = created;
     }
+
     current.command = command;
   }
+
   handleKey(key: KeyEvent | undefined, ctx: EditorContext) {
     if (!key) {
       return;
     }
+
     const parsed = keyFromEvent(key);
     const id = keyId(parsed);
+
     const next = this.current.children.get(id);
 
     if (!next) {
@@ -98,6 +120,7 @@ export class KeyMapCommands {
       if (!retry) {
         return;
       }
+
       this.current = retry;
     } else {
       this.current = next;
@@ -108,6 +131,7 @@ export class KeyMapCommands {
       this.reset();
     }
   }
+
   reset() {
     this.current = this.root;
   }
@@ -119,23 +143,27 @@ export class NormalMode implements EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext) {
     this.keyMap.handleKey(key, ctx);
   }
+
   bind(node: string[], command: Command) {
     this.keyMap.bind(node, command);
+    return this;
   }
 }
+
 export class VisualMode implements EditorMode {
   keyMap: KeyMapCommands = new KeyMapCommands();
 
   handleKey(key: KeyEvent, ctx: EditorContext) {
     this.keyMap.handleKey(key, ctx);
   }
+
   bind(node: string[], command: Command) {
     this.keyMap.bind(node, command);
   }
 }
 
 export class CommandMode implements EditorMode {
-  commands: Map<string, Command> = new Map<string, Command>();
+  commands: Map<string, Command> = new Map();
 
   bind(name: string, command: Command) {
     this.commands.set(name, command);
@@ -143,14 +171,17 @@ export class CommandMode implements EditorMode {
 
   executeCommand(name: string, ctx: EditorContext) {
     const command = this.commands.get(name);
+
     if (!command) {
       return;
     }
+
     command(ctx);
   }
 
   handleKey(key: KeyEvent, ctx: EditorContext) {
     const window = ctx.getActiveWindow();
+
     if (!window) {
       return;
     }
@@ -161,8 +192,10 @@ export class CommandMode implements EditorMode {
     const buffer = window.buffer;
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
-      let valid = key.shift ? key.token.toUpperCase() : key.token;
+      const valid = key.shift ? key.token.toUpperCase() : key.token;
+
       buffer.addCharacter(cursor.line, cursor.column, valid);
+
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     } else if (InputParser.isEscape(key.token)) {
@@ -170,22 +203,25 @@ export class CommandMode implements EditorMode {
     } else if (InputParser.isBackspace(key.token)) {
       cursor.column -= 1;
       cursor.prefferedColumn = cursor.column;
+
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isDelete(key.token)) {
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isEnter(key.token)) {
-      // todo: execute the command
-
       const previousWindow = ctx.windowManager.previousWindow();
+
       if (previousWindow) {
         ctx.focus(previousWindow);
       }
+
       this.executeCommand(buffer.at(buffer.count() - 1) || "", ctx);
 
       const statusWindow = ctx.findWindow(StatusWindow);
 
       if (statusWindow) {
-        statusWindow.onEvent({ name: "submitCommand" });
+        statusWindow.onEvent({
+          name: "submitCommand",
+        });
       }
 
       ctx.setMode("normal");
@@ -199,6 +235,7 @@ export class CommandMode implements EditorMode {
       cursor.moveRight(buffer);
     } else if (InputParser.isTab(key.token)) {
       buffer.addCharacter(cursor.line, cursor.column, "\t");
+
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     }
@@ -208,6 +245,7 @@ export class CommandMode implements EditorMode {
 export class InsertMode implements EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext) {
     const window = ctx.getActiveWindow();
+
     if (!window) {
       return;
     }
@@ -221,11 +259,16 @@ export class InsertMode implements EditorMode {
       if (key.token === "h" && key.ctrl) {
         cursor.column -= 1;
         cursor.prefferedColumn = cursor.column;
+
         buffer.remove(cursor.line, cursor.column);
+
         return;
       }
-      let valid = key.shift ? key.token.toUpperCase() : key.token;
+
+      const valid = key.shift ? key.token.toUpperCase() : key.token;
+
       buffer.addCharacter(cursor.line, cursor.column, valid);
+
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     } else if (InputParser.isEscape(key.token)) {
@@ -233,11 +276,11 @@ export class InsertMode implements EditorMode {
     } else if (InputParser.isBackspace(key.token)) {
       cursor.column -= 1;
       cursor.prefferedColumn = cursor.column;
+
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isDelete(key.token)) {
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isEnter(key.token)) {
-      // todo: need to add more edge cases, very buggy
       buffer.newLine();
       cursor.moveDown(buffer);
     } else if (InputParser.isArrowDown(key.token)) {
@@ -250,6 +293,7 @@ export class InsertMode implements EditorMode {
       cursor.moveRight(buffer);
     } else if (InputParser.isTab(key.token)) {
       buffer.addCharacter(cursor.line, cursor.column, "\t");
+
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     }

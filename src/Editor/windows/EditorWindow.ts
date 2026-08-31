@@ -7,7 +7,7 @@ import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
-import { WindowManager } from "../WindowManager.js";
+import { WindowManager } from "./WindowManager/WindowManager.js";
 
 type WindowId = string;
 

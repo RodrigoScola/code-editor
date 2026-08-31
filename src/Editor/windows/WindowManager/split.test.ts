@@ -1,17 +1,17 @@
 import { describe, it, expect, assert } from "vitest";
-import { Textdocument, MemoryFile } from "./Documents/TextDocument.js";
-import { TextEditorWindow } from "./windows/TextEditorWindow.js";
-import { Canvas } from "../ui/canvas.js";
-import { LayoutEngine } from "../ui/layout/layout.js";
-import { Renderer } from "../ui/renderer.js";
-import colors from "../ui/colors.js";
+import { Textdocument, MemoryFile } from "../../Documents/TextDocument.js";
+import { TextEditorWindow } from "../TextEditorWindow.js";
+import { Canvas } from "../../../ui/canvas.js";
+import { LayoutEngine } from "../../../ui/layout/layout.js";
+import { Renderer } from "../../../ui/renderer.js";
+import colors from "../../../ui/colors.js";
 import { WindowManager } from "./WindowManager.js";
-import { EditorRoot } from "./Editor/EditorRoot.js";
-import { EditorWindow } from "./windows/EditorWindow.js";
-import { isEditorWindow } from "../utils.js";
-import { FileTreeWindow } from "./windows/FileTreeWindow.js";
+import { EditorRoot } from "../../Editor/EditorRoot.js";
+import { EditorWindow } from "../EditorWindow.js";
+import { isEditorWindow } from "../../../utils.js";
+import { FileTreeWindow } from "../FileTreeWindow.js";
 
-describe("tests the window manager capabilities", () => {
+describe("tests the window manager split capabilities", () => {
   it("focus the correct window at the correct time", () => {
     const manager = new WindowManager(new EditorRoot());
 

@@ -9,7 +9,7 @@ import { Canvas } from "../../ui/canvas.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
 import { Renderer } from "../../ui/renderer.js";
 import { DiskFile, Textdocument } from "../Documents/TextDocument.js";
-import { WindowManager } from "../WindowManager.js";
+import { WindowManager } from "../windows/WindowManager/WindowManager.js";
 import { EditorWindow } from "../windows/EditorWindow.js";
 import { StatusWindow } from "../windows/StatusEditor.js";
 import { TextEditorWindow } from "../windows/TextEditorWindow.js";

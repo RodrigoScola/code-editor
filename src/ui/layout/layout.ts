@@ -14,8 +14,10 @@ export class LayoutEngine {
 
   static Measure(
     root: DisplayComponent,
-    layout: LayoutBounds,
+    layout?: LayoutBounds,
   ): DisplayComponent {
+    layout ??= root.contentLayout();
+
     root.setLayout(layout);
 
     if (root.direction() === "vertical") {
