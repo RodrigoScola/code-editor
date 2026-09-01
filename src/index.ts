@@ -77,7 +77,7 @@ list.window
     x: 30,
     y: 0,
   })
-  .setMaxW(30)
+  .setMaxWidth(30)
   .setIndex(10)
   .setPositionMode("absolute")
   .styles()

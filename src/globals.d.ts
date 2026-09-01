@@ -2,6 +2,7 @@ type EditorEvents = EditorModeEvent | SubmitCommandEvent;
 
 type DisplayDirection = "vertical" | "horizontal";
 type Directions = "left" | "right" | "up" | "down";
+type Size = number | "auto" | `${number}%`;
 
 type EditorModeEvent = {
   name: "editorModeChange";

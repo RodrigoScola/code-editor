@@ -19,8 +19,9 @@ function setupGit(editor: EditorContext) {
 
   commit.window
     .setVisible(false)
-    .setPositionMode("absolute")
     .setIndex(5)
+
+    .setPositionMode("absolute")
     .setMargin({ bottom: 2, left: 2, right: 2, top: 2 });
 
   const text = editor.findWindow(TextEditorWindow);
@@ -49,7 +50,7 @@ function statusWindow(editor: EditorContext) {
 
   statusWindow.window
     .setPadding({ left: 1, right: 0, bottom: 0, top: 0 })
-    .setMaxH(1)
+    .setMaxHeight(1)
     .setStyles(
       ComponentStyle.Create()
         .setBackgroundColor(colors.YELLOW_BACKGROUND)
@@ -74,7 +75,7 @@ function setupFileTree(editor: EditorContext) {
     .setIgnoreFileExt([".js.map"]);
 
   treeView.window
-    .setMaxW(30)
+    .setMaxWidth(30)
     .setStyles(
       ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
     )

@@ -7,7 +7,6 @@ import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components.js";
 import { Canvas } from "../../ui/canvas.js";
-import { Input } from "../../ui/input/input.js";
 
 type GitFileStatus =
   | "added"
@@ -114,7 +113,6 @@ export class GitCommitWindow extends EditorWindow {
     const dp = new DisplayComponent().setStyles(
       ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
     );
-    dp.setText("this is tes");
 
     this.window.addChildren(dp);
 

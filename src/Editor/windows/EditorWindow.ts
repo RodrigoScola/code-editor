@@ -108,7 +108,7 @@ export class EditorWindow {
       editor.buffer.count(),
     );
 
-    for (let lineNumber = firstLine; lineNumber < lastLine; lineNumber++) {
+    for (let lineNumber = firstLine;lineNumber < lastLine;lineNumber++) {
       const line = editor.buffer.at(lineNumber);
       if (!line) {
         continue;
@@ -147,5 +147,5 @@ export class EditorWindow {
   moveCursorRight() {
     return this.cursor.moveRight(this.buffer);
   }
-  onEnter(ctx: EditorContext) {}
+  onEnter(ctx: EditorContext) { }
 }

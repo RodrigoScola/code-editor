@@ -228,8 +228,9 @@ describe("tests the margin", () => {
           ),
       )
       .setDirection("vertical");
-    LayoutEngine.Measure(root, root.contentLayout());
     const cnv = new Canvas().setLayout(layout);
+
+    LayoutEngine.Measure(root, root.contentLayout());
     Renderer.Create().build(root, cnv);
 
     expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
@@ -244,5 +245,65 @@ describe("tests the margin", () => {
     expect(cnv.getCell(2, layout.height - 1)?.styles.backgroundColor()).eq(
       colors.RED_BACKGROUND,
     );
+  });
+});
+
+describe("tests the relative height and width", () => {
+  it("can understand relative width of 30%", () => {
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 10;
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("horizontal");
+    const canvas = new Canvas().setLayout(layout);
+
+    const oneThird = new DisplayComponent()
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(
+          colors.BRIGHT_RED_BACKGROUND,
+        ),
+      )
+      .setWidth("30%");
+
+    const rest = new DisplayComponent().setStyles(
+      ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND),
+    );
+
+    root.addChildren(oneThird).addChildren(rest);
+
+    LayoutEngine.Measure(root, root.contentLayout());
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+  });
+
+  it("can understand relative height of 30%", () => {
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 10;
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("vertical");
+    const canvas = new Canvas().setLayout(layout);
+
+    const oneThird = new DisplayComponent()
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(
+          colors.BRIGHT_RED_BACKGROUND,
+        ),
+      )
+      .setHeight("30%");
+
+    const rest = new DisplayComponent().setStyles(
+      ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND),
+    );
+
+    root.addChildren(oneThird).addChildren(rest);
+
+    LayoutEngine.Measure(root, root.contentLayout());
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
   });
 });
