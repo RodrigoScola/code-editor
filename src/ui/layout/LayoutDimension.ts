@@ -48,19 +48,24 @@ export class LayoutDimensions {
 
     return result;
   }
-  static requestWidth(child: DisplayComponent, parent: LayoutBounds) {
-    let result: number | undefined = undefined;
+  static requestWidth(child: DisplayComponent, parent?: LayoutBounds) {
+    let result: number | undefined = 0;
 
     const margin = child.margin();
-    const measured = child.measure(parent);
-    const requestedWidth = this.parseSize(child.width(), parent.width);
 
-    if (requestedWidth !== null) {
-      result = requestedWidth;
-    } else if (Number.isFinite(measured.width)) {
-      result = measured.width!;
-    } else {
-      result = parent.width - margin.left - margin.right;
+    parent ??= child.parent()?.contentLayout();
+
+    if (parent) {
+      const measured = child.measure(parent);
+
+      const requestedWidth = this.parseSize(child.width(), parent.width);
+      if (requestedWidth !== null) {
+        result = requestedWidth;
+      } else if (Number.isFinite(measured.width)) {
+        result = measured.width!;
+      } else {
+        result = parent.width - margin.left - margin.right;
+      }
     }
 
     if (child.maxWidth() !== null) {
@@ -68,21 +73,25 @@ export class LayoutDimensions {
     }
     return result;
   }
-  static requestHeight(child: DisplayComponent, parent: LayoutBounds) {
-    const measured = child.measure(parent);
+  static requestHeight(child: DisplayComponent, parent?: LayoutBounds) {
+    let result: number | undefined = undefined;
+    parent ??= child.parent()?.contentLayout();
+    if (parent) {
+      const measured = child.measure(parent);
 
-    const parsedHeight = this.parseSize(child.height(), parent.height);
-    let out: number | undefined = undefined;
-
-    if (parsedHeight !== null) {
-      out = parsedHeight;
-    } else if (Number.isFinite(measured.height)) {
-      out = measured.height!;
+      if (Number.isFinite(measured.height)) {
+        result = measured.height!;
+      }
+      const parsedHeight = this.parseSize(child.height(), parent.height);
+      if (parsedHeight !== null) {
+        result = parsedHeight;
+      }
     }
+
     if (child.maxHeight() !== null) {
-      out = Math.min(child.maxHeight()!, out || Infinity);
+      result = Math.min(child.maxHeight()!, result || Infinity);
     }
-    return out;
+    return result;
   }
 
   static parseSize(size: Size, available: number) {

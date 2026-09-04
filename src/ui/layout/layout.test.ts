@@ -306,4 +306,6 @@ describe("tests the relative height and width", () => {
 
     canvas.renderBoard();
   });
+
 });
+

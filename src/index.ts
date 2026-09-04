@@ -71,13 +71,8 @@ window.addChildren(gitCommit.window);
 const list = new ListMenuWindow();
 
 list.window
-  .setLayout({
-    height: 30,
-    width: 90,
-    x: 30,
-    y: 0,
-  })
   .setWidth("50%")
+  .setHeight(30)
   .setIndex(10)
   .setPositionMode("absolute")
   .styles()

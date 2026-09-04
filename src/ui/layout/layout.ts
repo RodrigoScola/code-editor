@@ -105,8 +105,21 @@ export class LayoutEngine {
 
     // Absolute children keep their own layout.
     for (const child of this.absoluteChildren(component)) {
-      this.Measure(child, child.layout());
+      this.Measure(child, this.absoluteLayoutPosition(child));
     }
+  }
+  static absoluteLayoutPosition(child: DisplayComponent): LayoutBounds {
+    const currentLayout = child.layout();
+    const hasHeight = LayoutDimensions.requestHeight(child);
+    const hasWidth = LayoutDimensions.requestWidth(child);
+
+    if (hasHeight) {
+      currentLayout.height = hasHeight;
+    }
+    if (hasWidth) {
+      currentLayout.width = hasWidth;
+    }
+    return currentLayout;
   }
 
   private static layoutHorizontal(component: DisplayComponent) {
@@ -164,7 +177,7 @@ export class LayoutEngine {
 
     // Absolute children keep their own layout
     for (const child of this.absoluteChildren(component)) {
-      this.Measure(child, child.layout());
+      this.Measure(child, this.absoluteLayoutPosition(child));
     }
   }
 }
