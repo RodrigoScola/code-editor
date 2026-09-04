@@ -83,17 +83,19 @@ export class LayoutEngine {
 
       const requestedHeight = this.resolvesize(child.height(), parent.height);
 
-      let height: number;
+      let height: number = child.maxHeight() || 0;
 
       if (requestedHeight !== null) {
         height = requestedHeight;
       } else if (Number.isFinite(measured.height)) {
         height = measured.height!;
       } else {
-        height = flexible > 0 ? Math.floor(remaining / flexible) : 0;
+        if (child.maxHeight() == null) {
+          height = flexible > 0 ? Math.floor(remaining / flexible) : 0;
 
-        remaining -= height;
-        flexible--;
+          remaining -= height;
+          flexible--;
+        }
       }
 
       if (child.maxHeight() !== null) {
