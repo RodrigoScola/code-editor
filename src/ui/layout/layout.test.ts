@@ -176,12 +176,10 @@ describe("tests the invisible of component", () => {
         new DisplayComponent()
           .setPositionMode("absolute")
           .setName("absolute")
-          .setLayout({
-            height: layout.height,
-            width: layout.width,
-            x: 0,
-            y: layout.height / 2,
-          })
+          .setHeight(layout.height)
+          .setWidth(layout.width)
+          .setStartX(0)
+          .setStartY(layout.height / 2)
           .setVisible(true)
           .setStyles(
             ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
@@ -306,6 +304,4 @@ describe("tests the relative height and width", () => {
 
     canvas.renderBoard();
   });
-
 });
-

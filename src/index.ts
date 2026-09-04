@@ -72,8 +72,10 @@ const list = new ListMenuWindow();
 
 list.window
   .setWidth("50%")
-  .setHeight(30)
+  .setHeight("50%")
   .setIndex(10)
+  .setStartX("50%")
+  .setStartY("50%")
   .setPositionMode("absolute")
   .styles()
   ?.setBackgroundColor(colors.YELLOW_BACKGROUND);

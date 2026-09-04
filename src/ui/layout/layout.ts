@@ -91,10 +91,11 @@ export class LayoutEngine {
         0,
       );
 
-      y += margin.top;
+      y += LayoutDimensions.requestStartY(child);
+      const x = LayoutDimensions.requestStartX(child);
 
       this.Measure(child, {
-        x: parent.x + margin.left,
+        x,
         y,
         width: width,
         height: Math.max(0, height),
@@ -113,12 +114,19 @@ export class LayoutEngine {
     const hasHeight = LayoutDimensions.requestHeight(child);
     const hasWidth = LayoutDimensions.requestWidth(child);
 
+    const startX = LayoutDimensions.requestStartX(child);
+    const startY = LayoutDimensions.requestStartY(child);
+
     if (hasHeight) {
       currentLayout.height = hasHeight;
     }
     if (hasWidth) {
       currentLayout.width = hasWidth;
     }
+
+    currentLayout.x = startX;
+    currentLayout.y = startY;
+
     return currentLayout;
   }
 
@@ -158,11 +166,13 @@ export class LayoutEngine {
         flexible--;
       }
 
-      x += margin.left;
+      x += LayoutDimensions.requestStartX(child);
+
+      const y = LayoutDimensions.requestStartY(child);
 
       this.Measure(child, {
         x,
-        y: parent.y + margin.top,
+        y,
         width,
         height: parent.height - margin.top - margin.bottom,
       });

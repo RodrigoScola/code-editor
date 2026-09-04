@@ -23,13 +23,6 @@ export class DisplayComponent {
   private childs: DisplayComponent[] = [];
   private pr: DisplayComponent | null = null;
 
-  private l: LayoutBounds = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-  };
-
   private s: ComponentStyles;
 
   private paintHook: ((canvas: Canvas) => void) | null = null;
@@ -74,11 +67,11 @@ export class DisplayComponent {
   // ---------------------------------------------------------------------------
 
   layout(): LayoutBounds {
-    return this.l;
+    return this._layoutStyle.layout();
   }
 
   setLayout(layout: LayoutBounds): this {
-    this.l = layout;
+    this._layoutStyle.setLayout(layout);
     return this;
   }
 
@@ -355,6 +348,22 @@ export class DisplayComponent {
 
   direction(): DisplayDirection {
     return this.layoutStyle().direction();
+  }
+
+  startX(): Size {
+    return this.layoutStyle().startX();
+  }
+  setStartX(val: Size) {
+    this.layoutStyle().setStartX(val);
+    return this;
+  }
+
+  startY(): Size {
+    return this.layoutStyle().startY();
+  }
+  setStartY(val: Size) {
+    this.layoutStyle().setStartY(val);
+    return this;
   }
 
   setDirection(direction: DisplayDirection): this {

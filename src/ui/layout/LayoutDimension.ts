@@ -1,3 +1,4 @@
+import { assert } from "vitest";
 import { DisplayComponent } from "../components.js";
 
 export class LayoutDimensions {
@@ -23,6 +24,42 @@ export class LayoutDimensions {
     }
 
     return result;
+  }
+  public static requestStartY(
+    child: DisplayComponent,
+    available?: LayoutBounds,
+  ) {
+    available ??= child.parent()?.contentLayout();
+
+    const margin = child.margin();
+
+    const availableheight = available?.height || 0;
+
+    const start =
+      LayoutDimensions.parseSize(
+        child.layoutStyle().startY(),
+        availableheight,
+      ) || 0;
+
+    return (available?.y ?? 0) + start + margin.top;
+  }
+  public static requestStartX(
+    child: DisplayComponent,
+    available?: LayoutBounds,
+  ) {
+    available ??= child.parent()?.contentLayout();
+
+    const margin = child.margin();
+
+    const availableWidth = available?.width || 0;
+
+    const start =
+      LayoutDimensions.parseSize(
+        child.layoutStyle().startX(),
+        availableWidth,
+      ) || 0;
+
+    return (available?.x ?? 0) + start + margin.left;
   }
   public static isHeightFlexible(
     child: DisplayComponent,

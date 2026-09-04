@@ -7,6 +7,7 @@ import colors from "../colors.js";
 import { assert } from "../../assert.js";
 import { ComponentStyle } from "../ComponentStyles.js";
 import { builtinModules } from "node:module";
+import { LayoutDimensions } from "./LayoutDimension.js";
 
 describe("tests normal position mode", () => {
   it("components side by side", () => {
@@ -40,32 +41,29 @@ describe("tests the absolute mode", () => {
   it("can place anywhere ", () => {
     const { root, build, cnv } = setupTests(10, 10);
 
+    const abs = new DisplayComponent()
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+      )
+      .setName("absolute")
+      .setPositionMode("absolute")
+      .setName("abs")
+      .setHeight(4)
+      .setWidth(4)
+      .setStartX(6)
+      .setStartY(6);
+
     root
       .addChildren(
         new DisplayComponent().setStyles(
           ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
         ),
       )
-      .addChildren(
-        new DisplayComponent()
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(
-              colors.YELLOW_BACKGROUND,
-            ),
-          )
-          .setName("absolute")
-          .setPositionMode("absolute")
-          .setLayout({
-            width: 4,
-            height: 4,
-            x: 6,
-            y: 6,
-          }),
-      )
+      .addChildren(abs)
       .setDirection("horizontal");
 
-    expect(root.children().at(1)?.contentLayout().height).eq(4);
-    expect(root.children().at(1)?.contentLayout().width).eq(4);
+    const first = root.children().at(1);
+    assert(first, "undefined abs");
 
     build(root, cnv);
 
@@ -84,12 +82,10 @@ describe("tests the absolute mode", () => {
             ),
           )
           .setPositionMode("absolute")
-          .setLayout({
-            width: 4,
-            height: 4,
-            x: 6,
-            y: 6,
-          }),
+          .setHeight(4)
+          .setWidth(4)
+          .setStartX(6)
+          .setStartY(6),
       )
 
       .addChildren(

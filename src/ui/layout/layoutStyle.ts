@@ -2,8 +2,19 @@ export class LayoutStyle {
   private _width: Size = "auto";
   private _height: Size = "auto";
 
+  private _startY: Size = "auto";
+  private _start: Size = "auto";
+  // todo: maybe  add top or bottom?
+
   private _maxWidth: number | null = null;
   private _maxHeight: number | null = null;
+
+  private l: LayoutBounds = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
 
   private _margin: Insets = {
     bottom: 0,
@@ -91,6 +102,30 @@ export class LayoutStyle {
 
   setDirection(direction: DisplayDirection): this {
     this._direction = direction;
+    return this;
+  }
+  startX() {
+    return this._start;
+  }
+  setStartX(val: Size) {
+    this._start = val;
+    return this;
+  }
+
+  startY() {
+    return this._startY;
+  }
+  setStartY(val: Size) {
+    this._startY = val;
+    return this;
+  }
+
+  layout(): LayoutBounds {
+    return this.l;
+  }
+
+  setLayout(layout: LayoutBounds): this {
+    this.l = layout;
     return this;
   }
 }

@@ -37,6 +37,10 @@ describe("tests the layout calculation on absolute", () => {
     LayoutEngine.Measure(root, root.contentLayout());
     Renderer.Create().build(root, canvas);
 
+    expect(oneThird.layout().height).eq(layout.height * 0.3);
+    expect(oneThird.layout().width).eq(layout.width * 0.3);
+
     canvas.renderBoard();
   });
+  it.todo("tests the start  x and y");
 });
