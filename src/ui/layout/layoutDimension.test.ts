@@ -4,7 +4,6 @@ import { LayoutEngine } from "./layout.js";
 import { Renderer } from "../renderer.js";
 import { Canvas } from "../canvas.js";
 import colors from "../colors.js";
-import { assert } from "../../assert.js";
 import { ComponentStyle } from "../ComponentStyles.js";
 
 describe("tests the layout calculation on absolute", () => {

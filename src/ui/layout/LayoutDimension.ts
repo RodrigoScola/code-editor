@@ -89,6 +89,7 @@ export class LayoutDimensions {
     let result: number | undefined = 0;
 
     const margin = child.margin();
+    const border = child.border();
 
     parent ??= child.parent()?.contentLayout();
 
@@ -108,10 +109,11 @@ export class LayoutDimensions {
     if (child.maxWidth() !== null) {
       result = Math.min(result, child.maxWidth()!);
     }
+
     return result;
   }
   static requestHeight(child: DisplayComponent, parent?: LayoutBounds) {
-    let result: number | undefined = undefined;
+    let result: number | undefined = 0;
     parent ??= child.parent()?.contentLayout();
     if (parent) {
       const measured = child.measure(parent);
@@ -128,6 +130,7 @@ export class LayoutDimensions {
     if (child.maxHeight() !== null) {
       result = Math.min(child.maxHeight()!, result || Infinity);
     }
+
     return result;
   }
 

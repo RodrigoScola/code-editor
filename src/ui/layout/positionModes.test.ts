@@ -28,6 +28,8 @@ describe("tests normal position mode", () => {
 
     build(root, cnv);
 
+    cnv.renderBoard();
+
     expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
       colors.MAGENTA_BACKGROUND,
     );

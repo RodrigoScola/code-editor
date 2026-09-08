@@ -168,22 +168,30 @@ export class LayoutEngine {
 
       x += LayoutDimensions.requestStartX(child);
 
+      const reqHeight =
+        LayoutDimensions.requestHeight(child, parent) ||
+        parent.height - margin.top - margin.bottom;
+
       const y = LayoutDimensions.requestStartY(child);
 
       this.Measure(child, {
         x,
         y,
         width,
-        height: parent.height - margin.top - margin.bottom,
+        height: reqHeight,
       });
 
       x += width + margin.right;
     }
 
-    assert(
-      remaining === 0,
-      `not using all remaining. expected: 0, got ${remaining}`,
-    );
+    if (
+      !children.every((ch) => LayoutDimensions.isWidthFlexible(ch) == false)
+    ) {
+      assert(
+        remaining === 0,
+        `not using all remaining. expected: 0, got ${remaining}, ${flexible}`,
+      );
+    }
 
     // Absolute children keep their own layout
     for (const child of this.absoluteChildren(component)) {

@@ -11,6 +11,13 @@ export class ComponentBorder {
     this._bottom = this._top = this._left = this._right = nb;
     return this;
   }
+  horizontal() {
+    return this.left() + this.right();
+  }
+
+  vertical() {
+    return this.top() + this.bottom();
+  }
 
   left() {
     return this._left;

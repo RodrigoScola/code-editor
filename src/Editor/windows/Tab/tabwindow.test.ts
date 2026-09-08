@@ -17,24 +17,45 @@ describe("tests the tab component", () => {
     root.styles().setBackgroundColor(colors.RED_BACKGROUND);
     const canvas = new Canvas().setLayout(layout);
 
-    const tabComponent = new TabComponent("title");
-    tabComponent.window.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
-    const tab = new TabWindow().add(tabComponent);
+    const first = new TabComponent("title");
+    first.window.border().setParameter(1);
+    first.window
+      .setMaxHeight(1 + first.window.border().vertical())
+      .setMaxWidth("title".length + first.window.border().horizontal());
+
+    first.window.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+    const second = new TabComponent("second");
+    second.window.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    second.window.border().setParameter(1);
+
+    second.window
+      .setMaxHeight(1 + second.window.border().vertical())
+      .setMaxWidth("second".length + second.window.border().horizontal());
+
+    const tab = new TabWindow().add(first).add(second);
+
+    tab.titles.setMaxHeight(1 + first.window.border().vertical());
 
     tab.focus();
 
-    tab.window.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
-
     root.addChildren(tab.window);
+
+    expect(root.children().length == 1, "only has one child");
+    expect(
+      root.children().at(0)?.children().length == 2,
+      "has the top and bottom",
+    );
+
+    first.buffer.addLine("this should be the content");
 
     LayoutEngine.Measure(root, root.contentLayout());
     Renderer.Create().build(root, canvas);
-
-    expect(canvas.getCell(0, 0)?.styles.backgroundColor()).toBe(
-      colors.BLUE_BACKGROUND,
-    );
-    expect(canvas.getCell(0, 0)?.styles.display()).toBe("t");
-
     canvas.renderBoard();
+
+    expect(tab.titles?.contentLayout().height, "has to have same height").eq(
+      first.window.layout().height,
+    );
+    expect(tab.board.layout().width).eq(layout.width);
   });
 });
