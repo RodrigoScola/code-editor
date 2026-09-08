@@ -3,7 +3,7 @@ import { textEditorCommands } from "../Commands/editorCommands.js";
 import { WINDOW_NAMES } from "../constants.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
-import { DisplayComponent } from "../ui/components.js";
+import { DisplayComponent } from "../ui/components/components.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { Textdocument, DiskFile } from "./Documents/TextDocument.js";
 import { EditorContext } from "./Editor/Editor.js";
@@ -210,7 +210,13 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["<C-p>"], (ctx) => {
     const window = ctx.findWindow(ListMenuWindow);
     assert(window);
-    ctx.focus(window);
+    if (window.focused()) {
+      ctx.unfocus(window);
+      window.setVisible(false);
+    } else {
+      window.setVisible(true);
+      ctx.focus(window);
+    }
   });
   editor.normalMode
     .bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {

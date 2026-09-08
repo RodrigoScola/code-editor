@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { Canvas } from "../../../ui/canvas.js";
 import colors from "../../../ui/colors.js";
-import { DisplayComponent } from "../../../ui/components.js";
+import { DisplayComponent } from "../../../ui/components/components.js";
 import { LayoutEngine } from "../../../ui/layout/layout.js";
 import { Renderer } from "../../../ui/renderer.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
 import { WindowManager } from "./WindowManager.js";
 import { TextEditorWindow } from "../TextEditorWindow.js";
-import { Textdocument, MemoryFile } from '../../Documents/TextDocument.js';
+import { Textdocument, MemoryFile } from "../../Documents/TextDocument.js";
 
 const createTextWindow = (text: string) =>
   new TextEditorWindow(new Textdocument(new MemoryFile("out", text)));

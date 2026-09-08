@@ -9,7 +9,7 @@ import { EditorWindow } from "../EditorWindow.js";
 import { FileTreeWindow } from "../FileTreeWindow.js";
 import { TextEditorWindow } from "../TextEditorWindow.js";
 import { WindowManager } from "./WindowManager.js";
-import { DisplayComponent } from "../../../ui/components.js";
+import { DisplayComponent } from "../../../ui/components/components.js";
 
 const createTextWindow = (text: string) =>
   new TextEditorWindow(new Textdocument(new MemoryFile("out", text)));

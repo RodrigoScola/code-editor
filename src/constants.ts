@@ -12,6 +12,11 @@ export const POSITION_ORDER: Record<PositionMode, number> = {
 };
 
 export const ICONS = {
+  borders: {
+    dotted: {
+      
+    }
+  },
   arrow: {
     left: "←",
     right: "→",

@@ -1,8 +1,9 @@
 import { Direction } from "readline";
 import { assert } from "../../../assert.js";
-import { DisplayComponent } from "../../../ui/components.js";
+import { DisplayComponent } from "../../../ui/components/components.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
 import { EditorWindow } from "../EditorWindow.js";
+import { type } from "os";
 
 export class WindowManager {
   private windows = new Map<string, EditorWindow>();
@@ -27,12 +28,19 @@ export class WindowManager {
   all(): EditorWindow[] {
     return [...this.windows.values()];
   }
+  unfocus(editorWindow: EditorWindow) {
+    editorWindow.blur();
+    this.history.push(editorWindow.id);
+
+    if (this.active?.id === editorWindow.id) {
+      this.active = null;
+    }
+  }
 
   focus(window: EditorWindow): EditorWindow | null {
     assert(this.windows.has(window.id), "trying to focus an unmanaged window");
     if (this.active) {
-      this.active?.blur();
-      this.history.push(this.active.id);
+      this.unfocus(this.active);
     }
     this.active = window;
 

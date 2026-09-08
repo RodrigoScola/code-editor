@@ -5,7 +5,7 @@ import path from "path";
 import cp from "child_process";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import colors from "../../ui/colors.js";
-import { DisplayComponent } from "../../ui/components.js";
+import { DisplayComponent } from "../../ui/components/components.js";
 import { Canvas } from "../../ui/canvas.js";
 
 type GitFileStatus =

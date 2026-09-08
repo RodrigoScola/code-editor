@@ -19,37 +19,27 @@ describe("tests the visual highlight of the selection", () => {
     editor.cursor.startSelection();
     editor.moveCursorDown();
     editor.moveCursorDown();
-    assert(
-      editor.cursor.selection!.endSelection().y > 0,
-      "selection y did not move",
-    );
+
+    const selection = () => editor.cursor.selection?.endSelection();
+
+    assert(selection()!.y > 0, "selection y did not move");
 
     editor.moveCursorRight();
     editor.moveCursorRight();
     editor.moveCursorRight();
     editor.moveCursorRight();
 
-    assert(
-      editor.cursor.selection!.endSelection().x > 0,
-      "selection x did not move",
-    );
+    assert(selection()!.x > 0, "selection x did not move");
 
     editor.window
       .setLayout(lt)
       .styles()
-      ?.setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+      .setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
 
     const cnv = new Canvas().setLayout(lt);
 
     LayoutEngine.Measure(editor.window, editor.window.contentLayout());
     Renderer.Create().build(editor.window, cnv);
-
-    console.log(
-      cnv
-        .getRow(2)
-        ?.map((f) => f.styles.display())
-        .join(""),
-    );
 
     cnv.renderBoard();
   });

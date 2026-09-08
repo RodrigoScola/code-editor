@@ -1,4 +1,5 @@
 import colors from "./colors.js";
+import { ComponentBorder } from "./components/border.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 
 const DEFAULT_STYLE: ComponentStyles = ComponentStyle.Create()
@@ -240,6 +241,54 @@ export class Canvas {
   }
   getCells() {
     return this.canvas;
+  }
+
+  paintBorder(cl: LayoutBounds, border: ComponentBorder) {
+    if (border.top() > 0) {
+      this.fillRect(
+        {
+          x: cl.x,
+          height: border.top(),
+          width: cl.width,
+          y: cl.y - border.top(),
+        },
+        border.styles(),
+      );
+    }
+    if (border.bottom() > 0) {
+      this.fillRect(
+        {
+          x: cl.x,
+          height: border.bottom(),
+          width: cl.width,
+          y: cl.y + cl.height,
+        },
+        border.styles(),
+      );
+    }
+    if (border.left() > 0) {
+      this.fillRect(
+        {
+          x: cl.x - border.left(),
+          height: cl.height + border.top() + border.bottom(),
+          width: border.left(),
+          y: cl.y - border.top(),
+        },
+        border.styles(),
+      );
+    }
+
+    if (border.right() > 0) {
+      this.fillRect(
+        {
+          x: cl.x + cl.width,
+          height: cl.height + border.top() + border.bottom(),
+          width: border.right(),
+          y: cl.y - border.top(),
+        },
+        border.styles(),
+      );
+    }
   }
 }
 // a tab is one buffer character but expands to multiple screen cells, so

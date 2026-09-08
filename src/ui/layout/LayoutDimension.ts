@@ -1,5 +1,5 @@
 import { assert } from "vitest";
-import { DisplayComponent } from "../components.js";
+import { DisplayComponent } from "../components/components.js";
 
 export class LayoutDimensions {
   public static isWidthFlexible(

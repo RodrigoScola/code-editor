@@ -1,9 +1,10 @@
-import { assert } from "../assert.js";
-import { Canvas } from "./canvas.js";
-import colors from "./colors.js";
-import { ComponentStyle } from "./ComponentStyles.js";
-import { LayoutStyle } from "./layout/layoutStyle.js";
-import { ViewPort } from "./windows/viewport.js";
+import { assert } from "../../assert.js";
+import { Canvas } from "../canvas.js";
+import colors from "../colors.js";
+import { ComponentStyle } from "../ComponentStyles.js";
+import { LayoutStyle } from "../layout/layoutStyle.js";
+import { ViewPort } from "../windows/viewport.js";
+import { ComponentBorder } from "./border.js";
 
 export class DisplayComponent {
   private static ID = 0;
@@ -24,6 +25,7 @@ export class DisplayComponent {
   private pr: DisplayComponent | null = null;
 
   private s: ComponentStyles;
+  private _border: ComponentBorder = new ComponentBorder();
 
   private paintHook: ((canvas: Canvas) => void) | null = null;
   private prePaintHook: ((canvas: Canvas) => void) | null = null;
@@ -35,6 +37,14 @@ export class DisplayComponent {
     this.s = ComponentStyle.Create()
       .setBackgroundColor(colors.BACKGROUND_OFF)
       .setColor(colors.FOREGROUND_OFF);
+  }
+
+  border() {
+    return this._border;
+  }
+  setBorder(b: ComponentBorder) {
+    this._border = b;
+    return this;
   }
 
   name(): string | null | undefined {
@@ -78,12 +88,27 @@ export class DisplayComponent {
   contentLayout(): LayoutBounds {
     const layout = this.layout();
     const padding = this.padding();
+    const border = this.border();
 
     return {
-      height: Math.max(0, layout.height - padding.top - padding.bottom),
-      width: Math.max(0, layout.width - padding.left - padding.right),
-      x: layout.x + padding.left,
-      y: layout.y + padding.top,
+      height: Math.max(
+        0,
+        layout.height -
+          padding.top -
+          padding.bottom -
+          border.top() -
+          border.bottom(),
+      ),
+      width: Math.max(
+        0,
+        layout.width -
+          padding.left -
+          padding.right -
+          border.left() -
+          border.right(),
+      ),
+      x: layout.x + padding.left + border.left(),
+      y: layout.y + padding.top + border.top(),
     };
   }
 

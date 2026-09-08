@@ -48,6 +48,10 @@ export class EditorContext {
     }
     this.mode.handleKey(key, this);
   }
+  unfocus(window: EditorWindow) {
+    return this.windowManager.unfocus(window);
+  }
+
   focus(window: EditorWindow) {
     return this.windowManager.focus(window);
   }

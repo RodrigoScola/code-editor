@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { EditorContext } from "../Editor/Editor/Editor.js";
 import { Textdocument, MemoryFile } from "../Editor/Documents/TextDocument.js";
 import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";
-import { DisplayComponent } from "../ui/components.js";
+import { DisplayComponent } from "../ui/components/components.js";
 import { WINDOW_NAMES } from "../constants.js";
 import { textEditorCommands } from "./editorCommands.js";
 

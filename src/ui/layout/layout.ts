@@ -1,5 +1,5 @@
 import { assert } from "../../assert.js";
-import { DisplayComponent } from "../components.js";
+import { DisplayComponent } from "../components/components.js";
 import { POSITION_ORDER } from "../../constants.js";
 import { LayoutDimensions } from "./LayoutDimension.js";
 

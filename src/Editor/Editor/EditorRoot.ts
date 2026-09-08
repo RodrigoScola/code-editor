@@ -1,3 +1,3 @@
-import { DisplayComponent } from '../../ui/components.js';
+import { DisplayComponent } from "../../ui/components/components.js";
 
-export class EditorRoot extends DisplayComponent { }
+export class EditorRoot extends DisplayComponent {}

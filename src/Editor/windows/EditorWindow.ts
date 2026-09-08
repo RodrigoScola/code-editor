@@ -1,13 +1,8 @@
-import { text } from "stream/consumers";
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Canvas } from "../../ui/canvas.js";
-import colors from "../../ui/colors.js";
-import { DisplayComponent } from "../../ui/components.js";
-import { ComponentStyle } from "../../ui/ComponentStyles.js";
+import { DisplayComponent } from "../../ui/components/components.js";
 import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { LayoutEngine } from "../../ui/layout/layout.js";
-import { WindowManager } from "./WindowManager/WindowManager.js";
 
 type WindowId = string;
 
@@ -41,10 +36,6 @@ export class EditorWindow {
   }
 
   paint(canvas: Canvas): void {
-    const cl = this.window.contentLayout();
-    this.window.viewport().ensureVisible(cl.width, cl.height);
-    this.cursor.ensureVisible(this.window.viewport());
-
     canvas.fillRect(this.window.contentLayout(), this.window.styles());
 
     const cursorLine = this.buffer.at(this.cursor.line);
@@ -108,7 +99,7 @@ export class EditorWindow {
       editor.buffer.count(),
     );
 
-    for (let lineNumber = firstLine;lineNumber < lastLine;lineNumber++) {
+    for (let lineNumber = firstLine; lineNumber < lastLine; lineNumber++) {
       const line = editor.buffer.at(lineNumber);
       if (!line) {
         continue;
@@ -147,5 +138,5 @@ export class EditorWindow {
   moveCursorRight() {
     return this.cursor.moveRight(this.buffer);
   }
-  onEnter(ctx: EditorContext) { }
+  onEnter(ctx: EditorContext) {}
 }
