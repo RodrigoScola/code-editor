@@ -1,10 +1,22 @@
+
+
+export interface Insets {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+export type PositionMode = "normal" | "absolute" | "fixed";
+
+export type DisplayDirection = "vertical" | "horizontal";
+
 export class LayoutStyle {
   private _width: Size = "auto";
   private _height: Size = "auto";
 
   private _startY: Size = "auto";
   private _start: Size = "auto";
-  // todo: maybe  add top or bottom?
 
   private _maxWidth: number | null = null;
   private _maxHeight: number | null = null;
@@ -104,19 +116,22 @@ export class LayoutStyle {
     this._direction = direction;
     return this;
   }
-  startX() {
+
+  startX(): Size {
     return this._start;
   }
-  setStartX(val: Size) {
-    this._start = val;
+
+  setStartX(value: Size): this {
+    this._start = value;
     return this;
   }
 
-  startY() {
+  startY(): Size {
     return this._startY;
   }
-  setStartY(val: Size) {
-    this._startY = val;
+
+  setStartY(value: Size): this {
+    this._startY = value;
     return this;
   }
 

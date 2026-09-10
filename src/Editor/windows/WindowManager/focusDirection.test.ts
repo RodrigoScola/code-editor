@@ -49,8 +49,7 @@ const createCubes = (manager: WindowManager) => {
 
 describe("tests the window manager focus capabilities", () => {
   it("can focus on the left window on focus right", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.width = layout.height = 20;
+    const layout = LayoutEngine.CreateBounds(20);
     const cnv = new Canvas().setLayout(layout);
     const manager = new WindowManager(new EditorRoot().setLayout(layout));
 
@@ -58,7 +57,11 @@ describe("tests the window manager focus capabilities", () => {
 
     manager.focus(output.topL);
 
-    LayoutEngine.Measure(manager.root);
+    LayoutEngine.Measure(
+      manager.root,
+      LayoutEngine.CreateConstraints(layout.height),
+    );
+    LayoutEngine.Arrange(manager.root);
     Renderer.Create().build(manager.root, cnv);
 
     manager.focusRight();
@@ -74,15 +77,18 @@ describe("tests the window manager focus capabilities", () => {
 
     manager.focus(output.topL);
 
-    LayoutEngine.Measure(manager.root);
+    LayoutEngine.Measure(
+      manager.root,
+      LayoutEngine.CreateConstraints(layout.width),
+    );
+    LayoutEngine.Arrange(manager.root);
     Renderer.Create().build(manager.root, cnv);
 
     manager.focusDown();
     expect(output.bottomL.focused()).eq(true);
   });
   it("can focus on the bottom and right window on focus down", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.width = layout.height = 20;
+    const layout = LayoutEngine.CreateBounds(20);
     const cnv = new Canvas().setLayout(layout);
     const manager = new WindowManager(new EditorRoot().setLayout(layout));
 
@@ -90,7 +96,13 @@ describe("tests the window manager focus capabilities", () => {
 
     manager.focus(output.topL);
 
-    Renderer.Create().build(LayoutEngine.Measure(manager.root), cnv);
+    LayoutEngine.Measure(
+      manager.root,
+      LayoutEngine.CreateConstraints(layout.width),
+    );
+    LayoutEngine.Arrange(manager.root);
+
+    Renderer.Create().build(manager.root, cnv);
 
     manager.focusDown();
     manager.focusRight();

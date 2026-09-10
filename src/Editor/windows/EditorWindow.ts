@@ -1,15 +1,26 @@
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Canvas } from "../../ui/canvas.js";
 import { DisplayComponent } from "../../ui/components/components.js";
+import { ViewPort } from "../../ui/windows/viewport.js";
 import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor/Editor.js";
 
 type WindowId = string;
 
+export class EditorView extends DisplayComponent {
+  constructor(private editor: EditorWindow) {
+    super();
+  }
+  measure(constraints: MeasureConstraints): MeasuredSize {
+    return this.editor.measure(constraints);
+  }
+}
+
 export class EditorWindow {
   cursor: Cursor;
   window: DisplayComponent;
   buffer: TextBuffer = new TextBuffer("");
+  viewport: ViewPort = new ViewPort();
   private active: boolean = false;
   readonly id: WindowId = crypto.randomUUID();
 
@@ -31,8 +42,8 @@ export class EditorWindow {
   }
   onPrePaint() {
     const cl = this.window.contentLayout();
-    this.window.viewport().ensureVisible(cl.width, cl.height);
-    this.cursor.ensureVisible(this.window.viewport());
+    this.viewport.ensureVisible(cl.width, cl.height);
+    this.cursor.ensureVisible(this.viewport);
   }
 
   paint(canvas: Canvas): void {
@@ -68,7 +79,7 @@ export class EditorWindow {
 
       const position = canvas.applyRelative(
         bound.x,
-        bound.y - this.window.viewport().firstLine,
+        bound.y - this.viewport.firstLine,
         cl,
         content,
       );
@@ -93,9 +104,9 @@ export class EditorWindow {
   drawBuffer(canvas: Canvas, editor: EditorWindow) {
     const cl = editor.window.contentLayout();
 
-    const firstLine = editor.window.viewport().firstLine;
+    const firstLine = editor.viewport.firstLine;
     const lastLine = Math.min(
-      firstLine + editor.window.viewport().visibleLines,
+      firstLine + editor.viewport.visibleLines,
       editor.buffer.count(),
     );
 
@@ -139,4 +150,11 @@ export class EditorWindow {
     return this.cursor.moveRight(this.buffer);
   }
   onEnter(ctx: EditorContext) {}
+
+  measure(constraints: MeasureConstraints): MeasuredSize {
+    return {
+      width: this.viewport.visibleColumns,
+      height: this.viewport.visibleLines,
+    };
+  }
 }

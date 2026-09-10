@@ -1,4 +1,4 @@
-emport process from "process";
+import process from "process";
 import readline from "node:readline";
 import { LayoutEngine } from "./ui/layout/layout.js";
 import { EditorContext } from "./Editor/Editor/Editor.js";
@@ -14,7 +14,7 @@ import {
 } from "./Editor/windows/GitEditorWindow.js";
 import { ListMenuWindow } from "./Editor/windows/ListMenuWindow.js";
 import colors from "./ui/colors.js";
-import { from } from 'node:stream/iter';
+import { from } from "node:stream/iter";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)

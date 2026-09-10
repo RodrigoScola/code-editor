@@ -109,7 +109,9 @@ export class EditorContext {
   render() {
     assert(this.rootWindow, "cannot render anything without a root window");
 
-    LayoutEngine.Measure(this.rootWindow, this.rootWindow.contentLayout());
+    LayoutEngine.Measure(this.rootWindow, this.rootWindow.layoutConstraints);
+    LayoutEngine.Arrange(this.rootWindow);
+
     this.renderer.build(this.rootWindow, this.canvas);
     return this.renderer.render(this.canvas);
   }

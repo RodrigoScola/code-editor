@@ -1,9 +1,16 @@
 import { assert } from "../../assert.js";
+
 import { Canvas } from "../canvas.js";
 import colors from "../colors.js";
 import { ComponentStyle } from "../ComponentStyles.js";
-import { LayoutStyle } from "../layout/layoutStyle.js";
-import { ViewPort } from "../windows/viewport.js";
+import { LayoutEngine } from "../layout/layout.js";
+import { LayoutDimensions } from "../layout/LayoutDimensions.js";
+import {
+  DisplayDirection,
+  Insets,
+  LayoutStyle,
+  PositionMode,
+} from "../layout/layoutStyle.js";
 import { ComponentBorder } from "./border.js";
 
 export class DisplayComponent {
@@ -16,15 +23,20 @@ export class DisplayComponent {
   private vs = true;
 
   private nm: string | null | undefined;
-  private vp: ViewPort = new ViewPort();
 
   private _focusable = false;
   private _text: string | undefined;
+
+  private _measuredSize: MeasuredSize = {
+    height: 0,
+    width: 0,
+  };
 
   private childs: DisplayComponent[] = [];
   private pr: DisplayComponent | null = null;
 
   private s: ComponentStyles;
+
   private _border: ComponentBorder = new ComponentBorder();
 
   private paintHook: ((canvas: Canvas) => void) | null = null;
@@ -32,6 +44,7 @@ export class DisplayComponent {
 
   constructor() {
     this.id = DisplayComponent.ID++;
+
     this._layoutStyle = new LayoutStyle();
 
     this.s = ComponentStyle.Create()
@@ -39,37 +52,17 @@ export class DisplayComponent {
       .setColor(colors.FOREGROUND_OFF);
   }
 
-  border() {
+  // ---------------------------------------------------------------------------
+  // Border
+  // ---------------------------------------------------------------------------
+
+  border(): ComponentBorder {
     return this._border;
   }
-  setBorder(b: ComponentBorder) {
+
+  setBorder(b: ComponentBorder): this {
     this._border = b;
     return this;
-  }
-
-  name(): string | null | undefined {
-    return this.nm;
-  }
-
-  setName(newName: string): this {
-    this.nm = newName;
-    return this;
-  }
-
-  findChildrenByName(nm: string): DisplayComponent | null {
-    if (this.name() === nm) {
-      return this;
-    }
-
-    for (const child of this.children()) {
-      const found = child.findChildrenByName(nm);
-
-      if (found) {
-        return found;
-      }
-    }
-
-    return null;
   }
 
   // ---------------------------------------------------------------------------
@@ -85,20 +78,34 @@ export class DisplayComponent {
     return this;
   }
 
+  /**
+   * The inner area available to this component's content.
+   *
+   * Layout bounds represent the entire outer box:
+   *
+   *   ┌─────────────────────────┐
+   *   │         border          │
+   *   │  ┌───────────────────┐  │
+   *   │  │      padding      │  │
+   *   │  │   ┌───────────┐   │  │
+   *   │  │   │  content  │   │  │
+   *   │  │   └───────────┘   │  │
+   *   │  └───────────────────┘  │
+   *   └─────────────────────────┘
+   *
+   * Margin is intentionally NOT included here because margin is outside
+   * the component's layout box.
+   */
   contentLayout(): LayoutBounds {
     const layout = this.layout();
     const padding = this.padding();
     const border = this.border();
 
     return {
-      height: Math.max(
-        0,
-        layout.height -
-          padding.top -
-          padding.bottom -
-          border.top() -
-          border.bottom(),
-      ),
+      x: layout.x + padding.left + border.left(),
+
+      y: layout.y + padding.top + border.top(),
+
       width: Math.max(
         0,
         layout.width -
@@ -107,8 +114,15 @@ export class DisplayComponent {
           border.left() -
           border.right(),
       ),
-      x: layout.x + padding.left + border.left(),
-      y: layout.y + padding.top + border.top(),
+
+      height: Math.max(
+        0,
+        layout.height -
+          padding.top -
+          padding.bottom -
+          border.top() -
+          border.bottom(),
+      ),
     };
   }
 
@@ -120,7 +134,7 @@ export class DisplayComponent {
     return this.pr;
   }
 
-  setParent(parent: DisplayComponent): this {
+  setParent(parent: DisplayComponent | null): this {
     this.pr = parent;
     return this;
   }
@@ -151,11 +165,29 @@ export class DisplayComponent {
   removeChild(child: DisplayComponent): this {
     this.childs = this.childs.filter((current) => current !== child);
 
+    child.setParent(null);
+
     return this;
   }
 
   getId(): number {
     return this.id;
+  }
+
+  findChildrenByName(nm: string): DisplayComponent | null {
+    if (this.name() === nm) {
+      return this;
+    }
+
+    for (const child of this.children()) {
+      const found = child.findChildrenByName(nm);
+
+      if (found) {
+        return found;
+      }
+    }
+
+    return null;
   }
 
   // ---------------------------------------------------------------------------
@@ -208,8 +240,173 @@ export class DisplayComponent {
   // Layout Measurement
   // ---------------------------------------------------------------------------
 
-  measure(bounds: LayoutBounds): Partial<LayoutBounds> {
-    return {};
+  /**
+   * Measure this component's desired size.
+   *
+   * Measurement does not establish x/y.
+   *
+   * It answers:
+   *
+   *   "Given these constraints, how large would I like to be?"
+   */
+  measure(constraints: MeasureConstraints): MeasuredSize {
+    const styleConstraints = LayoutDimensions.applyStyleConstraints(
+      this,
+      constraints,
+    );
+
+    const contentConstraints = this.contentConstraints(styleConstraints);
+
+    const contentSize = this.measureContent(contentConstraints);
+
+    const intrinsicSize: MeasuredSize = {
+      width:
+        contentSize.width + this.horizontalPadding() + this.horizontalBorder(),
+
+      height:
+        contentSize.height + this.verticalPadding() + this.verticalBorder(),
+    };
+
+    const width = parseSize(this.width(), styleConstraints.maxWidth);
+
+    const height = parseSize(this.height(), styleConstraints.maxHeight);
+
+    const size: MeasuredSize = {
+      width: width ?? intrinsicSize.width,
+      height: height ?? intrinsicSize.height,
+    };
+
+    this._measuredSize = LayoutEngine.ClampSize(size, styleConstraints);
+
+    return this._measuredSize;
+  }
+
+  measuredSize(): MeasuredSize {
+    return this._measuredSize;
+  }
+
+  /**
+   * Arrange this component into the bounds assigned by its parent.
+   *
+   * This is the final size/position, unlike measuredSize().
+   */
+  arrange(bounds: LayoutBounds): void {
+    const finalBounds = LayoutDimensions.resolveArrangedBounds(this, bounds);
+
+    this.setLayout(finalBounds);
+
+    this.arrangeContent(this.contentLayout());
+  }
+
+  /**
+   * Arrange children according to this component's direction.
+   */
+  protected arrangeContent(bounds: LayoutBounds): void {
+    const children = this.children();
+
+    const normalChildren = children.filter(
+      (child) => child.positionMode() === "normal",
+    );
+
+    const absoluteChildren = children.filter(
+      (child) => child.positionMode() === "absolute",
+    );
+
+    if (this.direction() === "horizontal") {
+      LayoutEngine.ArrangeHorizontal(normalChildren, bounds);
+    } else {
+      LayoutEngine.ArrangeVertical(normalChildren, bounds);
+    }
+
+    for (const child of absoluteChildren) {
+      LayoutEngine.ArrangeAbsolute(child, bounds);
+    }
+  }
+
+  /**
+   * Measure children according to this component's direction.
+   */
+  protected measureContent(constraints: MeasureConstraints): MeasuredSize {
+    const children = this.children();
+
+    if (children.length === 0) {
+      return {
+        width: 0,
+        height: 0,
+      };
+    }
+
+    const flowChildren = children.filter(
+      (child) => child.positionMode() === "normal",
+    );
+
+    if (flowChildren.length === 0) {
+      return {
+        width: 0,
+        height: 0,
+      };
+    }
+
+    if (this.direction() === "horizontal") {
+      return LayoutDimensions.measureHorizontal(flowChildren, constraints);
+    }
+
+    return LayoutDimensions.measureVertical(flowChildren, constraints);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Measurement helpers
+  // ---------------------------------------------------------------------------
+
+  protected contentConstraints(
+    constraints: MeasureConstraints,
+  ): MeasureConstraints {
+    const padding = this.padding();
+    const border = this.border();
+
+    const horizontal =
+      padding.left + padding.right + border.left() + border.right();
+
+    const vertical =
+      padding.top + padding.bottom + border.top() + border.bottom();
+
+    return {
+      minWidth: Math.max(0, constraints.minWidth - horizontal),
+
+      maxWidth: Math.max(0, constraints.maxWidth - horizontal),
+
+      minHeight: Math.max(0, constraints.minHeight - vertical),
+
+      maxHeight: Math.max(0, constraints.maxHeight - vertical),
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Box helpers
+  // ---------------------------------------------------------------------------
+
+  private horizontalBorder(): number {
+    const border = this.border();
+
+    return border.left() + border.right();
+  }
+
+  private verticalBorder(): number {
+    const border = this.border();
+
+    return border.top() + border.bottom();
+  }
+
+  private horizontalPadding(): number {
+    const padding = this.padding();
+
+    return padding.left + padding.right;
+  }
+
+  private verticalPadding(): number {
+    const padding = this.padding();
+
+    return padding.top + padding.bottom;
   }
 
   // ---------------------------------------------------------------------------
@@ -262,19 +459,6 @@ export class DisplayComponent {
   }
 
   // ---------------------------------------------------------------------------
-  // Viewport
-  // ---------------------------------------------------------------------------
-
-  viewport(): ViewPort {
-    return this.vp;
-  }
-
-  setViewport(viewport: ViewPort): this {
-    this.vp = viewport;
-    return this;
-  }
-
-  // ---------------------------------------------------------------------------
   // Focus
   // ---------------------------------------------------------------------------
 
@@ -297,6 +481,19 @@ export class DisplayComponent {
 
   setText(value: string): this {
     this._text = value;
+    return this;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Name
+  // ---------------------------------------------------------------------------
+
+  name(): string | null | undefined {
+    return this.nm;
+  }
+
+  setName(newName: string): this {
+    this.nm = newName;
     return this;
   }
 
@@ -375,24 +572,41 @@ export class DisplayComponent {
     return this.layoutStyle().direction();
   }
 
+  setDirection(direction: DisplayDirection): this {
+    this.layoutStyle().setDirection(direction);
+
+    return this;
+  }
+
   startX(): Size {
     return this.layoutStyle().startX();
   }
-  setStartX(val: Size) {
-    this.layoutStyle().setStartX(val);
+
+  setStartX(value: Size): this {
+    this.layoutStyle().setStartX(value);
     return this;
   }
 
   startY(): Size {
     return this.layoutStyle().startY();
   }
-  setStartY(val: Size) {
-    this.layoutStyle().setStartY(val);
+
+  setStartY(value: Size): this {
+    this.layoutStyle().setStartY(value);
     return this;
+  }
+}
+
+export function parseSize(size: Size, available: number): number | null {
+  if (size === "auto") {
+    return null;
   }
 
-  setDirection(direction: DisplayDirection): this {
-    this.layoutStyle().setDirection(direction);
-    return this;
+  if (typeof size === "number") {
+    return size;
   }
+
+  const percentage = Number.parseFloat(size);
+
+  return (available * percentage) / 100;
 }

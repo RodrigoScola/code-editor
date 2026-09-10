@@ -60,8 +60,8 @@ describe("tests the window manager split capabilities", () => {
 
     const tree = new FileTreeWindow(".");
     tree.window.styles()?.setBackgroundColor(colors.BLUE_BACKGROUND);
-    const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 20;
+    const layout = LayoutEngine.CreateBounds(20);
+    const constraints = LayoutEngine.CreateConstraints(layout.width);
 
     manager.root
       .setLayout(layout)
@@ -93,7 +93,8 @@ describe("tests the window manager split capabilities", () => {
 
     manager.split(other, other2, "vertical");
 
-    LayoutEngine.Measure(manager.root, manager.root.contentLayout());
+    LayoutEngine.Measure(manager.root, constraints).Arrange(manager.root);
+
     Renderer.Create().build(manager.root, cnv);
 
     cnv.renderBoard();
@@ -104,8 +105,8 @@ describe("tests the window manager split capabilities", () => {
     );
   });
   it("can split a window in horizontal form", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.width = layout.height = 20;
+    const layout = LayoutEngine.CreateBounds(20);
+    const constraints = LayoutEngine.CreateConstraints(20);
     const cnv = new Canvas().setLayout(layout);
     const root = new EditorRoot().setLayout(layout);
 
@@ -117,7 +118,8 @@ describe("tests the window manager split capabilities", () => {
     root.addChildren(window.window);
     manager.add(window);
 
-    LayoutEngine.Measure(manager.root, manager.root.contentLayout());
+    LayoutEngine.Measure(manager.root, constraints).Arrange(root);
+
     Renderer.Create().build(manager.root, cnv);
 
     expect(
@@ -133,7 +135,7 @@ describe("tests the window manager split capabilities", () => {
 
     manager.split(window, yellowWindow, "horizontal");
 
-    LayoutEngine.Measure(manager.root, manager.root.contentLayout());
+    LayoutEngine.Measure(manager.root, constraints).Arrange(root);
     Renderer.Create().build(manager.root, cnv);
 
     expect(root.children().length == 1, "did not replace correctly");
@@ -149,8 +151,8 @@ describe("tests the window manager split capabilities", () => {
     ).eq(colors.BRIGHT_YELLOW_BACKGROUND);
   });
   it("can split a window in vertical form", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.width = layout.height = 20;
+    const layout = LayoutEngine.CreateBounds(20);
+    const constraints = LayoutEngine.CreateConstraints(20);
     const cnv = new Canvas().setLayout(layout);
     const root = new EditorRoot().setLayout(layout);
 
@@ -162,7 +164,8 @@ describe("tests the window manager split capabilities", () => {
     root.addChildren(window.window);
     manager.add(window);
 
-    LayoutEngine.Measure(manager.root, manager.root.contentLayout());
+    LayoutEngine.Measure(manager.root, constraints);
+    LayoutEngine.Arrange(manager.root);
     Renderer.Create().build(manager.root, cnv);
 
     expect(
@@ -178,7 +181,9 @@ describe("tests the window manager split capabilities", () => {
 
     manager.split(window, yellowWindow, "vertical");
 
-    LayoutEngine.Measure(manager.root, manager.root.contentLayout());
+    LayoutEngine.Measure(manager.root, constraints);
+    LayoutEngine.Arrange(root);
+
     Renderer.Create().build(manager.root, cnv);
 
     expect(root.children().length == 1, "did not replace correctly");

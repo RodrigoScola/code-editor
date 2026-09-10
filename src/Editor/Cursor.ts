@@ -44,7 +44,7 @@ export class Cursor {
 
     const relativePosition = canvas.applyRelative(
       this.column,
-      this.line - editor.window.viewport().firstLine,
+      this.line - editor.viewport.firstLine,
       cl,
       content,
     );

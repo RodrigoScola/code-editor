@@ -107,8 +107,8 @@ export class FileTreeWindow extends EditorWindow {
 
   paint(canvas: Canvas): void {
     const cl = this.window.contentLayout();
-    this.window.viewport().ensureVisible(cl.width, cl.height);
-    this.cursor.ensureVisible(this.window.viewport());
+    this.viewport.ensureVisible(cl.width, cl.height);
+    this.cursor.ensureVisible(this.viewport);
     let total = 0 + this.window.contentLayout().y;
 
     this.paintChild(this.root, total, -1, canvas);
@@ -120,7 +120,7 @@ export class FileTreeWindow extends EditorWindow {
     canvas: Canvas,
   ): number {
     const layout = this.window.contentLayout();
-    const viewport = this.window.viewport();
+    const viewport = this.viewport;
 
     const viewportPosition = viewport.bufferToViewPort({
       x: indent * 2,

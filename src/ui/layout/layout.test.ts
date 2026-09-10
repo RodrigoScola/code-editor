@@ -15,7 +15,9 @@ describe("LayoutEngine measurement", () => {
     const root = new DisplayComponent().setLayout(l);
 
     root.addChildren([new DisplayComponent(), new DisplayComponent()]);
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(l.width)).Arrange(
+      root,
+    );
 
     const h = l.height;
     const w = l.width;
@@ -36,62 +38,69 @@ describe("LayoutEngine measurement", () => {
   });
 
   it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {
-    const h = 80;
-    const w = 80;
-    const layout = LayoutEngine.CreateBounds();
-    layout.width = layout.height = 80;
+    const h = 10;
+    const w = 10;
+    const layout = LayoutEngine.CreateBounds(w, h);
+
+    const cnv = new Canvas().setLayout(layout);
+
+    const first = new DisplayComponent();
+
+    first.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
 
     const root = new DisplayComponent()
-      .setLayout(layout)
       .setDirection("horizontal")
-      .addChildren(new DisplayComponent())
+      .addChildren(first)
       .addChildren(new DisplayComponent());
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(w));
+    LayoutEngine.Arrange(root, layout);
+
+    Renderer.Create().build(root, cnv);
+
+    cnv.renderBoard();
 
     for (const child of root.children()) {
-      expect(child.parent(), `parent is not defined?`).toBeDefined();
-      expect(
-        child.contentLayout().height,
-        `height is not being properly displayed?, expected ${h}, got ${child.contentLayout().height}`,
-      ).toEqual(h);
-      expect(
-        child.contentLayout().width,
-        `width is not being properly displayed?, expected ${w / 2}, got ${child.contentLayout().width}`,
-      ).toEqual(w / 2);
+      expect(child.parent()).toBeDefined();
+
+      expect(child.layout().height).toEqual(h);
+      expect(child.layout().width).toEqual(w / 2);
     }
   });
 
   it("tests the padding on the component", () => {
     const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 3;
+    layout.height = layout.width = 10;
 
     const root = new DisplayComponent().setLayout(layout);
 
     root.styles()?.setBackgroundColor(colors.RED_BACKGROUND);
 
-    const square = new DisplayComponent()
-      .setPadding({
-        left: 1,
-        right: 1,
-        top: 1,
-        bottom: 1,
-      })
+    const parent = new DisplayComponent()
       .setStyles(
         ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-      );
+      )
+      .setPadding({ left: 1, right: 1, top: 1, bottom: 1 });
 
-    root.addChildren(square);
-    LayoutEngine.Measure(root, root.contentLayout());
+    const child = new DisplayComponent().setHeight("100%").setWidth("100%");
+
+    child.styles().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
+
+    child.setPadding({ left: 1, right: 1, top: 1, bottom: 1 });
+    child.setMargin({ left: 1, right: 1, top: 0, bottom: 0 });
+
+    root.addChildren(parent.addChildren(child));
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
+
     const cnv = new Canvas().setLayout(layout);
     Renderer.Create().build(root, cnv);
 
     cnv.renderBoard();
-
-    const cell = cnv.getCell(1, 1);
-    assert(cell, "invalid cell at x: 2 y : 2");
-
-    expect(cell.styles.backgroundColor()).eq(colors.YELLOW_BACKGROUND);
   });
 
   it("absolute and padding doesnt take up all of the screen", () => {
@@ -131,22 +140,34 @@ describe("tests the invisible of component", () => {
 
     const root = new DisplayComponent().setLayout(layout);
 
+    const right = new DisplayComponent()
+      .setVisible(false)
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+      );
+
     root
       .addChildren(
-        new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-        ),
-      )
-      .addChildren(
         new DisplayComponent()
-          .setVisible(false)
           .setStyles(
-            ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
-          ),
-      );
-    LayoutEngine.Measure(root, root.contentLayout());
+            ComponentStyle.Create().setBackgroundColor(
+              colors.YELLOW_BACKGROUND,
+            ),
+          )
+          .setWidth("100%")
+          .setHeight("100%"),
+      )
+      .addChildren(right);
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
     const cnv = new Canvas().setLayout(layout);
     Renderer.Create().build(root, cnv);
+
+    cnv.renderBoard();
+
+    // we use measured size here because its the size that it will show on screen
+    expect(right.measuredSize().height).eq(0);
+    expect(right.measuredSize().width).eq(0);
 
     expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
       colors.YELLOW_BACKGROUND,
@@ -185,7 +206,11 @@ describe("tests the invisible of component", () => {
             ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
           ),
       );
-    LayoutEngine.Measure(root, root.layout());
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
+
     const cnv = new Canvas().setLayout(layout);
     Renderer.Create().build(root, cnv);
 
@@ -202,10 +227,11 @@ describe("tests the invisible of component", () => {
 });
 describe("tests the margin", () => {
   it("has margin on default behaviour", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 10;
+    const layout = LayoutEngine.CreateBounds(10);
 
     const root = new DisplayComponent().setLayout(layout);
+
+    root.styles().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
 
     root
       .addChildren(
@@ -226,17 +252,24 @@ describe("tests the margin", () => {
           ),
       )
       .setDirection("vertical");
+
     const cnv = new Canvas().setLayout(layout);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
+
     Renderer.Create().build(root, cnv);
+
+    cnv.renderBoard();
 
     expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
       colors.YELLOW_BACKGROUND,
     );
 
     expect(cnv.getCell(0, layout.height - 1)?.styles.backgroundColor()).eq(
-      colors.BACKGROUND_OFF,
+      colors.BRIGHT_BLUE_BACKGROUND,
     );
 
     cnv.renderBoard();

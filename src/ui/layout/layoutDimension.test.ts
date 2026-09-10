@@ -8,8 +8,9 @@ import { ComponentStyle } from "../ComponentStyles.js";
 
 describe("tests the layout calculation on absolute", () => {
   it("doesnt need layout property if height and width is set", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 30;
+    const layout = LayoutEngine.CreateBounds(30);
+
+    const canvas = new Canvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
@@ -17,7 +18,6 @@ describe("tests the layout calculation on absolute", () => {
         ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
       )
       .setDirection("vertical");
-    const canvas = new Canvas().setLayout(layout);
 
     const oneThird = new DisplayComponent()
       .setHeight("30%")
@@ -28,12 +28,12 @@ describe("tests the layout calculation on absolute", () => {
           colors.BRIGHT_YELLOW_BACKGROUND,
         ),
       )
-
       .setPositionMode("absolute");
 
     root.addChildren(oneThird);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
     Renderer.Create().build(root, canvas);
 
     expect(oneThird.layout().height).eq(layout.height * 0.3);
@@ -68,13 +68,47 @@ describe("tests the layout calculation on absolute", () => {
 
     root.addChildren(oneThird);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
     Renderer.Create().build(root, canvas);
 
     expect(oneThird.layout().height).eq(layout.height * 0.3);
     expect(oneThird.layout().x).eq(3);
     expect(oneThird.layout().y).eq(3);
     expect(oneThird.layout().width).eq(layout.width * 0.3);
+
+    canvas.renderBoard();
+  });
+});
+
+describe("on the new layout sizing children", () => {
+  it("when a child has a set height and width ,the parent height and width should not be 0", () => {
+    const layout = LayoutEngine.CreateBounds();
+    layout.height = layout.width = 10;
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
+      )
+      .setDirection("vertical");
+    const canvas = new Canvas().setLayout(layout);
+
+    const parent = new DisplayComponent();
+
+    const child = new DisplayComponent().setHeight(4).setWidth(4);
+
+    root.addChildren(parent.addChildren(child));
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    const clt = child.contentLayout();
+    expect(clt.height).eq(4);
+    expect(clt.width).eq(4);
+    expect(parent.contentLayout().height).greaterThanOrEqual(4);
+    expect(parent.contentLayout().width).greaterThanOrEqual(4);
 
     canvas.renderBoard();
   });

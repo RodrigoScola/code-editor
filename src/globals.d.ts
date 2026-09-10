@@ -9,6 +9,18 @@ type EditorModeEvent = {
   mode: EditingModes;
 };
 
+interface MeasureConstraints {
+  minWidth: number;
+  maxWidth: number;
+  minHeight: number;
+  maxHeight: number;
+}
+
+interface MeasuredSize {
+  width: number;
+  height: number;
+}
+
 type SubmitCommandEvent = {
   name: "submitCommand";
 };

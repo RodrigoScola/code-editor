@@ -32,7 +32,8 @@ describe("tests the component border", () => {
 
     const canvas = new Canvas().setLayout(layout);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
     Renderer.Create().build(root, canvas);
     expect(canvas.getCell(9, 0)?.styles.backgroundColor()).eq(
       colors.RED_BACKGROUND,

@@ -13,6 +13,7 @@ import { StatusWindow } from "./windows/StatusEditor.js";
 import { TextEditorWindow } from "./windows/TextEditorWindow.js";
 import { LayoutEngine } from "../ui/layout/layout.js";
 import { ListMenuWindow } from "./windows/ListMenuWindow.js";
+import { EditorRoot } from "./Editor/EditorRoot.js";
 
 function setupGit(editor: EditorContext) {
   const commit = new GitCommitWindow();
@@ -20,7 +21,6 @@ function setupGit(editor: EditorContext) {
   commit.window
     .setVisible(false)
     .setIndex(5)
-
     .setPositionMode("absolute")
     .setMargin({ bottom: 2, left: 2, right: 2, top: 2 });
 
@@ -33,7 +33,6 @@ function setupGit(editor: EditorContext) {
 
   gitEditor.window
     .setName(WINDOW_NAMES.GIT_WINDOW)
-    .setPadding({ left: 1, right: 0, bottom: 0, top: 0 })
     .styles()
     ?.setBackgroundColor(colors.BLUE_BACKGROUND);
 
@@ -42,7 +41,7 @@ function setupGit(editor: EditorContext) {
 
 function setupWindows(editor: EditorContext) {
   editor.canvas = new Canvas().setLayout(editor.layout);
-  editor.rootWindow = new DisplayComponent().setLayout(editor.layout);
+  editor.rootWindow = new EditorRoot().setLayout(editor.layout);
 }
 
 function statusWindow(editor: EditorContext) {
@@ -96,7 +95,7 @@ function setupTextEditor(editor: EditorContext) {
     ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
   );
 
-  editorWindow.window.viewport().visibleLines =
+  editorWindow.viewport.visibleLines =
     editorWindow.window.contentLayout().height;
 }
 
@@ -289,6 +288,10 @@ async function handleResize(
   resizedLayout.height = resolved.rows;
   resizedLayout.width = resolved.columns;
   editor.canvas.setLayout(resizedLayout);
+  editor.rootWindow.layoutConstraints = LayoutEngine.CreateConstraints(
+    resizedLayout.width,
+    resizedLayout.height,
+  );
 
   editor.rootWindow.setLayout(resizedLayout);
 

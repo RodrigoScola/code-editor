@@ -9,8 +9,8 @@ import { EditorRoot } from "../../Editor/EditorRoot.js";
 
 describe("tests the tab component", () => {
   it("creates and shows tabs", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 30;
+    const layout = LayoutEngine.CreateBounds(30);
+    const constraints = LayoutEngine.CreateConstraints(30);
 
     const root = new EditorRoot().setLayout(layout);
 
@@ -49,7 +49,7 @@ describe("tests the tab component", () => {
 
     first.buffer.addLine("this should be the content");
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, constraints).Arrange(root);
     Renderer.Create().build(root, canvas);
     canvas.renderBoard();
 

@@ -10,9 +10,14 @@ function isFalse(truthy: boolean, message: string) {
   }
 }
 
+function fail(message: string) {
+  throw new Error(message);
+}
+
 export function assert<T>(truthy: T, message: string): asserts truthy {
   run(Boolean(truthy), message);
 }
 
+assert.fail = fail;
 assert.ok = run;
 assert.isFalse = isFalse;

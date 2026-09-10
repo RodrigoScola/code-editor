@@ -1,201 +1,287 @@
-import { assert } from "../../assert.js";
-import { DisplayComponent } from "../components/components.js";
-import { POSITION_ORDER } from "../../constants.js";
-import { LayoutDimensions } from "./LayoutDimension.js";
+import { DisplayComponent, parseSize } from "../components/components.js";
 
 export class LayoutEngine {
-  static CreateBounds(): LayoutBounds {
+  static CreateBounds(
+    width: number = 0,
+    height: number = width,
+    x: number = 0,
+    y: number = 0,
+  ): LayoutBounds {
     return {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
+      x: x,
+      y: y,
+      width: width,
+      height: height,
     };
   }
 
-  static Measure(
-    root: DisplayComponent,
-    layout?: LayoutBounds,
-  ): DisplayComponent {
-    layout ??= root.contentLayout();
+  static ArrangeAbsolute(child: DisplayComponent, bounds: LayoutBounds) {
+    const width =
+      parseSize(child.width(), bounds.width) ?? child.measuredSize().width;
 
-    root.setLayout(layout);
+    const height =
+      parseSize(child.height(), bounds.height) ?? child.measuredSize().height;
 
-    if (root.direction() === "vertical") {
-      this.layoutVertical(root);
-    } else {
-      this.layoutHorizontal(root);
-    }
+    const x = parseSize(child.startX(), bounds.width) ?? 0;
 
-    return root;
+    const y = parseSize(child.startY(), bounds.height) ?? 0;
+
+    child.arrange({
+      x: bounds.x + x,
+      y: bounds.y + y,
+      width,
+      height,
+    });
   }
 
-  private static visibleChildren(component: DisplayComponent) {
-    return component.children().filter((child) => child.visible());
-  }
+  static ArrangeVertical(
+    normalChildren: DisplayComponent[],
+    bounds: LayoutBounds,
+  ) {
+    let remainingHeight = bounds.height;
 
-  private static normalChildren(component: DisplayComponent) {
-    return this.visibleChildren(component).filter(
-      (child) => child.positionMode() === "normal",
-    );
-  }
+    // First consume children with explicit heights.
+    for (const child of normalChildren) {
+      if (child.height() === "auto") {
+        continue;
+      }
 
-  private static absoluteChildren(component: DisplayComponent) {
-    return this.visibleChildren(component).filter(
-      (child) => child.positionMode() === "absolute",
-    );
-  }
-
-  private static layoutVertical(component: DisplayComponent) {
-    const parent = component.contentLayout();
-    const children = this.normalChildren(component);
-
-    let remaining = parent.height;
-    let flexible = 0;
-
-    // Find remaining space.
-    for (const child of children) {
       const margin = child.margin();
 
-      const requested = LayoutDimensions.requestHeight(child, parent);
+      const height = parseSize(child.height(), bounds.height)!;
 
-      if (LayoutDimensions.isHeightFlexible(child)) {
-        flexible++;
-      }
-
-      if (requested) {
-        remaining -= requested;
-      }
-
-      remaining -= margin.top + margin.bottom;
+      remainingHeight -= height;
+      remainingHeight -= margin.top + margin.bottom;
     }
 
-    remaining = Math.max(0, remaining);
+    remainingHeight = Math.max(0, remainingHeight);
 
-    let y = parent.y;
+    const autoChildren = normalChildren.filter(
+      (child) => child.height() === "auto",
+    );
 
-    // Layout normal children.
-    for (const child of children) {
-      const margin = child.margin();
+    // Allocate the remaining space to auto children while
+    // respecting maxHeight.
+    const autoHeights = new Map<DisplayComponent, number>();
 
-      let height: number = LayoutDimensions.requestHeight(child, parent) || 0;
+    let unresolved = [...autoChildren];
+    let available = remainingHeight;
 
-      if (LayoutDimensions.isHeightFlexible(child)) {
-        height = flexible > 0 ? Math.floor(remaining / flexible) : 0;
-        remaining -= height;
-        flexible--;
+    while (unresolved.length > 0) {
+      const share = available / unresolved.length;
+
+      const capped: DisplayComponent[] = [];
+      const uncapped: DisplayComponent[] = [];
+
+      for (const child of unresolved) {
+        const maxHeight = child.maxHeight();
+
+        if (maxHeight !== null && maxHeight < share) {
+          autoHeights.set(child, maxHeight);
+          available -= maxHeight;
+
+          const margin = child.margin();
+          available -= margin.top + margin.bottom;
+
+          capped.push(child);
+        } else {
+          uncapped.push(child);
+        }
       }
 
-      let width: number = Math.max(
-        LayoutDimensions.requestWidth(child, parent),
-        0,
-      );
+      if (capped.length === 0) {
+        for (const child of uncapped) {
+          autoHeights.set(child, Math.max(0, share));
+        }
 
-      y += LayoutDimensions.requestStartY(child);
-      const x = LayoutDimensions.requestStartX(child);
+        break;
+      }
 
-      this.Measure(child, {
-        x,
+      unresolved = uncapped;
+      available = Math.max(0, available);
+    }
+
+    let y = bounds.y;
+
+    for (const child of normalChildren) {
+      const margin = child.margin();
+
+      y += margin.top;
+
+      const width =
+        parseSize(child.width(), bounds.width) ??
+        Math.max(0, bounds.width - margin.left - margin.right);
+
+      const height =
+        child.height() === "auto"
+          ? (autoHeights.get(child) ?? 0)
+          : parseSize(child.height(), bounds.height)!;
+
+      child.arrange({
+        x: bounds.x + margin.left,
         y,
-        width: width,
-        height: Math.max(0, height),
+        width,
+        height,
       });
 
       y += height + margin.bottom;
     }
-
-    // Absolute children keep their own layout.
-    for (const child of this.absoluteChildren(component)) {
-      this.Measure(child, this.absoluteLayoutPosition(child));
-    }
-  }
-  static absoluteLayoutPosition(child: DisplayComponent): LayoutBounds {
-    const currentLayout = child.layout();
-    const hasHeight = LayoutDimensions.requestHeight(child);
-    const hasWidth = LayoutDimensions.requestWidth(child);
-
-    const startX = LayoutDimensions.requestStartX(child);
-    const startY = LayoutDimensions.requestStartY(child);
-
-    if (hasHeight) {
-      currentLayout.height = hasHeight;
-    }
-    if (hasWidth) {
-      currentLayout.width = hasWidth;
-    }
-
-    currentLayout.x = startX;
-    currentLayout.y = startY;
-
-    return currentLayout;
   }
 
-  private static layoutHorizontal(component: DisplayComponent) {
-    const parent = component.layout();
-    const children = this.normalChildren(component);
+  static ArrangeHorizontal(
+    normalChildren: DisplayComponent[],
+    bounds: LayoutBounds,
+  ) {
+    let remainingWidth = bounds.width;
 
-    let remaining = parent.width;
-    let flexible = 0;
-
-    // Find remaining space
-    for (const child of children) {
-      const margin = child.margin();
-
-      const width = LayoutDimensions.requestWidth(child, parent);
-
-      if (LayoutDimensions.isWidthFlexible(child)) {
-        flexible++;
-      } else {
-        remaining -= width;
+    // First consume children with explicit widths.
+    for (const child of normalChildren) {
+      if (child.width() === "auto") {
+        continue;
       }
 
-      remaining -= margin.left + margin.right;
+      const margin = child.margin();
+
+      const width = parseSize(child.width(), bounds.width)!;
+
+      remainingWidth -= width;
+      remainingWidth -= margin.left + margin.right;
     }
 
-    let x = parent.x;
+    remainingWidth = Math.max(0, remainingWidth);
 
-    // Layout normal children
-    for (const child of children) {
+    const autoChildren = normalChildren.filter(
+      (child) => child.width() === "auto",
+    );
+
+    // Remove auto children's margins before distributing
+    // the remaining space between their actual widths.
+    for (const child of autoChildren) {
       const margin = child.margin();
 
-      let width: number = LayoutDimensions.requestWidth(child, parent) || 0;
+      remainingWidth -= margin.left + margin.right;
+    }
 
-      if (LayoutDimensions.isWidthFlexible(child)) {
-        width = Math.floor(remaining / flexible);
-        remaining -= width;
-        flexible--;
+    remainingWidth = Math.max(0, remainingWidth);
+
+    const autoWidths = new Map<DisplayComponent, number>();
+
+    let unresolved = [...autoChildren];
+    let available = remainingWidth;
+
+    while (unresolved.length > 0) {
+      const share = available / unresolved.length;
+
+      const capped: DisplayComponent[] = [];
+      const uncapped: DisplayComponent[] = [];
+
+      for (const child of unresolved) {
+        const maxWidth = child.maxWidth();
+
+        if (maxWidth !== null && maxWidth < share) {
+          autoWidths.set(child, maxWidth);
+
+          available -= maxWidth;
+
+          capped.push(child);
+        } else {
+          uncapped.push(child);
+        }
       }
 
-      x += LayoutDimensions.requestStartX(child);
+      if (capped.length === 0) {
+        for (const child of uncapped) {
+          autoWidths.set(child, Math.max(0, share));
+        }
 
-      const reqHeight =
-        LayoutDimensions.requestHeight(child, parent) ||
-        parent.height - margin.top - margin.bottom;
+        break;
+      }
 
-      const y = LayoutDimensions.requestStartY(child);
+      unresolved = uncapped;
+      available = Math.max(0, available);
+    }
 
-      this.Measure(child, {
+    let x = bounds.x;
+
+    for (const child of normalChildren) {
+      const margin = child.margin();
+
+      x += margin.left;
+
+      const width =
+        child.width() === "auto"
+          ? (autoWidths.get(child) ?? 0)
+          : parseSize(child.width(), bounds.width)!;
+
+      const height =
+        parseSize(child.height(), bounds.height) ??
+        Math.max(0, bounds.height - margin.top - margin.bottom);
+
+      child.arrange({
         x,
-        y,
+        y: bounds.y + margin.top,
         width,
-        height: reqHeight,
+        height,
       });
 
       x += width + margin.right;
     }
+  }
+  static CreateConstraints(
+    width: number,
+    height: number = width,
+  ): MeasureConstraints {
+    return {
+      maxHeight: height,
+      maxWidth: width,
+      minHeight: height,
+      minWidth: width,
+    };
+  }
+  private static UNCONSTRAINED_LAYOUT = {
+    maxHeight: Infinity,
+    minHeight: 0,
+    maxWidth: Infinity,
+    minWidth: 0,
+  };
 
-    if (
-      !children.every((ch) => LayoutDimensions.isWidthFlexible(ch) == false)
-    ) {
-      assert(
-        remaining === 0,
-        `not using all remaining. expected: 0, got ${remaining}, ${flexible}`,
-      );
-    }
+  static Measure(component: DisplayComponent, constraints: MeasureConstraints) {
+    component.measure(constraints);
 
-    // Absolute children keep their own layout
-    for (const child of this.absoluteChildren(component)) {
-      this.Measure(child, this.absoluteLayoutPosition(child));
-    }
+    return this;
+  }
+
+  static Arrange(root: DisplayComponent, bounds?: LayoutBounds) {
+    root.arrange(bounds || root.contentLayout());
+    return this;
+  }
+  static Layout(
+    component: DisplayComponent,
+    constraints: MeasureConstraints,
+    bounds: LayoutBounds,
+  ) {
+    const measured = this.Measure(component, constraints);
+
+    this.Arrange(component, bounds);
+    return measured;
+  }
+
+  static Unconstrained(): MeasureConstraints {
+    return this.UNCONSTRAINED_LAYOUT;
+  }
+  static ClampSize(
+    size: MeasuredSize,
+    constraints: MeasureConstraints,
+  ): MeasuredSize {
+    return {
+      width: Math.max(
+        constraints.minWidth,
+        Math.min(size.width, constraints.maxWidth),
+      ),
+      height: Math.max(
+        constraints.minHeight,
+        Math.min(size.height, constraints.maxHeight),
+      ),
+    };
   }
 }

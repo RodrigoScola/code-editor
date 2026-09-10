@@ -47,8 +47,7 @@ const createCubes = (manager: WindowManager) => {
 
 describe("tests the window manager focus capabilities", () => {
   it("can focus on the left window on focus right", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.width = layout.height = 20;
+    const layout = LayoutEngine.CreateBounds(20);
     const cnv = new Canvas().setLayout(layout);
     const manager = new WindowManager(new EditorRoot().setLayout(layout));
 
@@ -56,7 +55,10 @@ describe("tests the window manager focus capabilities", () => {
 
     manager.focus(output.topL);
 
-    LayoutEngine.Measure(manager.root);
+    LayoutEngine.Measure(
+      manager.root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(manager.root);
     Renderer.Create().build(manager.root, cnv);
 
     manager.focusRight();

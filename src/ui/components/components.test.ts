@@ -59,20 +59,22 @@ describe("Renderer background colors", () => {
       .setStyles(
         ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
       )
-      .setLayout({
-        height: 0,
-        width: 0,
-        x: 2,
-        y: 3,
-      });
+      .setHeight(2)
+      .setWidth(2);
 
     const root = new DisplayComponent().setLayout(l).addChildren(elem);
-    LayoutEngine.Measure(root, root.contentLayout());
+
+    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(l.width));
+    LayoutEngine.Arrange(root);
+
     Renderer.Create().build(root, cnv);
+    cnv.renderBoard();
 
     const nmap = cnv.getCells();
 
-    expect(nmap[3][2].styles.backgroundColor()).toBe(colors.BLUE_BACKGROUND);
+    expect(nmap[1][1].styles.backgroundColor()).toBe(colors.BLUE_BACKGROUND);
   });
 
   it("sets max render and both the top and bottom respect it", () => {
@@ -95,7 +97,8 @@ describe("Renderer background colors", () => {
         .setMaxHeight(1),
     ]);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(l.width));
+    LayoutEngine.Arrange(root);
     Renderer.Create().build(root, cnv);
 
     cnv.renderBoard();
@@ -153,7 +156,8 @@ describe("Renderer background colors", () => {
         ),
       );
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(l.height));
+    LayoutEngine.Arrange(root);
     Renderer.Create().build(root, cnv);
     const map = cnv.getCells();
     cnv.renderBoard();
@@ -188,7 +192,8 @@ describe("Renderer background colors", () => {
           .setMaxWidth(1),
       ]);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.height));
+    LayoutEngine.Arrange(root);
     Renderer.Create().build(root, cnv);
 
     const w = layout.width;
@@ -221,7 +226,10 @@ describe("editorComponent", () => {
 
     root.addChildren(display.window);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+
+    LayoutEngine.Arrange(root, layout);
+
     Renderer.Create().build(root, cnv);
 
     const firstLineCell = cnv.getCell(0, 0);
@@ -249,12 +257,53 @@ describe("editorComponent", () => {
       new Textdocument(new MemoryFile("doc", content)),
     );
 
-    display.window.viewport().visibleLines = 3;
-    display.window.viewport().visibleColumns = 10;
+    display.viewport.visibleLines = 3;
+    display.viewport.visibleColumns = 10;
     display.cursor.line = 3;
 
-    display.cursor.ensureVisible(display.window.viewport());
+    display.cursor.ensureVisible(display.viewport);
 
-    expect(display.window.viewport().firstLine).toBe(1);
+    expect(display.viewport.firstLine).toBe(1);
+  });
+  it("renders the correct background colors of children where parents dont have width or height", () => {
+    const layout = LayoutEngine.CreateBounds(10);
+    const constraints = LayoutEngine.CreateConstraints(10);
+
+    const root = new DisplayComponent().setLayout(layout);
+
+    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const parent = new DisplayComponent();
+
+    parent.styles().setBackgroundColor(colors.SKY_BLUE_BACKGROUND);
+
+    const child = new DisplayComponent()
+      .setHeight(3)
+      .setWidth(3)
+      .setStartY(4)
+      .setStartX(3)
+      .setPositionMode("absolute");
+
+    child.styles().setBackgroundColor(colors.GREEN_BACKGROUND);
+
+    root.addChildren(parent.addChildren(child));
+
+    const canvas = new Canvas().setLayout(layout);
+
+    LayoutEngine.Measure(root, constraints);
+    LayoutEngine.Arrange(root);
+
+    Renderer.Create().build(root, canvas);
+
+    expect(child.contentLayout().height).eq(3);
+    expect(child.contentLayout().width).eq(3);
+
+    expect(
+      canvas
+        .getCell(child.startX() as number, child.startY() as number)!
+        .styles.backgroundColor(),
+    ).eq(child.styles().backgroundColor());
+
+    canvas.renderBoard();
   });
 });

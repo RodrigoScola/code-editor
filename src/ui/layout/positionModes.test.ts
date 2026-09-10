@@ -6,29 +6,65 @@ import { Canvas } from "../canvas.js";
 import colors from "../colors.js";
 import { assert } from "../../assert.js";
 import { ComponentStyle } from "../ComponentStyles.js";
-import { builtinModules } from "node:module";
-import { LayoutDimensions } from "./LayoutDimension.js";
 
 describe("tests normal position mode", () => {
   it("components side by side", () => {
     const { root, build, cnv } = setupTests(10, 10);
 
-    root
-      .addChildren(
-        new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
-        ),
+    const left = new DisplayComponent()
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
       )
-      .addChildren(
-        new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-        ),
+      .setWidth("50%")
+      .setHeight("100%");
+
+    const right = new DisplayComponent()
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
       )
-      .setDirection("horizontal");
+      .setWidth("50%")
+      .setHeight("100%");
+
+    root.addChildren(left).addChildren(right).setDirection("horizontal");
 
     build(root, cnv);
 
     cnv.renderBoard();
+
+    expect(left.contentLayout().width).eq(root.contentLayout().width / 2);
+    expect(right.contentLayout().width).eq(root.contentLayout().width / 2);
+
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
+      colors.MAGENTA_BACKGROUND,
+    );
+    expect(cnv.getCell(6, 0)?.styles.backgroundColor()).eq(
+      colors.YELLOW_BACKGROUND,
+    );
+  });
+  it("components side by side when one doesnt have width", () => {
+    const { root, build, cnv } = setupTests(10, 10);
+
+    const left = new DisplayComponent()
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+      )
+      .setWidth("50%")
+      .setHeight("100%");
+
+    const right = new DisplayComponent()
+      .setStyles(
+        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+      )
+      .setHeight("100%");
+
+    root.addChildren(left).addChildren(right).setDirection("horizontal");
+
+    build(root, cnv);
+
+    cnv.renderBoard();
+
+    expect(left.contentLayout().width).eq(root.contentLayout().width / 2);
+    expect(right.contentLayout().width).eq(root.contentLayout().width / 2);
 
     expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
       colors.MAGENTA_BACKGROUND,
@@ -70,7 +106,16 @@ describe("tests the absolute mode", () => {
     build(root, cnv);
 
     cnv.renderBoard();
-    testCnv(cnv);
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
+      colors.MAGENTA_BACKGROUND,
+    );
+
+    expect(cnv.getCell(6, 2)?.styles.backgroundColor()).eq(
+      colors.MAGENTA_BACKGROUND,
+    );
+    expect(cnv.getCell(6, 6)?.styles.backgroundColor()).eq(
+      colors.YELLOW_BACKGROUND,
+    );
   });
   it("overlays the absoluted component on inverted order", () => {
     const { root, build, cnv } = setupTests(10, 10);
@@ -100,21 +145,18 @@ describe("tests the absolute mode", () => {
     build(root, cnv);
 
     cnv.renderBoard();
-    testCnv(cnv);
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
+      colors.MAGENTA_BACKGROUND,
+    );
+
+    expect(cnv.getCell(6, 2)?.styles.backgroundColor()).eq(
+      colors.MAGENTA_BACKGROUND,
+    );
+    expect(cnv.getCell(6, 6)?.styles.backgroundColor()).eq(
+      colors.YELLOW_BACKGROUND,
+    );
   });
 });
-function testCnv(canvas: Canvas) {
-  expect(canvas.getCell(0, 0)?.styles.backgroundColor()).eq(
-    colors.MAGENTA_BACKGROUND,
-  );
-
-  expect(canvas.getCell(6, 2)?.styles.backgroundColor()).eq(
-    colors.MAGENTA_BACKGROUND,
-  );
-  expect(canvas.getCell(6, 6)?.styles.backgroundColor()).eq(
-    colors.YELLOW_BACKGROUND,
-  );
-}
 
 function setupTests(height: number = 10, width: number = 10) {
   const layout = LayoutEngine.CreateBounds();
@@ -123,6 +165,8 @@ function setupTests(height: number = 10, width: number = 10) {
 
   const root = new DisplayComponent().setLayout(layout);
 
+  root.styles().setBackgroundColor(colors.MAGENTA_BACKGROUND);
+
   const cnv = new Canvas().setLayout(layout);
 
   return {
@@ -130,7 +174,8 @@ function setupTests(height: number = 10, width: number = 10) {
     root,
     cnv,
     build: (root: DisplayComponent, canvas: Canvas) => {
-      LayoutEngine.Measure(root, root.contentLayout());
+      LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+      LayoutEngine.Arrange(root);
 
       Renderer.Create().build(root, canvas);
     },

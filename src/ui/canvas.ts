@@ -21,8 +21,8 @@ export class Canvas {
   layout() {
     return this.l;
   }
-  setLayout(nl: LayoutBounds) {
-    this.l = nl;
+  setLayout(layout: LayoutBounds) {
+    this.l = layout;
     this.clear();
     return this;
   }
