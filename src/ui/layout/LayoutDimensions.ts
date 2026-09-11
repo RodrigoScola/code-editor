@@ -1,4 +1,5 @@
 import { DisplayComponent } from "../components/components.js";
+import { LayoutEngine } from "./layout.js";
 
 export class LayoutDimensions {
   /**
@@ -10,7 +11,6 @@ export class LayoutDimensions {
   ): MeasureConstraints {
     return {
       minWidth: constraints.minWidth,
-
       maxWidth:
         component.maxWidth() === null
           ? constraints.maxWidth
@@ -68,22 +68,19 @@ export class LayoutDimensions {
     let width = 0;
     let height = 0;
 
+    let childConstraints = LayoutEngine.CreateConstraints(0);
+
     for (const child of children) {
       const margin = child.margin();
 
-      const childConstraints: MeasureConstraints = {
-        minWidth: 0,
-        maxWidth: Math.max(
-          0,
-          constraints.maxWidth - margin.left - margin.right,
-        ),
-
-        minHeight: 0,
-        maxHeight: Math.max(
-          0,
-          constraints.maxHeight - margin.top - margin.bottom,
-        ),
-      };
+      childConstraints.maxWidth = Math.max(
+        0,
+        constraints.maxWidth - margin.left - margin.right,
+      );
+      childConstraints.maxHeight = Math.max(
+        0,
+        constraints.maxHeight - margin.top - margin.bottom,
+      );
 
       const childSize = child.measure(childConstraints);
 

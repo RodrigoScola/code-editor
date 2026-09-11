@@ -38,7 +38,7 @@ describe("tests the window manager split capabilities", () => {
 
     manager.split(manager.activeWindow()!, other, "vertical");
 
-    LayoutEngine.Measure(manager.root, manager.root.contentLayout());
+    LayoutEngine.Measure(manager.root, LayoutEngine.CreateConstraints(20));
     Renderer.Create().build(
       manager.root,
       new Canvas().setLayout({ x: 0, y: 0, height: 20, width: 20 }),

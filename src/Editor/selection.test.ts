@@ -13,8 +13,13 @@ describe("tests the visual highlight of the selection", () => {
       new Textdocument(new MemoryFile("doc", content)),
     );
 
-    const lt = LayoutEngine.CreateBounds();
-    lt.height = lt.width = 20;
+    const lt = LayoutEngine.CreateBounds(20);
+    const cnv = new Canvas().setLayout(lt);
+
+    editor.window
+      .setLayout(lt)
+      .styles()
+      .setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
 
     editor.cursor.startSelection();
     editor.moveCursorDown();
@@ -31,14 +36,10 @@ describe("tests the visual highlight of the selection", () => {
 
     assert(selection()!.x > 0, "selection x did not move");
 
-    editor.window
-      .setLayout(lt)
-      .styles()
-      .setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
-
-    const cnv = new Canvas().setLayout(lt);
-
-    LayoutEngine.Measure(editor.window, editor.window.contentLayout());
+    LayoutEngine.Measure(
+      editor.window,
+      LayoutEngine.CreateConstraints(lt.width),
+    ).Arrange(editor.window);
     Renderer.Create().build(editor.window, cnv);
 
     cnv.renderBoard();

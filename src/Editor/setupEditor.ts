@@ -48,7 +48,6 @@ function statusWindow(editor: EditorContext) {
   const statusWindow = new StatusWindow(editor);
 
   statusWindow.window
-    .setPadding({ left: 1, right: 0, bottom: 0, top: 0 })
     .setMaxHeight(1)
     .setStyles(
       ComponentStyle.Create()

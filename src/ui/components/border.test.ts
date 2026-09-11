@@ -62,7 +62,9 @@ describe("tests the component border", () => {
 
     const canvas = new Canvas().setLayout(layout);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(10)).Arrange(
+      root,
+    );
     Renderer.Create().build(root, canvas);
 
     canvas.renderBoard();

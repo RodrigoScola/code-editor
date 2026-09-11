@@ -24,8 +24,8 @@ export class TextEditorWindow extends EditorWindow implements BufferLike {
   reset() {
     this.cursor.column = 0;
     this.cursor.line = 0;
-    this.window.viewport().firstLine = 0;
-    this.window.viewport().firstColumn = 0;
+    this.viewport.firstLine = 0;
+    this.viewport.firstColumn = 0;
   }
   openDocument(document: Textdocument) {
     this.document = document;

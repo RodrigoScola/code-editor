@@ -20,7 +20,10 @@ describe("tests the buffer and rendering", () => {
     cnv.tab_width = 5;
     window.window.setLayout(layout);
 
-    LayoutEngine.Measure(window.window, window.window.layout());
+    LayoutEngine.Measure(
+      window.window,
+      LayoutEngine.CreateConstraints(layout.width),
+    );
 
     Renderer.Create().build(window.window, cnv);
 

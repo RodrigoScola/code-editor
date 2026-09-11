@@ -1,4 +1,5 @@
 import { assert } from "../../assert.js";
+import { InsertMode } from "../../Commands/Commands.js";
 
 import { Canvas } from "../canvas.js";
 import colors from "../colors.js";
@@ -255,28 +256,29 @@ export class DisplayComponent {
       constraints,
     );
 
+    let width = parseSize(this.width(), styleConstraints.maxWidth);
+
+    let height = parseSize(this.height(), styleConstraints.maxHeight);
+
     const contentConstraints = this.contentConstraints(styleConstraints);
 
     const contentSize = this.measureContent(contentConstraints);
 
-    const intrinsicSize: MeasuredSize = {
-      width:
-        contentSize.width + this.horizontalPadding() + this.horizontalBorder(),
 
-      height:
-        contentSize.height + this.verticalPadding() + this.verticalBorder(),
-    };
+    if (!width) {
+      width =
+        contentSize.width + this.horizontalPadding() + this.horizontalBorder();
+    }
+    if (!height) {
+      height =
+        contentSize.height + this.verticalPadding() + this.verticalBorder();
+    }
 
-    const width = parseSize(this.width(), styleConstraints.maxWidth);
-
-    const height = parseSize(this.height(), styleConstraints.maxHeight);
-
-    const size: MeasuredSize = {
-      width: width ?? intrinsicSize.width,
-      height: height ?? intrinsicSize.height,
-    };
-
-    this._measuredSize = LayoutEngine.ClampSize(size, styleConstraints);
+    this._measuredSize = LayoutEngine.ClampSize(
+      width ?? 0,
+      height ?? 0,
+      styleConstraints,
+    );
 
     return this._measuredSize;
   }
@@ -358,6 +360,13 @@ export class DisplayComponent {
   // Measurement helpers
   // ---------------------------------------------------------------------------
 
+  private constrainedLayout: MeasureConstraints = {
+    maxHeight: 0,
+    maxWidth: 0,
+    minHeight: 0,
+    minWidth: 0,
+  };
+
   protected contentConstraints(
     constraints: MeasureConstraints,
   ): MeasureConstraints {
@@ -370,15 +379,24 @@ export class DisplayComponent {
     const vertical =
       padding.top + padding.bottom + border.top() + border.bottom();
 
-    return {
-      minWidth: Math.max(0, constraints.minWidth - horizontal),
+    this.constrainedLayout.minWidth = Math.max(
+      0,
+      constraints.minWidth - horizontal,
+    );
+    this.constrainedLayout.maxWidth = Math.max(
+      0,
+      constraints.maxWidth - horizontal,
+    );
+    this.constrainedLayout.minHeight = Math.max(
+      0,
+      constraints.minHeight - vertical,
+    );
+    this.constrainedLayout.maxHeight = Math.max(
+      0,
+      constraints.maxHeight - vertical,
+    );
 
-      maxWidth: Math.max(0, constraints.maxWidth - horizontal),
-
-      minHeight: Math.max(0, constraints.minHeight - vertical),
-
-      maxHeight: Math.max(0, constraints.maxHeight - vertical),
-    };
+    return this.constrainedLayout;
   }
 
   // ---------------------------------------------------------------------------

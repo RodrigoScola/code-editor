@@ -35,7 +35,9 @@ export class StatusWindow extends EditorWindow {
     if (this.editor.modeName === "command") {
       out += `command: ${this.buffer.at(this.currentCommandLine) || ""} `;
     } else {
-      out += `mode: ${this.editor.modeName}`;
+      out += `mode: ${this.editor.modeName} -`;
+      out += `current memory ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB - `;
+      out += `total memory ${(process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2)}MB - `;
     }
 
     canvas.drawText(cl, out, this.window.styles());

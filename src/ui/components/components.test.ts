@@ -22,7 +22,7 @@ describe("Canvas", () => {
     const root = new DisplayComponent().setLayout(layout);
     root.setLayout(layout);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(2));
 
     Renderer.Create().build(root, cnv);
 

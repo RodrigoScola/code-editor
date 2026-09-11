@@ -104,8 +104,8 @@ describe("LayoutEngine measurement", () => {
   });
 
   it("absolute and padding doesnt take up all of the screen", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 20;
+    const layout = LayoutEngine.CreateBounds(20);
+    const cnv = new Canvas().setLayout(layout);
 
     const root = new DisplayComponent().setLayout(layout);
 
@@ -126,8 +126,11 @@ describe("LayoutEngine measurement", () => {
           ),
       )
       .setDirection("vertical");
-    LayoutEngine.Measure(root, root.contentLayout());
-    const cnv = new Canvas().setLayout(layout);
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
+
     Renderer.Create().build(root, cnv);
 
     cnv.renderBoard();
@@ -303,7 +306,7 @@ describe("tests the relative height and width", () => {
 
     root.addChildren(oneThird).addChildren(rest);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(10));
     Renderer.Create().build(root, canvas);
 
     canvas.renderBoard();
@@ -332,7 +335,7 @@ describe("tests the relative height and width", () => {
 
     root.addChildren(oneThird).addChildren(rest);
 
-    LayoutEngine.Measure(root, root.contentLayout());
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(10));
     Renderer.Create().build(root, canvas);
 
     canvas.renderBoard();

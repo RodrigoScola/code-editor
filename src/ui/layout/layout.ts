@@ -270,17 +270,18 @@ export class LayoutEngine {
     return this.UNCONSTRAINED_LAYOUT;
   }
   static ClampSize(
-    size: MeasuredSize,
+    width: number,
+    height: number,
     constraints: MeasureConstraints,
   ): MeasuredSize {
     return {
       width: Math.max(
         constraints.minWidth,
-        Math.min(size.width, constraints.maxWidth),
+        Math.min(width, constraints.maxWidth),
       ),
       height: Math.max(
         constraints.minHeight,
-        Math.min(size.height, constraints.maxHeight),
+        Math.min(height, constraints.maxHeight),
       ),
     };
   }
