@@ -143,13 +143,12 @@ export class LayoutEngine {
 
     // First consume children with explicit widths.
     for (const child of normalChildren) {
+      const width = LayoutDimensions.requestedOuterWidth(child, bounds.width)!;
       if (child.width() === "auto") {
         continue;
       }
 
       const margin = child.margin();
-
-      const width = LayoutDimensions.requestedOuterWidth(child, bounds.width)!;
 
       remainingWidth -= width;
       remainingWidth -= margin.left + margin.right;

@@ -113,3 +113,45 @@ describe("on the new layout sizing children", () => {
     canvas.renderBoard();
   });
 });
+
+describe("wrap children", () => {
+  it("when wraps, should start a new line", () => {
+    const layout = LayoutEngine.CreateBounds(30, 10);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("horizontal");
+    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const first = new DisplayComponent().setWidth(10);
+    first.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+
+    const second = new DisplayComponent().setWidth(10);
+    second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+    const third = new DisplayComponent().setName("third");
+
+    third.setText("2 hundred");
+
+    const children = new DisplayComponent().setWidth(10).setName("child");
+    children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
+    third.addChildren(children);
+
+    third.styles().setBackgroundColor(colors.BRIGHT_GREEN_BACKGROUND);
+
+    const fourth = new DisplayComponent().setWidth(10);
+    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+
+    root.addChildren(first);
+    root.addChildren(second);
+    root.addChildren(third);
+    root.addChildren(fourth);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+  });
+});
