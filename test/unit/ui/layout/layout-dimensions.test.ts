@@ -116,11 +116,12 @@ describe("on the new layout sizing children", () => {
 
 describe("wrap children", () => {
   it("when wraps, should start a new line", () => {
-    const layout = LayoutEngine.CreateBounds(30, 10);
+    const layout = LayoutEngine.CreateBounds(30, 20);
     const canvas = new Canvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
+      .setWrap("wrap")
       .setDirection("horizontal");
     root.styles().setBackgroundColor(colors.RED_BACKGROUND);
 
@@ -131,8 +132,6 @@ describe("wrap children", () => {
     second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
 
     const third = new DisplayComponent().setName("third");
-
-    third.setText("2 hundred");
 
     const children = new DisplayComponent().setWidth(10).setName("child");
     children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
@@ -153,5 +152,52 @@ describe("wrap children", () => {
     Renderer.Create().build(root, canvas);
 
     canvas.renderBoard();
+
+    expect(first.layout().x).toBe(0);
+    expect(first.layout().height).toBe(layout.height / 2);
+    expect(second.layout().x).toBe(10);
+    expect(third.layout().x).toBe(20);
+    expect(fourth.layout().x).toBe(0);
+    expect(fourth.layout().y).toBeGreaterThan(third.layout().y);
+  });
+  it("when wraps reverse, fourth should be first", () => {
+    const layout = LayoutEngine.CreateBounds(30, 20);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setWrap("wrap-reverse")
+      .setDirection("horizontal");
+    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const first = new DisplayComponent().setWidth(10);
+    first.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+
+    const second = new DisplayComponent().setWidth(10);
+    second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+    const third = new DisplayComponent().setName("third");
+
+    const children = new DisplayComponent().setWidth(10).setName("child");
+    children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
+    third.addChildren(children);
+
+    third.styles().setBackgroundColor(colors.BRIGHT_GREEN_BACKGROUND);
+
+    const fourth = new DisplayComponent().setWidth(10);
+    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+
+    root.addChildren(first);
+    root.addChildren(second);
+    root.addChildren(third);
+    root.addChildren(fourth);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+
+    expect(third.layout().y).toBeGreaterThan(fourth.layout().y);
   });
 });

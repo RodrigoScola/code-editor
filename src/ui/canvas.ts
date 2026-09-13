@@ -2,6 +2,7 @@ import { assert } from "node:console";
 import colors from "./colors.js";
 import { ComponentBorder } from "./components/border.js";
 import { ComponentStyle } from "./ComponentStyles.js";
+import { LayoutBounds } from './layout/layoutStyle.js';
 
 const DEFAULT_STYLE: ComponentStyle = ComponentStyle.Create()
   .setBackgroundColor(colors.BACKGROUND_OFF)

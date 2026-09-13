@@ -8,6 +8,7 @@ import { EditorContext } from "../Editor/Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
 import { ViewPort } from "../../ui/windows/viewport.js";
+import { LayoutBounds } from '../../ui/layout/layoutStyle.js';
 
 type TreeNode = DirectoryTreeNode | FileTreeNode;
 

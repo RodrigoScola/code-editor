@@ -5,26 +5,19 @@ import colors from "../colors.js";
 import { ComponentStyle } from "../ComponentStyles.js";
 import { LayoutEngine } from "../layout/layout.js";
 import { LayoutDimensions } from "../layout/LayoutDimensions.js";
-import {
-  DisplayDirection,
-  Insets,
-  LayoutStyle,
-  PositionMode,
-} from "../layout/layoutStyle.js";
+import { LayoutBounds } from "../layout/layoutStyle.js";
 import { ComponentBorder } from "./border.js";
+import { ComponentLayoutFns } from "./componentLayout.js";
 
-export class DisplayComponent {
+export class DisplayComponent extends ComponentLayoutFns {
   private static ID = 0;
 
   private readonly id: number;
-  private readonly _layoutStyle: LayoutStyle;
 
   private ind = 0;
   private vs = true;
 
   private nm: string | null | undefined;
-
-  private _dirty: boolean = true;
 
   private _focusable = false;
   private _text: string | undefined;
@@ -35,7 +28,6 @@ export class DisplayComponent {
   };
 
   private childs: DisplayComponent[] = [];
-  private pr: DisplayComponent | null = null;
 
   private s: ComponentStyle;
 
@@ -45,9 +37,8 @@ export class DisplayComponent {
   private prePaintHook: ((canvas: Canvas) => void) | null = null;
 
   constructor() {
+    super();
     this.id = DisplayComponent.ID++;
-
-    this._layoutStyle = new LayoutStyle();
 
     this.s = ComponentStyle.Create()
       .setBackgroundColor(colors.BACKGROUND_OFF)
@@ -71,15 +62,6 @@ export class DisplayComponent {
   // ---------------------------------------------------------------------------
   // Layout
   // ---------------------------------------------------------------------------
-
-  layout(): LayoutBounds {
-    return this._layoutStyle.layout();
-  }
-
-  setLayout(layout: LayoutBounds): this {
-    this._layoutStyle.setLayout(layout);
-    return this;
-  }
 
   /**
    * The inner area available to this component's content.
@@ -145,15 +127,6 @@ export class DisplayComponent {
   // ---------------------------------------------------------------------------
   // Tree
   // ---------------------------------------------------------------------------
-
-  parent(): DisplayComponent | null {
-    return this.pr;
-  }
-
-  setParent(parent: DisplayComponent | null): this {
-    this.pr = parent;
-    return this;
-  }
 
   children(): DisplayComponent[] {
     return this.childs;
@@ -271,7 +244,7 @@ export class DisplayComponent {
    *   "Given these constraints, how large would I like to be?"
    */
   measure(constraints: MeasureConstraints): MeasuredSize {
-    if (this._dirty == false) {
+    if (this.dirty() == false) {
       return this._measuredSize;
     }
 
@@ -327,27 +300,28 @@ export class DisplayComponent {
 
     this.arrangeContent(this.contentLayout());
 
-    this._dirty = false;
+    this.setDirty(false);
+  }
+
+  normalChildren() {
+    return this.children().filter((child) => child.positionMode() === "normal");
+  }
+  absoluteChildren() {
+    return this.children().filter(
+      (child) => child.positionMode() === "absolute",
+    );
   }
 
   /**
    * Arrange children according to this component's direction.
    */
   protected arrangeContent(bounds: LayoutBounds): void {
-    const children = this.children();
-
-    const normalChildren = children.filter(
-      (child) => child.positionMode() === "normal",
-    );
-
-    const absoluteChildren = children.filter(
-      (child) => child.positionMode() === "absolute",
-    );
+    const absoluteChildren = this.absoluteChildren();
 
     if (this.direction() === "horizontal") {
-      LayoutEngine.ArrangeHorizontal(normalChildren, bounds);
+      LayoutEngine.ArrangeHorizontal(this, bounds);
     } else {
-      LayoutEngine.ArrangeVertical(normalChildren, bounds);
+      LayoutEngine.ArrangeVertical(this, bounds);
     }
 
     const absoluteBounds = this.paddingLayout();
@@ -362,12 +336,17 @@ export class DisplayComponent {
    */
   protected measureContent(constraints: MeasureConstraints): MeasuredSize {
     const children = this.children();
+    const text = this.text();
+    const textSize =
+      text === undefined
+        ? { width: 0, height: 0 }
+        : {
+            width: Math.max(...text.split("\n").map((line) => line.length)),
+            height: text.split("\n").length,
+          };
 
     if (children.length === 0) {
-      return {
-        width: 0,
-        height: 0,
-      };
+      return textSize;
     }
 
     const flowChildren = children.filter(
@@ -375,17 +354,25 @@ export class DisplayComponent {
     );
 
     if (flowChildren.length === 0) {
+      return textSize;
+    }
+
+    const childSize =
+      this.direction() === "horizontal"
+        ? LayoutDimensions.measureHorizontal(flowChildren, constraints)
+        : LayoutDimensions.measureVertical(flowChildren, constraints);
+
+    if (this.direction() === "horizontal") {
       return {
-        width: 0,
-        height: 0,
+        width: Math.max(childSize.width, textSize.width),
+        height: Math.max(childSize.height, textSize.height),
       };
     }
 
-    if (this.direction() === "horizontal") {
-      return LayoutDimensions.measureHorizontal(flowChildren, constraints);
-    }
-
-    return LayoutDimensions.measureVertical(flowChildren, constraints);
+    return {
+      width: Math.max(childSize.width, textSize.width),
+      height: Math.max(childSize.height, textSize.height),
+    };
   }
 
   // ---------------------------------------------------------------------------
@@ -554,156 +541,6 @@ export class DisplayComponent {
   // ---------------------------------------------------------------------------
   // Layout Style
   // ---------------------------------------------------------------------------
-
-  layoutStyle(): LayoutStyle {
-    return this._layoutStyle;
-  }
-
-  width(): Size {
-    return this._layoutStyle.width();
-  }
-
-  setWidth(width: Size): this {
-    this.layoutStyle().setWidth(width);
-    this.setDirty(true);
-    return this;
-  }
-
-  height(): Size {
-    return this.layoutStyle().height();
-  }
-
-  setHeight(height: Size): this {
-    this.layoutStyle().setHeight(height);
-    this.setDirty(true);
-    return this;
-  }
-
-  maxWidth(): number | null {
-    return this.layoutStyle().maxWidth();
-  }
-
-  setMaxWidth(maxWidth: number | null): this {
-    this.layoutStyle().setMaxWidth(maxWidth);
-    this.setDirty(true);
-    return this;
-  }
-
-  maxHeight(): number | null {
-    return this.layoutStyle().maxHeight();
-  }
-
-  setMaxHeight(maxHeight: number | null): this {
-    this.layoutStyle().setMaxHeight(maxHeight);
-    this.setDirty(true);
-    return this;
-  }
-
-  margin(): Insets {
-    return this.layoutStyle().margin();
-  }
-
-  setMargin(margin: Insets): this {
-    this.layoutStyle().setMargin(margin);
-    this.setDirty(true);
-    return this;
-  }
-
-  padding(): Insets {
-    return this.layoutStyle().padding();
-  }
-
-  setPadding(padding: Insets): this {
-    this.layoutStyle().setPadding(padding);
-    this.setDirty(true);
-    return this;
-  }
-
-  setPaddingLeft(val: number) {
-    this.padding().left = val;
-    this.setDirty(true);
-    return this;
-  }
-  setPaddingTop(val: number) {
-    this.padding().top = val;
-    this.setDirty(true);
-    return this;
-  }
-  setPaddingBottom(val: number) {
-    this.padding().bottom = val;
-    this.setDirty(true);
-    return this;
-  }
-  setPaddingRight(val: number) {
-    this.padding().right = val;
-    this.setDirty(true);
-    return this;
-  }
-
-  positionMode(): PositionMode {
-    return this.layoutStyle().position();
-  }
-
-  setPositionMode(position: PositionMode): this {
-    this.layoutStyle().setPosition(position);
-    this.setDirty(true);
-    return this;
-  }
-
-  direction(): DisplayDirection {
-    return this.layoutStyle().direction();
-  }
-
-  setDirection(direction: DisplayDirection): this {
-    this.layoutStyle().setDirection(direction);
-    this.setDirty(true);
-    return this;
-  }
-
-  startX(): Size {
-    return this.layoutStyle().startX();
-  }
-
-  setStartX(value: Size): this {
-    this.layoutStyle().setStartX(value);
-    this.setDirty(true);
-    return this;
-  }
-
-  startY(): Size {
-    return this.layoutStyle().startY();
-  }
-
-  setStartY(value: Size): this {
-    this.layoutStyle().setStartY(value);
-    this.setDirty(true);
-    return this;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Dirty
-  // ---------------------------------------------------------------------------
-
-  dirty(): boolean {
-    return this._dirty;
-  }
-
-  setDirty(value: boolean): this {
-    this._dirty = value;
-
-    if (value && this.parent()) {
-      this.parent()!.setDirty(true);
-    }
-
-    return this;
-  }
-  display() {
-    return this.layoutStyle().display();
-  }
-  setDisplay(dp: DisplayTypes) {
-    this.layoutStyle().setDisplay(dp);
-    return this;
-  }
 }
 
 export function parseSize(size: Size, available: number): number | null {

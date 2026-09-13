@@ -15,6 +15,7 @@ import { StatusWindow } from "../windows/StatusEditor.js";
 import { TextEditorWindow } from "../windows/TextEditorWindow.js";
 import { EditorRoot } from "./EditorRoot.js";
 import { memory } from "../../utils.js";
+import { LayoutBounds } from '../../ui/layout/layoutStyle.js';
 
 export class EditorContext {
   layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };

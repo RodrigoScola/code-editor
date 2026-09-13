@@ -5,7 +5,22 @@ export interface Insets {
   left: number;
 }
 
+export interface LayoutBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export type PositionMode = "normal" | "absolute" | "fixed";
+export type WrapStyle = "wrap" | "no-wrap" | "wrap-reverse";
+export type JustifyContent =
+  | "start"
+  | "end"
+  | "center"
+  | "space-between"
+  | "space-around"
+  | "space-evenly";
 
 export type DisplayDirection = "vertical" | "horizontal";
 
@@ -15,11 +30,14 @@ export class LayoutStyle {
 
   private _startY: Size = "auto";
   private _start: Size = "auto";
+  private _wrap: WrapStyle = "no-wrap";
 
   private _display: DisplayTypes = "flex";
 
   private _maxWidth: number | null = null;
   private _maxHeight: number | null = null;
+  private _justifyContent: JustifyContent = "start";
+  private _gap: number = 0;
 
   private l: LayoutBounds = {
     x: 0,
@@ -149,5 +167,26 @@ export class LayoutStyle {
   setDisplay(dp: DisplayTypes) {
     this._display = dp;
     return this;
+  }
+  setWrap(val: WrapStyle) {
+    this._wrap = val;
+    return this;
+  }
+  wrap() {
+    return this._wrap;
+  }
+  justifyContent() {
+    return this._justifyContent;
+  }
+  setJustifyContent(val: JustifyContent) {
+    this._justifyContent = val;
+    return this;
+  }
+  gap() {
+    return this._gap;
+  }
+  setGap(val: number) {
+    this._gap = val;
+    return this._gap;
   }
 }

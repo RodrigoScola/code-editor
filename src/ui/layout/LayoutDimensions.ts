@@ -1,5 +1,6 @@
 import { DisplayComponent, parseSize } from "../components/components.js";
 import { LayoutEngine } from "./layout.js";
+import { LayoutBounds } from './layoutStyle.js';
 
 export class LayoutDimensions {
   static horizontalExtras(component: DisplayComponent) {

@@ -1,6 +1,7 @@
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
+import { LayoutBounds } from '../ui/layout/layoutStyle.js';
 
 export class EditorSelection {
   private _anchor: Point = { x: 0, y: 0 };

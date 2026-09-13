@@ -423,4 +423,33 @@ describe("tests the relative height and width", () => {
 
     canvas.renderBoard();
   });
+
+  it("when gap is explicit, should be applied", () => {
+    const layout = LayoutEngine.CreateBounds(20, 10);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("horizontal")
+      .setGap(2);
+    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    const left = new DisplayComponent().setWidth(6).setHeight(6);
+    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const right = new DisplayComponent().setWidth(6).setHeight(6);
+    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+    root.addChildren(left);
+    root.addChildren(right);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+
+    expect(right.layout().x).eq(
+      left.layout().x + left.layout().width + root.gap(),
+    );
+  });
 });

@@ -4,6 +4,7 @@ import { DisplayComponent } from "../../../ui/components/components.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
 import { EditorWindow } from "../EditorWindow.js";
 import { type } from "os";
+import { LayoutBounds } from '../../../ui/layout/layoutStyle.js';
 
 export class WindowManager {
   private windows = new Map<string, EditorWindow>();

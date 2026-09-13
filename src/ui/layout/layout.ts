@@ -1,5 +1,8 @@
+import { start } from "node:repl";
 import { DisplayComponent, parseSize } from "../components/components.js";
 import { LayoutDimensions } from "./LayoutDimensions.js";
+import { LayoutBounds } from "./layoutStyle.js";
+import { assert } from "node:console";
 
 export class LayoutEngine {
   static CreateBounds(
@@ -38,11 +41,10 @@ export class LayoutEngine {
     });
   }
 
-  static ArrangeVertical(
-    normalChildren: DisplayComponent[],
-    bounds: LayoutBounds,
-  ) {
+  static ArrangeVertical(component: DisplayComponent, bounds: LayoutBounds) {
     let remainingHeight = bounds.height;
+
+    const normalChildren = component.normalChildren();
 
     // First consume children with explicit heights.
     for (const child of normalChildren) {
@@ -135,15 +137,14 @@ export class LayoutEngine {
     }
   }
 
-  static ArrangeHorizontal(
-    normalChildren: DisplayComponent[],
-    bounds: LayoutBounds,
+  static calculateRemainingWidth(
+    available: number,
+    components: DisplayComponent[],
   ) {
-    let remainingWidth = bounds.width;
-
+    let remainingWidth = available;
     // First consume children with explicit widths.
-    for (const child of normalChildren) {
-      const width = LayoutDimensions.requestedOuterWidth(child, bounds.width)!;
+    for (const child of components) {
+      const width = LayoutDimensions.requestedOuterWidth(child, available)!;
       if (child.width() === "auto") {
         continue;
       }
@@ -156,9 +157,7 @@ export class LayoutEngine {
 
     remainingWidth = Math.max(0, remainingWidth);
 
-    const autoChildren = normalChildren.filter(
-      (child) => child.width() === "auto",
-    );
+    const autoChildren = components.filter((child) => child.width() === "auto");
 
     // Remove auto children's margins before distributing
     // the remaining space between their actual widths.
@@ -169,6 +168,21 @@ export class LayoutEngine {
     }
 
     remainingWidth = Math.max(0, remainingWidth);
+
+    return remainingWidth;
+  }
+
+  static ArrangeHorizontal(component: DisplayComponent, bounds: LayoutBounds) {
+    const normalChildren = component.normalChildren();
+
+    let remainingWidth = this.calculateRemainingWidth(
+      bounds.width,
+      normalChildren,
+    );
+
+    const autoChildren = normalChildren.filter(
+      (child) => child.width() === "auto",
+    );
 
     const autoWidths = new Map<DisplayComponent, number>();
 
@@ -197,7 +211,7 @@ export class LayoutEngine {
 
       if (capped.length === 0) {
         for (const child of uncapped) {
-          autoWidths.set(child, Math.max(0, share));
+          autoWidths.set(child, Math.max(0, share, child.measuredSize().width));
         }
 
         break;
@@ -207,30 +221,110 @@ export class LayoutEngine {
       available = Math.max(0, available);
     }
 
-    let x = bounds.x;
+    const rows: {
+      child: DisplayComponent;
+      width: number;
+      outerWidth: number;
+      margin: Insets;
+    }[][] = [[]];
+
+    const shouldWrap = component.wrap() !== "no-wrap";
 
     for (const child of normalChildren) {
       const margin = child.margin();
-
-      x += margin.left;
 
       const width =
         child.width() === "auto"
           ? (autoWidths.get(child) ?? 0)
           : LayoutDimensions.requestedOuterWidth(child, bounds.width)!;
 
-      const height =
-        LayoutDimensions.requestedOuterHeight(child, bounds.height) ??
-        Math.max(0, bounds.height - margin.top - margin.bottom);
+      const outerWidth = margin.left + width + margin.right;
+      const row = rows[rows.length - 1];
 
-      child.arrange({
-        x,
-        y: bounds.y + margin.top,
+      const rowWidth = row.reduce((total, item) => total + item.outerWidth, 0);
+
+      if (
+        row.length > 0 &&
+        rowWidth + outerWidth > bounds.width &&
+        shouldWrap
+      ) {
+        rows.push([]);
+      }
+
+      rows[rows.length - 1].push({
+        child,
         width,
-        height,
+        outerWidth,
+        margin,
       });
+    }
 
-      x += width + margin.right;
+    const rowHeight = bounds.height / rows.length;
+
+    let y = bounds.y;
+
+    if (component.wrap() === "wrap-reverse") {
+      rows.reverse();
+    }
+
+    for (const row of rows) {
+      let startX = bounds.x;
+
+      const rowWidth = row.reduce(
+        (total, item) =>
+          total +
+          item.width +
+          item.margin.left +
+          item.margin.right +
+          component.gap(),
+        0,
+      );
+
+      let spacing = 0;
+
+      if (component.justifyContent() === "center") {
+        startX = Math.floor(bounds.width / 2) - Math.floor(rowWidth / 2);
+      } else if (component.justifyContent() === "end") {
+        startX = bounds.width - rowWidth;
+      } else if (component.justifyContent() === "start") {
+        startX = bounds.x;
+      } else if (component.justifyContent() === "space-evenly") {
+        const available = bounds.width - rowWidth;
+        spacing = Math.round(available / (row.length + 1));
+      } else if (component.justifyContent() === "space-around") {
+        const available = bounds.width - rowWidth;
+        spacing = available / row.length;
+        startX += Math.round(spacing / 2);
+      }
+
+      const isAround = component.justifyContent() === "space-around";
+
+      for (let i = 0; i < row.length; i++) {
+        const item = row[i];
+        const child = item.child;
+        const margin = item.margin;
+        const height =
+          LayoutDimensions.requestedOuterHeight(child, bounds.height) ??
+          Math.max(0, rowHeight - margin.top - margin.bottom);
+
+        startX += margin.left;
+
+        if (!isAround) startX += spacing;
+
+        child.arrange({
+          x: startX,
+          y: y + margin.top,
+          width: item.width,
+          height,
+        });
+
+        if (isAround) startX += spacing;
+
+        startX += component.gap();
+        startX += item.width + margin.right;
+      }
+
+      y += rowHeight;
     }
   }
   static CreateConstraints(

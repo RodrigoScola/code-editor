@@ -48,12 +48,6 @@ interface DisplayTile {
   y: number;
   styles: ComponentStyle;
 }
-interface LayoutBounds {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
 interface EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext);
