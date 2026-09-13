@@ -77,11 +77,11 @@ list.window
   .setIndex(10)
   .setStartX("20%")
   .setVisible(false)
-  .setPadding({ left: 1, right: 1, top: 1, bottom: 1 })
+  .setPaddingLeft(10)
   .setStartY("0%")
   .setPositionMode("absolute")
   .styles()
-  ?.setBackgroundColor(colors.YELLOW_BACKGROUND);
+  .setBackgroundColor(colors.YELLOW_BACKGROUND);
 
 list.window.border().setParameter(1);
 

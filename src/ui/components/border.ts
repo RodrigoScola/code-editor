@@ -1,11 +1,27 @@
+import { ICONS } from "../../constants.js";
 import colors from "../colors.js";
 import { ComponentStyle } from "../ComponentStyles.js";
+
+const borders = ICONS.borders;
+
+type BorderStyles = keyof typeof borders;
 
 export class ComponentBorder {
   private _left: number = 0;
   private _right: number = 0;
   private _top: number = 0;
   private _bottom: number = 0;
+
+  private displayStyle = borders.full;
+
+  borderStyle() {
+    return this.displayStyle;
+  }
+
+  setBorderSyle(st: BorderStyles) {
+    this.displayStyle = borders[st];
+    return this;
+  }
 
   setParameter(nb: number) {
     this._bottom = this._top = this._left = this._right = nb;
@@ -55,15 +71,13 @@ export class ComponentBorder {
     return this._bottom;
   }
 
-  private s: ComponentStyles = new ComponentStyle()
-    .setBackgroundColor(colors.DARK_GRAY_BACKGROUND)
-    .setDisplay("|");
+  private s: ComponentStyle = new ComponentStyle();
 
-  styles(): ComponentStyles {
+  styles(): ComponentStyle {
     return this.s;
   }
 
-  setStyles(sty: Partial<ComponentStyles>): this {
+  setStyles(sty: Partial<ComponentStyle>): this {
     this.s = ComponentStyle.Create()
       .setBackgroundColor(sty.backgroundColor?.() ?? this.s.backgroundColor())
       .setColor(sty.color?.() ?? this.s.color())

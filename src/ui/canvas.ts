@@ -1,8 +1,9 @@
+import { assert } from "node:console";
 import colors from "./colors.js";
 import { ComponentBorder } from "./components/border.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 
-const DEFAULT_STYLE: ComponentStyles = ComponentStyle.Create()
+const DEFAULT_STYLE: ComponentStyle = ComponentStyle.Create()
   .setBackgroundColor(colors.BACKGROUND_OFF)
   .setColor(colors.FOREGROUND_OFF)
   .setDisplay(" ");
@@ -53,7 +54,7 @@ export class Canvas {
     return {
       x: x,
       y: y,
-      styles: ComponentStyle.Create(),
+      styles: DEFAULT_STYLE,
     };
   }
   private resetCanvas() {
@@ -129,13 +130,16 @@ export class Canvas {
     );
     console.log(colors.BACKGROUND_OFF);
   }
-  setCell(x: number, y: number, style: ComponentStyles) {
+  setCell(x: number, y: number, style: ComponentStyle) {
     this.canvas[y][x].styles = style;
   }
 
-  fillRect(bounds: LayoutBounds, style: ComponentStyles | null) {
-    for (let y = bounds.y; y < bounds.y + bounds.height; y++) {
-      for (let x = bounds.x; x < bounds.x + bounds.width; x++) {
+  fillRect(bounds: LayoutBounds, style: ComponentStyle | null) {
+    const height = Math.round(bounds.y + bounds.height);
+    const width = Math.round(bounds.x + bounds.width);
+
+    for (let y = Math.round(bounds.y); y < height; y++) {
+      for (let x = Math.round(bounds.x); x < width; x++) {
         const cell = this.getCell(x, y);
         if (!cell) {
           continue;
@@ -195,13 +199,13 @@ export class Canvas {
   drawText(
     bounds: LayoutBounds,
     text: string,
-    style: ComponentStyles | null | undefined,
+    style: ComponentStyle | null | undefined,
   ): void;
 
   drawText(
     bounds: LayoutBounds,
     text: string,
-    style?: ComponentStyles | null,
+    style?: ComponentStyle | null,
   ): void {
     if (!text) {
       return;
@@ -211,7 +215,7 @@ export class Canvas {
 
     for (let lineOffset = 0; lineOffset < lines.length; lineOffset++) {
       const line = expandTabs(lines[lineOffset], this.tab_width);
-      const y = bounds.y + lineOffset;
+      const y = Math.round(bounds.y + lineOffset);
 
       // Outside the drawing area vertically.
       if (y >= bounds.y + bounds.height) {
@@ -219,7 +223,7 @@ export class Canvas {
       }
 
       for (let i = 0; i < line.length; i++) {
-        const x = bounds.x + i;
+        const x = Math.round(bounds.x + i);
 
         // Outside the drawing area horizontally.
         if (x >= bounds.x + bounds.width) {
@@ -244,50 +248,75 @@ export class Canvas {
   }
 
   paintBorder(cl: LayoutBounds, border: ComponentBorder) {
-    if (border.top() > 0) {
-      this.fillRect(
-        {
-          x: cl.x,
-          height: border.top(),
-          width: cl.width,
-          y: cl.y - border.top(),
-        },
-        border.styles(),
-      );
-    }
-    if (border.bottom() > 0) {
-      this.fillRect(
-        {
-          x: cl.x,
-          height: border.bottom(),
-          width: cl.width,
-          y: cl.y + cl.height,
-        },
-        border.styles(),
-      );
-    }
+    const bound: LayoutBounds = {
+      height: 0,
+      width: 0,
+      x: 0,
+      y: 0,
+    };
+    const out = border.styles().display();
+
     if (border.left() > 0) {
-      this.fillRect(
-        {
-          x: cl.x - border.left(),
-          height: cl.height + border.top() + border.bottom(),
-          width: border.left(),
-          y: cl.y - border.top(),
-        },
-        border.styles(),
-      );
+      bound.x = cl.x - border.left();
+      bound.height = cl.height + border.top() + border.bottom();
+      bound.width = border.left();
+      bound.y = cl.y - border.top();
+
+      border.styles().setDisplay(border.borderStyle().left);
+      this.fillRect(bound, border.styles());
+      border.styles().setDisplay(out);
     }
 
     if (border.right() > 0) {
-      this.fillRect(
-        {
-          x: cl.x + cl.width,
-          height: cl.height + border.top() + border.bottom(),
-          width: border.right(),
-          y: cl.y - border.top(),
-        },
-        border.styles(),
-      );
+      bound.x = cl.x + cl.width;
+      bound.height = cl.height + border.top() + border.bottom();
+      bound.width = border.right();
+      bound.y = cl.y - border.top();
+      border.styles().setDisplay(border.borderStyle().right);
+      this.fillRect(bound, border.styles());
+      border.styles().setDisplay(out);
+    }
+
+    if (border.top() > 0) {
+      let width = cl.width + border.left() + border.right();
+
+      let text = border.borderStyle().top.repeat(width);
+
+      if (border.left() > 0 && border.right() > 0) {
+        text =
+          border.borderStyle().top_left +
+          text.slice(1, -1) +
+          border.borderStyle().top_right;
+      }
+
+      bound.x = cl.x - border.left();
+      bound.height = border.top();
+      bound.width = width;
+      bound.y = cl.y - border.top();
+
+      this.fillRect(bound, border.styles());
+      this.drawText(bound, text, border.styles());
+    }
+
+    if (border.bottom() > 0) {
+      let width = cl.width + border.left() + border.right();
+
+      let text = border.borderStyle().bottom.repeat(width);
+
+      if (border.left() > 0 && border.right() > 0) {
+        text =
+          border.borderStyle().bottom_left +
+          text.slice(1, -1) +
+          border.borderStyle().bottom_right;
+      }
+
+      bound.x = cl.x - border.left();
+      bound.width = width;
+      bound.y = cl.y + cl.height;
+      bound.height = border.bottom();
+
+      this.fillRect(bound, border.styles());
+      this.drawText(bound, text, border.styles());
     }
   }
 }

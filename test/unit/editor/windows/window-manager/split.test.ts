@@ -1,15 +1,15 @@
 import { describe, it, expect, assert } from "vitest";
-import { Textdocument, MemoryFile } from "../../Documents/TextDocument.js";
-import { TextEditorWindow } from "../TextEditorWindow.js";
-import { Canvas } from "../../../ui/canvas.js";
-import { LayoutEngine } from "../../../ui/layout/layout.js";
-import { Renderer } from "../../../ui/renderer.js";
-import colors from "../../../ui/colors.js";
-import { WindowManager } from "./WindowManager.js";
-import { EditorRoot } from "../../Editor/EditorRoot.js";
-import { EditorWindow } from "../EditorWindow.js";
-import { isEditorWindow } from "../../../utils.js";
-import { FileTreeWindow } from "../FileTreeWindow.js";
+import { Textdocument, MemoryFile } from "../../../../../src/Editor/Documents/TextDocument.js";
+import { TextEditorWindow } from "../../../../../src/Editor/windows/TextEditorWindow.js";
+import { Canvas } from "../../../../../src/ui/canvas.js";
+import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
+import { Renderer } from "../../../../../src/ui/renderer.js";
+import colors from "../../../../../src/ui/colors.js";
+import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
+import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
+import { EditorWindow } from "../../../../../src/Editor/windows/EditorWindow.js";
+import { isEditorWindow } from "../../../../../src/utils.js";
+import { FileTreeWindow } from "../../../../../src/Editor/windows/FileTreeWindow.js";
 
 describe("tests the window manager split capabilities", () => {
   it("focus the correct window at the correct time", () => {
@@ -128,6 +128,8 @@ describe("tests the window manager split capabilities", () => {
         ?.styles.backgroundColor(),
     ).eq(colors.BRIGHT_BLUE_BACKGROUND);
 
+    cnv.renderBoard();
+
     const yellowWindow = new EditorWindow();
     yellowWindow.window
       .styles()
@@ -137,6 +139,8 @@ describe("tests the window manager split capabilities", () => {
 
     LayoutEngine.Measure(manager.root, constraints).Arrange(root);
     Renderer.Create().build(manager.root, cnv);
+
+    cnv.renderBoard();
 
     expect(root.children().length == 1, "did not replace correctly");
     expect(

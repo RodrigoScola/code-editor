@@ -1,16 +1,16 @@
-import colors from "../colors.js";
+import colors from "../../../../src/ui/colors.js";
 import { describe, it, expect } from "vitest";
-import { Canvas } from "../canvas.js";
-import { DisplayComponent } from "./components.js";
-import { LayoutEngine } from "../layout/layout.js";
-import { assert } from "../../assert.js";
-import { Renderer } from "../renderer.js";
-import { TextEditorWindow } from "../../Editor/windows/TextEditorWindow.js";
+import { Canvas } from "../../../../src/ui/canvas.js";
+import { DisplayComponent } from "../../../../src/ui/components/components.js";
+import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
+import { assert } from "../../../../src/assert.js";
+import { Renderer } from "../../../../src/ui/renderer.js";
+import { TextEditorWindow } from "../../../../src/Editor/windows/TextEditorWindow.js";
 import {
   MemoryFile,
   Textdocument,
-} from "../../Editor/Documents/TextDocument.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+} from "../../../../src/Editor/Documents/TextDocument.js";
+import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {

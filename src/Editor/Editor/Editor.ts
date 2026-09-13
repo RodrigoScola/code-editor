@@ -14,6 +14,7 @@ import { EditorWindow } from "../windows/EditorWindow.js";
 import { StatusWindow } from "../windows/StatusEditor.js";
 import { TextEditorWindow } from "../windows/TextEditorWindow.js";
 import { EditorRoot } from "./EditorRoot.js";
+import { memory } from "../../utils.js";
 
 export class EditorContext {
   layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
@@ -109,11 +110,22 @@ export class EditorContext {
   render() {
     assert(this.rootWindow, "cannot render anything without a root window");
 
+    //memory("before measure");
     LayoutEngine.Measure(this.rootWindow, this.rootWindow.layoutConstraints);
-    LayoutEngine.Arrange(this.rootWindow);
+    //memory("after measure");
 
+    //memory("before arrange");
+    LayoutEngine.Arrange(this.rootWindow);
+    //memory("after arrange");
+
+    //memory("before building");
     this.renderer.build(this.rootWindow, this.canvas);
-    return this.renderer.render(this.canvas);
+    //memory("after building");
+    //memory("before render");
+
+    const render = this.renderer.render(this.canvas);
+    //memory("after render");
+    return render;
   }
   executeCommand() {}
   addWindow(window: EditorWindow) {

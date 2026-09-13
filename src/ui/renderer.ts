@@ -4,7 +4,6 @@ import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 import { DisplayComponent } from "./components/components.js";
 import { ComponentStyle } from "./ComponentStyles.js";
-import { LayoutEngine } from "./layout/layout.js";
 
 export class Renderer {
   static Create() {
@@ -16,58 +15,86 @@ export class Renderer {
     return canvas;
   }
   getComponents(root: DisplayComponent) {
-    if (!root.visible()) {
-      return [];
-    }
-    const components = [root];
+    const components: DisplayComponent[] = [];
 
-    for (const child of root.children()) {
-      components.push(...this.getComponents(child));
-    }
+    const visit = (comp: DisplayComponent) => {
+      if (!comp.visible()) {
+        return;
+      }
+      components.push(comp);
+
+      for (const child of comp.children()) {
+        visit(child);
+      }
+    };
+
+    visit(root);
+
     return components;
   }
 
-  style: ComponentStyles = ComponentStyle.Create()
+  style: ComponentStyle = ComponentStyle.Create()
     .setBackgroundColor(colors.BACKGROUND_OFF)
     .setColor(colors.FOREGROUND_OFF);
 
   private paint(root: DisplayComponent, canvas: Canvas) {
     const components = this.getComponents(root);
 
-    components.sort(
-      (a, b) =>
+    components.sort((a, b) => {
+      if (this.isAncestor(a, b)) {
+        return -1;
+      }
+
+      if (this.isAncestor(b, a)) {
+        return 1;
+      }
+
+      return (
         a.index() - b.index() ||
-        POSITION_ORDER[a.positionMode()] - POSITION_ORDER[b.positionMode()],
-    );
+        POSITION_ORDER[a.positionMode()] - POSITION_ORDER[b.positionMode()]
+      );
+    });
+    let defaultBlend = ComponentStyle.Create();
 
     for (const component of components) {
       assert(component.visible(), "component should not be visible");
-      canvas.fillRect(
-        component.contentLayout(),
-        ComponentStyle.Blend(component.styles(), component.parent()?.styles()),
-      );
+      defaultBlend.blend(component.styles(), component.parent()?.styles());
+
+      canvas.fillRect(component.layout(), defaultBlend);
+
+      defaultBlend.reset();
 
       const border = component.border();
 
-      const cl = component.contentLayout();
+      const cl = component.paddingLayout();
 
+      border.styles().setBackgroundColor(component.styles().backgroundColor());
       canvas.paintBorder(cl, border);
 
       const txt = component.text();
       if (txt) {
-        canvas.drawText(
-          component.contentLayout(),
-          txt,
-          ComponentStyle.Blend(
-            component.styles(),
-            component.parent()?.styles(),
-          ),
-        );
+        defaultBlend.blend(component.styles(), component.parent()?.styles());
+        canvas.drawText(component.contentLayout(), txt, defaultBlend);
+        defaultBlend.reset();
       }
 
       component.onPrePaint(canvas);
       component.paint(canvas);
     }
+  }
+
+  private isAncestor(ancestor: DisplayComponent, component: DisplayComponent) {
+    let parent = component.parent();
+
+    while (parent) {
+      if (parent === ancestor) {
+        return true;
+      }
+
+      parent = parent.parent();
+    }
+
+    return false;
   }
 
   render(canvas: Canvas) {

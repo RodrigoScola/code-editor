@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { TabComponent, TabWindow } from "./TabWindow.js";
-import { DisplayComponent } from "../../../ui/components/components.js";
-import { Canvas } from "../../../ui/canvas.js";
-import { LayoutEngine } from "../../../ui/layout/layout.js";
-import { Renderer } from "../../../ui/renderer.js";
-import colors from "../../../ui/colors.js";
-import { EditorRoot } from "../../Editor/EditorRoot.js";
+import { TabComponent, TabWindow } from "../../../../../src/Editor/windows/Tab/TabWindow.js";
+import { DisplayComponent } from "../../../../../src/ui/components/components.js";
+import { Canvas } from "../../../../../src/ui/canvas.js";
+import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
+import { Renderer } from "../../../../../src/ui/renderer.js";
+import colors from "../../../../../src/ui/colors.js";
+import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
 
 describe("tests the tab component", () => {
   it("creates and shows tabs", () => {

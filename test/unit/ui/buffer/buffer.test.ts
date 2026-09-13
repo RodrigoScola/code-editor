@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { TextEditorWindow } from "../../Editor/windows/TextEditorWindow.js";
-import { LayoutEngine } from "../layout/layout.js";
-import { Canvas } from "../canvas.js";
-import { Renderer } from "../renderer.js";
+import { TextEditorWindow } from "../../../../src/Editor/windows/TextEditorWindow.js";
+import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
+import { Canvas } from "../../../../src/ui/canvas.js";
+import { Renderer } from "../../../../src/ui/renderer.js";
 import {
   MemoryFile,
   Textdocument,
-} from "../../Editor/Documents/TextDocument.js";
+} from "../../../../src/Editor/Documents/TextDocument.js";
 
 describe("tests the buffer and rendering", () => {
   it("creates a buffer and renders the tab correctly", () => {

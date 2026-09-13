@@ -1,7 +1,59 @@
-import { DisplayComponent } from "../components/components.js";
+import { DisplayComponent, parseSize } from "../components/components.js";
 import { LayoutEngine } from "./layout.js";
 
 export class LayoutDimensions {
+  static horizontalExtras(component: DisplayComponent) {
+    const padding = component.padding();
+    const border = component.border();
+
+    return padding.left + padding.right + border.left() + border.right();
+  }
+
+  static verticalExtras(component: DisplayComponent) {
+    const padding = component.padding();
+    const border = component.border();
+
+    return padding.top + padding.bottom + border.top() + border.bottom();
+  }
+
+  static outerWidth(component: DisplayComponent, contentWidth: number) {
+    return contentWidth + this.horizontalExtras(component);
+  }
+
+  static outerHeight(component: DisplayComponent, contentHeight: number) {
+    return contentHeight + this.verticalExtras(component);
+  }
+
+  static maxOuterWidth(component: DisplayComponent) {
+    const maxWidth = component.maxWidth();
+
+    return maxWidth === null ? null : this.outerWidth(component, maxWidth);
+  }
+
+  static maxOuterHeight(component: DisplayComponent) {
+    const maxHeight = component.maxHeight();
+
+    return maxHeight === null ? null : this.outerHeight(component, maxHeight);
+  }
+  static requestedOuterWidth(
+    component: DisplayComponent,
+    availableWidth: number,
+  ) {
+    const contentWidth = parseSize(component.width(), availableWidth);
+    return contentWidth === null
+      ? null
+      : this.outerWidth(component, contentWidth);
+  }
+  static requestedOuterHeight(
+    component: DisplayComponent,
+    availableHeight: number,
+  ) {
+    const contentHeight = parseSize(component.height(), availableHeight);
+    return contentHeight === null
+      ? null
+      : this.outerHeight(component, contentHeight);
+  }
+
   /**
    * Apply maxWidth/maxHeight belonging to this component.
    */
@@ -14,14 +66,14 @@ export class LayoutDimensions {
       maxWidth:
         component.maxWidth() === null
           ? constraints.maxWidth
-          : Math.min(constraints.maxWidth, component.maxWidth()!),
+          : Math.min(constraints.maxWidth, this.maxOuterWidth(component)!),
 
       minHeight: constraints.minHeight,
 
       maxHeight:
         component.maxHeight() === null
           ? constraints.maxHeight
-          : Math.min(constraints.maxHeight, component.maxHeight()!),
+          : Math.min(constraints.maxHeight, this.maxOuterHeight(component)!),
     };
   }
 
@@ -105,19 +157,21 @@ export class LayoutDimensions {
     let width = bounds.width;
     let height = bounds.height;
 
-    if (component.maxWidth() !== null) {
-      width = Math.min(width, component.maxWidth()!);
+    const maxWidth = this.maxOuterWidth(component);
+    if (maxWidth !== null) {
+      width = Math.min(width, maxWidth);
     }
 
-    if (component.maxHeight() !== null) {
-      height = Math.min(height, component.maxHeight()!);
+    const maxHeight = this.maxOuterHeight(component);
+    if (maxHeight !== null) {
+      height = Math.min(height, maxHeight);
     }
 
     return {
-      x: bounds.x,
-      y: bounds.y,
-      width: Math.max(0, width),
-      height: Math.max(0, height),
+      x: Math.floor(bounds.x),
+      y: Math.floor(bounds.y),
+      width: Math.floor(Math.max(0, width)),
+      height: Math.floor(Math.max(0, height)),
     };
   }
 }

@@ -11,11 +11,66 @@ export const POSITION_ORDER: Record<PositionMode, number> = {
   fixed: 2,
 };
 
+const heavy_border: BorderDisplay = {
+  top_right: "┓",
+  top_left: "┏",
+  bottom_right: "┛",
+  bottom_left: "┗",
+  left: "┃",
+  right: "┃",
+  top: "━",
+  bottom: "━",
+};
+
+const light_border: BorderDisplay = {
+  top_right: "┐",
+  top_left: "┌",
+  bottom_right: "┘",
+  bottom_left: "└",
+  left: "│",
+  right: "│",
+  top: "─",
+  bottom: "─",
+};
+const double_border: BorderDisplay = {
+  top_right: "╗",
+  top_left: "╔",
+  bottom_right: "╝",
+  bottom_left: "╚",
+  left: "║",
+  right: "║",
+  top: "═",
+  bottom: "═",
+};
+const round_border: BorderDisplay = {
+  top_right: "╮",
+  top_left: "╭",
+  bottom_right: "╯",
+  bottom_left: "╰",
+  left: "│",
+  right: "│",
+  top: "─",
+  bottom: "─",
+};
+
+const full_border: BorderDisplay = {
+  top_right: "█",
+  top_left: "█",
+  bottom_right: "█",
+  bottom_left: "█",
+  left: "█",
+  right: "█",
+  top: "▀",
+  bottom: "▄",
+};
+
 export const ICONS = {
   borders: {
-    dotted: {
-      
-    }
+    heavy: heavy_border,
+    light: light_border,
+    double: double_border,
+    round: round_border,
+    full: full_border,
   },
   arrow: {
     left: "←",

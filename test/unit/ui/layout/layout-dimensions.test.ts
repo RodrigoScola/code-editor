@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { DisplayComponent } from "../components/components.js";
-import { LayoutEngine } from "./layout.js";
-import { Renderer } from "../renderer.js";
-import { Canvas } from "../canvas.js";
-import colors from "../colors.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import { DisplayComponent } from "../../../../src/ui/components/components.js";
+import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
+import { Renderer } from "../../../../src/ui/renderer.js";
+import { Canvas } from "../../../../src/ui/canvas.js";
+import colors from "../../../../src/ui/colors.js";
+import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 
 describe("tests the layout calculation on absolute", () => {
   it("doesnt need layout property if height and width is set", () => {

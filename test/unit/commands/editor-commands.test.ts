@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { EditorContext } from "../Editor/Editor/Editor.js";
-import { Textdocument, MemoryFile } from "../Editor/Documents/TextDocument.js";
-import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";
-import { DisplayComponent } from "../ui/components/components.js";
-import { WINDOW_NAMES } from "../constants.js";
-import { textEditorCommands } from "./editorCommands.js";
-import { EditorRoot } from "../Editor/Editor/EditorRoot.js";
+import { EditorContext } from "../../../src/Editor/Editor/Editor.js";
+import { Textdocument, MemoryFile } from "../../../src/Editor/Documents/TextDocument.js";
+import { TextEditorWindow } from "../../../src/Editor/windows/TextEditorWindow.js";
+import { DisplayComponent } from "../../../src/ui/components/components.js";
+import { WINDOW_NAMES } from "../../../src/constants.js";
+import { textEditorCommands } from "../../../src/Commands/editorCommands.js";
+import { EditorRoot } from "../../../src/Editor/Editor/EditorRoot.js";
 
 describe("textEditorCommands", () => {
   it("moves to the start of the next word", () => {

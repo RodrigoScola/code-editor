@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { DisplayComponent } from "../components/components.js";
-import { LayoutEngine } from "./layout.js";
-import { Renderer } from "../renderer.js";
-import { Canvas } from "../canvas.js";
-import colors from "../colors.js";
-import { assert } from "../../assert.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import { DisplayComponent } from "../../../../src/ui/components/components.js";
+import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
+import { Renderer } from "../../../../src/ui/renderer.js";
+import { Canvas } from "../../../../src/ui/canvas.js";
+import colors from "../../../../src/ui/colors.js";
+import { assert } from "../../../../src/assert.js";
+import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 
 describe("LayoutEngine measurement", () => {
   it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {
@@ -72,7 +72,7 @@ describe("LayoutEngine measurement", () => {
 
   it("tests the padding on the component", () => {
     const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 10;
+    layout.height = layout.width = 20;
 
     const root = new DisplayComponent().setLayout(layout);
 
@@ -82,7 +82,7 @@ describe("LayoutEngine measurement", () => {
       .setStyles(
         ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
       )
-      .setPadding({ left: 1, right: 1, top: 1, bottom: 1 });
+      .setPadding({ left: 3, right: 1, top: 1, bottom: 1 });
 
     const child = new DisplayComponent().setHeight("100%").setWidth("100%");
 
@@ -101,6 +101,89 @@ describe("LayoutEngine measurement", () => {
     Renderer.Create().build(root, cnv);
 
     cnv.renderBoard();
+  });
+
+  it("uses content-box sizing for explicit dimensions", () => {
+    const root = new DisplayComponent().setLayout(
+      LayoutEngine.CreateBounds(20),
+    );
+    const child = new DisplayComponent()
+      .setWidth(5)
+      .setHeight(4)
+      .setPadding({ left: 2, right: 1, top: 1, bottom: 2 });
+
+    root.addChildren(child);
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(20)).Arrange(
+      root,
+    );
+
+    expect(child.layout()).toEqual({
+      x: 0,
+      y: 0,
+      width: 8,
+      height: 7,
+    });
+    expect(child.contentLayout()).toEqual({
+      x: 2,
+      y: 1,
+      width: 5,
+      height: 4,
+    });
+  });
+
+  it("keeps root padding outside normal-flow children", () => {
+    const root = new DisplayComponent()
+      .setLayout(LayoutEngine.CreateBounds(10))
+      .setPadding({ left: 2, right: 1, top: 1, bottom: 2 });
+    const child = new DisplayComponent();
+
+    root.addChildren(child);
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(10)).Arrange(
+      root,
+    );
+
+    expect(child.layout()).toEqual({
+      x: 2,
+      y: 1,
+      width: 7,
+      height: 7,
+    });
+  });
+
+  it("keeps margins outside an explicit child box", () => {
+    const root = new DisplayComponent()
+      .setLayout(LayoutEngine.CreateBounds(20))
+      .setDirection("horizontal");
+    const first = new DisplayComponent()
+      .setWidth(4)
+      .setMargin({ left: 1, right: 2, top: 0, bottom: 0 });
+    const second = new DisplayComponent();
+
+    root.addChildren(first).addChildren(second);
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(20)).Arrange(
+      root,
+    );
+
+    expect(first.layout().x).toBe(1);
+    expect(first.layout().width).toBe(4);
+    expect(second.layout().x).toBe(7);
+  });
+
+  it("uses content-box max dimensions", () => {
+    const root = new DisplayComponent().setLayout(
+      LayoutEngine.CreateBounds(20),
+    );
+    const child = new DisplayComponent()
+      .setMaxWidth(5)
+      .setPadding({ left: 2, right: 1, top: 0, bottom: 0 });
+
+    root.addChildren(child);
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(20)).Arrange(
+      root,
+    );
+
+    expect(child.layout().width).toBe(8);
+    expect(child.contentLayout().width).toBe(5);
   });
 
   it("absolute and padding doesnt take up all of the screen", () => {

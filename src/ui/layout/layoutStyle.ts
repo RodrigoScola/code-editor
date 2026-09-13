@@ -1,5 +1,3 @@
-
-
 export interface Insets {
   top: number;
   right: number;
@@ -17,6 +15,8 @@ export class LayoutStyle {
 
   private _startY: Size = "auto";
   private _start: Size = "auto";
+
+  private _display: DisplayTypes = "flex";
 
   private _maxWidth: number | null = null;
   private _maxHeight: number | null = null;
@@ -141,6 +141,13 @@ export class LayoutStyle {
 
   setLayout(layout: LayoutBounds): this {
     this.l = layout;
+    return this;
+  }
+  display() {
+    return this._display;
+  }
+  setDisplay(dp: DisplayTypes) {
+    this._display = dp;
     return this;
   }
 }

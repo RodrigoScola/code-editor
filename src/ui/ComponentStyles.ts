@@ -1,6 +1,7 @@
+import { assert } from "vitest";
 import colors from "./colors.js";
 
-export class ComponentStyle implements ComponentStyles {
+export class ComponentStyle {
   private bg: string = colors.BACKGROUND_OFF;
   private cl: string = colors.FOREGROUND_OFF;
   private bld: boolean = false;
@@ -14,18 +15,33 @@ export class ComponentStyle implements ComponentStyles {
   private blk: boolean = false;
   private hdn: boolean = false;
 
+  reset() {
+    this.bg = colors.BACKGROUND_OFF;
+    this.cl = colors.FOREGROUND_OFF;
+    this.bld = false;
+    this.dsp = " ";
+    this.dm = false;
+    this.itc = false;
+    this.und = false;
+    this.stk = false;
+    this.inv = false;
+    this.blk = false;
+    this.hdn = false;
+    return this;
+  }
+
   public isBold(): boolean {
     return this.bld;
   }
   display() {
     return this.dsp;
   }
-  setDisplay(nval: string): ComponentStyles {
+  setDisplay(nval: string): ComponentStyle {
     this.dsp = nval;
     return this;
   }
 
-  public setBold(nval: boolean): ComponentStyles {
+  public setBold(nval: boolean): ComponentStyle {
     this.bld = nval;
     return this;
   }
@@ -104,42 +120,57 @@ export class ComponentStyle implements ComponentStyles {
   public static Create() {
     return new ComponentStyle();
   }
-  public static Blend(
-    first: ComponentStyles | undefined | null,
-    parent: ComponentStyles | null | undefined,
+
+  blend(
+    first: ComponentStyle | undefined | null,
+    parent: ComponentStyle | null | undefined,
   ) {
-    const st = ComponentStyle.Create();
+    this.reset();
 
     const firstBackground = first?.backgroundColor() ?? colors.BACKGROUND_OFF;
+
     const firstForeground = first?.color() ?? colors.FOREGROUND_OFF;
-    const mergeFlag = (child?: boolean, inherited?: boolean) =>
-      (child ?? false) || (inherited ?? false);
+
     const firstDisplay = first?.display() ?? " ";
 
-    st.setDisplay(
+    this.setDisplay(
       firstDisplay === " " ? (parent?.display() ?? firstDisplay) : firstDisplay,
     );
-    st.setBackgroundColor(
+
+    this.setBackgroundColor(
       firstBackground === colors.BACKGROUND_OFF
         ? (parent?.backgroundColor() ?? firstBackground)
         : firstBackground,
-    )
-      .setColor(
-        firstForeground === colors.FOREGROUND_OFF
-          ? (parent?.color() ?? firstForeground)
-          : firstForeground,
-      )
-      .setBold(mergeFlag(first?.isBold(), parent?.isBold()))
-      .setDim(mergeFlag(first?.isDim(), parent?.isDim()))
-      .setItalic(mergeFlag(first?.isItalic(), parent?.isItalic()))
-      .setUnderline(mergeFlag(first?.isUnderline(), parent?.isUnderline()))
-      .setStrikeThrough(
-        mergeFlag(first?.isStrikeThrough(), parent?.isStrikeThrough()),
-      )
-      .setInverse(mergeFlag(first?.isInverse(), parent?.isInverse()))
-      .setBlink(mergeFlag(first?.isBlink(), parent?.isBlink()))
-      .setHidden(mergeFlag(first?.isHidden(), parent?.isHidden()));
+    ).setColor(
+      firstForeground === colors.FOREGROUND_OFF
+        ? (parent?.color() ?? firstForeground)
+        : firstForeground,
+    );
 
-    return st;
+    this.setBold((first?.isBold() ?? false) || (parent?.isBold() ?? false))
+      .setDim((first?.isDim() ?? false) || (parent?.isDim() ?? false))
+      .setItalic((first?.isItalic() ?? false) || (parent?.isItalic() ?? false))
+      .setUnderline(
+        (first?.isUnderline() ?? false) || (parent?.isUnderline() ?? false),
+      )
+      .setStrikeThrough(
+        (first?.isStrikeThrough() ?? false) ||
+          (parent?.isStrikeThrough() ?? false),
+      )
+      .setInverse(
+        (first?.isInverse() ?? false) || (parent?.isInverse() ?? false),
+      )
+      .setBlink((first?.isBlink() ?? false) || (parent?.isBlink() ?? false))
+      .setHidden((first?.isHidden() ?? false) || (parent?.isHidden() ?? false));
+
+    return this;
+  }
+
+  public static Blend(
+    first: ComponentStyle | undefined | null,
+    parent: ComponentStyle | null | undefined,
+    defaulted?: ComponentStyle,
+  ) {
+    return (defaulted ?? this.Create()).blend(first, parent);
   }
 }

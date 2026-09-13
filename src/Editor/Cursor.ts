@@ -13,7 +13,7 @@ export class Cursor {
   prefferedColumn: number = 0;
   line: number = 0;
   column: number = 0;
-  style: ComponentStyles = ComponentStyle.Create()
+  style: ComponentStyle = ComponentStyle.Create()
     .setBackgroundColor(colors.RED_BACKGROUND)
     .setColor(colors.BRIGHT_WHITE_FOREGROUND);
   selection: EditorSelection | null = null;

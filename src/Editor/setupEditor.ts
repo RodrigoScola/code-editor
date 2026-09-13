@@ -19,10 +19,12 @@ function setupGit(editor: EditorContext) {
   const commit = new GitCommitWindow();
 
   commit.window
-    .setVisible(false)
     .setIndex(5)
     .setPositionMode("absolute")
+    .setName(WINDOW_NAMES.GIT_WINDOW)
     .setMargin({ bottom: 2, left: 2, right: 2, top: 2 });
+
+  commit.window.setDisplay("none");
 
   const text = editor.findWindow(TextEditorWindow);
   assert(text, "text should be first");
@@ -91,7 +93,7 @@ function setupTextEditor(editor: EditorContext) {
   editor.addWindow(editorWindow);
 
   editorWindow.window.setStyles(
-    ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+    ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLACK_BACKGROUND),
   );
 
   editorWindow.viewport.visibleLines =
@@ -206,14 +208,14 @@ function setupNormalModeCommands(editor: EditorContext) {
     textEditorCommands.textEditor.goToDocumentStart,
   );
   editor.normalMode.bind(["<C-p>"], (ctx) => {
-    const window = ctx.findWindow(ListMenuWindow);
-    assert(window);
-    if (window.focused()) {
-      ctx.unfocus(window);
-      window.setVisible(false);
+    const editor = ctx.findWindow(ListMenuWindow);
+    assert(editor);
+    if (editor.focused()) {
+      ctx.unfocus(editor);
+      editor.setVisible(false);
     } else {
-      window.setVisible(true);
-      ctx.focus(window);
+      editor.setVisible(true);
+      ctx.focus(editor);
     }
   });
   editor.normalMode

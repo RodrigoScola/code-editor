@@ -6,7 +6,7 @@ export class EditorSelection {
   private _anchor: Point = { x: 0, y: 0 };
   private _head: Point = { x: 0, y: 0 };
 
-  styles: ComponentStyles = ComponentStyle.Create().setBackgroundColor(
+  styles: ComponentStyle = ComponentStyle.Create().setBackgroundColor(
     colors.ORANGE_BACKGROUND,
   );
 

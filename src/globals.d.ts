@@ -1,4 +1,5 @@
 type EditorEvents = EditorModeEvent | SubmitCommandEvent;
+type DisplayTypes = "flex" | "none";
 
 type DisplayDirection = "vertical" | "horizontal";
 type Directions = "left" | "right" | "up" | "down";
@@ -45,7 +46,7 @@ type EditingModes = "normal" | "visual" | "insert" | "command";
 interface DisplayTile {
   x: number;
   y: number;
-  styles: ComponentStyles;
+  styles: ComponentStyle;
 }
 interface LayoutBounds {
   x: number;
@@ -78,30 +79,6 @@ interface BufferLike {
   count(): number;
 }
 
-interface ComponentStyles {
-  display(): string;
-  setDisplay: (nval: string) => ComponentStyles;
-  backgroundColor: () => string;
-  setBackgroundColor: (nval: string) => ComponentStyles;
-  color: () => string;
-  setColor: (nval: string) => ComponentStyles;
-  isBold: () => boolean;
-  setBold: (nval: boolean) => ComponentStyles;
-  isDim: () => boolean;
-  setDim: (nval: boolean) => ComponentStyles;
-  isItalic: () => boolean;
-  setItalic: (nval: boolean) => ComponentStyles;
-  isUnderline: () => boolean;
-  setUnderline: (nval: boolean) => ComponentStyles;
-  isStrikeThrough: () => boolean;
-  setStrikeThrough: (nval: boolean) => ComponentStyles;
-  isInverse: () => boolean;
-  setInverse: (nval: boolean) => ComponentStyles;
-  isBlink: () => boolean;
-  setBlink: (nval: boolean) => ComponentStyles;
-  isHidden: () => boolean;
-  setHidden: (nval: boolean) => ComponentStyles;
-}
 interface ViewPorts {
   firstLine: number;
   firstColumn: number;
@@ -111,3 +88,14 @@ interface ViewPorts {
   ensureVisible(width: number, height: number): void;
   screenToBuffer(screenPosition: Point): Point;
 }
+
+type BorderDisplay = {
+  top_right: string;
+  top_left: string;
+  bottom_left: string;
+  bottom_right: string;
+  left: string;
+  right: string;
+  top: string;
+  bottom: string;
+};

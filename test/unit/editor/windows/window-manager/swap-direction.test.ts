@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { Canvas } from "../../../ui/canvas.js";
-import colors from "../../../ui/colors.js";
-import { DisplayComponent } from "../../../ui/components/components.js";
-import { LayoutEngine } from "../../../ui/layout/layout.js";
-import { Renderer } from "../../../ui/renderer.js";
-import { EditorRoot } from "../../Editor/EditorRoot.js";
-import { WindowManager } from "./WindowManager.js";
-import { TextEditorWindow } from "../TextEditorWindow.js";
-import { Textdocument, MemoryFile } from "../../Documents/TextDocument.js";
+import { Canvas } from "../../../../../src/ui/canvas.js";
+import colors from "../../../../../src/ui/colors.js";
+import { DisplayComponent } from "../../../../../src/ui/components/components.js";
+import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
+import { Renderer } from "../../../../../src/ui/renderer.js";
+import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
+import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
+import { TextEditorWindow } from "../../../../../src/Editor/windows/TextEditorWindow.js";
+import { Textdocument, MemoryFile } from "../../../../../src/Editor/Documents/TextDocument.js";
 
 const createTextWindow = (text: string) =>
   new TextEditorWindow(new Textdocument(new MemoryFile("out", text)));

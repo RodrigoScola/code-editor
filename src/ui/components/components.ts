@@ -1,5 +1,4 @@
 import { assert } from "../../assert.js";
-import { InsertMode } from "../../Commands/Commands.js";
 
 import { Canvas } from "../canvas.js";
 import colors from "../colors.js";
@@ -25,6 +24,8 @@ export class DisplayComponent {
 
   private nm: string | null | undefined;
 
+  private _dirty: boolean = true;
+
   private _focusable = false;
   private _text: string | undefined;
 
@@ -36,7 +37,7 @@ export class DisplayComponent {
   private childs: DisplayComponent[] = [];
   private pr: DisplayComponent | null = null;
 
-  private s: ComponentStyles;
+  private s: ComponentStyle;
 
   private _border: ComponentBorder = new ComponentBorder();
 
@@ -63,6 +64,7 @@ export class DisplayComponent {
 
   setBorder(b: ComponentBorder): this {
     this._border = b;
+    this.setDirty(true);
     return this;
   }
 
@@ -127,6 +129,19 @@ export class DisplayComponent {
     };
   }
 
+  /** The containing block used by absolutely positioned descendants. */
+  paddingLayout(): LayoutBounds {
+    const layout = this.layout();
+    const border = this.border();
+
+    return {
+      x: layout.x + border.left(),
+      y: layout.y + border.top(),
+      width: Math.max(0, layout.width - border.left() - border.right()),
+      height: Math.max(0, layout.height - border.top() - border.bottom()),
+    };
+  }
+
   // ---------------------------------------------------------------------------
   // Tree
   // ---------------------------------------------------------------------------
@@ -155,11 +170,14 @@ export class DisplayComponent {
       this.childs.push(children.setParent(this));
     }
 
+    this.setDirty(true);
+
     return this;
   }
 
   addChildAt(child: DisplayComponent, index: number): this {
     this.childs.splice(index, 0, child.setParent(this));
+    this.setDirty(true);
     return this;
   }
 
@@ -167,6 +185,8 @@ export class DisplayComponent {
     this.childs = this.childs.filter((current) => current !== child);
 
     child.setParent(null);
+
+    this.setDirty(true);
 
     return this;
   }
@@ -195,11 +215,11 @@ export class DisplayComponent {
   // Styles
   // ---------------------------------------------------------------------------
 
-  styles(): ComponentStyles {
+  styles(): ComponentStyle {
     return this.s;
   }
 
-  setStyles(sty: Partial<ComponentStyles>): this {
+  setStyles(sty: Partial<ComponentStyle>): this {
     this.s = ComponentStyle.Create()
       .setBackgroundColor(sty.backgroundColor?.() ?? this.s.backgroundColor())
       .setColor(sty.color?.() ?? this.s.color())
@@ -251,6 +271,10 @@ export class DisplayComponent {
    *   "Given these constraints, how large would I like to be?"
    */
   measure(constraints: MeasureConstraints): MeasuredSize {
+    if (this._dirty == false) {
+      return this._measuredSize;
+    }
+
     const styleConstraints = LayoutDimensions.applyStyleConstraints(
       this,
       constraints,
@@ -264,14 +288,18 @@ export class DisplayComponent {
 
     const contentSize = this.measureContent(contentConstraints);
 
-
-    if (!width) {
+    if (width === null) {
       width =
         contentSize.width + this.horizontalPadding() + this.horizontalBorder();
+    } else {
+      width += this.horizontalPadding() + this.horizontalBorder();
     }
-    if (!height) {
+
+    if (height === null) {
       height =
         contentSize.height + this.verticalPadding() + this.verticalBorder();
+    } else {
+      height += this.verticalPadding() + this.verticalBorder();
     }
 
     this._measuredSize = LayoutEngine.ClampSize(
@@ -298,6 +326,8 @@ export class DisplayComponent {
     this.setLayout(finalBounds);
 
     this.arrangeContent(this.contentLayout());
+
+    this._dirty = false;
   }
 
   /**
@@ -320,8 +350,10 @@ export class DisplayComponent {
       LayoutEngine.ArrangeVertical(normalChildren, bounds);
     }
 
+    const absoluteBounds = this.paddingLayout();
+
     for (const child of absoluteChildren) {
-      LayoutEngine.ArrangeAbsolute(child, bounds);
+      LayoutEngine.ArrangeAbsolute(child, absoluteBounds);
     }
   }
 
@@ -383,14 +415,17 @@ export class DisplayComponent {
       0,
       constraints.minWidth - horizontal,
     );
+
     this.constrainedLayout.maxWidth = Math.max(
       0,
       constraints.maxWidth - horizontal,
     );
+
     this.constrainedLayout.minHeight = Math.max(
       0,
       constraints.minHeight - vertical,
     );
+
     this.constrainedLayout.maxHeight = Math.max(
       0,
       constraints.maxHeight - vertical,
@@ -499,6 +534,7 @@ export class DisplayComponent {
 
   setText(value: string): this {
     this._text = value;
+    this.setDirty(true);
     return this;
   }
 
@@ -529,6 +565,7 @@ export class DisplayComponent {
 
   setWidth(width: Size): this {
     this.layoutStyle().setWidth(width);
+    this.setDirty(true);
     return this;
   }
 
@@ -538,6 +575,7 @@ export class DisplayComponent {
 
   setHeight(height: Size): this {
     this.layoutStyle().setHeight(height);
+    this.setDirty(true);
     return this;
   }
 
@@ -547,6 +585,7 @@ export class DisplayComponent {
 
   setMaxWidth(maxWidth: number | null): this {
     this.layoutStyle().setMaxWidth(maxWidth);
+    this.setDirty(true);
     return this;
   }
 
@@ -556,6 +595,7 @@ export class DisplayComponent {
 
   setMaxHeight(maxHeight: number | null): this {
     this.layoutStyle().setMaxHeight(maxHeight);
+    this.setDirty(true);
     return this;
   }
 
@@ -565,6 +605,7 @@ export class DisplayComponent {
 
   setMargin(margin: Insets): this {
     this.layoutStyle().setMargin(margin);
+    this.setDirty(true);
     return this;
   }
 
@@ -574,6 +615,28 @@ export class DisplayComponent {
 
   setPadding(padding: Insets): this {
     this.layoutStyle().setPadding(padding);
+    this.setDirty(true);
+    return this;
+  }
+
+  setPaddingLeft(val: number) {
+    this.padding().left = val;
+    this.setDirty(true);
+    return this;
+  }
+  setPaddingTop(val: number) {
+    this.padding().top = val;
+    this.setDirty(true);
+    return this;
+  }
+  setPaddingBottom(val: number) {
+    this.padding().bottom = val;
+    this.setDirty(true);
+    return this;
+  }
+  setPaddingRight(val: number) {
+    this.padding().right = val;
+    this.setDirty(true);
     return this;
   }
 
@@ -583,6 +646,7 @@ export class DisplayComponent {
 
   setPositionMode(position: PositionMode): this {
     this.layoutStyle().setPosition(position);
+    this.setDirty(true);
     return this;
   }
 
@@ -592,7 +656,7 @@ export class DisplayComponent {
 
   setDirection(direction: DisplayDirection): this {
     this.layoutStyle().setDirection(direction);
-
+    this.setDirty(true);
     return this;
   }
 
@@ -602,6 +666,7 @@ export class DisplayComponent {
 
   setStartX(value: Size): this {
     this.layoutStyle().setStartX(value);
+    this.setDirty(true);
     return this;
   }
 
@@ -611,6 +676,32 @@ export class DisplayComponent {
 
   setStartY(value: Size): this {
     this.layoutStyle().setStartY(value);
+    this.setDirty(true);
+    return this;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Dirty
+  // ---------------------------------------------------------------------------
+
+  dirty(): boolean {
+    return this._dirty;
+  }
+
+  setDirty(value: boolean): this {
+    this._dirty = value;
+
+    if (value && this.parent()) {
+      this.parent()!.setDirty(true);
+    }
+
+    return this;
+  }
+  display() {
+    return this.layoutStyle().display();
+  }
+  setDisplay(dp: DisplayTypes) {
+    this.layoutStyle().setDisplay(dp);
     return this;
   }
 }

@@ -1,10 +1,10 @@
 import { describe, it, expect, assert } from "vitest";
-import { Textdocument, MemoryFile } from "./Documents/TextDocument.js";
-import { TextEditorWindow } from "./windows/TextEditorWindow.js";
-import { Canvas } from "../ui/canvas.js";
-import { LayoutEngine } from "../ui/layout/layout.js";
-import { Renderer } from "../ui/renderer.js";
-import colors from "../ui/colors.js";
+import { Textdocument, MemoryFile } from "../../../../src/Editor/Documents/TextDocument.js";
+import { TextEditorWindow } from "../../../../src/Editor/windows/TextEditorWindow.js";
+import { Canvas } from "../../../../src/ui/canvas.js";
+import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
+import { Renderer } from "../../../../src/ui/renderer.js";
+import colors from "../../../../src/ui/colors.js";
 
 describe("tests the visual highlight of the selection", () => {
   it("keeps the cursor visible by scrolling the viewport", () => {

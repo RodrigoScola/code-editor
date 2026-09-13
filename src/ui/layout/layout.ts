@@ -1,4 +1,5 @@
 import { DisplayComponent, parseSize } from "../components/components.js";
+import { LayoutDimensions } from "./LayoutDimensions.js";
 
 export class LayoutEngine {
   static CreateBounds(
@@ -17,14 +18,17 @@ export class LayoutEngine {
 
   static ArrangeAbsolute(child: DisplayComponent, bounds: LayoutBounds) {
     const width =
-      parseSize(child.width(), bounds.width) ?? child.measuredSize().width;
+      LayoutDimensions.requestedOuterWidth(child, bounds.width) ??
+      child.measuredSize().width;
 
     const height =
-      parseSize(child.height(), bounds.height) ?? child.measuredSize().height;
+      LayoutDimensions.requestedOuterHeight(child, bounds.height) ??
+      child.measuredSize().height;
 
-    const x = parseSize(child.startX(), bounds.width) ?? 0;
+    const margin = child.margin();
+    const x = (parseSize(child.startX(), bounds.width) ?? 0) + margin.left;
 
-    const y = parseSize(child.startY(), bounds.height) ?? 0;
+    const y = (parseSize(child.startY(), bounds.height) ?? 0) + margin.top;
 
     child.arrange({
       x: bounds.x + x,
@@ -48,7 +52,10 @@ export class LayoutEngine {
 
       const margin = child.margin();
 
-      const height = parseSize(child.height(), bounds.height)!;
+      const height = LayoutDimensions.requestedOuterHeight(
+        child,
+        bounds.height,
+      )!;
 
       remainingHeight -= height;
       remainingHeight -= margin.top + margin.bottom;
@@ -74,11 +81,11 @@ export class LayoutEngine {
       const uncapped: DisplayComponent[] = [];
 
       for (const child of unresolved) {
-        const maxHeight = child.maxHeight();
+        const maxOuterHeight = LayoutDimensions.maxOuterHeight(child);
 
-        if (maxHeight !== null && maxHeight < share) {
-          autoHeights.set(child, maxHeight);
-          available -= maxHeight;
+        if (maxOuterHeight !== null && maxOuterHeight < share) {
+          autoHeights.set(child, maxOuterHeight);
+          available -= maxOuterHeight;
 
           const margin = child.margin();
           available -= margin.top + margin.bottom;
@@ -109,13 +116,13 @@ export class LayoutEngine {
       y += margin.top;
 
       const width =
-        parseSize(child.width(), bounds.width) ??
+        LayoutDimensions.requestedOuterWidth(child, bounds.width) ??
         Math.max(0, bounds.width - margin.left - margin.right);
 
       const height =
         child.height() === "auto"
           ? (autoHeights.get(child) ?? 0)
-          : parseSize(child.height(), bounds.height)!;
+          : LayoutDimensions.requestedOuterHeight(child, bounds.height)!;
 
       child.arrange({
         x: bounds.x + margin.left,
@@ -142,7 +149,7 @@ export class LayoutEngine {
 
       const margin = child.margin();
 
-      const width = parseSize(child.width(), bounds.width)!;
+      const width = LayoutDimensions.requestedOuterWidth(child, bounds.width)!;
 
       remainingWidth -= width;
       remainingWidth -= margin.left + margin.right;
@@ -176,12 +183,12 @@ export class LayoutEngine {
       const uncapped: DisplayComponent[] = [];
 
       for (const child of unresolved) {
-        const maxWidth = child.maxWidth();
+        const maxOuterWidth = LayoutDimensions.maxOuterWidth(child);
 
-        if (maxWidth !== null && maxWidth < share) {
-          autoWidths.set(child, maxWidth);
+        if (maxOuterWidth !== null && maxOuterWidth < share) {
+          autoWidths.set(child, maxOuterWidth);
 
-          available -= maxWidth;
+          available -= maxOuterWidth;
 
           capped.push(child);
         } else {
@@ -211,10 +218,10 @@ export class LayoutEngine {
       const width =
         child.width() === "auto"
           ? (autoWidths.get(child) ?? 0)
-          : parseSize(child.width(), bounds.width)!;
+          : LayoutDimensions.requestedOuterWidth(child, bounds.width)!;
 
       const height =
-        parseSize(child.height(), bounds.height) ??
+        LayoutDimensions.requestedOuterHeight(child, bounds.height) ??
         Math.max(0, bounds.height - margin.top - margin.bottom);
 
       child.arrange({
@@ -252,7 +259,17 @@ export class LayoutEngine {
   }
 
   static Arrange(root: DisplayComponent, bounds?: LayoutBounds) {
-    root.arrange(bounds || root.contentLayout());
+    const layout = root.layout();
+    const measured = root.measuredSize();
+
+    root.arrange(
+      bounds || {
+        x: layout.x,
+        y: layout.y,
+        width: layout.width || measured.width,
+        height: layout.height || measured.height,
+      },
+    );
     return this;
   }
   static Layout(
