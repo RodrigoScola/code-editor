@@ -4,6 +4,13 @@ import { LayoutDimensions } from "./LayoutDimensions.js";
 import { LayoutBounds } from "./layoutStyle.js";
 import { assert } from "node:console";
 
+type RowItem = {
+  child: DisplayComponent;
+  width: number;
+  outerWidth: number;
+
+  margin: Insets;
+};
 export class LayoutEngine {
   static CreateBounds(
     width: number = 0,
@@ -156,7 +163,25 @@ export class LayoutEngine {
     }
 
     for (const column of columns) {
+      const columnHeight = column.reduce(
+        (total, item) => item.outerHeight + total,
+        0,
+      );
+
       let y = bounds.y;
+      let spacing = 0;
+
+      if (component.alignContent() === "end") {
+        y = bounds.height - columnHeight;
+      } else if (component.alignContent() === "center") {
+        y = Math.round(bounds.height / 2 - columnHeight / 2);
+      } else if (component.alignContent() === "space-between") {
+        const available = bounds.height - columnHeight;
+        spacing = Math.round(available / (column.length - 1));
+      } else if (component.alignContent() === "space-evenly") {
+        const available = bounds.height - columnHeight;
+        spacing = Math.round(available / (column.length + 1));
+      }
 
       if (component.justifyContent() === "center") {
       } else if (component.justifyContent() == "end") {
@@ -171,12 +196,20 @@ export class LayoutEngine {
 
         y += margin.top;
 
+        if (component.alignContent() === "space-evenly") {
+          y += spacing;
+        }
+
         child.arrange({
           x: x + margin.left,
           y,
           width,
           height: item.height,
         });
+
+        if (component.alignContent() === "space-between") {
+          y += spacing;
+        }
 
         y += item.height + margin.bottom + component.gap();
       }
@@ -232,12 +265,7 @@ export class LayoutEngine {
       available = Math.max(0, available);
     }
 
-    const rows: {
-      child: DisplayComponent;
-      width: number;
-      outerWidth: number;
-      margin: Insets;
-    }[][] = [[]];
+    const rows: RowItem[][] = [[]];
 
     const shouldWrap = component.wrap() !== "no-wrap";
 
@@ -294,9 +322,9 @@ export class LayoutEngine {
       let spacing = 0;
 
       if (component.justifyContent() === "center") {
-        startX = Math.floor(bounds.width / 2) - Math.floor(rowWidth / 2);
+        startX += Math.floor(bounds.width / 2) - Math.floor(rowWidth / 2);
       } else if (component.justifyContent() === "end") {
-        startX = bounds.width - rowWidth;
+        startX += bounds.width - rowWidth;
       } else if (component.justifyContent() === "start") {
         startX = bounds.x;
       } else if (component.justifyContent() === "space-evenly") {
@@ -306,29 +334,44 @@ export class LayoutEngine {
         const available = bounds.width - rowWidth;
         spacing = available / row.length;
         startX += Math.round(spacing / 2);
+      } else if (component.justifyContent() === "space-between") {
+        const available = bounds.width - rowWidth;
+        spacing = available / (row.length - 1);
       }
+
+      const getHeight = (item: RowItem) => {
+        return (
+          LayoutDimensions.requestedOuterHeight(item.child, bounds.height) ??
+          Math.max(
+            0,
+            rowHeight - item.child.margin().top - item.child.margin().bottom,
+          )
+        );
+      };
+      const maxHeight = row.reduce(
+        (max, item) => Math.max(max, getHeight(item)),
+        0,
+      );
 
       if (component.alignContent() === "center") {
-        throw new Error("need to do this one");
+        y += Math.floor(bounds.height / 2) - Math.floor(maxHeight / 2);
       } else if (component.alignContent() == "end") {
-        throw new Error("need to do this one");
+        y += bounds.height - maxHeight;
       } else if (component.alignContent() === "start") {
-        throw new Error("need to do this one");
+        y = bounds.y;
       }
-
-      const isAround = component.justifyContent() === "space-around";
 
       for (let i = 0; i < row.length; i++) {
         const item = row[i];
         const child = item.child;
         const margin = item.margin;
-        const height =
-          LayoutDimensions.requestedOuterHeight(child, bounds.height) ??
-          Math.max(0, rowHeight - margin.top - margin.bottom);
+        const height = getHeight(item);
 
         startX += margin.left;
 
-        if (!isAround) startX += spacing;
+        if (component.justifyContent() === "space-evenly") {
+          startX += spacing;
+        }
 
         child.arrange({
           x: startX,
@@ -337,7 +380,12 @@ export class LayoutEngine {
           height,
         });
 
-        if (isAround) startX += spacing;
+        if (
+          component.justifyContent() === "space-between" ||
+          component.justifyContent() === "space-around"
+        ) {
+          startX += spacing;
+        }
 
         startX += component.gap();
         startX += item.width + margin.right;

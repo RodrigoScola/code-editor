@@ -29,13 +29,41 @@ describe("justify content tests", () => {
 
     expect(center.layout().x).eq(layout.width / 2 - center.layout().width / 2);
   });
-
-  it("starts at the end", () => {
+  it("more than one element on the center", () => {
     const layout = LayoutEngine.CreateBounds(30, 10);
     const canvas = new Canvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
+      .setDirection("horizontal")
+      .setJustifyContent("center");
+    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    const left = new DisplayComponent().setWidth(6).setHeight(6);
+    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const right = new DisplayComponent().setWidth(6).setHeight(6);
+    right.styles().setBackgroundColor(colors.CYAN_BACKGROUND);
+
+    root.addChildren([left, right]);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+
+    expect(left.layout().x + left.layout().width).eq(
+      Math.round(layout.width / 2),
+    );
+  });
+
+  it("starts at the end", () => {
+    const layout = LayoutEngine.CreateBounds(30, 10);
+    const canvas = new Canvas().setLayout(layout);
+
+    const parent = new DisplayComponent().setLayout(layout);
+
+    const root = new DisplayComponent()
       .setDirection("horizontal")
       .setJustifyContent("end");
 
@@ -49,9 +77,11 @@ describe("justify content tests", () => {
     root.addChildren(left);
     root.addChildren(right);
 
-    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
-    LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    parent.addChildren(root);
+
+    LayoutEngine.Measure(parent, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(parent);
+    Renderer.Create().build(parent, canvas);
 
     canvas.renderBoard();
     expect(left.layout().x).eq(
@@ -113,6 +143,56 @@ describe("justify content tests", () => {
 
     canvas.renderBoard();
   });
+  it("spaces between", () => {
+    const layout = LayoutEngine.CreateBounds(30, 10);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("horizontal")
+      .setJustifyContent("space-between");
+
+    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    const left = new DisplayComponent().setWidth(6).setHeight(6);
+
+    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const middle = new DisplayComponent().setWidth(6).setHeight(6);
+    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+
+    const right = new DisplayComponent().setWidth(6).setHeight(6);
+    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+    root.addChildren(left);
+    root.addChildren(middle);
+    root.addChildren(right);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    const rowWidth =
+      left.layout().width + middle.layout().width + right.layout().width;
+
+    const available = layout.width - rowWidth;
+    const spacing = available / 2;
+
+    expect(left.layout().x).eq(0);
+    expect(middle.layout().x).eq(
+      left.layout().x + left.layout().width + spacing,
+    );
+    expect(right.layout().x).eq(
+      left.layout().x +
+        left.layout().width +
+        spacing +
+        middle.layout().width +
+        spacing,
+    );
+    expect(right.layout().x + right.layout().width).eq(layout.width);
+
+    canvas.renderBoard();
+  });
+
   it("spaces around", () => {
     const layout = LayoutEngine.CreateBounds(40, 10);
     const canvas = new Canvas().setLayout(layout);
@@ -133,9 +213,7 @@ describe("justify content tests", () => {
     const right = new DisplayComponent().setWidth(6).setHeight(6);
     right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
 
-    root.addChildren(left);
-    root.addChildren(middle);
-    root.addChildren(right);
+    root.addChildren([left, middle, right]);
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
@@ -158,7 +236,108 @@ describe("justify content tests", () => {
     );
     expect(layout.width - (right.layout().x + right.layout().width)).eq(startX);
   });
-  it.todo('align content start')
-  it.todo('align content end')
-  it.todo('align content center')
+  it("align content start", () => {
+    const layout = LayoutEngine.CreateBounds(40, 10);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("horizontal")
+      .setAlignContent("start")
+      .setJustifyContent("center");
+
+    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    const left = new DisplayComponent().setWidth(6).setHeight(6);
+
+    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const middle = new DisplayComponent().setWidth(6).setHeight(6);
+    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+
+    const right = new DisplayComponent().setWidth(6).setHeight(6);
+    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+    root.addChildren([left, middle, right]);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+    canvas.renderBoard();
+
+    expect(left.layout().y).eq(0);
+  });
+
+  it("align content center", () => {
+    const layout = LayoutEngine.CreateBounds(40, 20);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("horizontal")
+      .setAlignContent("center")
+      .setJustifyContent("center");
+
+    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+
+    const { left, middle, right } = setup();
+
+    root.addChildren([left, middle, right]);
+
+    build(root, canvas);
+
+    const middleBoard = Math.round(layout.height / 2);
+
+    const middleFlag = left.layout().y + Math.floor(left.layout().height / 2);
+
+    expect(middleFlag).eq(middleBoard);
+  });
+  it("align content end", () => {
+    const layout = LayoutEngine.CreateBounds(40, 20);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setDirection("horizontal")
+      .setAlignContent("end")
+      .setJustifyContent("center");
+
+    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+
+    const { left, middle, right } = setup();
+
+    root.addChildren([left, middle, right]);
+
+    build(root, canvas);
+
+    expect(left.layout().y + left.layout().height).eq(layout.height);
+  });
 });
+
+function build(root: DisplayComponent, canvas: Canvas) {
+  LayoutEngine.Measure(
+    root,
+    LayoutEngine.CreateConstraints(root.layout().width),
+  );
+  LayoutEngine.Arrange(root);
+  Renderer.Create().build(root, canvas);
+  canvas.renderBoard();
+}
+
+function setup() {
+  const left = new DisplayComponent().setWidth(6).setHeight(6);
+
+  left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+  const middle = new DisplayComponent().setWidth(6).setHeight(6);
+  middle.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+
+  const right = new DisplayComponent().setWidth(6).setHeight(6);
+
+  right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+  return {
+    left,
+    middle,
+    right,
+  };
+}
