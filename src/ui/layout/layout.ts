@@ -110,66 +110,79 @@ export class LayoutEngine {
       available = Math.max(0, available);
     }
 
-    let y = bounds.y;
+    const columns: {
+      child: DisplayComponent;
+      height: number;
+      outerHeight: number;
+      margin: Insets;
+    }[][] = [[]];
+
+    const shouldWrap = component.wrap() !== "no-wrap";
 
     for (const child of normalChildren) {
       const margin = child.margin();
-
-      y += margin.top;
-
-      const width =
-        LayoutDimensions.requestedOuterWidth(child, bounds.width) ??
-        Math.max(0, bounds.width - margin.left - margin.right);
-
       const height =
         child.height() === "auto"
           ? (autoHeights.get(child) ?? 0)
           : LayoutDimensions.requestedOuterHeight(child, bounds.height)!;
+      const outerHeight = margin.top + height + margin.bottom;
+      const column = columns[columns.length - 1];
+      const columnHeight = column.reduce(
+        (total, item) => total + item.outerHeight + component.gap(),
+        0,
+      );
 
-      child.arrange({
-        x: bounds.x + margin.left,
-        y,
-        width,
-        height,
-      });
-
-      y += height + margin.bottom;
-    }
-  }
-
-  static calculateRemainingWidth(
-    available: number,
-    components: DisplayComponent[],
-  ) {
-    let remainingWidth = available;
-    // First consume children with explicit widths.
-    for (const child of components) {
-      const width = LayoutDimensions.requestedOuterWidth(child, available)!;
-      if (child.width() === "auto") {
-        continue;
+      if (
+        column.length > 0 &&
+        columnHeight + outerHeight >= bounds.height &&
+        shouldWrap
+      ) {
+        columns.push([]);
       }
 
-      const margin = child.margin();
-
-      remainingWidth -= width;
-      remainingWidth -= margin.left + margin.right;
+      columns[columns.length - 1].push({
+        child,
+        height,
+        outerHeight,
+        margin,
+      });
     }
 
-    remainingWidth = Math.max(0, remainingWidth);
+    const columnWidth = bounds.width / columns.length;
+    let x = bounds.x;
 
-    const autoChildren = components.filter((child) => child.width() === "auto");
-
-    // Remove auto children's margins before distributing
-    // the remaining space between their actual widths.
-    for (const child of autoChildren) {
-      const margin = child.margin();
-
-      remainingWidth -= margin.left + margin.right;
+    if (component.wrap() === "wrap-reverse") {
+      columns.reverse();
     }
 
-    remainingWidth = Math.max(0, remainingWidth);
+    for (const column of columns) {
+      let y = bounds.y;
 
-    return remainingWidth;
+      if (component.justifyContent() === "center") {
+      } else if (component.justifyContent() == "end") {
+      } else if (component.justifyContent() === "start") {
+      }
+
+      for (const item of column) {
+        const { child, margin } = item;
+        const width =
+          LayoutDimensions.requestedOuterWidth(child, bounds.width) ??
+          Math.max(0, columnWidth - margin.left - margin.right);
+
+        y += margin.top;
+
+        child.arrange({
+          x: x + margin.left,
+          y,
+          width,
+          height: item.height,
+        });
+
+        y += item.height + margin.bottom + component.gap();
+      }
+
+      x += columnWidth;
+    }
   }
 
   static ArrangeHorizontal(component: DisplayComponent, bounds: LayoutBounds) {
@@ -200,9 +213,7 @@ export class LayoutEngine {
 
         if (maxOuterWidth !== null && maxOuterWidth < share) {
           autoWidths.set(child, maxOuterWidth);
-
           available -= maxOuterWidth;
-
           capped.push(child);
         } else {
           uncapped.push(child);
@@ -297,6 +308,14 @@ export class LayoutEngine {
         startX += Math.round(spacing / 2);
       }
 
+      if (component.alignContent() === "center") {
+        throw new Error("need to do this one");
+      } else if (component.alignContent() == "end") {
+        throw new Error("need to do this one");
+      } else if (component.alignContent() === "start") {
+        throw new Error("need to do this one");
+      }
+
       const isAround = component.justifyContent() === "space-around";
 
       for (let i = 0; i < row.length; i++) {
@@ -326,6 +345,40 @@ export class LayoutEngine {
 
       y += rowHeight;
     }
+  }
+  static calculateRemainingWidth(
+    available: number,
+    components: DisplayComponent[],
+  ) {
+    let remainingWidth = available;
+    // First consume children with explicit widths.
+    for (const child of components) {
+      const width = LayoutDimensions.requestedOuterWidth(child, available)!;
+      if (child.width() === "auto") {
+        continue;
+      }
+
+      const margin = child.margin();
+
+      remainingWidth -= width;
+      remainingWidth -= margin.left + margin.right;
+    }
+
+    remainingWidth = Math.max(0, remainingWidth);
+
+    const autoChildren = components.filter((child) => child.width() === "auto");
+
+    // Remove auto children's margins before distributing
+    // the remaining space between their actual widths.
+    for (const child of autoChildren) {
+      const margin = child.margin();
+
+      remainingWidth -= margin.left + margin.right;
+    }
+
+    remainingWidth = Math.max(0, remainingWidth);
+
+    return remainingWidth;
   }
   static CreateConstraints(
     width: number,

@@ -115,7 +115,7 @@ describe("on the new layout sizing children", () => {
 });
 
 describe("wrap children", () => {
-  it("when wraps, should start a new line", () => {
+  it("when wraps horizontal, should start a new line", () => {
     const layout = LayoutEngine.CreateBounds(30, 20);
     const canvas = new Canvas().setLayout(layout);
 
@@ -142,10 +142,7 @@ describe("wrap children", () => {
     const fourth = new DisplayComponent().setWidth(10);
     fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
 
-    root.addChildren(first);
-    root.addChildren(second);
-    root.addChildren(third);
-    root.addChildren(fourth);
+    root.addChildren([first, second, third, fourth]);
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
@@ -160,7 +157,7 @@ describe("wrap children", () => {
     expect(fourth.layout().x).toBe(0);
     expect(fourth.layout().y).toBeGreaterThan(third.layout().y);
   });
-  it("when wraps reverse, fourth should be first", () => {
+  it("when wraps reverse horizontal, fourth should be first", () => {
     const layout = LayoutEngine.CreateBounds(30, 20);
     const canvas = new Canvas().setLayout(layout);
 
@@ -199,5 +196,79 @@ describe("wrap children", () => {
     canvas.renderBoard();
 
     expect(third.layout().y).toBeGreaterThan(fourth.layout().y);
+  });
+  it("when wraps vertical, should start a new line", () => {
+    const layout = LayoutEngine.CreateBounds(20, 40);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setWrap("wrap")
+      .setGap(1);
+
+    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const first = new DisplayComponent().setHeight(10);
+    first.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+
+    const second = new DisplayComponent().setHeight(10);
+    second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+    const third = new DisplayComponent().setName("third").setHeight(10);
+
+    const children = new DisplayComponent().setHeight(10).setName("child");
+    children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
+    third.addChildren(children);
+
+    third.styles().setBackgroundColor(colors.BRIGHT_GREEN_BACKGROUND);
+
+    const fourth = new DisplayComponent().setHeight(10);
+    fourth.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+
+    root.addChildren([first, second, third, fourth]);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+
+    expect(first.layout().height).eq(10);
+    expect(first.layout().x).eq(third.layout().x);
+    expect(fourth.layout().x).toBeGreaterThan(first.layout().x);
+  });
+  it("when wraps reverse vertical, fourth should be first", () => {
+    const layout = LayoutEngine.CreateBounds(30, 30);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent()
+      .setLayout(layout)
+      .setWrap("wrap-reverse");
+    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const first = new DisplayComponent().setHeight(10);
+    first.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+
+    const second = new DisplayComponent().setHeight(10);
+    second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+
+    const third = new DisplayComponent().setName("third");
+
+    const children = new DisplayComponent().setHeight(10).setName("child");
+    children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
+    third.addChildren(children);
+
+    third.styles().setBackgroundColor(colors.BRIGHT_GREEN_BACKGROUND);
+
+    const fourth = new DisplayComponent().setHeight(10);
+    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+
+    root.addChildren([first, second, third, fourth]);
+
+    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
   });
 });

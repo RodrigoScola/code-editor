@@ -1,5 +1,5 @@
 import {
-  JustifyContent,
+  ContentAlign,
   LayoutBounds,
   LayoutStyle,
   WrapStyle,
@@ -113,8 +113,15 @@ export class ComponentLayoutFns {
   justifyContent() {
     return this._layoutStyle.justifyContent();
   }
-  setJustifyContent(val: JustifyContent) {
+  setJustifyContent(val: ContentAlign) {
     this._layoutStyle.setJustifyContent(val);
+    return this;
+  }
+  alignContent() {
+    return this.layoutStyle().alignContent();
+  }
+  setAlignContent(val: ContentAlign) {
+    this.layoutStyle().setAlignContent(val);
     return this;
   }
   gap() {

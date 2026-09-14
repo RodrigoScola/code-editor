@@ -158,4 +158,7 @@ describe("justify content tests", () => {
     );
     expect(layout.width - (right.layout().x + right.layout().width)).eq(startX);
   });
+  it.todo('align content start')
+  it.todo('align content end')
+  it.todo('align content center')
 });

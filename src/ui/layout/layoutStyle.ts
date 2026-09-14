@@ -14,7 +14,7 @@ export interface LayoutBounds {
 
 export type PositionMode = "normal" | "absolute" | "fixed";
 export type WrapStyle = "wrap" | "no-wrap" | "wrap-reverse";
-export type JustifyContent =
+export type ContentAlign =
   | "start"
   | "end"
   | "center"
@@ -36,7 +36,8 @@ export class LayoutStyle {
 
   private _maxWidth: number | null = null;
   private _maxHeight: number | null = null;
-  private _justifyContent: JustifyContent = "start";
+  private _justifyContent: ContentAlign = "start";
+  private _alignContent: ContentAlign = "start";
   private _gap: number = 0;
 
   private l: LayoutBounds = {
@@ -178,8 +179,16 @@ export class LayoutStyle {
   justifyContent() {
     return this._justifyContent;
   }
-  setJustifyContent(val: JustifyContent) {
+  setJustifyContent(val: ContentAlign) {
     this._justifyContent = val;
+    return this;
+  }
+
+  alignContent() {
+    return this._alignContent;
+  }
+  setAlignContent(val: ContentAlign) {
+    this._alignContent = val;
     return this;
   }
   gap() {
