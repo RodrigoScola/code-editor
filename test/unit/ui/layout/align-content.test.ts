@@ -4,31 +4,27 @@ import { Canvas } from "../../../../src/ui/canvas";
 import { DisplayComponent } from "../../../../src/ui/components/components";
 import colors from "../../../../src/ui/colors";
 import { Renderer } from "../../../../src/ui/renderer";
+import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle";
+
+const createRoot = (layout: LayoutBounds) => {
+  const cm = new DisplayComponent();
+
+  cm.setLayout(layout);
+
+  cm.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+
+  return cm;
+};
 
 describe("align content tests", () => {
   it("start", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
     const canvas = new Canvas().setLayout(layout);
-    const root = new DisplayComponent()
-      .setLayout(layout)
-      .setAlignContent("start");
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    const root = createRoot(layout).setAlignContent("start");
 
-    const top = new DisplayComponent().setWidth(5).setHeight(5);
-    top.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
-    const middle = new DisplayComponent().setWidth(5).setHeight(5);
-    middle.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
-    const bottom = new DisplayComponent().setWidth(5).setHeight(5);
-    bottom.styles().setBackgroundColor(colors.BRIGHT_MAGENTA_BACKGROUND);
+    const { top, bottom, middle } = setup(root);
 
-    root.addChildren(top);
-    root.addChildren(middle);
-    root.addChildren(bottom);
-
-    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
-    LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
-    canvas.renderBoard();
+    build(root, canvas);
 
     expect(top.layout().y).eq(0);
     expect(bottom.layout().y).eq(top.layout().height + middle.height());
@@ -36,50 +32,22 @@ describe("align content tests", () => {
   it("end", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
     const canvas = new Canvas().setLayout(layout);
-    const root = new DisplayComponent()
-      .setLayout(layout)
-      .setAlignContent("end");
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
 
-    const top = new DisplayComponent().setWidth(5).setHeight(5);
-    top.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
-    const middle = new DisplayComponent().setWidth(5).setHeight(5);
-    middle.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
-    const bottom = new DisplayComponent().setWidth(5).setHeight(5);
-    bottom.styles().setBackgroundColor(colors.BRIGHT_MAGENTA_BACKGROUND);
+    const root = createRoot(layout).setAlignContent("end");
+    const { top, bottom, middle } = setup(root);
 
-    root.addChildren(top);
-    root.addChildren(middle);
-    root.addChildren(bottom);
-
-    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
-    LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
-    canvas.renderBoard();
+    build(root, canvas);
 
     expect(bottom.layout().y + bottom.layout().height).eq(layout.height);
   });
   it("center", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
     const canvas = new Canvas().setLayout(layout);
-    const root = new DisplayComponent()
-      .setLayout(layout)
-      .setAlignContent("center");
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    const root = createRoot(layout).setAlignContent("center");
 
-    const top = new DisplayComponent().setWidth(5).setHeight(5);
-    top.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
-    const middle = new DisplayComponent().setWidth(5).setHeight(5);
-    middle.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
-    const bottom = new DisplayComponent().setWidth(5).setHeight(5);
-    bottom.styles().setBackgroundColor(colors.BRIGHT_MAGENTA_BACKGROUND);
+    const { top, bottom, middle } = setup(root);
 
-    root.addChildren([top, middle, bottom]);
-
-    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
-    LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
-    canvas.renderBoard();
+    build(root, canvas);
 
     const totalHeight =
       bottom.layout().height + middle.layout().height + top.layout().height;
@@ -91,23 +59,11 @@ describe("align content tests", () => {
   it("space-between", () => {
     const layout = LayoutEngine.CreateBounds(20, 21);
     const canvas = new Canvas().setLayout(layout);
-    const root = new DisplayComponent()
-      .setLayout(layout)
-      .setAlignContent("space-between");
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    const root = createRoot(layout).setAlignContent("space-between");
 
-    const top = new DisplayComponent().setWidth(5).setHeight(5);
-    top.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
-    const middle = new DisplayComponent().setWidth(5).setHeight(5);
-    middle.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
-    const bottom = new DisplayComponent().setWidth(5).setHeight(5);
-    bottom.styles().setBackgroundColor(colors.BRIGHT_MAGENTA_BACKGROUND);
+    const { top, bottom, middle } = setup(root);
 
-    root.addChildren([top, middle, bottom]);
-
-    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
-    LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    build(root, canvas);
 
     const tl = top.layout();
     const ml = middle.layout();
@@ -130,25 +86,12 @@ describe("align content tests", () => {
   it("space-evenly", () => {
     const layout = LayoutEngine.CreateBounds(20, 21);
     const canvas = new Canvas().setLayout(layout);
-    const root = new DisplayComponent()
-      .setLayout(layout)
-      .setAlignContent("space-evenly");
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
 
-    const top = new DisplayComponent().setWidth(3).setHeight(3);
-    top.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
-    const middle = new DisplayComponent().setWidth(3).setHeight(3);
-    middle.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
-    const bottom = new DisplayComponent().setWidth(3).setHeight(3);
-    bottom.styles().setBackgroundColor(colors.BRIGHT_MAGENTA_BACKGROUND);
+    const root = createRoot(layout).setAlignContent("space-evenly");
 
-    root.addChildren([top, middle, bottom]);
+    const { top, bottom, middle } = setup(root);
 
-    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
-    LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
-
-    canvas.renderBoard();
+    build(root, canvas);
 
     const height =
       top.layout().height + middle.layout().height + bottom.layout().height;
@@ -210,10 +153,7 @@ describe("align content tests", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
     const canvas = new Canvas().setLayout(layout);
 
-    const root = new DisplayComponent().setLayout(layout);
-
-    root.setJustifyContent("end");
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    const root = createRoot(layout).setJustifyContent("end");
 
     const { bottom, top, middle } = setup(root);
 
