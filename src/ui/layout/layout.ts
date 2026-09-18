@@ -139,11 +139,7 @@ export class LayoutEngine {
         0,
       );
 
-      if (
-        column.length > 0 &&
-        columnHeight + outerHeight >= bounds.height &&
-        shouldWrap
-      ) {
+      if (columnHeight + outerHeight >= bounds.height && shouldWrap) {
         columns.push([]);
       }
 
@@ -181,10 +177,24 @@ export class LayoutEngine {
       } else if (component.alignContent() === "space-evenly") {
         const available = bounds.height - columnHeight;
         spacing = Math.round(available / (column.length + 1));
+      } else if (component.alignContent() === "space-around") {
+        const available = Math.round(bounds.height - columnHeight);
+        spacing = Math.round(available / column.length);
+        console.log("spacing", spacing);
+        y += Math.floor(spacing / 2);
       }
 
+      const maxW = column.reduce((total, item) => {
+        return Math.max(
+          total,
+          this.getWidth(item.child, bounds.width, columnWidth),
+        );
+      }, 0);
+
       if (component.justifyContent() === "center") {
+        x += Math.floor(bounds.width / 2) - Math.round(maxW / 2);
       } else if (component.justifyContent() == "end") {
+        x += bounds.width - maxW;
       } else if (component.justifyContent() === "start") {
       }
 
@@ -207,7 +217,10 @@ export class LayoutEngine {
           height: item.height,
         });
 
-        if (component.alignContent() === "space-between") {
+        if (
+          component.alignContent() === "space-between" ||
+          component.alignContent() === "space-around"
+        ) {
           y += spacing;
         }
 
@@ -216,6 +229,27 @@ export class LayoutEngine {
 
       x += columnWidth;
     }
+  }
+
+  static getWidth(item: DisplayComponent, initial: number, totalWidth: number) {
+    return (
+      LayoutDimensions.requestedOuterWidth(item, initial) ??
+      Math.max(0, totalWidth - item.margin().left - item.margin().right)
+    );
+  }
+
+  static getHeight(
+    component: DisplayComponent,
+    initial: number,
+    totalHeight: number,
+  ): number {
+    return (
+      LayoutDimensions.requestedOuterHeight(component, initial) ??
+      Math.max(
+        0,
+        totalHeight - component.margin().top - component.margin().bottom,
+      )
+    );
   }
 
   static ArrangeHorizontal(component: DisplayComponent, bounds: LayoutBounds) {
@@ -332,24 +366,16 @@ export class LayoutEngine {
         spacing = Math.round(available / (row.length + 1));
       } else if (component.justifyContent() === "space-around") {
         const available = bounds.width - rowWidth;
-        spacing = available / row.length;
+        spacing = Math.round(available / row.length);
         startX += Math.round(spacing / 2);
       } else if (component.justifyContent() === "space-between") {
         const available = bounds.width - rowWidth;
         spacing = available / (row.length - 1);
       }
 
-      const getHeight = (item: RowItem) => {
-        return (
-          LayoutDimensions.requestedOuterHeight(item.child, bounds.height) ??
-          Math.max(
-            0,
-            rowHeight - item.child.margin().top - item.child.margin().bottom,
-          )
-        );
-      };
       const maxHeight = row.reduce(
-        (max, item) => Math.max(max, getHeight(item)),
+        (max, item) =>
+          Math.max(max, this.getHeight(item.child, bounds.height, rowHeight)),
         0,
       );
 
@@ -358,14 +384,14 @@ export class LayoutEngine {
       } else if (component.alignContent() == "end") {
         y += bounds.height - maxHeight;
       } else if (component.alignContent() === "start") {
-        y = bounds.y;
+        y += bounds.y;
       }
 
       for (let i = 0; i < row.length; i++) {
         const item = row[i];
         const child = item.child;
         const margin = item.margin;
-        const height = getHeight(item);
+        const height = this.getHeight(item.child, bounds.height, rowHeight);
 
         startX += margin.left;
 

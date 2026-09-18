@@ -11,6 +11,7 @@ import {
   Textdocument,
 } from "../../../../src/Editor/Documents/TextDocument.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
@@ -85,6 +86,7 @@ describe("Renderer background colors", () => {
     const root = new DisplayComponent().setLayout(l);
 
     root.styles().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
+
 
     root.addChildren([
       new DisplayComponent().setStyles(

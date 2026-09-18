@@ -181,7 +181,25 @@ export class ComponentLayoutFns {
     this.setDirty(true);
     return this;
   }
+  setMarginLeft(n: number) {
+    this.layoutStyle().margin().left = n;
+    return this;
+  }
 
+  setMarginRight(n: number) {
+    this.layoutStyle().margin().right = n;
+    return this;
+  }
+
+  setMarginTop(n: number) {
+    this.layoutStyle().margin().top = n;
+    return this;
+  }
+
+  setMarginBottom(n: number) {
+    this.layoutStyle().margin().bottom = n;
+    return this;
+  }
   padding(): Insets {
     return this.layoutStyle().padding();
   }

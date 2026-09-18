@@ -122,7 +122,9 @@ describe("wrap children", () => {
     const root = new DisplayComponent()
       .setLayout(layout)
       .setWrap("wrap")
+      .setName("wrap")
       .setDirection("horizontal");
+
     root.styles().setBackgroundColor(colors.RED_BACKGROUND);
 
     const first = new DisplayComponent().setWidth(10);
@@ -141,6 +143,7 @@ describe("wrap children", () => {
 
     const fourth = new DisplayComponent().setWidth(10);
     fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+    fourth.setName("fourth");
 
     root.addChildren([first, second, third, fourth]);
 
