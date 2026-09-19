@@ -19,10 +19,16 @@ export class EditorView extends DisplayComponent {
 export class EditorWindow {
   cursor: Cursor;
   window: DisplayComponent;
-  buffer: TextBuffer = new TextBuffer("");
-  viewport: ViewPort = new ViewPort();
   private active: boolean = false;
   readonly id: WindowId = crypto.randomUUID();
+
+  buffer() {
+    return this.window.content().buffer;
+  }
+  setBuffer(buffer: TextBuffer) {
+    this.window.content().buffer = buffer;
+    return this;
+  }
 
   blur() {
     this.active = false;
@@ -42,19 +48,19 @@ export class EditorWindow {
   }
   onPrePaint() {
     const cl = this.window.contentLayout();
-    this.viewport.ensureVisible(cl.width, cl.height);
-    this.cursor.ensureVisible(this.viewport);
+    this.window.viewport().ensureVisible(cl.width, cl.height);
+    this.cursor.ensureVisible(this.window.viewport());
+    const txt = this.window.content();
   }
 
   paint(canvas: Canvas): void {
     canvas.fillRect(this.window.contentLayout(), this.window.styles());
 
-    const cursorLine = this.buffer.at(this.cursor.line);
-    this.drawBuffer(canvas, this);
+    const cursorLine = this.window.content().getLineAt(this.cursor.line);
 
     if (!this.focused()) return;
 
-    this.cursor.paint(canvas, this, cursorLine);
+    this.cursor.paint(canvas, this, cursorLine?.content());
 
     this.paintSelection(canvas);
   }
@@ -70,16 +76,16 @@ export class EditorWindow {
     const bounds = canvas.selectionBounds(
       selection.startSelection(),
       selection.endSelection(),
-      this.buffer,
+      this.window.content().buffer,
     );
 
     for (const bound of bounds) {
-      let content = this.buffer.at(bound.y) ?? "";
+      let content = this.buffer().at(bound.y) ?? "";
       content = content.slice(bound.x, bound.width);
 
       const position = canvas.applyRelative(
         bound.x,
-        bound.y - this.viewport.firstLine,
+        bound.y - this.window.viewport().firstLine,
         cl,
         content,
       );
@@ -101,35 +107,6 @@ export class EditorWindow {
     const cursor = this.cursor.style;
   }
 
-  drawBuffer(canvas: Canvas, editor: EditorWindow) {
-    const cl = editor.window.contentLayout();
-
-    const firstLine = editor.viewport.firstLine;
-    const lastLine = Math.min(
-      firstLine + editor.viewport.visibleLines,
-      editor.buffer.count(),
-    );
-
-    for (let lineNumber = firstLine; lineNumber < lastLine; lineNumber++) {
-      const line = editor.buffer.at(lineNumber);
-      if (!line) {
-        continue;
-      }
-
-      const screenY = cl.y + (lineNumber - firstLine);
-
-      canvas.drawText(
-        {
-          height: cl.height,
-          width: cl.width,
-          x: cl.x,
-          y: screenY,
-        },
-        line,
-        editor.window.styles(),
-      );
-    }
-  }
   visible(): boolean {
     return this.window.visible();
   }
@@ -138,23 +115,23 @@ export class EditorWindow {
   }
 
   moveCursorDown() {
-    return this.cursor.moveDown(this.buffer);
+    return this.cursor.moveDown(this.buffer());
   }
   moveCursorUp() {
-    return this.cursor.moveUp(this.buffer);
+    return this.cursor.moveUp(this.buffer());
   }
   moveCursorLeft() {
-    return this.cursor.moveLeft(this.buffer);
+    return this.cursor.moveLeft(this.buffer());
   }
   moveCursorRight() {
-    return this.cursor.moveRight(this.buffer);
+    return this.cursor.moveRight(this.buffer());
   }
   onEnter(ctx: EditorContext) {}
 
   measure(constraints: MeasureConstraints): MeasuredSize {
     return {
-      width: this.viewport.visibleColumns,
-      height: this.viewport.visibleLines,
+      width: this.window.viewport().visibleColumns,
+      height: this.window.viewport().visibleLines,
     };
   }
 }

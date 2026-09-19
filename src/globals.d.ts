@@ -36,18 +36,13 @@ type Insets = {
   bottom: number;
 };
 
-interface Size {
+interface VisualSize {
   width: number | null;
   height: number | null;
 }
 
 type EditingModes = "normal" | "visual" | "insert" | "command";
 
-interface DisplayTile {
-  x: number;
-  y: number;
-  styles: ComponentStyle;
-}
 
 interface EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext);

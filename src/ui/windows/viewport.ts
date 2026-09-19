@@ -2,8 +2,8 @@ export class ViewPort implements ViewPorts {
   firstLine: number = 0;
   firstColumn: number = 0;
 
-  visibleLines: number = 0;
-  visibleColumns: number = 0;
+  visibleLines: number = Infinity;
+  visibleColumns: number = Infinity;
 
   bufferToViewPort(bufferPosition: Point): Point {
     return {

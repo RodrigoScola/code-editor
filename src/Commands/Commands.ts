@@ -159,7 +159,7 @@ export class CommandMode implements EditorMode {
     isStatusWindow(window);
 
     const cursor = window.cursor;
-    const buffer = window.buffer;
+    const buffer = window.buffer();
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;
@@ -216,7 +216,7 @@ export class InsertMode implements EditorMode {
     isEditorWindow(window);
 
     const cursor = window.cursor;
-    const buffer = window.buffer;
+    const buffer = window.buffer();
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       if (key.token === "h" && key.ctrl) {

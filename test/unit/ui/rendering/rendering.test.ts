@@ -87,7 +87,6 @@ describe("Renderer background colors", () => {
 
     root.styles().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
 
-
     root.addChildren([
       new DisplayComponent().setStyles(
         ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
@@ -214,7 +213,7 @@ describe("Renderer background colors", () => {
 
 describe("editorComponent", () => {
   it("the height of the text should be 1 by default", () => {
-    const content = "this is the first line\nthis is the second line";
+    const content = "firstline\nsecondline";
 
     const display = new TextEditorWindow(
       new Textdocument(new MemoryFile("doc", content)),
@@ -222,17 +221,25 @@ describe("editorComponent", () => {
 
     const layout = LayoutEngine.CreateBounds();
     layout.height = layout.width = 10;
-    const root = new DisplayComponent().setLayout(layout);
+
+    display.window.setTextOverflow("clip");
+
+    display.window.styles().setBackgroundColor(colors.WHITE_BACKGROUND);
 
     const cnv = new Canvas().setLayout(layout);
 
-    root.addChildren(display.window);
+    display.window.viewport().visibleLines = 10;
+    display.window.viewport().visibleColumns = 10;
 
-    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
+    LayoutEngine.Measure(
+      display.window,
+      LayoutEngine.CreateConstraints(layout.width),
+    );
 
-    LayoutEngine.Arrange(root, layout);
+    LayoutEngine.Arrange(display.window, layout);
 
-    Renderer.Create().build(root, cnv);
+    Renderer.Create().build(display.window, cnv);
+    cnv.renderBoard();
 
     const firstLineCell = cnv.getCell(0, 0);
     expect(firstLineCell, "invalid cell");
@@ -245,12 +252,12 @@ describe("editorComponent", () => {
     expect(
       firstLineCell!.styles.display(),
       "text should display on the first line",
-    ).toEqual(display.buffer.at(0)!.at(0));
+    ).toEqual(display.buffer().at(0)!.at(0));
 
     expect(
       secondLineCell!.styles.display(),
       "text should display on the second line",
-    ).toEqual(display.buffer.at(1)!.at(0));
+    ).toEqual(display.buffer().at(1)!.at(0));
   });
 
   it("keeps the cursor visible by scrolling the viewport", () => {
@@ -259,13 +266,13 @@ describe("editorComponent", () => {
       new Textdocument(new MemoryFile("doc", content)),
     );
 
-    display.viewport.visibleLines = 3;
-    display.viewport.visibleColumns = 10;
+    display.window.viewport().visibleLines = 3;
+    display.window.viewport().visibleColumns = 10;
     display.cursor.line = 3;
 
-    display.cursor.ensureVisible(display.viewport);
+    display.cursor.ensureVisible(display.window.viewport());
 
-    expect(display.viewport.firstLine).toBe(1);
+    expect(display.window.viewport().firstLine).toBe(1);
   });
   it("renders the correct background colors of children where parents dont have width or height", () => {
     const layout = LayoutEngine.CreateBounds(10);

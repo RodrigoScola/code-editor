@@ -1,4 +1,5 @@
 import { assert } from "../../assert.js";
+import { TextBuffer } from "../buffer/Buffer.js";
 
 import { Canvas } from "../canvas.js";
 import colors from "../colors.js";
@@ -6,6 +7,8 @@ import { ComponentStyle } from "../ComponentStyles.js";
 import { LayoutEngine } from "../layout/layout.js";
 import { LayoutDimensions } from "../layout/LayoutDimensions.js";
 import { LayoutBounds } from "../layout/layoutStyle.js";
+import { OverflowTypes, TextLayout } from "../TextLayout/text.js";
+import { ViewPort } from "../windows/viewport.js";
 import { ComponentBorder } from "./border.js";
 import { ComponentLayoutFns } from "./componentLayout.js";
 
@@ -20,12 +23,14 @@ export class DisplayComponent extends ComponentLayoutFns {
   private nm: string | null | undefined;
 
   private _focusable = false;
-  private _text: string | undefined;
+  private _text: TextLayout = new TextLayout();
 
   private _measuredSize: MeasuredSize = {
     height: 0,
     width: 0,
   };
+
+  private _viewport: ViewPort = new ViewPort();
 
   private childs: DisplayComponent[] = [];
 
@@ -300,6 +305,8 @@ export class DisplayComponent extends ComponentLayoutFns {
 
     this.arrangeContent(this.contentLayout());
 
+    this.content().measure(bounds);
+
     this.setDirty(false);
   }
 
@@ -514,13 +521,28 @@ export class DisplayComponent extends ComponentLayoutFns {
   // ---------------------------------------------------------------------------
   // Text
   // ---------------------------------------------------------------------------
-
-  text(): string | undefined {
+  content() {
     return this._text;
   }
+  setText(t: TextLayout) {
+    this._text = t;
+    return this;
+  }
+  lineWidth() {
+    return this.content().lineWidth();
+  }
+  setLineWidth(n: number | undefined) {
+    this.content().setLineWidth(n);
+    return this;
+  }
 
-  setText(value: string): this {
-    this._text = value;
+  text(): string | undefined {
+    // todo: change this out
+    return this._text.buffer.content();
+  }
+
+  setContent(value: string): this {
+    this._text.buffer = new TextBuffer(value);
     this.setDirty(true);
     return this;
   }
@@ -536,6 +558,15 @@ export class DisplayComponent extends ComponentLayoutFns {
   setName(newName: string): this {
     this.nm = newName;
     return this;
+  }
+  viewport() {
+    return this._viewport;
+  }
+  textOverflow() {
+    return this.content().overflow();
+  }
+  setTextOverflow(type: OverflowTypes) {
+    this.content().setOverflow(type);
   }
 
   // ---------------------------------------------------------------------------

@@ -9,27 +9,27 @@ export class TextEditorWindow extends EditorWindow implements BufferLike {
   constructor(document: Textdocument) {
     super();
     this.document = document;
-    this.buffer = new TextBuffer(document.read());
+    this.window.content().buffer = new TextBuffer(document.read());
   }
 
   save() {
-    this.document.save(this.buffer.content());
+    this.document.save(this.window.content().buffer.content());
   }
   at(line: number): string | undefined {
-    return this.buffer.at(line);
+    return this.buffer().at(line);
   }
   count(): number {
-    return this.buffer.count();
+    return this.buffer().count();
   }
   reset() {
     this.cursor.column = 0;
     this.cursor.line = 0;
-    this.viewport.firstLine = 0;
-    this.viewport.firstColumn = 0;
+    this.window.viewport().firstLine = 0;
+    this.window.viewport().firstColumn = 0;
   }
   openDocument(document: Textdocument) {
     this.document = document;
-    this.buffer = new TextBuffer(document.read());
+    this.setBuffer(new TextBuffer(document.read()));
     this.cursor = new Cursor();
   }
 }

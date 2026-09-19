@@ -1,9 +1,11 @@
+import { text } from "stream/consumers";
 import { assert } from "../assert.js";
 import { POSITION_ORDER } from "../constants.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 import { DisplayComponent } from "./components/components.js";
 import { ComponentStyle } from "./ComponentStyles.js";
+import { TextLayout } from "./TextLayout/text.js";
 
 export class Renderer {
   static Create() {
@@ -71,15 +73,12 @@ export class Renderer {
       border.styles().setBackgroundColor(component.styles().backgroundColor());
       canvas.paintBorder(cl, border);
 
-      const txt = component.text();
-      if (txt) {
-        defaultBlend.blend(component.styles(), component.parent()?.styles());
-        canvas.drawText(component.contentLayout(), txt, defaultBlend);
-        defaultBlend.reset();
-      }
-
       component.onPrePaint(canvas);
       component.paint(canvas);
+
+      defaultBlend.blend(component.styles(), component.parent()?.styles());
+      this.renderText(component, canvas, defaultBlend);
+      defaultBlend.reset();
     }
   }
 
@@ -95,6 +94,44 @@ export class Renderer {
     }
 
     return false;
+  }
+
+  renderText(
+    component: DisplayComponent,
+    canvas: Canvas,
+    styles?: ComponentStyle,
+  ) {
+    const cl = component.contentLayout();
+    const viewport = component.viewport();
+
+    const layout = component.content().layout();
+
+    if (layout.height <= 0) {
+      return;
+    }
+
+    const firstLine = viewport.firstLine;
+    const lastLine = Math.min(firstLine + viewport.visibleLines, cl.height);
+
+    for (let lineNumber = firstLine; lineNumber < lastLine; lineNumber++) {
+      const line = component.content().lines().at(lineNumber);
+      if (!line) {
+        continue;
+      }
+
+      const screenY = cl.y + (lineNumber - firstLine);
+
+      canvas.drawText(
+        {
+          height: cl.height,
+          width: cl.width,
+          x: cl.x + line.x(),
+          y: screenY,
+        },
+        line.content(),
+        styles,
+      );
+    }
   }
 
   render(canvas: Canvas) {

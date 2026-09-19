@@ -96,7 +96,7 @@ function setupTextEditor(editor: EditorContext) {
     ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLACK_BACKGROUND),
   );
 
-  editorWindow.viewport.visibleLines =
+  editorWindow.window.viewport().visibleLines =
     editorWindow.window.contentLayout().height;
 }
 
@@ -116,7 +116,7 @@ function setupVisualModeCommands(editor: EditorContext) {
     const activeEditor = ctx.getActiveWindow();
     if (!activeEditor) return;
     const cursor = activeEditor.cursor;
-    const buffer = activeEditor.buffer;
+    const buffer = activeEditor.buffer();
 
     const startPos = cursor.selection?.startSelection();
     assert(startPos, "if visual mode has to have start position");
@@ -193,7 +193,7 @@ function setupNormalModeCommands(editor: EditorContext) {
       y: cursor.selection.anchor().y,
     });
 
-    const buffer = activeEditor.buffer;
+    const buffer = activeEditor.buffer();
     const line = buffer.at(cursor.line);
     if (!line) return;
 
@@ -354,6 +354,12 @@ function setupCommandModes(editor: EditorContext) {
 
     assert(fileTree, "invalid file tree and trying to active window");
     editor.focus(fileTree);
+  });
+
+  editor.commandMode.bind("dec 10", (ctx) => {
+    const window = editor.findWindow(TextEditorWindow)!;
+
+    window.window.setWidth(40);
   });
 
   editor.commandMode.bind("split", (ctx) => split(ctx, "vertical"));

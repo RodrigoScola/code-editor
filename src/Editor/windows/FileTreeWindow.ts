@@ -8,7 +8,7 @@ import { EditorContext } from "../Editor/Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
 import { ViewPort } from "../../ui/windows/viewport.js";
-import { LayoutBounds } from '../../ui/layout/layoutStyle.js';
+import { LayoutBounds } from "../../ui/layout/layoutStyle.js";
 
 type TreeNode = DirectoryTreeNode | FileTreeNode;
 
@@ -108,8 +108,8 @@ export class FileTreeWindow extends EditorWindow {
 
   paint(canvas: Canvas): void {
     const cl = this.window.contentLayout();
-    this.viewport.ensureVisible(cl.width, cl.height);
-    this.cursor.ensureVisible(this.viewport);
+    this.window.viewport().ensureVisible(cl.width, cl.height);
+    this.cursor.ensureVisible(this.window.viewport());
     let total = 0 + this.window.contentLayout().y;
 
     this.paintChild(this.root, total, -1, canvas);
@@ -121,7 +121,7 @@ export class FileTreeWindow extends EditorWindow {
     canvas: Canvas,
   ): number {
     const layout = this.window.contentLayout();
-    const viewport = this.viewport;
+    const viewport = this.window.viewport();
 
     const viewportPosition = viewport.bufferToViewPort({
       x: indent * 2,

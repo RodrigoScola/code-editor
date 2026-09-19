@@ -14,22 +14,21 @@ describe("tests the buffer and rendering", () => {
     layout.height = layout.width = 6;
     const cnv = new Canvas().setLayout(layout);
 
-    const window = new TextEditorWindow(
+    const editor = new TextEditorWindow(
       new Textdocument(new MemoryFile("doc", "t\tb")),
     );
     cnv.tab_width = 5;
-    window.window.setLayout(layout);
+    editor.window.setLayout(layout);
 
     LayoutEngine.Measure(
-      window.window,
-      LayoutEngine.CreateConstraints(layout.width),
-    );
+      editor.window,
+      LayoutEngine.CreateConstraints(10),
+    ).Arrange(editor.window);
 
-    Renderer.Create().build(window.window, cnv);
+    Renderer.Create().build(editor.window, cnv);
+    cnv.renderBoard();
 
     const first = cnv.getCell(0, 0);
-
-    cnv.renderBoard();
 
     expect(first?.styles.display(), `should equal the same`).eq("t");
     const last = cnv.getCell(5, 0);

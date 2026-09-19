@@ -117,13 +117,12 @@ export class GitCommitWindow extends EditorWindow {
     this.window.addChildren(dp);
 
     this.files = Git.getStatusFiles();
-    this.buffer = new TextBuffer(this.files.map((f) => f.path).join("\n"));
+    this.setBuffer(new TextBuffer(this.files.map((f) => f.path).join("\n")));
   }
   paint(canvas: Canvas): void {
     canvas.fillRect(this.window.contentLayout(), this.window.styles());
 
-    const cursorLine = this.buffer.at(this.cursor.line);
-    this.drawBuffer(canvas, this);
+    const cursorLine = this.buffer().at(this.cursor.line);
 
     this.cursor.paint(canvas, this, cursorLine);
   }
@@ -139,28 +138,27 @@ export class GitEditorWindow extends EditorWindow {
 
   requestData() {
     this.files = [];
-    this.buffer = new TextBuffer();
 
     this.files = Git.getStatusFiles();
 
     this.display();
   }
   display() {
-    this.buffer.addLine("Staged Files: ");
+    this.buffer().addLine("Staged Files: ");
     const staged = this.files.filter((file) => file.isStaged());
 
     for (const file of staged) {
-      this.buffer.addLine(` ${file.stagedStatus} -> ${file.path}`);
+      this.buffer().addLine(` ${file.stagedStatus} -> ${file.path}`);
     }
 
-    this.buffer.addLine("Unstaged Files:");
+    this.buffer().addLine("Unstaged Files:");
     const unstaged = this.files.filter((file) => file.isUnstaged());
     for (const file of unstaged) {
-      this.buffer.addLine(` ${file.unstagedStatus} -> ${file.path}`);
+      this.buffer().addLine(` ${file.unstagedStatus} -> ${file.path}`);
     }
   }
   onEnter(ctx: EditorContext): void {
-    const line = this.buffer.at(this.cursor.line);
+    const line = this.buffer().at(this.cursor.line);
     if (!line) {
       return;
     }

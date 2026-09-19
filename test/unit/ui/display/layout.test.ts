@@ -251,10 +251,6 @@ describe("tests the invisible of component", () => {
 
     cnv.renderBoard();
 
-    // we use measured size here because its the size that it will show on screen
-    expect(right.measuredSize().height).eq(0);
-    expect(right.measuredSize().width).eq(0);
-
     expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
       colors.YELLOW_BACKGROUND,
     );

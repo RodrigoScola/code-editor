@@ -1,8 +1,6 @@
-import { start } from "node:repl";
 import { DisplayComponent, parseSize } from "../components/components.js";
 import { LayoutDimensions } from "./LayoutDimensions.js";
 import { LayoutBounds } from "./layoutStyle.js";
-import { assert } from "node:console";
 
 type RowItem = {
   child: DisplayComponent;
@@ -180,7 +178,6 @@ export class LayoutEngine {
       } else if (component.alignContent() === "space-around") {
         const available = Math.round(bounds.height - columnHeight);
         spacing = Math.round(available / column.length);
-        console.log("spacing", spacing);
         y += Math.floor(spacing / 2);
       }
 
@@ -474,6 +471,7 @@ export class LayoutEngine {
 
   static Measure(component: DisplayComponent, constraints: MeasureConstraints) {
     component.measure(constraints);
+    
 
     return this;
   }
@@ -481,6 +479,7 @@ export class LayoutEngine {
   static Arrange(root: DisplayComponent, bounds?: LayoutBounds) {
     const layout = root.layout();
     const measured = root.measuredSize();
+
 
     root.arrange(
       bounds || {
@@ -490,6 +489,7 @@ export class LayoutEngine {
         height: layout.height || measured.height,
       },
     );
+    
     return this;
   }
   static Layout(

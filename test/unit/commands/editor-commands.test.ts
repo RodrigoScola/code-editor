@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { EditorContext } from "../../../src/Editor/Editor/Editor.js";
-import { Textdocument, MemoryFile } from "../../../src/Editor/Documents/TextDocument.js";
+import {
+  Textdocument,
+  MemoryFile,
+} from "../../../src/Editor/Documents/TextDocument.js";
 import { TextEditorWindow } from "../../../src/Editor/windows/TextEditorWindow.js";
 import { DisplayComponent } from "../../../src/ui/components/components.js";
 import { WINDOW_NAMES } from "../../../src/constants.js";
@@ -89,6 +92,7 @@ describe("textEditorCommands", () => {
 
     expect(editorWindow.cursor.column).eq(0);
   });
+  it.todo("still appears viewport scroll down");
 });
 
 function setupContext({ fileContent }: { fileContent: string }) {

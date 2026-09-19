@@ -90,6 +90,8 @@ export class ComponentLayoutFns {
 
   setLayout(layout: LayoutBounds): this {
     this._layoutStyle.setLayout(layout);
+    
+    
     return this;
   }
   layoutStyle() {

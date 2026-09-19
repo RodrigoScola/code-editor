@@ -8,7 +8,6 @@ import { EditorWindow } from "./EditorWindow.js";
 export class StatusWindow extends EditorWindow {
   editor: EditorContext;
   cursor: Cursor = new Cursor();
-  buffer: TextBuffer = new TextBuffer("");
   currentCommandLine: number = 0;
   constructor(editor: EditorContext) {
     super();
@@ -21,7 +20,7 @@ export class StatusWindow extends EditorWindow {
 
   nextCommandLine() {
     this.currentCommandLine = Math.max(
-      Math.min(this.buffer.count() - 1, this.currentCommandLine + 1),
+      Math.min(this.buffer().count() - 1, this.currentCommandLine + 1),
       0,
     );
   }
@@ -33,7 +32,7 @@ export class StatusWindow extends EditorWindow {
     let out = "";
 
     if (this.editor.modeName === "command") {
-      out += `command: ${this.buffer.at(this.currentCommandLine) || ""} `;
+      out += `command: ${this.buffer().at(this.currentCommandLine) || ""} `;
     } else {
       out += `mode: ${this.editor.modeName} -`;
       out += `current memory ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB - `;
@@ -43,7 +42,7 @@ export class StatusWindow extends EditorWindow {
     canvas.drawText(cl, out, this.window.styles());
 
     if (this.editor.modeName === "command") {
-      const content = this.buffer.at(this.cursor.line);
+      const content = this.buffer().at(this.cursor.line);
       let len = `command: `.length + (content?.length ?? 0);
 
       canvas.fillRect(
@@ -60,14 +59,14 @@ export class StatusWindow extends EditorWindow {
         this.cursor.style.setBackgroundColor(colors.RED_BACKGROUND);
         this.cursor.style.setColor(colors.WHITE_FOREGROUND);
 
-        this.currentCommandLine = Math.max(this.buffer.count() - 1, 0);
-        this.cursor.moveDown(this.buffer);
+        this.currentCommandLine = Math.max(this.buffer().count() - 1, 0);
+        this.cursor.moveDown(this.buffer());
       }
     }
     if (event.name === "submitCommand") {
       this.currentCommandLine++;
       this.nextCommandLine();
-      this.buffer.newLine();
+      this.buffer().newLine();
     }
   }
 }

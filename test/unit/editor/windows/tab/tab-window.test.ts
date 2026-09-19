@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { TabComponent, TabWindow } from "../../../../../src/Editor/windows/Tab/TabWindow.js";
+import {
+  TabComponent,
+  TabWindow,
+} from "../../../../../src/Editor/windows/Tab/TabWindow.js";
 import { DisplayComponent } from "../../../../../src/ui/components/components.js";
 import { Canvas } from "../../../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
@@ -47,7 +50,7 @@ describe("tests the tab component", () => {
       "has the top and bottom",
     );
 
-    first.buffer.addLine("this should be the content");
+    first.buffer().addLine("this should be the content");
 
     LayoutEngine.Measure(root, constraints).Arrange(root);
     Renderer.Create().build(root, canvas);
