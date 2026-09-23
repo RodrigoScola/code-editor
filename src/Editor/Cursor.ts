@@ -38,7 +38,11 @@ export class Cursor {
 		const layout = editor.contentLayout();
 		const content = canvas.getCell(this.column, this.line)?.styles.display() || ' ';
 
-		const relativePosition = canvas.applyRelative(this.column, this.line, layout);
+		const relativePosition = canvas.applyRelative(
+			this.column,
+			this.line - editor.viewport().firstLine,
+			layout,
+		);
 
 		if (
 			relativePosition.x < layout.x ||
