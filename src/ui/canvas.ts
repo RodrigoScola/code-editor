@@ -155,31 +155,6 @@ export class Canvas {
       }
     }
   }
-  selectionBounds(
-    start: Point,
-    end: Point,
-    buffer: BufferLike,
-  ): LayoutBounds[] {
-    const bounds: LayoutBounds[] = [];
-
-    for (let y = start.y; y <= end.y; y++) {
-      const content = buffer.at(y) ?? "";
-
-      const from = y === start.y ? start.x : 0;
-      const to = y === end.y ? end.x : content.length;
-
-      if (to <= from) continue;
-
-      bounds.push({
-        x: from,
-        y,
-        width: to - from,
-        height: 1,
-      });
-    }
-
-    return bounds;
-  }
 
   applyRelative(x: number, y: number, layout: LayoutBounds): LayoutBounds;
   applyRelative(
@@ -254,78 +229,6 @@ export class Canvas {
     return this.canvas;
   }
 
-  paintBorder(cl: LayoutBounds, border: ComponentBorder) {
-    const bound: LayoutBounds = {
-      height: 0,
-      width: 0,
-      x: 0,
-      y: 0,
-    };
-    const out = border.styles().display();
-
-    if (border.left() > 0) {
-      bound.x = cl.x - border.left();
-      bound.height = cl.height + border.top() + border.bottom();
-      bound.width = border.left();
-      bound.y = cl.y - border.top();
-
-      border.styles().setDisplay(border.borderStyle().left);
-      this.fillRect(bound, border.styles());
-      border.styles().setDisplay(out);
-    }
-
-    if (border.right() > 0) {
-      bound.x = cl.x + cl.width;
-      bound.height = cl.height + border.top() + border.bottom();
-      bound.width = border.right();
-      bound.y = cl.y - border.top();
-      border.styles().setDisplay(border.borderStyle().right);
-      this.fillRect(bound, border.styles());
-      border.styles().setDisplay(out);
-    }
-
-    if (border.top() > 0) {
-      let width = cl.width + border.left() + border.right();
-
-      let text = border.borderStyle().top.repeat(width);
-
-      if (border.left() > 0 && border.right() > 0) {
-        text =
-          border.borderStyle().top_left +
-          text.slice(1, -1) +
-          border.borderStyle().top_right;
-      }
-
-      bound.x = cl.x - border.left();
-      bound.height = border.top();
-      bound.width = width;
-      bound.y = cl.y - border.top();
-
-      this.fillRect(bound, border.styles());
-      this.drawText(bound, text, border.styles());
-    }
-
-    if (border.bottom() > 0) {
-      let width = cl.width + border.left() + border.right();
-
-      let text = border.borderStyle().bottom.repeat(width);
-
-      if (border.left() > 0 && border.right() > 0) {
-        text =
-          border.borderStyle().bottom_left +
-          text.slice(1, -1) +
-          border.borderStyle().bottom_right;
-      }
-
-      bound.x = cl.x - border.left();
-      bound.width = width;
-      bound.y = cl.y + cl.height;
-      bound.height = border.bottom();
-
-      this.fillRect(bound, border.styles());
-      this.drawText(bound, text, border.styles());
-    }
-  }
 }
 // a tab is one buffer character but expands to multiple screen cells, so
 // rendering and cursor placement need the expanded text / a column mapping
