@@ -314,6 +314,7 @@ describe("display component integration", () => {
   });
 });
 
+
 function display(root: DisplayComponent, canvas: Canvas) {
   LayoutEngine.Measure(
     root,

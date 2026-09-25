@@ -91,13 +91,6 @@ function setupTextEditor(editor: EditorContext) {
 
   editorWindow.window.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
   editor.addWindow(editorWindow);
-
-  editorWindow.window.setStyles(
-    ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLACK_BACKGROUND),
-  );
-
-  editorWindow.window.viewport().visibleLines =
-    editorWindow.window.contentLayout().height;
 }
 
 function setupVisualModeCommands(editor: EditorContext) {

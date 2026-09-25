@@ -44,7 +44,7 @@ function moveUpEditorCommand(ctx: EditorContext) {
   }
   isEditorWindow(window);
   const cursor = window.cursor;
-  cursor.moveUp(window.buffer());
+  cursor.moveUp();
 }
 
 function moveLeftEditorCommand(ctx: EditorContext) {
@@ -55,18 +55,18 @@ function moveLeftEditorCommand(ctx: EditorContext) {
   }
   isEditorWindow(window);
   const cursor = window.cursor;
-  cursor.moveLeft(window.buffer());
+  cursor.moveLeft();
 }
 
 function moveRightEditorCommand(ctx: EditorContext) {
-  const window = ctx.getActiveWindow();
-  if (!window) {
+  const editor = ctx.getActiveWindow();
+  if (!editor) {
     log("invalid active window");
     return;
   }
-  isEditorWindow(window);
-  const cursor = window.cursor;
-  cursor.moveRight(window.buffer());
+  isEditorWindow(editor);
+  const cursor = editor.cursor;
+  cursor.moveRight();
 }
 
 function editorInsertMode(ctx: EditorContext) {
@@ -112,7 +112,7 @@ function editorInsertModeAfter(ctx: EditorContext) {
     buffer.update(cursor.line, line + " ");
   }
 
-  window?.cursor.moveRight(window.buffer());
+  window?.cursor.moveRight();
   ctx.setMode("insert");
 }
 

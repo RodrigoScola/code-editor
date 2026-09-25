@@ -274,4 +274,111 @@ describe("wrap children", () => {
 
     canvas.renderBoard();
   });
+  it("reduces the width of the component if width is fit-content (text)", () => {
+    const layout = LayoutEngine.CreateBounds(30, 30);
+    const canvas = new Canvas().setLayout(layout);
+
+    const phrase = "this is the contnet";
+
+    const root = new DisplayComponent().setLayout(layout);
+
+    const parent = new DisplayComponent()
+      .setWidth("fit-content")
+      .setContent(phrase);
+
+    parent.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    root.addChildren(parent);
+
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+    expect(parent.layout().width).eq(phrase.length);
+  });
+  it("reduces the height of the component if width is fit-content (text)", () => {
+    const layout = LayoutEngine.CreateBounds(30, 30);
+    const canvas = new Canvas().setLayout(layout);
+
+    const phrase = "this is the \n contnet";
+
+    const root = new DisplayComponent().setLayout(layout);
+
+    const parent = new DisplayComponent()
+      .setHeight("fit-content")
+      .setContent(phrase);
+
+    parent.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    root.addChildren(parent);
+
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+    expect(parent.layout().height).eq(parent.content().buffer().count());
+  });
+  it("reduces the dimensions of the component if width and height is fit-content (text)", () => {
+    const layout = LayoutEngine.CreateBounds(30, 30);
+    const canvas = new Canvas().setLayout(layout);
+
+    const phrase = "this is the \n contnet";
+
+    const root = new DisplayComponent().setLayout(layout);
+
+    const parent = new DisplayComponent()
+      .setHeight("fit-content")
+      .setWidth("fit-content")
+      .setContent(phrase);
+
+    parent.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    root.addChildren(parent);
+
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+    expect(parent.layout().width).eq(parent.content().width());
+    expect(parent.layout().height).eq(parent.content().buffer().count());
+  });
+
+  it("reduces the dimensions of component if width is fit content (children)", () => {
+    const layout = LayoutEngine.CreateBounds(30, 30);
+    const canvas = new Canvas().setLayout(layout);
+
+    const root = new DisplayComponent().setLayout(layout);
+    const phrase = "this-is\ncontent";
+    const parent = new DisplayComponent()
+      .setHeight("fit-content")
+      .setWidth("fit-content");
+
+    parent.styles().setBackgroundColor(colors.RED_BACKGROUND);
+
+    const child = new DisplayComponent().setHeight(10).setWidth(10);
+
+    parent.addChildren(child);
+
+    root.addChildren(parent);
+
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
+    Renderer.Create().build(root, canvas);
+
+    canvas.renderBoard();
+
+    expect(parent.layout().width).eq(10);
+    expect(parent.layout().height).eq(10);
+  });
 });

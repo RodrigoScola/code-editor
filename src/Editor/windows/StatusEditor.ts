@@ -1,13 +1,11 @@
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
-import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { EditorWindow } from "./EditorWindow.js";
 
 export class StatusWindow extends EditorWindow {
   editor: EditorContext;
-  cursor: Cursor = new Cursor();
   currentCommandLine: number = 0;
   constructor(editor: EditorContext) {
     super();
@@ -60,9 +58,10 @@ export class StatusWindow extends EditorWindow {
         this.cursor.style.setColor(colors.WHITE_FOREGROUND);
 
         this.currentCommandLine = Math.max(this.buffer().count() - 1, 0);
-        this.cursor.moveDown(this.buffer());
+        this.moveCursorDown();
       }
     }
+
     if (event.name === "submitCommand") {
       this.currentCommandLine++;
       this.nextCommandLine();

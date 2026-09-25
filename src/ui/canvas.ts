@@ -228,7 +228,6 @@ export class Canvas {
   getCells() {
     return this.canvas;
   }
-
 }
 // a tab is one buffer character but expands to multiple screen cells, so
 // rendering and cursor placement need the expanded text / a column mapping

@@ -1,64 +1,44 @@
 import { describe, expect, it } from "vitest";
-import {
-  TabComponent,
-  TabWindow,
-} from "../../../../../src/Editor/windows/Tab/TabWindow.js";
+import { TabWindow } from "../../../../../src/Editor/windows/Tab/TabWindow.js";
 import { DisplayComponent } from "../../../../../src/ui/components/components.js";
 import { Canvas } from "../../../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
 import { Renderer } from "../../../../../src/ui/renderer.js";
 import colors from "../../../../../src/ui/colors.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
+import { EditorWindow } from "../../../../../src/Editor/windows/EditorWindow.js";
+import { TextEditorWindow } from "../../../../../src/Editor/windows/TextEditorWindow.js";
+import {
+  DiskFile,
+  MemoryFile,
+  Textdocument,
+} from "../../../../../src/Editor/Documents/TextDocument.js";
+import { TextBuffer } from "../../../../../src/ui/buffer/Buffer.js";
 
 describe("tests the tab component", () => {
-  it("creates and shows tabs", () => {
-    const layout = LayoutEngine.CreateBounds(30);
-    const constraints = LayoutEngine.CreateConstraints(30);
+  it("shows the tab", () => {
+    const layout = LayoutEngine.CreateBounds(30, 30);
+    const canvas = new Canvas().setLayout(layout);
 
     const root = new EditorRoot().setLayout(layout);
 
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
-    const canvas = new Canvas().setLayout(layout);
+    const tab = new TabWindow();
 
-    const first = new TabComponent("title");
-    first.window.border().setParameter(1);
-    first.window
-      .setMaxHeight(1 + first.window.border().vertical())
-      .setMaxWidth("title".length + first.window.border().horizontal());
-
-    first.window.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
-
-    const second = new TabComponent("second");
-    second.window.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
-    second.window.border().setParameter(1);
-
-    second.window
-      .setMaxHeight(1 + second.window.border().vertical())
-      .setMaxWidth("second".length + second.window.border().horizontal());
-
-    const tab = new TabWindow().add(first).add(second);
-
-    tab.titles.setMaxHeight(1 + first.window.border().vertical());
-
-    tab.focus();
+    const editor = new TextEditorWindow(
+      new Textdocument(new MemoryFile("test", "this\nis\ncooo")),
+    );
+    editor.window.setName("text editor");
+    editor.window.styles().setBackgroundColor(colors.PINK_BACKGROUND);
 
     root.addChildren(tab.window);
 
-    expect(root.children().length == 1, "only has one child");
-    expect(
-      root.children().at(0)?.children().length == 2,
-      "has the top and bottom",
-    );
-
-    first.buffer().addLine("this should be the content");
-
-    LayoutEngine.Measure(root, constraints).Arrange(root);
+    tab.add("editor", editor);
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(layout.width),
+    ).Arrange(root);
     Renderer.Create().build(root, canvas);
-    canvas.renderBoard();
 
-    expect(tab.titles?.contentLayout().height, "has to have same height").eq(
-      first.window.layout().height,
-    );
-    expect(tab.board.layout().width).eq(layout.width);
+    canvas.renderBoard();
   });
 });

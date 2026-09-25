@@ -78,4 +78,11 @@ export class TextBuffer implements BufferLike {
     this.lines.splice(at, 0, "");
     return at;
   }
+  maxLineLength() {
+    let max = 0;
+    for (const line of this.lines) {
+      max = Math.max(line.length, max);
+    }
+    return max;
+  }
 }

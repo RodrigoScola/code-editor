@@ -32,8 +32,6 @@ export class FileTreeWindow extends EditorWindow {
   root: TreeNode;
   ignoreDirs: string[] = [];
 
-  cursor: Cursor = new Cursor();
-
   ignoreFileExt: string[] = [];
 
   constructor(dir: string) {
@@ -109,7 +107,7 @@ export class FileTreeWindow extends EditorWindow {
   paint(canvas: Canvas): void {
     const cl = this.window.contentLayout();
     this.window.viewport().ensureVisible(cl.width, cl.height);
-    this.cursor.ensureVisible(this.window.viewport());
+    this.cursor.ensureVisible();
     let total = 0 + this.window.contentLayout().y;
 
     this.paintChild(this.root, total, -1, canvas);
@@ -233,11 +231,11 @@ export class FileTreeWindow extends EditorWindow {
     return null;
   }
   moveCursorDown(): void {
-    return this.cursor.moveDown(this);
+    return this.cursor.moveDown();
   }
 
   moveCursorUp(): void {
-    return this.cursor.moveUp(this);
+    return this.cursor.moveUp();
   }
   onEvent(event: EditorEvents): void {}
   onEnter(ctx: EditorContext): void {

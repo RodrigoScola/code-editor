@@ -201,6 +201,7 @@ export class LayoutEngine {
           LayoutDimensions.requestedOuterWidth(child, bounds.width) ??
           Math.max(0, columnWidth - margin.left - margin.right);
 
+
         y += margin.top;
 
         if (component.alignContent() === "space-evenly") {
@@ -471,7 +472,6 @@ export class LayoutEngine {
 
   static Measure(component: DisplayComponent, constraints: MeasureConstraints) {
     component.measure(constraints);
-    
 
     return this;
   }
@@ -479,7 +479,6 @@ export class LayoutEngine {
   static Arrange(root: DisplayComponent, bounds?: LayoutBounds) {
     const layout = root.layout();
     const measured = root.measuredSize();
-
 
     root.arrange(
       bounds || {
@@ -489,7 +488,7 @@ export class LayoutEngine {
         height: layout.height || measured.height,
       },
     );
-    
+
     return this;
   }
   static Layout(

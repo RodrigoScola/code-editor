@@ -15,7 +15,7 @@ import { StatusWindow } from "../windows/StatusEditor.js";
 import { TextEditorWindow } from "../windows/TextEditorWindow.js";
 import { EditorRoot } from "./EditorRoot.js";
 import { memory } from "../../utils.js";
-import { LayoutBounds } from '../../ui/layout/layoutStyle.js';
+import { LayoutBounds } from "../../ui/layout/layoutStyle.js";
 
 export class EditorContext {
   layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
@@ -123,6 +123,12 @@ export class EditorContext {
     this.renderer.build(this.rootWindow, this.canvas);
     //memory("after building");
     //memory("before render");
+
+    const cursors = this.windowManager.all().map((editor) => editor.cursor);
+
+    for (const cursor of cursors) {
+      cursor.paint(this.canvas);
+    }
 
     const render = this.renderer.render(this.canvas);
     //memory("after render");

@@ -1,6 +1,6 @@
 import { DisplayComponent, parseSize } from "../components/components.js";
 import { LayoutEngine } from "./layout.js";
-import { LayoutBounds } from './layoutStyle.js';
+import { LayoutBounds } from "./layoutStyle.js";
 
 export class LayoutDimensions {
   static horizontalExtras(component: DisplayComponent) {
@@ -40,7 +40,28 @@ export class LayoutDimensions {
     component: DisplayComponent,
     availableWidth: number,
   ) {
-    const contentWidth = parseSize(component.width(), availableWidth);
+    let contentWidth = parseSize(component.width(), availableWidth);
+
+    if (component.width() === "fit-content") {
+      const measured = component.measuredSize();
+
+      if (component.hasChildren()) {
+        const constraints = LayoutEngine.CreateConstraints(measured.width, 1);
+
+        constraints.maxWidth = Math.max(measured.width, availableWidth);
+        constraints.minWidth = Math.min(measured.width, availableWidth);
+
+        const horizontal = this.measureHorizontal(
+          component.children(),
+          constraints,
+        );
+
+        contentWidth = horizontal.width;
+      } else if (component.hasContent()) {
+        contentWidth = component.content().width();
+      }
+    }
+
     return contentWidth === null
       ? null
       : this.outerWidth(component, contentWidth);
@@ -49,7 +70,29 @@ export class LayoutDimensions {
     component: DisplayComponent,
     availableHeight: number,
   ) {
-    const contentHeight = parseSize(component.height(), availableHeight);
+    let contentHeight = parseSize(component.height(), availableHeight);
+
+    if (component.height() === "fit-content") {
+      const measured = component.measuredSize();
+
+      if (component.hasChildren()) {
+        const constraints = LayoutEngine.CreateConstraints(
+          measured.width,
+          measured.height,
+        );
+        constraints.maxHeight = Math.max(measured.height, availableHeight);
+        constraints.minHeight = Math.min(measured.height, availableHeight);
+
+        const horizontal = this.measureVertical(
+          component.children(),
+          constraints,
+        );
+
+        contentHeight = horizontal.height;
+      } else if (component.hasContent()) {
+        contentHeight = component.content().height();
+      }
+    }
     return contentHeight === null
       ? null
       : this.outerHeight(component, contentHeight);

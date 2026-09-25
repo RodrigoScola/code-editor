@@ -3,7 +3,7 @@ type DisplayTypes = "flex" | "none";
 
 type DisplayDirection = "vertical" | "horizontal";
 type Directions = "left" | "right" | "up" | "down";
-type Size = number | "auto" | `${number}%`;
+type Size = number | "auto" | `${number}%` | "fit-content";
 
 type EditorModeEvent = {
   name: "editorModeChange";
@@ -42,7 +42,6 @@ interface VisualSize {
 }
 
 type EditingModes = "normal" | "visual" | "insert" | "command";
-
 
 interface EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext);

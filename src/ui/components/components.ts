@@ -22,7 +22,7 @@ export class DisplayComponent extends ComponentLayoutFns {
 
   private nm: string | null | undefined;
 
-  private _focusable = false;
+  private _focused = false;
   private _text: TextLayout = new TextLayout();
 
   private _measuredSize: MeasuredSize = {
@@ -253,7 +253,7 @@ export class DisplayComponent extends ComponentLayoutFns {
       return this._measuredSize;
     }
 
-    const styleConstraints = LayoutDimensions.applyStyleConstraints(
+    let styleConstraints = LayoutDimensions.applyStyleConstraints(
       this,
       constraints,
     );
@@ -509,12 +509,12 @@ export class DisplayComponent extends ComponentLayoutFns {
   // Focus
   // ---------------------------------------------------------------------------
 
-  focusable(): boolean {
-    return this._focusable;
+  focused(): boolean {
+    return this._focused;
   }
 
-  setFocusable(value: boolean): this {
-    this._focusable = value;
+  setFocused(value: boolean): this {
+    this._focused = value;
     return this;
   }
 
@@ -538,11 +538,11 @@ export class DisplayComponent extends ComponentLayoutFns {
 
   text(): string | undefined {
     // todo: change this out
-    return this._text.buffer.content();
+    return this._text.buffer().content();
   }
 
   setContent(value: string): this {
-    this._text.buffer = new TextBuffer(value);
+    this._text.setBuffer(new TextBuffer(value));
     this.setDirty(true);
     return this;
   }
@@ -568,6 +568,12 @@ export class DisplayComponent extends ComponentLayoutFns {
   setTextOverflow(type: OverflowTypes) {
     this.content().setOverflow(type);
   }
+  hasChildren() {
+    return this.children().length > 0;
+  }
+  hasContent() {
+    return this.content().lines().length > 0;
+  }
 
   // ---------------------------------------------------------------------------
   // Layout Style
@@ -575,7 +581,7 @@ export class DisplayComponent extends ComponentLayoutFns {
 }
 
 export function parseSize(size: Size, available: number): number | null {
-  if (size === "auto") {
+  if (size === "auto" || size === "fit-content") {
     return null;
   }
 
