@@ -219,7 +219,7 @@ export class Canvas {
         }
 
         cell.styles = ComponentStyle.Blend(
-          cell.styles,
+          style ?? cell.styles,
           ComponentStyle.Blend(style, DEFAULT_STYLE),
         ).setDisplay(line[i]);
       }

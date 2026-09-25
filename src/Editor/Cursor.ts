@@ -12,6 +12,10 @@ import { DisplayComponent } from "../ui/components/components.js";
 
 export class Cursor {
   prefferedColumn: number = 0;
+
+  width: number = 1;
+  height: number = 1;
+
   line: number = 0;
   column: number = 0;
   style: ComponentStyle = ComponentStyle.Create()
@@ -44,30 +48,36 @@ export class Cursor {
     }
 
     const layout = editor.contentLayout();
-    const content =
-      canvas.getCell(this.column, this.line)?.styles.display() || " ";
 
-    const relativePosition = canvas.applyRelative(
+    const relative = canvas.applyRelative(
       this.column,
       this.line - editor.viewport().firstLine,
       layout,
     );
 
     if (
-      relativePosition.x < layout.x ||
-      relativePosition.y < layout.y ||
-      relativePosition.x >= layout.x + layout.width ||
-      relativePosition.y >= layout.y + layout.height
+      relative.x < layout.x ||
+      relative.y < layout.y ||
+      relative.x >= layout.x + layout.width ||
+      relative.y >= layout.y + layout.height
     ) {
       return;
     }
 
-    this.style.setBackgroundColor(colors.PINK_BACKGROUND);
+    relative.height = this.height;
+    relative.width = this.width;
 
-    canvas.fillRect(
-      relativePosition,
-      this.style.setDisplay(content[this.column]),
-    );
+    const content = canvas.getRow(relative.y);
+    assert(content, "invalid display row");
+
+    const str = content.map((tile) => tile.styles.display());
+
+    let final = "";
+    for (let i = relative.x; i < relative.x + relative.width; i++) {
+      final += str[i];
+    }
+
+    canvas.drawText(relative, final, this.style);
   }
 
   ensureVisible() {

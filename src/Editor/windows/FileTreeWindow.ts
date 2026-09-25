@@ -37,14 +37,17 @@ export class FileTreeWindow extends EditorWindow {
   constructor(dir: string) {
     super();
 
-    // @ts-expect-error
-    this.root = {
-      path: "",
-      children: [],
-      isDirectory: true,
-      name: dir,
-      parent: null,
-    };
+    ((this.cursor.style = ComponentStyle.Create()
+      .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
+      .setColor(colors.WHITE_FOREGROUND)),
+      // @ts-expect-error
+      (this.root = {
+        path: "",
+        children: [],
+        isDirectory: true,
+        name: dir,
+        parent: null,
+      }));
 
     this.walkTree(dir, this.root);
   }
@@ -104,10 +107,11 @@ export class FileTreeWindow extends EditorWindow {
     }
   }
 
+  onPrePaint(): void {
+    this.cursor.width = this.window.contentLayout().width;
+  }
+
   paint(canvas: Canvas): void {
-    const cl = this.window.contentLayout();
-    this.window.viewport().ensureVisible(cl.width, cl.height);
-    this.cursor.ensureVisible();
     let total = 0 + this.window.contentLayout().y;
 
     this.paintChild(this.root, total, -1, canvas);
@@ -145,20 +149,6 @@ export class FileTreeWindow extends EditorWindow {
         width: layout.width - viewportPosition.x,
         height: 1,
       };
-
-      if (y === this.cursor.line) {
-        canvas.fillRect(
-          {
-            x: layout.x,
-            y: screenY,
-            width: layout.width,
-            height: 1,
-          },
-          ComponentStyle.Create()
-            .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
-            .setColor(colors.WHITE_FOREGROUND),
-        );
-      }
 
       let label = node.name;
 
@@ -231,11 +221,12 @@ export class FileTreeWindow extends EditorWindow {
     return null;
   }
   moveCursorDown(): void {
-    return this.cursor.moveDown();
+    const total = this.count();
+    this.cursor.line = Math.min(total, this.cursor.line + 1);
   }
 
   moveCursorUp(): void {
-    return this.cursor.moveUp();
+    this.cursor.line = Math.max(0, this.cursor.line - 1);
   }
   onEvent(event: EditorEvents): void {}
   onEnter(ctx: EditorContext): void {

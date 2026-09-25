@@ -8,10 +8,13 @@ import { Cursor } from "../Cursor.js";
 export class TextEditorWindow extends EditorWindow {
   document: Textdocument;
 
+  cursor: Cursor = new Cursor(this.window);
+
   constructor(document: Textdocument) {
     super();
     this.document = document;
-    this.cursor = new Cursor(this.window);
+
+    this.window.styles().setBackgroundColor(colors.BRIGHT_RED_BACKGROUND);
 
     this.cursor.style.setBackgroundColor(colors.WHITE_BACKGROUND);
 
@@ -23,7 +26,6 @@ export class TextEditorWindow extends EditorWindow {
     this.window.viewport().ensureVisible(cl.width, cl.height);
     this.cursor.ensureVisible();
   }
-
 
   applyLines() {
     const lineComponent = new DisplayComponent().setWidth("fit-content");
