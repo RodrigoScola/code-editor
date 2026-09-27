@@ -1,8 +1,7 @@
 import { assert } from "../assert.js";
 import { InputParser } from "../Input/inputParser.js";
 import { EditorContext } from "../Editor/Editor/Editor.js";
-import { isStatusWindow, isEditorWindow } from "../utils.js";
-import { TextEditorWindow } from "../Editor/windows/TextEditorWindow.js";
+import { isTextEditorWindow, isStatusEditorWindow } from "../utils.js";
 import { StatusWindow } from "../Editor/windows/StatusEditor.js";
 
 type Command = (ctx: EditorContext) => void;
@@ -151,15 +150,15 @@ export class CommandMode implements EditorMode {
   }
 
   handleKey(key: KeyEvent, ctx: EditorContext) {
-    const window = ctx.getActiveWindow();
-    if (!window) {
+    const editor = ctx.getActiveWindow();
+    if (!editor) {
       return;
     }
 
-    isStatusWindow(window);
+    isStatusEditorWindow(editor);
 
-    const cursor = window.cursor;
-    const buffer = window.buffer();
+    const buffer = editor.buffer();
+    const cursor = editor.cursor();
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;
@@ -191,13 +190,13 @@ export class CommandMode implements EditorMode {
 
       ctx.setMode("normal");
     } else if (InputParser.isArrowDown(key.token)) {
-      window.nextCommandLine();
+      editor.nextCommandLine();
     } else if (InputParser.isArrowUp(key.token)) {
-      window.previousCommandLine();
+      editor.previousCommandLine();
     } else if (InputParser.isArrowLeft(key.token)) {
-      cursor.moveLeft();
+      editor.moveCursorLeft();
     } else if (InputParser.isArrowRight(key.token)) {
-      cursor.moveRight();
+      editor.moveCursorRight();
     } else if (InputParser.isTab(key.token)) {
       buffer.addCharacter(cursor.line, cursor.column, "\t");
       cursor.column += 1;
@@ -213,9 +212,9 @@ export class InsertMode implements EditorMode {
       return;
     }
 
-    isEditorWindow(editor);
+    isTextEditorWindow(editor);
 
-    const cursor = editor.cursor;
+    const cursor = editor.cursor();
     const buffer = editor.buffer();
 
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {

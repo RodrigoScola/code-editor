@@ -12,10 +12,11 @@ import { DiskFile, Textdocument } from "../Documents/TextDocument.js";
 import { WindowManager } from "../windows/WindowManager/WindowManager.js";
 import { EditorWindow } from "../windows/EditorWindow.js";
 import { StatusWindow } from "../windows/StatusEditor.js";
-import { TextEditorWindow } from "../windows/TextEditorWindow.js";
 import { EditorRoot } from "./EditorRoot.js";
-import { memory } from "../../utils.js";
+import { isCodeEditorWindow, isTextEditorWindow, memory } from "../../utils.js";
 import { LayoutBounds } from "../../ui/layout/layoutStyle.js";
+import { CodeEditorWindow } from "../windows/CodeEditorWindow.js";
+import { Cursor } from "../Cursor.js";
 
 export class EditorContext {
   layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
@@ -59,7 +60,7 @@ export class EditorContext {
   }
   openFile(path: string) {
     try {
-      const editor = this.windowManager.find(TextEditorWindow);
+      const editor = this.windowManager.find(CodeEditorWindow);
       if (!editor) return;
       editor?.openDocument(new Textdocument(new DiskFile(path)));
 
@@ -124,7 +125,16 @@ export class EditorContext {
     //memory("after building");
     //memory("before render");
 
-    const cursors = this.windowManager.all().map((editor) => editor.cursor);
+    const cursors = this.windowManager.all().reduce((all: Cursor[], window) => {
+      try {
+        isTextEditorWindow(window);
+        if (window.focused()) {
+          all.push(window.cursor());
+        }
+      } catch (err) {}
+
+      return all;
+    }, []);
 
     for (const cursor of cursors) {
       cursor.paint(this.canvas);

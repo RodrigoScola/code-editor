@@ -19,8 +19,8 @@ export class TabWindow extends EditorWindow {
     this.titles.border().setBorderSyle("full").setBottom(1);
     this.displayContent.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
 
-    this.window.addChildren(this.titles);
-    this.window.addChildren(this.displayContent);
+    this.view().addChildren(this.titles);
+    this.view().addChildren(this.displayContent);
   }
 
   focusWindow(editor: EditorWindow) {
@@ -29,7 +29,7 @@ export class TabWindow extends EditorWindow {
 
     const index = parent.children().indexOf(this.displayContent);
     parent.removeChild(this.displayContent);
-    parent.addChildAt(editor.window, index);
+    parent.addChildAt(editor.view(), index);
     this.management.focus(editor);
   }
 

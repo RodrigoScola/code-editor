@@ -22,7 +22,6 @@ export class DisplayComponent extends ComponentLayoutFns {
 
   private nm: string | null | undefined;
 
-  private _focused = false;
   private _text: TextLayout = new TextLayout();
 
   private _measuredSize: MeasuredSize = {
@@ -508,15 +507,6 @@ export class DisplayComponent extends ComponentLayoutFns {
   // ---------------------------------------------------------------------------
   // Focus
   // ---------------------------------------------------------------------------
-
-  focused(): boolean {
-    return this._focused;
-  }
-
-  setFocused(value: boolean): this {
-    this._focused = value;
-    return this;
-  }
 
   // ---------------------------------------------------------------------------
   // Text

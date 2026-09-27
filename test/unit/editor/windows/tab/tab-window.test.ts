@@ -1,19 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 import { TabWindow } from "../../../../../src/Editor/windows/Tab/TabWindow.js";
-import { DisplayComponent } from "../../../../../src/ui/components/components.js";
 import { Canvas } from "../../../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
 import { Renderer } from "../../../../../src/ui/renderer.js";
 import colors from "../../../../../src/ui/colors.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
-import { EditorWindow } from "../../../../../src/Editor/windows/EditorWindow.js";
-import { TextEditorWindow } from "../../../../../src/Editor/windows/TextEditorWindow.js";
 import {
-  DiskFile,
   MemoryFile,
   Textdocument,
 } from "../../../../../src/Editor/Documents/TextDocument.js";
-import { TextBuffer } from "../../../../../src/ui/buffer/Buffer.js";
+import { CodeEditorWindow } from "../../../../../src/Editor/windows/CodeEditorWindow.js";
 
 describe("tests the tab component", () => {
   it("shows the tab", () => {
@@ -24,13 +20,12 @@ describe("tests the tab component", () => {
 
     const tab = new TabWindow();
 
-    const editor = new TextEditorWindow(
+    const editor = new CodeEditorWindow(
       new Textdocument(new MemoryFile("test", "this\nis\ncooo")),
     );
-    editor.window.setName("text editor");
-    editor.window.styles().setBackgroundColor(colors.PINK_BACKGROUND);
+    editor.view().styles().setBackgroundColor(colors.PINK_BACKGROUND);
 
-    root.addChildren(tab.window);
+    root.addChildren(tab.view());
 
     tab.add("editor", editor);
     LayoutEngine.Measure(

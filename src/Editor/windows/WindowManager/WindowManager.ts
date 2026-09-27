@@ -2,9 +2,9 @@ import { Direction } from "readline";
 import { assert } from "../../../assert.js";
 import { DisplayComponent } from "../../../ui/components/components.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
-import { EditorWindow } from "../EditorWindow.js";
 import { type } from "os";
-import { LayoutBounds } from '../../../ui/layout/layoutStyle.js';
+import { LayoutBounds } from "../../../ui/layout/layoutStyle.js";
+import { EditorWindow } from "../EditorWindow.js";
 
 export class WindowManager {
   private windows = new Map<string, EditorWindow>();
@@ -17,11 +17,11 @@ export class WindowManager {
   }
 
   add(window: EditorWindow) {
-    this.windows.set(window.id, window);
+    this.windows.set(window.id(), window);
     return this;
   }
   remove(window: EditorWindow) {
-    this.windows.delete(window.id);
+    this.windows.delete(window.id());
     if (this.active === window) {
       this.active = null;
     }
@@ -30,16 +30,19 @@ export class WindowManager {
     return [...this.windows.values()];
   }
   unfocus(editorWindow: EditorWindow) {
-    editorWindow.blur();
-    this.history.push(editorWindow.id);
+    editorWindow.unfocus();
+    this.history.push(editorWindow.id());
 
-    if (this.active?.id === editorWindow.id) {
+    if (this.active?.id() === editorWindow.id()) {
       this.active = null;
     }
   }
 
   focus(window: EditorWindow): EditorWindow | null {
-    assert(this.windows.has(window.id), "trying to focus an unmanaged window");
+    assert(
+      this.windows.has(window.id()),
+      "trying to focus an unmanaged window",
+    );
     if (this.active) {
       this.unfocus(this.active);
     }
@@ -73,27 +76,27 @@ export class WindowManager {
   open() {}
   close() {}
   split(
-    window: EditorWindow,
-    newWindow: EditorWindow,
+    editor: EditorWindow,
+    newEditor: EditorWindow,
     direction: DisplayDirection,
   ) {
-    const parent = window.window.parent();
+    const parent = editor.view().parent();
 
     assert(parent, "cannot split a window without a parent");
 
-    const index = parent.children().indexOf(window.window);
+    const index = parent.children().indexOf(editor.view());
 
     assert(index !== -1, "window is not part of its parent");
 
     const split = new DisplayComponent()
-      .addChildren(window.window)
-      .addChildren(newWindow.window)
+      .addChildren(editor.view())
+      .addChildren(newEditor.view())
       .setDirection(direction);
 
-    parent.removeChild(window.window);
+    parent.removeChild(editor.view());
     parent.addChildAt(split, index);
 
-    this.add(newWindow);
+    this.add(newEditor);
   }
   replace() {}
   private overlaps(a: LayoutBounds, b: LayoutBounds): boolean {
@@ -115,14 +118,16 @@ export class WindowManager {
       return null;
     }
 
-    const currentBounds = current.window.contentLayout();
+    const currentBounds = current.view().contentLayout();
 
     const candidates = [...this.windows.values()]
-      .filter((window) => window !== current)
-      .filter((window) =>
+      .filter((editor) => editor !== current)
+      .filter((editor) => editor.view().visible() == true)
+
+      .filter((editor) =>
         this.isInDirection(
           currentBounds,
-          window.window.contentLayout(),
+          editor.view().contentLayout(),
           direction,
         ),
       );
@@ -134,13 +139,13 @@ export class WindowManager {
     candidates.sort((a, b) => {
       const aScore = this.directionScore(
         currentBounds,
-        a.window.contentLayout(),
+        a.view().contentLayout(),
         direction,
       );
 
       const bScore = this.directionScore(
         currentBounds,
-        b.window.contentLayout(),
+        b.view().contentLayout(),
         direction,
       );
 

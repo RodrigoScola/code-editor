@@ -212,10 +212,10 @@ export class LayoutDimensions {
     }
 
     return {
-      x: Math.floor(bounds.x),
-      y: Math.floor(bounds.y),
-      width: Math.floor(Math.max(0, width)),
-      height: Math.floor(Math.max(0, height)),
+      x: Math.round(bounds.x),
+      y: Math.round(bounds.y),
+      width: Math.round(Math.max(0, width)),
+      height: Math.round(Math.max(0, height)),
     };
   }
 }

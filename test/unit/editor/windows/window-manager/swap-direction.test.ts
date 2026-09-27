@@ -6,35 +6,37 @@ import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
 import { Renderer } from "../../../../../src/ui/renderer.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
 import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
-import { TextEditorWindow } from "../../../../../src/Editor/windows/TextEditorWindow.js";
-import { Textdocument, MemoryFile } from "../../../../../src/Editor/Documents/TextDocument.js";
+import {
+  Textdocument,
+  MemoryFile,
+} from "../../../../../src/Editor/Documents/TextDocument.js";
+import { TextEditorWindow } from "../../../../../src/Editor/windows/EditorWindow.js";
 
-const createTextWindow = (text: string) =>
-  new TextEditorWindow(new Textdocument(new MemoryFile("out", text)));
+const createTextWindow = (text: string) => new TextEditorWindow(text);
 
 const createCubes = (manager: WindowManager) => {
   const topL = createTextWindow("top left");
-  topL.window.styles()?.setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+  topL.view().styles()?.setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
   const topR = createTextWindow("top right");
-  topR.window.styles()?.setBackgroundColor(colors.MAGENTA_BACKGROUND);
+  topR.view().styles()?.setBackgroundColor(colors.MAGENTA_BACKGROUND);
 
   const bottomL = createTextWindow("bottom left");
-  bottomL.window.styles()?.setBackgroundColor(colors.WHITE_BACKGROUND);
+  bottomL.view().styles()?.setBackgroundColor(colors.WHITE_BACKGROUND);
   const bottomR = createTextWindow("bottom right");
-  bottomR.window.styles()?.setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+  bottomR.view().styles()?.setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
 
   manager.add(topL).add(topR).add(bottomL).add(bottomR);
   manager.root.addChildren(
     new DisplayComponent()
       .setDirection("horizontal")
-      .addChildren(topL.window)
-      .addChildren(topR.window),
+      .addChildren(topL.view())
+      .addChildren(topR.view()),
   );
   manager.root.addChildren(
     new DisplayComponent()
       .setDirection("horizontal")
-      .addChildren(bottomL.window)
-      .addChildren(bottomR.window),
+      .addChildren(bottomL.view())
+      .addChildren(bottomR.view()),
   );
 
   return {

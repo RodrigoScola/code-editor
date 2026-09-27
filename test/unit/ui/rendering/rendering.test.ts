@@ -5,13 +5,13 @@ import { DisplayComponent } from "../../../../src/ui/components/components.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { assert } from "../../../../src/assert.js";
 import { Renderer } from "../../../../src/ui/renderer.js";
-import { TextEditorWindow } from "../../../../src/Editor/windows/TextEditorWindow.js";
 import {
   MemoryFile,
   Textdocument,
 } from "../../../../src/Editor/Documents/TextDocument.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle.js";
+import { TextEditorWindow } from "../../../../src/Editor/windows/EditorWindow.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
@@ -215,30 +215,28 @@ describe("editorComponent", () => {
   it("the height of the text should be 1 by default", () => {
     const content = "firstline\nsecondline";
 
-    const display = new TextEditorWindow(
-      new Textdocument(new MemoryFile("doc", content)),
-    );
+    const display = new TextEditorWindow(content);
 
     const layout = LayoutEngine.CreateBounds();
     layout.height = layout.width = 10;
 
-    display.window.setTextOverflow("clip");
+    display.view().setTextOverflow("clip");
 
-    display.window.styles().setBackgroundColor(colors.WHITE_BACKGROUND);
+    display.view().styles().setBackgroundColor(colors.WHITE_BACKGROUND);
 
     const cnv = new Canvas().setLayout(layout);
 
-    display.window.viewport().visibleLines = 10;
-    display.window.viewport().visibleColumns = 10;
+    display.view().viewport().visibleLines = 10;
+    display.view().viewport().visibleColumns = 10;
 
     LayoutEngine.Measure(
-      display.window,
+      display.view(),
       LayoutEngine.CreateConstraints(layout.width),
     );
 
-    LayoutEngine.Arrange(display.window, layout);
+    LayoutEngine.Arrange(display.view(), layout);
 
-    Renderer.Create().build(display.window, cnv);
+    Renderer.Create().build(display.view(), cnv);
     cnv.renderBoard();
 
     const firstLineCell = cnv.getCell(0, 0);
@@ -262,17 +260,15 @@ describe("editorComponent", () => {
 
   it("keeps the cursor visible by scrolling the viewport", () => {
     const content = ["one", "two", "three", "four"].join("\n");
-    const display = new TextEditorWindow(
-      new Textdocument(new MemoryFile("doc", content)),
-    );
+    const display = new TextEditorWindow(content);
 
-    display.window.viewport().visibleLines = 3;
-    display.window.viewport().visibleColumns = 10;
-    display.cursor.line = 3;
+    display.view().viewport().visibleLines = 3;
+    display.view().viewport().visibleColumns = 10;
+    display.cursor().line = 3;
 
-    display.cursor.ensureVisible(display.window.viewport());
+    display.cursor().ensureVisible(display.view().viewport());
 
-    expect(display.window.viewport().firstLine).toBe(1);
+    expect(display.view().viewport().firstLine).toBe(1);
   });
   it("renders the correct background colors of children where parents dont have width or height", () => {
     const layout = LayoutEngine.CreateBounds(10);

@@ -2,9 +2,9 @@ import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/components/components.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { EditorWindow } from "./EditorWindow.js";
+import { EditorWindow, TextEditorWindow } from "./EditorWindow.js";
 
-export class ListMenuWindow extends EditorWindow {
+export class ListMenuWindow extends TextEditorWindow {
   constructor() {
     super();
 
@@ -13,7 +13,17 @@ export class ListMenuWindow extends EditorWindow {
     this.buffer().addLine("third");
   }
 
+  unfocus(): void {
+    super.unfocus();
+    this.view().setVisible(false);
+  }
+
+  focus(): void {
+    super.focus();
+    this.view().setVisible(true);
+  }
+
   onEnter(ctx: EditorContext): void {
-    const line = this.buffer().at(this.cursor.line);
+    const line = this.buffer().at(this.cursor().line);
   }
 }

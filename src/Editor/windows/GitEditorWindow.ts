@@ -1,6 +1,6 @@
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { EditorWindow } from "./EditorWindow.js";
+import { EditorWindow, TextEditorWindow } from "./EditorWindow.js";
 import path from "path";
 import cp from "child_process";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
@@ -99,12 +99,12 @@ class GitFile {
     return Boolean(this.unstagedStatus);
   }
 }
-export class GitCommitWindow extends EditorWindow {
+export class GitCommitWindow extends TextEditorWindow {
   private files: GitFile[] = [];
   constructor() {
-    super();
+    super("");
 
-    this.window
+    this.view()
       .setStyles(
         ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
       )
@@ -114,19 +114,17 @@ export class GitCommitWindow extends EditorWindow {
       ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
     );
 
-    this.window.addChildren(dp);
+    this.view().addChildren(dp);
 
     this.files = Git.getStatusFiles();
-    this.setBuffer(new TextBuffer(this.files.map((f) => f.path).join("\n")));
-  }
-  paint(canvas: Canvas): void {
-    canvas.fillRect(this.window.contentLayout(), this.window.styles());
 
-    this.cursor.paint(canvas);
+    const text = this.files.map((f) => f.path).join("\n");
+
+    this.view().setContent(text);
   }
 }
 
-export class GitEditorWindow extends EditorWindow {
+export class GitEditorWindow extends TextEditorWindow {
   private files: GitFile[] = [];
 
   constructor() {
@@ -156,7 +154,7 @@ export class GitEditorWindow extends EditorWindow {
     }
   }
   onEnter(ctx: EditorContext): void {
-    const line = this.buffer().at(this.cursor.line);
+    const line = this.buffer().at(this.cursor().line);
     if (!line) {
       return;
     }

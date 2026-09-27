@@ -7,7 +7,6 @@ import { assert } from "./assert.js";
 import { setupEditor as setup } from "./Editor/setupEditor.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
-import { TextEditorWindow } from "./Editor/windows/TextEditorWindow.js";
 import {
   GitCommitWindow,
   GitEditorWindow,
@@ -15,6 +14,8 @@ import {
 import { ListMenuWindow } from "./Editor/windows/ListMenuWindow.js";
 import colors from "./ui/colors.js";
 import { from } from "node:stream/iter";
+import { TextEditorWindow } from "./Editor/windows/EditorWindow.js";
+import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -41,22 +42,22 @@ editor.rootWindow.addChildren(window);
 
 const statusWindow = editor.findWindow(StatusWindow);
 assert(statusWindow, "status window not setup");
-editor.rootWindow.addChildren(statusWindow.window);
+editor.rootWindow.addChildren(statusWindow.view());
 
 // tree view
 
 setup.windows.fileTree(editor);
 const fileTree = editor.findWindow(FileTreeWindow);
 assert(fileTree, "invalid file tree window");
-window.addChildren(fileTree.window);
+window.addChildren(fileTree.view());
 // ---------
 
 // text editor
 setup.windows.textEditor(editor);
 
-const textEditor = editor.findWindow(TextEditorWindow);
+const textEditor = editor.findWindow(CodeEditorWindow);
 assert(textEditor, "invalid text editor window");
-window.addChildren(textEditor.window);
+window.addChildren(textEditor.view());
 // ---------
 
 // git view
@@ -66,12 +67,13 @@ const git = editor.findWindow(GitEditorWindow);
 assert(gitCommit, "invalid git commit window");
 // assert(git, "invalid git window");
 // window.addChildren(git.window);
-window.addChildren(gitCommit.window);
+window.addChildren(gitCommit.view());
 
 // todo: cleanup
 const list = new ListMenuWindow();
 
-list.window
+list
+  .view()
   .setWidth("50%")
   .setHeight("50%")
   .setIndex(10)
@@ -83,10 +85,10 @@ list.window
   .styles()
   .setBackgroundColor(colors.YELLOW_BACKGROUND);
 
-list.window.border().setParameter(1);
+list.view().border().setParameter(1);
 
 editor.windowManager.add(list);
-editor.rootWindow.addChildren(list.window);
+editor.rootWindow.addChildren(list.view());
 
 // ---------
 

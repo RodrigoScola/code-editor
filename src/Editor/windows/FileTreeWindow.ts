@@ -3,7 +3,7 @@ import path from "path";
 import colors from "../../ui/colors.js";
 import { Canvas } from "../../ui/canvas.js";
 import { Cursor } from "../Cursor.js";
-import { EditorWindow } from "./EditorWindow.js";
+import { EditorView, EditorWindow, TextEditorWindow } from "./EditorWindow.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
@@ -28,16 +28,16 @@ type FileTreeNode = TreeNodeBase & {
   isDirectory: false;
 };
 
-export class FileTreeWindow extends EditorWindow {
+export class FileTreeWindow extends TextEditorWindow {
   root: TreeNode;
   ignoreDirs: string[] = [];
 
   ignoreFileExt: string[] = [];
 
   constructor(dir: string) {
-    super();
+    super("");
 
-    ((this.cursor.style = ComponentStyle.Create()
+    ((this.cursor().style = ComponentStyle.Create()
       .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
       .setColor(colors.WHITE_FOREGROUND)),
       // @ts-expect-error
@@ -108,11 +108,11 @@ export class FileTreeWindow extends EditorWindow {
   }
 
   onPrePaint(): void {
-    this.cursor.width = this.window.contentLayout().width;
+    this.cursor().width = this.view().contentLayout().width;
   }
 
   paint(canvas: Canvas): void {
-    let total = 0 + this.window.contentLayout().y;
+    let total = 0 + this.view().contentLayout().y;
 
     this.paintChild(this.root, total, -1, canvas);
   }
@@ -122,8 +122,8 @@ export class FileTreeWindow extends EditorWindow {
     indent: number,
     canvas: Canvas,
   ): number {
-    const layout = this.window.contentLayout();
-    const viewport = this.window.viewport();
+    const layout = this.view().contentLayout();
+    const viewport = this.view().viewport();
 
     const viewportPosition = viewport.bufferToViewPort({
       x: indent * 2,
@@ -158,7 +158,7 @@ export class FileTreeWindow extends EditorWindow {
           label;
       }
 
-      canvas.drawText(bounds, label, this.window.styles());
+      canvas.drawText(bounds, label, this.view().styles());
     }
 
     y++;
@@ -222,15 +222,15 @@ export class FileTreeWindow extends EditorWindow {
   }
   moveCursorDown(): void {
     const total = this.count();
-    this.cursor.line = Math.min(total, this.cursor.line + 1);
+    this.cursor().line = Math.min(total, this.cursor().line + 1);
   }
 
   moveCursorUp(): void {
-    this.cursor.line = Math.max(0, this.cursor.line - 1);
+    this.cursor().line = Math.max(0, this.cursor().line - 1);
   }
   onEvent(event: EditorEvents): void {}
   onEnter(ctx: EditorContext): void {
-    const node = this.getNodeAtIndex(this.root, this.cursor.line);
+    const node = this.getNodeAtIndex(this.root, this.cursor().line);
 
     if (!node) return;
 

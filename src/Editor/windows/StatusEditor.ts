@@ -1,10 +1,11 @@
+import { buffer } from "stream/consumers";
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { EditorWindow } from "./EditorWindow.js";
+import { EditorWindow, TextEditorWindow } from "./EditorWindow.js";
 
-export class StatusWindow extends EditorWindow {
+export class StatusWindow extends TextEditorWindow{
   editor: EditorContext;
   currentCommandLine: number = 0;
   constructor(editor: EditorContext) {
@@ -24,8 +25,8 @@ export class StatusWindow extends EditorWindow {
   }
 
   paint(canvas: Canvas): void {
-    const cl = this.window.contentLayout();
-    canvas.fillRect(cl, this.window.styles());
+    const cl = this.view().contentLayout();
+    canvas.fillRect(cl, this.view().styles());
 
     let out = "";
 
@@ -37,15 +38,15 @@ export class StatusWindow extends EditorWindow {
       out += `total memory ${(process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2)}MB - `;
     }
 
-    canvas.drawText(cl, out, this.window.styles());
+    canvas.drawText(cl, out, this.view().styles());
 
     if (this.editor.modeName === "command") {
-      const content = this.buffer().at(this.cursor.line);
+      const content = this.buffer().at(this.cursor().line);
       let len = `command: `.length + (content?.length ?? 0);
 
       canvas.fillRect(
-        canvas.applyRelative(len, 0, this.window.contentLayout()),
-        this.cursor.style,
+        canvas.applyRelative(len, 0, this.view().contentLayout()),
+        this.cursor().style,
       );
     }
   }
@@ -54,8 +55,8 @@ export class StatusWindow extends EditorWindow {
 
     if (event.name === "editorModeChange") {
       if (event.mode === "command") {
-        this.cursor.style.setBackgroundColor(colors.RED_BACKGROUND);
-        this.cursor.style.setColor(colors.WHITE_FOREGROUND);
+        this.cursor().style.setBackgroundColor(colors.RED_BACKGROUND);
+        this.cursor().style.setColor(colors.WHITE_FOREGROUND);
 
         this.currentCommandLine = Math.max(this.buffer().count() - 1, 0);
         this.moveCursorDown();

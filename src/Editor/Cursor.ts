@@ -1,14 +1,10 @@
-import { start } from "repl";
-import { buffer } from "stream/consumers";
 import { assert } from "../assert.js";
-import { TextBuffer } from "../ui/buffer/Buffer.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { ViewPort } from "../ui/windows/viewport.js";
 import { EditorSelection } from "./Selection.js";
-import { EditorWindow } from "./windows/EditorWindow.js";
-import { DisplayComponent } from "../ui/components/components.js";
+import { TextEditorWindow } from "./windows/EditorWindow.js";
 
 export class Cursor {
   prefferedColumn: number = 0;
@@ -23,7 +19,7 @@ export class Cursor {
     .setColor(colors.BRIGHT_WHITE_FOREGROUND);
   selection: EditorSelection | null = null;
 
-  constructor(private window: DisplayComponent) {}
+  constructor(private editor: TextEditorWindow) {}
 
   startSelection() {
     const point: Point = {
@@ -41,17 +37,13 @@ export class Cursor {
   }
 
   paint(canvas: Canvas) {
-    const editor = this.window;
+    const editor = this.editor;
 
-    if (!editor.focused()) {
-      return;
-    }
-
-    const layout = editor.contentLayout();
+    const layout = editor.view().contentLayout();
 
     const relative = canvas.applyRelative(
       this.column,
-      this.line - editor.viewport().firstLine,
+      this.line - editor.view().viewport().firstLine,
       layout,
     );
 
@@ -80,9 +72,7 @@ export class Cursor {
     canvas.drawText(relative, final, this.style);
   }
 
-  ensureVisible() {
-    const viewPort = this.window.viewport();
-
+  ensureVisible(viewPort: ViewPort) {
     const lastVisibleLine = viewPort.firstLine + viewPort.visibleLines - 1;
     if (this.line < viewPort.firstLine) {
       viewPort.firstLine = this.line;
@@ -102,7 +92,7 @@ export class Cursor {
     }
   }
   moveDown() {
-    const buffer = this.window.content().buffer();
+    const buffer = this.editor.buffer();
 
     this.line = Math.max(Math.min(this.line + 1, buffer.count() - 1), 0);
 
@@ -126,7 +116,7 @@ export class Cursor {
   }
 
   moveUp() {
-    const buffer = this.window.content().buffer();
+    const buffer = this.editor.buffer();
 
     this.line = Math.max(this.line - 1, 0);
 
@@ -150,7 +140,7 @@ export class Cursor {
     this.column = Math.max(this.column - 1, 0);
   }
   moveRight() {
-    const buffer = this.window.content().buffer();
+    const buffer = this.editor.buffer();
 
     const line = buffer.at(this.line);
 
@@ -171,5 +161,10 @@ export class Cursor {
     if (line) {
       this.style.setDisplay(line[this.column]);
     }
+  }
+  reset() {
+    this.line = 0;
+    this.column = 0;
+    this.prefferedColumn = 0;
   }
 }

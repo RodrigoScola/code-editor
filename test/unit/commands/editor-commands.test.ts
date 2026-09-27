@@ -4,11 +4,11 @@ import {
   Textdocument,
   MemoryFile,
 } from "../../../src/Editor/Documents/TextDocument.js";
-import { TextEditorWindow } from "../../../src/Editor/windows/TextEditorWindow.js";
 import { DisplayComponent } from "../../../src/ui/components/components.js";
 import { WINDOW_NAMES } from "../../../src/constants.js";
 import { textEditorCommands } from "../../../src/Commands/editorCommands.js";
 import { EditorRoot } from "../../../src/Editor/Editor/EditorRoot.js";
+import { TextEditorWindow } from "../../../src/Editor/windows/EditorWindow.js";
 
 describe("textEditorCommands", () => {
   it("moves to the start of the next word", () => {
@@ -16,17 +16,20 @@ describe("textEditorCommands", () => {
 
     textEditorCommands.textEditor.nextWordStart(ctx);
 
-    expect(editorWindow.cursor.column).toBe(4);
-    expect(editorWindow.cursor.prefferedColumn).toBe(4);
+    const cursor = editorWindow.cursor();
+
+    expect(cursor.column).toBe(4);
+    expect(cursor.prefferedColumn).toBe(4);
   });
 
   it("moves to the start of the next whitespace-separated word", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: "foo,bar baz" });
 
     textEditorCommands.textEditor.nextCompleteWordStart(ctx);
+    const cursor = editorWindow.cursor();
 
-    expect(editorWindow.cursor.column).toBe(8);
-    expect(editorWindow.cursor.prefferedColumn).toBe(8);
+    expect(cursor.column).toBe(8);
+    expect(cursor.prefferedColumn).toBe(8);
   });
   it("puts the cursor on the opening parenthesis", () => {
     const { ctx, editorWindow } = setupContext({
@@ -35,62 +38,65 @@ describe("textEditorCommands", () => {
 
     textEditorCommands.textEditor.nextWordStart(ctx);
 
-    expect(editorWindow.cursor.column).toBe(7);
+    const cursor = editorWindow.cursor();
+
+    expect(cursor.column).toBe(7);
   });
 
   it("moves from a word to the dot and then to the next word in filenames", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: "out.txt" });
 
     textEditorCommands.textEditor.nextWordStart(ctx);
-    expect(editorWindow.cursor.column).toBe(3);
+    const cursor = editorWindow.cursor();
+    expect(cursor.column).toBe(3);
 
     textEditorCommands.textEditor.nextWordStart(ctx);
-    expect(editorWindow.cursor.column).toBe(4);
+    expect(editorWindow.cursor().column).toBe(4);
   });
 
   it("moves to the next line when there is no next word on the current line", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: "foo\nbar" });
 
-    editorWindow.cursor.column = 2;
+    editorWindow.cursor().column = 2;
 
     textEditorCommands.textEditor.nextWordStart(ctx);
 
-    expect(editorWindow.cursor.line).toBe(1);
-    expect(editorWindow.cursor.column).toBe(0);
+    expect(editorWindow.cursor().line).toBe(1);
+    expect(editorWindow.cursor().column).toBe(0);
   });
 
   it("moves from a word to the dot and then to the next word in filenames", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: "out.txt" });
 
     textEditorCommands.textEditor.nextWordStart(ctx);
-    expect(editorWindow.cursor.column).toBe(3);
+    expect(editorWindow.cursor().column).toBe(3);
 
     textEditorCommands.textEditor.nextWordStart(ctx);
-    expect(editorWindow.cursor.column).toBe(4);
+    expect(editorWindow.cursor().column).toBe(4);
   });
   it("moves to a previous word start", () => {
     const sentence = "simple word";
 
     const { ctx, editorWindow } = setupContext({ fileContent: sentence });
 
-    editorWindow.cursor.column = sentence.length - 1;
+    editorWindow.cursor().column = sentence.length - 1;
     textEditorCommands.textEditor.prevWordStart(ctx);
 
-    console.log(sentence[editorWindow.cursor.column], "this ");
+    console.log(sentence[editorWindow.cursor().column], "this ");
 
-    expect(editorWindow.cursor.column).eq(7);
+    expect(editorWindow.cursor().column).eq(7);
   });
   it("moves previous word start with punctuation", () => {
     const sentence = "things.md";
 
     const { ctx, editorWindow } = setupContext({ fileContent: sentence });
 
-    editorWindow.cursor.column = sentence.indexOf(".");
+    editorWindow.cursor().column = sentence.indexOf(".");
 
     textEditorCommands.textEditor.prevWordStart(ctx);
-    console.log(sentence[editorWindow.cursor.column], "this ");
+    console.log(sentence[editorWindow.cursor().column], "this ");
 
-    expect(editorWindow.cursor.column).eq(0);
+    expect(editorWindow.cursor().column).eq(0);
   });
   it.todo("still appears viewport scroll down");
 });
@@ -98,17 +104,15 @@ describe("textEditorCommands", () => {
 function setupContext({ fileContent }: { fileContent: string }) {
   const ctx = new EditorContext();
   const root = new EditorRoot();
-  const editorWindow = new TextEditorWindow(
-    new Textdocument(new MemoryFile("doc", fileContent)),
-  );
+  const editorWindow = new TextEditorWindow(fileContent);
 
-  editorWindow.window.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
-  root.addChildren(editorWindow.window);
+  editorWindow.view().setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
+  root.addChildren(editorWindow.view());
 
   ctx.rootWindow = root;
   ctx.addWindow(editorWindow).focus(editorWindow);
 
-  editorWindow.cursor.column = 0;
+  editorWindow.cursor().column = 0;
   return {
     ctx,
     root,
