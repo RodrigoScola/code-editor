@@ -314,7 +314,6 @@ describe("display component integration", () => {
   });
 });
 
-
 function display(root: DisplayComponent, canvas: Canvas) {
   LayoutEngine.Measure(
     root,
@@ -330,9 +329,9 @@ function setup(layout: LayoutBounds) {
   const str = "this is cool";
   const canvas = new Canvas().setLayout(layout);
 
-  const root = new DisplayComponent()
-    .setText(new TextLayout().setLineWidth(3).setText(str))
-    .setLayout(layout);
+  const root = new DisplayComponent().setLayout(layout);
+
+  root.content().setLineWidth(3).setText(str);
 
   return {
     str,

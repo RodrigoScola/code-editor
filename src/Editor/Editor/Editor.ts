@@ -8,7 +8,11 @@ import { assert } from "../../assert.js";
 import { Canvas } from "../../ui/canvas.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
 import { Renderer } from "../../ui/renderer.js";
-import { DiskFile, Textdocument } from "../Documents/TextDocument.js";
+import {
+  DiskFile,
+  MemoryFile,
+  Textdocument,
+} from "../Documents/TextDocument.js";
 import { WindowManager } from "../windows/WindowManager/WindowManager.js";
 import { EditorWindow } from "../windows/EditorWindow.js";
 import { StatusWindow } from "../windows/StatusEditor.js";
@@ -17,6 +21,9 @@ import { isCodeEditorWindow, isTextEditorWindow, memory } from "../../utils.js";
 import { LayoutBounds } from "../../ui/layout/layoutStyle.js";
 import { CodeEditorWindow } from "../windows/CodeEditorWindow.js";
 import { Cursor } from "../Cursor.js";
+import { Configuration, EditorConfig, setConfiguration } from "../../config.js";
+import { CodeEditorGroup } from "../windows/Tab/TabWindow.js";
+import { config, title } from "process";
 
 export class EditorContext {
   layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
@@ -34,6 +41,12 @@ export class EditorContext {
   modeName: EditingModes = "normal";
 
   private renderPending: boolean = false;
+  static Configuration(): EditorConfig {
+    return Configuration();
+  }
+  static SetConfiguration(config: EditorConfig) {
+    setConfiguration(config)
+  }
 
   constructor() {
     EditorContext.instance = this;
@@ -58,13 +71,21 @@ export class EditorContext {
   focus(window: EditorWindow) {
     return this.windowManager.focus(window);
   }
+
   openFile(path: string) {
     try {
-      const editor = this.windowManager.find(CodeEditorWindow);
-      if (!editor) return;
-      editor?.openDocument(new Textdocument(new DiskFile(path)));
+      const editor = this.windowManager.find(CodeEditorGroup);
 
-      editor?.reset();
+      if (editor?.findByPath(path)) {
+        editor.focusWindow(editor.findByPath(path)!);
+      } else {
+        const window = new CodeEditorWindow(
+          new Textdocument(new DiskFile(path)),
+        );
+        window.openDocument(window.document);
+        editor?.add(path, window);
+        editor?.focusWindow(editor)
+      }
 
       return editor;
     } catch (err) {
@@ -128,7 +149,8 @@ export class EditorContext {
     const cursors = this.windowManager.all().reduce((all: Cursor[], window) => {
       try {
         isTextEditorWindow(window);
-        if (window.focused()) {
+
+        if (window.cursor().visible()) {
           all.push(window.cursor());
         }
       } catch (err) {}

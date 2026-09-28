@@ -12,6 +12,7 @@ import {
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle.js";
 import { TextEditorWindow } from "../../../../src/Editor/windows/EditorWindow.js";
+import { LayoutDimensions } from "../../../../src/ui/layout/LayoutDimensions.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
@@ -42,7 +43,7 @@ describe("Canvas", () => {
     layout.height = 1;
     layout.width = 10;
 
-    const bounds = cnv.applyRelative(3, 1, layout, "a\tb");
+    const bounds = LayoutDimensions.ApplyRelative(3, 1, layout, "a\tb");
 
     expect(bounds.x).toBe(7);
     expect(bounds.y).toBe(4);

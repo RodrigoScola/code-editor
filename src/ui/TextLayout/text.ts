@@ -1,11 +1,13 @@
 import { assert } from "../../assert.js";
 import { LayoutBounds } from "../layout/layoutStyle.js";
 import { TextBuffer } from "../buffer/Buffer.js";
+import { time } from "node:console";
+import { DisplayComponent } from "../components/components.js";
 
 export type OverflowTypes = "wrap" | "clip" | "visible";
 
 type WrapTypes = "character" | "word";
-type TextAlign = "left" | "right" | "center";
+export type TextAlign ="left" | "right" | "center";
 
 class TextLayoutOptions {
   private _overflow: OverflowTypes = "wrap";
@@ -105,6 +107,17 @@ export class TextLayout {
 
   private _lines: VisualLine[] = [];
 
+  constructor(private _parent?: DisplayComponent) {}
+
+  setParent(parent: DisplayComponent) {
+    this._parent = parent;
+    return this;
+  }
+
+  parent() {
+    return this._parent;
+  }
+
   options() {
     return this._options;
   }
@@ -114,12 +127,15 @@ export class TextLayout {
   buffer() {
     return this._buffer;
   }
+
   setBuffer(buffer: TextBuffer) {
     this._buffer = buffer;
 
+    const parentWidth = this.parent()?.contentLayout().width ?? 0;
+
     this._lines = this.processBuffer(
       this._buffer,
-      this._buffer.maxLineLength(),
+      Math.max(parentWidth, buffer.maxLineLength()),
     );
 
     return this;

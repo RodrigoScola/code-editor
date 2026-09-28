@@ -1,3 +1,4 @@
+import { Configuration } from "../../config.js";
 import { DisplayComponent, parseSize } from "../components/components.js";
 import { LayoutEngine } from "./layout.js";
 import { LayoutBounds } from "./layoutStyle.js";
@@ -218,4 +219,52 @@ export class LayoutDimensions {
       height: Math.round(Math.max(0, height)),
     };
   }
+
+  static ApplyRelative(
+    x: number,
+    y: number,
+    layout: LayoutBounds,
+  ): LayoutBounds;
+  static ApplyRelative(
+    x: number,
+    y: number,
+    layout: LayoutBounds,
+    text: string,
+  ): LayoutBounds;
+  static ApplyRelative(
+    x: number,
+    y: number,
+    layout: LayoutBounds,
+    text: string = "",
+  ): LayoutBounds {
+    return {
+      height: 1,
+      width: 1,
+      x:
+        layout.x +
+        bufferColumnToScreenColumn(
+          text,
+          x,
+          Configuration().tab_width,
+        ),
+      y: layout.y + y,
+    };
+  }
+}
+
+function bufferColumnToScreenColumn(
+  line: string,
+  column: number,
+  tabWidth: number,
+): number {
+  let screenCol = 0;
+  const limit = Math.min(column, line.length);
+  for (let i = 0; i < limit; i++) {
+    if (line[i] === "\t") {
+      screenCol += tabWidth - (screenCol % tabWidth);
+    } else {
+      screenCol += 1;
+    }
+  }
+  return screenCol + Math.max(0, column - line.length);
 }

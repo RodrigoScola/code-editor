@@ -4,8 +4,9 @@ import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { EditorWindow, TextEditorWindow } from "./EditorWindow.js";
+import { LayoutDimensions } from "../../ui/layout/LayoutDimensions.js";
 
-export class StatusWindow extends TextEditorWindow{
+export class StatusWindow extends TextEditorWindow {
   editor: EditorContext;
   currentCommandLine: number = 0;
   constructor(editor: EditorContext) {
@@ -45,7 +46,7 @@ export class StatusWindow extends TextEditorWindow{
       let len = `command: `.length + (content?.length ?? 0);
 
       canvas.fillRect(
-        canvas.applyRelative(len, 0, this.view().contentLayout()),
+        LayoutDimensions.ApplyRelative(len, 0, this.view().contentLayout()),
         this.cursor().style,
       );
     }

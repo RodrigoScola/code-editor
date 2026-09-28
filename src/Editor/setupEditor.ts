@@ -15,6 +15,7 @@ import { LayoutEngine } from "../ui/layout/layout.js";
 import { ListMenuWindow } from "./windows/ListMenuWindow.js";
 import { EditorRoot } from "./Editor/EditorRoot.js";
 import { isTextEditorWindow } from "../utils.js";
+import { CodeEditorGroup, TabWindow } from "./windows/Tab/TabWindow.js";
 
 function setupGit(editor: EditorContext) {
   const commit = new GitCommitWindow();
@@ -94,12 +95,16 @@ function setupTextEditor(editor: EditorContext) {
     new Textdocument(new DiskFile("./src/globals.d.ts")),
   );
 
-  editorWindow.view().setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
+  editorWindow.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
+
+  const tab = new CodeEditorGroup();
+
+  tab.add(editorWindow.name(), editorWindow);
+
   editor.addWindow(editorWindow);
+  editor.addWindow(tab);
 
-  return editorWindow
-  
-
+  return editorWindow;
 }
 
 function setupVisualModeCommands(editor: EditorContext) {
@@ -214,7 +219,9 @@ function setupNormalModeCommands(editor: EditorContext) {
     const editor = ctx.findWindow(ListMenuWindow);
     assert(editor);
     if (editor.focused()) {
+      const previousWindow = ctx.windowManager.previousWindow();
       ctx.unfocus(editor);
+      if (previousWindow) ctx.focus(previousWindow);
     } else {
       ctx.focus(editor);
     }

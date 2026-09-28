@@ -4,6 +4,7 @@ import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { Canvas } from "../../../../src/ui/canvas.js";
 import { Renderer } from "../../../../src/ui/renderer.js";
 import { TextEditorWindow } from "../../../../src/Editor/windows/EditorWindow.js";
+import { EditorContext } from "../../../../src/Editor/Editor/Editor.js";
 
 describe("tests the buffer and rendering", () => {
   it("creates a buffer and renders the tab correctly", () => {
@@ -12,7 +13,9 @@ describe("tests the buffer and rendering", () => {
     const cnv = new Canvas().setLayout(layout);
 
     const editor = new TextEditorWindow("t\tb");
-    cnv.tab_width = 5;
+    EditorContext.SetConfiguration({ tab_width: 5 });
+    EditorContext;
+
     editor.view().setLayout(layout);
 
     LayoutEngine.Measure(

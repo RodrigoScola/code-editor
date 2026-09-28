@@ -19,8 +19,8 @@ export class ListMenuWindow extends TextEditorWindow {
   }
 
   focus(): void {
-    super.focus();
     this.view().setVisible(true);
+    super.focus();
   }
 
   onEnter(ctx: EditorContext): void {

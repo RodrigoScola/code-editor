@@ -2,6 +2,8 @@ import { assert } from "../assert.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
+import { LayoutEngine } from "../ui/layout/layout.js";
+import { LayoutDimensions } from "../ui/layout/LayoutDimensions.js";
 import { ViewPort } from "../ui/windows/viewport.js";
 import { EditorSelection } from "./Selection.js";
 import { TextEditorWindow } from "./windows/EditorWindow.js";
@@ -17,9 +19,33 @@ export class Cursor {
   style: ComponentStyle = ComponentStyle.Create()
     .setBackgroundColor(colors.RED_BACKGROUND)
     .setColor(colors.BRIGHT_WHITE_FOREGROUND);
+
+  unfocusedStyle: ComponentStyle = ComponentStyle.Create().setDim(true);
+
   selection: EditorSelection | null = null;
 
   constructor(private editor: TextEditorWindow) {}
+
+  visible() {
+    return this.outOfBounds() == false && this.editor.view().visible() == true;
+  }
+
+  private outOfBounds() {
+    const layout = this.editor.view().contentLayout();
+
+    const relative = LayoutDimensions.ApplyRelative(
+      this.column,
+      this.line - this.editor.view().viewport().firstLine,
+      layout,
+    );
+
+    return (
+      relative.x < layout.x ||
+      relative.y < layout.y ||
+      relative.x >= layout.x + layout.width ||
+      relative.y >= layout.y + layout.height
+    );
+  }
 
   startSelection() {
     const point: Point = {
@@ -41,20 +67,11 @@ export class Cursor {
 
     const layout = editor.view().contentLayout();
 
-    const relative = canvas.applyRelative(
+    const relative = LayoutDimensions.ApplyRelative(
       this.column,
-      this.line - editor.view().viewport().firstLine,
+      this.line - this.editor.view().viewport().firstLine,
       layout,
     );
-
-    if (
-      relative.x < layout.x ||
-      relative.y < layout.y ||
-      relative.x >= layout.x + layout.width ||
-      relative.y >= layout.y + layout.height
-    ) {
-      return;
-    }
 
     relative.height = this.height;
     relative.width = this.width;
@@ -69,7 +86,13 @@ export class Cursor {
       final += str[i];
     }
 
-    canvas.drawText(relative, final, this.style);
+    canvas.drawText(relative, final, this.activeStyle());
+  }
+
+  private activeStyle() {
+    return this.editor.focused()
+      ? this.style
+      : ComponentStyle.Blend(this.unfocusedStyle, this.style);
   }
 
   ensureVisible(viewPort: ViewPort) {
@@ -110,9 +133,6 @@ export class Cursor {
     if (this.selection) {
       this.updateSelection();
     }
-    if (line) {
-      this.style.setDisplay(line[this.column]);
-    }
   }
 
   moveUp() {
@@ -132,9 +152,6 @@ export class Cursor {
     this.column = Math.min(this.prefferedColumn, nextLinePos);
 
     if (this.selection) this.updateSelection();
-    if (line) {
-      this.style.setDisplay(line[this.column]);
-    }
   }
   moveLeft() {
     this.column = Math.max(this.column - 1, 0);
@@ -157,10 +174,6 @@ export class Cursor {
     this.prefferedColumn = this.column;
 
     if (this.selection) this.updateSelection();
-
-    if (line) {
-      this.style.setDisplay(line[this.column]);
-    }
   }
   reset() {
     this.line = 0;

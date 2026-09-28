@@ -7,27 +7,9 @@ import { ViewPort } from "../../ui/windows/viewport.js";
 import { Cursor } from "../Cursor.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { assert } from "../../assert.js";
+import { LayoutDimensions } from "../../ui/layout/LayoutDimensions.js";
 
 type WindowId = string;
-
-export class EditorView extends DisplayComponent {
-  private editor: EditorWindow;
-
-  constructor(editor: EditorWindow) {
-    super();
-
-    this.editor = editor;
-
-    this.setPaintHook(editor.paint.bind(editor));
-    this.setPrePaintHook(editor.onPrePaint.bind(editor));
-  }
-  measure(constraints: MeasureConstraints): MeasuredSize {
-    return {
-      width: this.viewport().visibleColumns,
-      height: this.viewport().visibleLines,
-    };
-  }
-}
 
 export interface EWindow {
   view(): EditorView;
@@ -47,15 +29,29 @@ export class EditorWindow implements EWindow {
   id(): string {
     return this._id;
   }
+  setName(name: string) {
+    this.view().setName(name);
+    return this;
+  }
+  name() {
+    return this.view().name();
+  }
 
   focused(): boolean {
-    return this._active;
+    return this._active && this.view().visible();
+  }
+  focusable() {
+    return true;
   }
 
   unfocus() {
     this._active = false;
   }
   focus() {
+    assert(
+      this.view().visible(),
+      "view is not visible and youre trying to focus?",
+    );
     this._active = true;
   }
 
@@ -140,7 +136,7 @@ export class TextEditorWindow extends EditorWindow {
       let content = buffer.at(bound.y) ?? "";
       content = content.slice(bound.x, bound.width);
 
-      const position = canvas.applyRelative(
+      const position = LayoutDimensions.ApplyRelative(
         bound.x,
         bound.y - this.view().viewport().firstLine,
         cl,
@@ -194,5 +190,18 @@ export class TextEditorWindow extends EditorWindow {
   }
   endSelection() {
     return this.cursor().clearSelection();
+  }
+}
+
+export class EditorView extends DisplayComponent {
+  private editor: EditorWindow;
+
+  constructor(editor: EditorWindow) {
+    super();
+
+    this.editor = editor;
+
+    this.setPaintHook(editor.paint.bind(editor));
+    this.setPrePaintHook(editor.onPrePaint.bind(editor));
   }
 }

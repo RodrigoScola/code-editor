@@ -13,9 +13,8 @@ import {
 } from "./Editor/windows/GitEditorWindow.js";
 import { ListMenuWindow } from "./Editor/windows/ListMenuWindow.js";
 import colors from "./ui/colors.js";
-import { from } from "node:stream/iter";
-import { TextEditorWindow } from "./Editor/windows/EditorWindow.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
+import { CodeEditorGroup } from "./Editor/windows/Tab/TabWindow.js";
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
@@ -56,8 +55,11 @@ window.addChildren(fileTree.view());
 setup.windows.textEditor(editor);
 
 const textEditor = editor.findWindow(CodeEditorWindow);
+
+const tabEditor = editor.findWindow(CodeEditorGroup)!;
 assert(textEditor, "invalid text editor window");
-window.addChildren(textEditor.view());
+
+window.addChildren(tabEditor?.view());
 // ---------
 
 // git view
@@ -96,7 +98,7 @@ setup.commands.normalMode(editor);
 setup.commands.visualMode(editor);
 setup.commands.commandMode(editor);
 
-editor.focus(textEditor);
+editor.focus(fileTree);
 editor.requestRepaint();
 
 process.stdout.on("resize", () => setup.terminal.handleResize(editor));

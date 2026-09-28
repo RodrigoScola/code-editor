@@ -381,8 +381,6 @@ export class LayoutEngine {
         y += Math.floor(bounds.height / 2) - Math.floor(maxHeight / 2);
       } else if (component.alignContent() == "end") {
         y += bounds.height - maxHeight;
-      } else if (component.alignContent() === "start") {
-        y += bounds.y;
       }
 
       for (let i = 0; i < row.length; i++) {

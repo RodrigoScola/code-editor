@@ -5,7 +5,6 @@ import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 import { DisplayComponent } from "./components/components.js";
 import { ComponentStyle } from "./ComponentStyles.js";
-import { TextLayout } from "./TextLayout/text.js";
 import { LayoutBounds } from "./layout/layoutStyle.js";
 
 export class Renderer {
@@ -192,6 +191,7 @@ export class Renderer {
       }
 
       const screenY = cl.y + (lineNumber - firstLine);
+
 
       canvas.drawText(
         {

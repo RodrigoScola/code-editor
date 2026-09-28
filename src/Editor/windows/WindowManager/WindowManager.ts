@@ -37,6 +37,9 @@ export class WindowManager {
       this.active = null;
     }
   }
+  has(window: EditorWindow): boolean {
+    return this.windows.has(window.id());
+  }
 
   focus(window: EditorWindow): EditorWindow | null {
     assert(
@@ -111,6 +114,7 @@ export class WindowManager {
 
     return null;
   }
+
   private focusDirection(direction: Directions): EditorWindow | null {
     const current = this.active;
 
@@ -122,6 +126,7 @@ export class WindowManager {
 
     const candidates = [...this.windows.values()]
       .filter((editor) => editor !== current)
+      .filter((editor) => editor.focusable())
       .filter((editor) => editor.view().visible() == true)
 
       .filter((editor) =>

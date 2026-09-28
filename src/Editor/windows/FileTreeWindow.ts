@@ -39,6 +39,7 @@ export class FileTreeWindow extends TextEditorWindow {
 
     ((this.cursor().style = ComponentStyle.Create()
       .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
+
       .setColor(colors.WHITE_FOREGROUND)),
       // @ts-expect-error
       (this.root = {
@@ -49,6 +50,7 @@ export class FileTreeWindow extends TextEditorWindow {
         parent: null,
       }));
 
+    this.cursor().unfocusedStyle.setBold(true);
     this.walkTree(dir, this.root);
   }
   isDirectoryNode(node: TreeNode): node is DirectoryTreeNode {

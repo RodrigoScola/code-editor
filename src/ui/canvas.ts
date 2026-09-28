@@ -3,6 +3,7 @@ import colors from "./colors.js";
 import { ComponentBorder } from "./components/border.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 import { LayoutBounds } from "./layout/layoutStyle.js";
+import { Configuration } from "../config.js";
 
 export interface DisplayTile {
   x: number;
@@ -16,7 +17,6 @@ const DEFAULT_STYLE: ComponentStyle = ComponentStyle.Create()
   .setDisplay(" ");
 
 export class Canvas {
-  tab_width: number = 4;
   l: LayoutBounds = {
     x: 0,
     y: 0,
@@ -156,26 +156,6 @@ export class Canvas {
     }
   }
 
-  applyRelative(x: number, y: number, layout: LayoutBounds): LayoutBounds;
-  applyRelative(
-    x: number,
-    y: number,
-    layout: LayoutBounds,
-    text: string,
-  ): LayoutBounds;
-  applyRelative(
-    x: number,
-    y: number,
-    layout: LayoutBounds,
-    text: string = "",
-  ): LayoutBounds {
-    return {
-      height: 1,
-      width: 1,
-      x: layout.x + bufferColumnToScreenColumn(text, x, this.tab_width),
-      y: layout.y + y,
-    };
-  }
   drawText(bounds: LayoutBounds, text: string): void;
 
   drawText(
@@ -195,8 +175,10 @@ export class Canvas {
 
     const lines = text.split("\n");
 
+    const tab_width = Configuration().tab_width;
+
     for (let lineOffset = 0; lineOffset < lines.length; lineOffset++) {
-      const line = expandTabs(lines[lineOffset], this.tab_width);
+      const line = expandTabs(lines[lineOffset], tab_width);
       const y = Math.round(bounds.y + lineOffset);
 
       // Outside the drawing area vertically.
@@ -242,21 +224,4 @@ function expandTabs(line: string, tabWidth: number): string {
     }
   }
   return out;
-}
-
-function bufferColumnToScreenColumn(
-  line: string,
-  column: number,
-  tabWidth: number,
-): number {
-  let screenCol = 0;
-  const limit = Math.min(column, line.length);
-  for (let i = 0; i < limit; i++) {
-    if (line[i] === "\t") {
-      screenCol += tabWidth - (screenCol % tabWidth);
-    } else {
-      screenCol += 1;
-    }
-  }
-  return screenCol + Math.max(0, column - line.length);
 }

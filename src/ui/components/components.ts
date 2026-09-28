@@ -7,9 +7,9 @@ import { ComponentStyle } from "../ComponentStyles.js";
 import { LayoutEngine } from "../layout/layout.js";
 import { LayoutDimensions } from "../layout/LayoutDimensions.js";
 import { LayoutBounds } from "../layout/layoutStyle.js";
-import { OverflowTypes, TextLayout } from "../TextLayout/text.js";
+import { OverflowTypes, TextAlign, TextLayout } from "../TextLayout/text.js";
 import { ViewPort } from "../windows/viewport.js";
-import { ComponentBorder } from "./border.js";
+import { BorderStyles, ComponentBorder } from "./border.js";
 import { ComponentLayoutFns } from "./componentLayout.js";
 
 export class DisplayComponent extends ComponentLayoutFns {
@@ -22,7 +22,7 @@ export class DisplayComponent extends ComponentLayoutFns {
 
   private nm: string | null | undefined;
 
-  private _text: TextLayout = new TextLayout();
+  private _text: TextLayout = new TextLayout(this);
 
   private _measuredSize: MeasuredSize = {
     height: 0,
@@ -60,6 +60,46 @@ export class DisplayComponent extends ComponentLayoutFns {
   setBorder(b: ComponentBorder): this {
     this._border = b;
     this.setDirty(true);
+    return this;
+  }
+
+  // Inline border shortcuts — size changes mark the component dirty.
+
+  setBorderSize(n: number): this {
+    this._border.setParameter(n);
+    this.setDirty(true);
+    return this;
+  }
+  setBorderLeft(n: number): this {
+    this._border.setLeft(n);
+    this.setDirty(true);
+    return this;
+  }
+  setBorderRight(n: number): this {
+    this._border.setRight(n);
+    this.setDirty(true);
+    return this;
+  }
+  setBorderTop(n: number): this {
+    this._border.setTop(n);
+    this.setDirty(true);
+    return this;
+  }
+  setBorderBottom(n: number): this {
+    this._border.setBottom(n);
+    this.setDirty(true);
+    return this;
+  }
+  setBorderStyle(st: BorderStyles): this {
+    this._border.setBorderSyle(st);
+    return this;
+  }
+  setBorderColor(newColor: string): this {
+    this._border.setColor(newColor);
+    return this;
+  }
+  setBorderBackgroundColor(newColor: string): this {
+    this._border.setBackgroundColor(newColor);
     return this;
   }
 
@@ -209,6 +249,98 @@ export class DisplayComponent extends ComponentLayoutFns {
       .setBlink(sty.isBlink?.() ?? this.s.isBlink())
       .setHidden(sty.isHidden?.() ?? this.s.isHidden());
 
+    return this;
+  }
+
+  // Inline style shortcuts — delegate to this.styles().
+  // The style fill char is exposed as displayChar() since display() is the
+  // layout display type.
+
+  displayChar(): string {
+    return this.s.display();
+  }
+  setDisplayChar(nval: string): this {
+    this.s.setDisplay(nval);
+    return this;
+  }
+
+  isBold(): boolean {
+    return this.s.isBold();
+  }
+  setBold(nval: boolean): this {
+    this.s.setBold(nval);
+    return this;
+  }
+
+  isHidden(): boolean {
+    return this.s.isHidden();
+  }
+  setHidden(nval: boolean): this {
+    this.s.setHidden(nval);
+    return this;
+  }
+
+  isBlink(): boolean {
+    return this.s.isBlink();
+  }
+  setBlink(nval: boolean): this {
+    this.s.setBlink(nval);
+    return this;
+  }
+
+  isInverse(): boolean {
+    return this.s.isInverse();
+  }
+  setInverse(nval: boolean): this {
+    this.s.setInverse(nval);
+    return this;
+  }
+
+  isStrikeThrough(): boolean {
+    return this.s.isStrikeThrough();
+  }
+  setStrikeThrough(nval: boolean): this {
+    this.s.setStrikeThrough(nval);
+    return this;
+  }
+
+  isUnderline(): boolean {
+    return this.s.isUnderline();
+  }
+  setUnderline(nval: boolean): this {
+    this.s.setUnderline(nval);
+    return this;
+  }
+
+  isItalic(): boolean {
+    return this.s.isItalic();
+  }
+  setItalic(nval: boolean): this {
+    this.s.setItalic(nval);
+    return this;
+  }
+
+  isDim(): boolean {
+    return this.s.isDim();
+  }
+  setDim(nval: boolean): this {
+    this.s.setDim(nval);
+    return this;
+  }
+
+  backgroundColor(): string {
+    return this.s.backgroundColor();
+  }
+  setBackgroundColor(newColor: string): this {
+    this.s.setBackgroundColor(newColor);
+    return this;
+  }
+
+  color(): string {
+    return this.s.color();
+  }
+  setColor(newColor: string): this {
+    this.s.setColor(newColor);
     return this;
   }
 
@@ -516,6 +648,7 @@ export class DisplayComponent extends ComponentLayoutFns {
   }
   setText(t: TextLayout) {
     this._text = t;
+
     return this;
   }
   lineWidth() {
@@ -557,12 +690,35 @@ export class DisplayComponent extends ComponentLayoutFns {
   }
   setTextOverflow(type: OverflowTypes) {
     this.content().setOverflow(type);
+    return this;
+  }
+  textAlign() {
+    return this.content().align();
+  }
+  setTextAlign(align: TextAlign) {
+    this.content().setAlign(align);
+    return this;
+  }
+  textJustify() {
+    return this.content().justify();
+  }
+  setTextJustify(val: boolean) {
+    this.content().setJustify(val);
+    return this;
   }
   hasChildren() {
     return this.children().length > 0;
   }
   hasContent() {
     return this.content().lines().length > 0;
+  }
+
+  logChildren(indentation: number) {
+    console.log(" ".repeat(indentation) + this.name());
+
+    for (const child of this.children()) {
+      child.logChildren(indentation + 1);
+    }
   }
 
   // ---------------------------------------------------------------------------

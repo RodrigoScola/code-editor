@@ -7,8 +7,7 @@ export class DiskFile implements EditorFile {
     this.p = path;
   }
   path(): string {
-    return "";
-    // return this.p;
+    return this.p;
   }
   write(content: string): void {
     fs.writeFileSync(this.p, content);
