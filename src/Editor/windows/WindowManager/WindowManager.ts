@@ -91,12 +91,15 @@ export class WindowManager {
 
     assert(index !== -1, "window is not part of its parent");
 
+    // detach first: removeChild clears the child's parent, so doing it after
+    // re-parenting into the split would orphan the view
+    parent.removeChild(editor.view());
+
     const split = new DisplayComponent()
       .addChildren(editor.view())
       .addChildren(newEditor.view())
       .setDirection(direction);
 
-    parent.removeChild(editor.view());
     parent.addChildAt(split, index);
 
     this.add(newEditor);

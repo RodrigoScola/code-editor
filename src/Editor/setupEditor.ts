@@ -29,8 +29,8 @@ function setupGit(editor: EditorContext) {
 
   commit.view().setDisplay("none");
 
-  const text = editor.findWindow(CodeEditorWindow);
-  assert(text, "text should be first");
+  const codeGroup = editor.findWindow(CodeEditorGroup);
+  assert(codeGroup, "text should be first");
 
   editor.addWindow(commit);
 
@@ -39,10 +39,9 @@ function setupGit(editor: EditorContext) {
   gitEditor
     .view()
     .setName(WINDOW_NAMES.GIT_WINDOW)
-    .styles()
-    ?.setBackgroundColor(colors.BLUE_BACKGROUND);
+    .setBackgroundColor(colors.BLUE_BACKGROUND);
 
-  editor.windowManager.split(text, gitEditor, "vertical");
+  editor.windowManager.split(codeGroup, gitEditor, "vertical");
 }
 
 function setupWindows(editor: EditorContext) {
@@ -91,13 +90,11 @@ function setupFileTree(editor: EditorContext) {
 }
 
 function setupTextEditor(editor: EditorContext) {
+  const tab = new CodeEditorGroup();
+
   const editorWindow: CodeEditorWindow = new CodeEditorWindow(
     new Textdocument(new DiskFile("./src/globals.d.ts")),
-  );
-
-  editorWindow.setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
-
-  const tab = new CodeEditorGroup();
+  ).setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
 
   tab.add(editorWindow.name(), editorWindow);
 

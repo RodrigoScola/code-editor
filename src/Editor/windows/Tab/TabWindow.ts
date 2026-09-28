@@ -25,7 +25,7 @@ export class TabWindow extends EditorWindow {
       .setBorderStyle("full")
       .setBorderBottom(1);
 
-    this.view().setHeight("fit-content").addChildren(this.titles);
+    this.view().addChildren(this.titles);
     this.view().addChildren(
       this.displayContent
         .setName("tab_editor_window")
@@ -44,6 +44,10 @@ export class TabWindow extends EditorWindow {
       parent.removeChild(parent.children().at(0)!);
     }
     parent.addChildren(editor.view());
+
+    if (this.management.activeWindow()) {
+      this.management.unfocus(this.management.activeWindow()!);
+    }
 
     this.management.focus(editor);
   }

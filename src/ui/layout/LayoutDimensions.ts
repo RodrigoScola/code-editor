@@ -52,12 +52,12 @@ export class LayoutDimensions {
         constraints.maxWidth = Math.max(measured.width, availableWidth);
         constraints.minWidth = Math.min(measured.width, availableWidth);
 
-        const horizontal = this.measureHorizontal(
-          component.children(),
-          constraints,
-        );
+        const size =
+          component.direction() === "horizontal"
+            ? this.measureHorizontal(component.children(), constraints)
+            : this.measureVertical(component.children(), constraints);
 
-        contentWidth = horizontal.width;
+        contentWidth = size.width;
       } else if (component.hasContent()) {
         contentWidth = component.content().width();
       }
@@ -84,12 +84,12 @@ export class LayoutDimensions {
         constraints.maxHeight = Math.max(measured.height, availableHeight);
         constraints.minHeight = Math.min(measured.height, availableHeight);
 
-        const horizontal = this.measureVertical(
-          component.children(),
-          constraints,
-        );
+        const size =
+          component.direction() === "horizontal"
+            ? this.measureHorizontal(component.children(), constraints)
+            : this.measureVertical(component.children(), constraints);
 
-        contentHeight = horizontal.height;
+        contentHeight = size.height;
       } else if (component.hasContent()) {
         contentHeight = component.content().height();
       }

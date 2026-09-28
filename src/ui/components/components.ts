@@ -454,6 +454,9 @@ export class DisplayComponent extends ComponentLayoutFns {
    * Arrange children according to this component's direction.
    */
   protected arrangeContent(bounds: LayoutBounds): void {
+    if (!this.dirty()) {
+      return;
+    }
     const absoluteChildren = this.absoluteChildren();
 
     if (this.direction() === "horizontal") {

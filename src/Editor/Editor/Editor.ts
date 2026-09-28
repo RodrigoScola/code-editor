@@ -45,7 +45,7 @@ export class EditorContext {
     return Configuration();
   }
   static SetConfiguration(config: EditorConfig) {
-    setConfiguration(config)
+    setConfiguration(config);
   }
 
   constructor() {
@@ -74,20 +74,26 @@ export class EditorContext {
 
   openFile(path: string) {
     try {
-      const editor = this.windowManager.find(CodeEditorGroup);
+      const hasActive = this.windowManager.activeWindow();
+      if (hasActive) this.windowManager.unfocus(hasActive);
 
-      if (editor?.findByPath(path)) {
-        editor.focusWindow(editor.findByPath(path)!);
+      const editorGroup = this.windowManager.find(CodeEditorGroup);
+
+      if (editorGroup?.findByPath(path)) {
+        const window = editorGroup.findByPath(path)!;
+        editorGroup.focusWindow(window);
+        return window;
       } else {
         const window = new CodeEditorWindow(
           new Textdocument(new DiskFile(path)),
         );
         window.openDocument(window.document);
-        editor?.add(path, window);
-        editor?.focusWindow(editor)
-      }
+        this.windowManager.add(window);
 
-      return editor;
+        editorGroup?.add(path, window);
+        editorGroup?.focusWindow(window);
+        return window;
+      }
     } catch (err) {
       return null;
     }
