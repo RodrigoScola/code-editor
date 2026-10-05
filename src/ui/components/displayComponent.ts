@@ -9,8 +9,8 @@ import { LayoutDimensions } from "../layout/LayoutDimensions.js";
 import { LayoutBounds } from "../layout/layoutStyle.js";
 import { OverflowTypes, TextAlign, TextLayout } from "../TextLayout/text.js";
 import { ViewPort } from "../windows/viewport.js";
-import { BorderStyles, ComponentBorder } from "./border.js";
-import { ComponentLayoutFns } from "./componentLayout.js";
+import { BorderStyles, ComponentBorder } from "../display/border.js";
+import { ComponentLayoutFns } from "../layout/componentLayout.js";
 
 export class DisplayComponent extends ComponentLayoutFns {
   private static ID = 0;
@@ -21,6 +21,7 @@ export class DisplayComponent extends ComponentLayoutFns {
   private vs = true;
 
   private nm: string | null | undefined;
+  private _enabled: boolean = true;
 
   private _text: TextLayout = new TextLayout(this);
 
@@ -38,6 +39,7 @@ export class DisplayComponent extends ComponentLayoutFns {
   private _border: ComponentBorder = new ComponentBorder();
 
   private paintHook: ((canvas: Canvas) => void) | null = null;
+  private postPaintHook: ((canvas: Canvas) => void) | null = null;
   private prePaintHook: ((canvas: Canvas) => void) | null = null;
 
   constructor() {
@@ -357,6 +359,14 @@ export class DisplayComponent extends ComponentLayoutFns {
     this.paintHook?.(canvas);
   }
 
+  setPostPaintHook(paintHook: (canvas: Canvas) => void): this {
+    this.postPaintHook = paintHook;
+    return this;
+  }
+  postPaint(canvas: Canvas) {
+    this.postPaintHook?.(canvas);
+  }
+
   setPrePaintHook(paintHook: (canvas: Canvas) => void): this {
     this.prePaintHook = paintHook;
     return this;
@@ -626,6 +636,14 @@ export class DisplayComponent extends ComponentLayoutFns {
     return this;
   }
 
+  enabled() {
+    return this._enabled;
+  }
+  setEnabled(enabled: boolean) {
+    this._enabled = enabled;
+    return this;
+  }
+
   // ---------------------------------------------------------------------------
   // Visibility
   // ---------------------------------------------------------------------------
@@ -640,19 +658,10 @@ export class DisplayComponent extends ComponentLayoutFns {
   }
 
   // ---------------------------------------------------------------------------
-  // Focus
-  // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
   // Text
   // ---------------------------------------------------------------------------
   content() {
     return this._text;
-  }
-  setText(t: TextLayout) {
-    this._text = t;
-
-    return this;
   }
   lineWidth() {
     return this.content().lineWidth();
@@ -716,8 +725,19 @@ export class DisplayComponent extends ComponentLayoutFns {
     return this.content().lines().length > 0;
   }
 
+  private logSelf() {
+    let str = `id: ${this.id}`;
+
+    if (this.name()) {
+      str += " - ";
+      str += `name: ${this.name()}`;
+    }
+
+    return str;
+  }
+
   logChildren(indentation: number) {
-    console.log(" ".repeat(indentation) + this.name());
+    console.log(" ".repeat(indentation * 2) + this.logSelf());
 
     for (const child of this.children()) {
       child.logChildren(indentation + 1);

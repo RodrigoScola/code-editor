@@ -1,14 +1,12 @@
-import { Direction } from "readline";
 import { assert } from "../../../assert.js";
-import { DisplayComponent } from "../../../ui/components/components.js";
+import { DisplayComponent } from "../../../ui/components/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
-import { type } from "os";
 import { LayoutBounds } from "../../../ui/layout/layoutStyle.js";
-import { EditorWindow } from "../EditorWindow.js";
+import { UiComponent } from "../../../ui/components/UiComponent.js";
 
 export class WindowManager {
-  private windows = new Map<string, EditorWindow>();
-  private active: EditorWindow | null = null;
+  private windows = new Map<string, UiComponent>();
+  private active: UiComponent | null = null;
   root: EditorRoot;
   history: string[];
   constructor(root: EditorRoot) {
@@ -16,32 +14,31 @@ export class WindowManager {
     this.history = [];
   }
 
-  add(window: EditorWindow) {
+  add(window: UiComponent) {
     this.windows.set(window.id(), window);
     return this;
   }
-  remove(window: EditorWindow) {
+  remove(window: UiComponent) {
     this.windows.delete(window.id());
     if (this.active === window) {
       this.active = null;
     }
   }
-  all(): EditorWindow[] {
+  all(): UiComponent[] {
     return [...this.windows.values()];
   }
-  unfocus(editorWindow: EditorWindow) {
-    editorWindow.unfocus();
+  unfocus(editorWindow: UiComponent) {
     this.history.push(editorWindow.id());
 
     if (this.active?.id() === editorWindow.id()) {
       this.active = null;
     }
   }
-  has(window: EditorWindow): boolean {
+  has(window: UiComponent): boolean {
     return this.windows.has(window.id());
   }
 
-  focus(window: EditorWindow): EditorWindow | null {
+  activate(window: UiComponent): UiComponent | null {
     assert(
       this.windows.has(window.id()),
       "trying to focus an unmanaged window",
@@ -51,15 +48,14 @@ export class WindowManager {
     }
     this.active = window;
 
-    this.active?.focus();
     return this.active;
   }
-  activeWindow(): EditorWindow | null {
+  activeWindow(): UiComponent | null {
     return this.active;
   }
-  previousWindow<T extends EditorWindow>(
+  previousWindow<T extends UiComponent>(
     type?: new (...args: any[]) => T,
-  ): T | EditorWindow | null {
+  ): T | UiComponent | null {
     for (let i = this.history.length - 1; i >= 0; i--) {
       const id = this.history[i];
       const window = this.windows.get(id);
@@ -79,8 +75,8 @@ export class WindowManager {
   open() {}
   close() {}
   split(
-    editor: EditorWindow,
-    newEditor: EditorWindow,
+    editor: UiComponent,
+    newEditor: UiComponent,
     direction: DisplayDirection,
   ) {
     const parent = editor.view().parent();
@@ -108,7 +104,7 @@ export class WindowManager {
   private overlaps(a: LayoutBounds, b: LayoutBounds): boolean {
     return a.y < b.y + b.height && a.y + a.height > b.y;
   }
-  find<T extends EditorWindow>(type: new (...args: any[]) => T): T | null {
+  find<T extends UiComponent>(type: new (...args: any[]) => T): T | null {
     for (const window of this.windows.values()) {
       if (window instanceof type) {
         return window;
@@ -118,7 +114,7 @@ export class WindowManager {
     return null;
   }
 
-  private focusDirection(direction: Directions): EditorWindow | null {
+  private activateDirection(direction: Directions): UiComponent | null {
     const current = this.active;
 
     if (!current) {
@@ -129,7 +125,6 @@ export class WindowManager {
 
     const candidates = [...this.windows.values()]
       .filter((editor) => editor !== current)
-      .filter((editor) => editor.focusable())
       .filter((editor) => editor.view().visible() == true)
 
       .filter((editor) =>
@@ -160,7 +155,7 @@ export class WindowManager {
       return aScore - bScore;
     });
 
-    this.focus(candidates[0]);
+    this.activate(candidates[0]);
 
     return candidates[0];
   }
@@ -206,19 +201,19 @@ export class WindowManager {
 
     return Math.abs(dy) + Math.abs(dx) * 2;
   }
-  focusLeft(): EditorWindow | null {
-    return this.focusDirection("left");
+  activateLeft(): UiComponent | null {
+    return this.activateDirection("left");
   }
 
-  focusRight(): EditorWindow | null {
-    return this.focusDirection("right");
+  activateRight(): UiComponent | null {
+    return this.activateDirection("right");
   }
 
-  focusUp(): EditorWindow | null {
-    return this.focusDirection("up");
+  activateUp(): UiComponent | null {
+    return this.activateDirection("up");
   }
 
-  focusDown(): EditorWindow | null {
-    return this.focusDirection("down");
+  activateDown(): UiComponent | null {
+    return this.activateDirection("down");
   }
 }

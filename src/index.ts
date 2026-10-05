@@ -34,6 +34,7 @@ editor.layout.height = process.stdout.rows;
 editor.layout.width = process.stdout.columns;
 
 setup.root(editor);
+
 setup.windows.status(editor);
 
 const window = setup.windows.editor(editor).setDirection("horizontal");
@@ -81,10 +82,8 @@ list
   .setIndex(10)
   .setStartX("20%")
   .setVisible(false)
-  .setPaddingLeft(10)
   .setStartY("0%")
   .setPositionMode("absolute")
-  .styles()
   .setBackgroundColor(colors.YELLOW_BACKGROUND);
 
 list.view().border().setParameter(1);

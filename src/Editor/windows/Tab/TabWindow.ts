@@ -2,22 +2,25 @@ import { type } from "os";
 import { assert } from "../../../assert.js";
 import { Canvas } from "../../../ui/canvas.js";
 import colors from "../../../ui/colors.js";
-import { ComponentBorder } from "../../../ui/components/border.js";
-import { DisplayComponent } from "../../../ui/components/components.js";
+import { ComponentBorder } from "../../../ui/display/border.js";
+import { DisplayComponent } from "../../../ui/components/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
-import { EditorWindow } from "../EditorWindow.js";
+import { UiComponent } from "../../../ui/components/UiComponent.js";
 import { WindowManager } from "../WindowManager/WindowManager.js";
 import { isCodeEditorWindow } from "../../../utils.js";
 
 export interface ETabWindow {}
 
-export class TabWindow extends EditorWindow {
+export class TabWindow extends UiComponent {
   titles: DisplayComponent = new DisplayComponent();
   private _window: EditorRoot = new EditorRoot();
   displayContent: DisplayComponent = new DisplayComponent();
   management: WindowManager = new WindowManager(this._window);
   constructor() {
     super();
+
+    this.setCursorEnabled(false);
+
     this.titles
       .setHeight("fit-content")
       .setDirection("horizontal")
@@ -33,7 +36,7 @@ export class TabWindow extends EditorWindow {
     );
   }
 
-  focusWindow(editor: EditorWindow) {
+  focusWindow(editor: UiComponent) {
     const parent = this.displayContent;
 
     assert(parent, "there is no parent to focus on window");
@@ -49,16 +52,16 @@ export class TabWindow extends EditorWindow {
       this.management.unfocus(this.management.activeWindow()!);
     }
 
-    this.management.focus(editor);
+    this.management.activate(editor);
   }
   focusable(): boolean {
     return false;
   }
-  windowExists(window: EditorWindow): boolean {
+  windowExists(window: UiComponent): boolean {
     return this.management.has(window);
   }
 
-  add(title: string, window: EditorWindow) {
+  add(title: string, window: UiComponent) {
     const component = new DisplayComponent();
     component
       .setHeight("fit-content")

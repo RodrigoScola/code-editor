@@ -2,12 +2,12 @@ import { assert } from "../../assert.js";
 import { LayoutBounds } from "../layout/layoutStyle.js";
 import { TextBuffer } from "../buffer/Buffer.js";
 import { time } from "node:console";
-import { DisplayComponent } from "../components/components.js";
+import { DisplayComponent } from "../components/displayComponent.js";
 
 export type OverflowTypes = "wrap" | "clip" | "visible";
 
 type WrapTypes = "character" | "word";
-export type TextAlign ="left" | "right" | "center";
+export type TextAlign = "left" | "right" | "center";
 
 class TextLayoutOptions {
   private _overflow: OverflowTypes = "wrap";
@@ -48,7 +48,7 @@ class TextLayoutOptions {
   }
 }
 
-class VisualLine {
+ class VisualLine {
   private _content: string = "";
   private _start: number = 0;
   private _end: number = 0;
@@ -128,8 +128,18 @@ export class TextLayout {
     return this._buffer;
   }
 
+  // buffer edits must re-run layout, otherwise the cached visual lines go stale.
+  // the default buffer needs this too: callers often edit it without setBuffer()
+  private _unsubscribe: () => void = this.watch(this._buffer);
+
+  private watch(buffer: TextBuffer) {
+    return buffer.onChange(() => this.parent()?.setDirty(true));
+  }
+
   setBuffer(buffer: TextBuffer) {
+    this._unsubscribe();
     this._buffer = buffer;
+    this._unsubscribe = this.watch(buffer);
 
     const parentWidth = this.parent()?.contentLayout().width ?? 0;
 

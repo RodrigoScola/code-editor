@@ -1,7 +1,4 @@
-import {
-  EditorWindow,
-  TextEditorWindow,
-} from "./Editor/windows/EditorWindow.js";
+import { UiComponent } from "./ui/components/UiComponent.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
 
@@ -16,30 +13,23 @@ export function memory(label: string) {
   });
 }
 
-export function isEditorWindow(
-  t: EditorWindow | undefined | null,
-): asserts t is EditorWindow {
-  if (!(t instanceof EditorWindow)) {
-    throw new Error("Expected an EditorComponent");
-  }
-}
 export function isStatusEditorWindow(
-  t: EditorWindow | undefined | null,
+  t: UiComponent | undefined | null,
 ): asserts t is StatusWindow {
-  if (!(t instanceof TextEditorWindow)) {
+  if (!(t instanceof StatusWindow)) {
     throw new Error("Expected an EditorComponent");
   }
 }
-export function isTextEditorWindow(
-  t: EditorWindow | undefined | null,
-): asserts t is TextEditorWindow {
-  if (!(t instanceof TextEditorWindow)) {
+export function isTextComponent(
+  t: UiComponent | undefined | null,
+): asserts t is UiComponent {
+  if (!(t instanceof UiComponent)) {
     throw new Error("Expected an EditorComponent");
   }
 }
 
 export function isCodeEditorWindow(
-  t: EditorWindow | undefined | null,
+  t: UiComponent | undefined | null,
 ): asserts t is CodeEditorWindow {
   if (!(t instanceof CodeEditorWindow)) {
     throw new Error("Expected an EditorComponent");

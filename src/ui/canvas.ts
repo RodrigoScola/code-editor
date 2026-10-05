@@ -1,6 +1,6 @@
 import { assert } from "node:console";
 import colors from "./colors.js";
-import { ComponentBorder } from "./components/border.js";
+import { ComponentBorder } from "./display/border.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 import { LayoutBounds } from "./layout/layoutStyle.js";
 import { Configuration } from "../config.js";

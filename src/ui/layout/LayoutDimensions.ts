@@ -1,5 +1,5 @@
 import { Configuration } from "../../config.js";
-import { DisplayComponent, parseSize } from "../components/components.js";
+import { DisplayComponent, parseSize } from "../components/displayComponent.js";
 import { LayoutEngine } from "./layout.js";
 import { LayoutBounds } from "./layoutStyle.js";
 
@@ -242,11 +242,7 @@ export class LayoutDimensions {
       width: 1,
       x:
         layout.x +
-        bufferColumnToScreenColumn(
-          text,
-          x,
-          Configuration().tab_width,
-        ),
+        bufferColumnToScreenColumn(text, x, Configuration().tab_width),
       y: layout.y + y,
     };
   }

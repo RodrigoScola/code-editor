@@ -1,26 +1,37 @@
+import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
-import { DisplayComponent } from "../../ui/components/components.js";
+import { DisplayComponent } from "../../ui/components/displayComponent.js";
+import { UiComponent } from "../../ui/components/UiComponent.js";
+import { UiInput } from "../../ui/components/UiInput.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
+import { Focusable } from "../../ui/windows/FocusManager.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { EditorWindow, TextEditorWindow } from "./EditorWindow.js";
 
-export class ListMenuWindow extends TextEditorWindow {
+export class ListMenuWindow extends UiComponent {
+  _input: UiInput;
+  listDisplay: UiComponent = new UiComponent();
   constructor() {
     super();
 
-    this.buffer().addLine("first");
-    this.buffer().addLine("second");
-    this.buffer().addLine("third");
+    this.listDisplay.setText("first\nsecond\nthird").view();
+
+    this.cursor().setBuffer(this.buffer());
+
+    this._input = new UiInput();
+
+    this._input
+      .view()
+      .setHeight(1)
+      .setBackgroundColor(colors.BLACK_BACKGROUND)
+      .setColor(colors.WHITE_FOREGROUND);
+
+    this.view()
+      .addChildren(this.listDisplay.view())
+      .addChildren(this._input.view());
   }
 
-  unfocus(): void {
-    super.unfocus();
-    this.view().setVisible(false);
-  }
-
-  focus(): void {
-    this.view().setVisible(true);
-    super.focus();
+  defaultFocus() {
+    return this._input;
   }
 
   onEnter(ctx: EditorContext): void {

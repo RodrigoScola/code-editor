@@ -1,11 +1,11 @@
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { EditorWindow, TextEditorWindow } from "./EditorWindow.js";
+import { UiComponent } from "../../ui/components/UiComponent.js";
 import path from "path";
 import cp from "child_process";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import colors from "../../ui/colors.js";
-import { DisplayComponent } from "../../ui/components/components.js";
+import { DisplayComponent } from "../../ui/components/displayComponent.js";
 import { Canvas } from "../../ui/canvas.js";
 
 type GitFileStatus =
@@ -99,10 +99,10 @@ class GitFile {
     return Boolean(this.unstagedStatus);
   }
 }
-export class GitCommitWindow extends TextEditorWindow {
+export class GitCommitWindow extends UiComponent {
   private files: GitFile[] = [];
   constructor() {
-    super("");
+    super();
 
     this.view()
       .setStyles(
@@ -124,7 +124,7 @@ export class GitCommitWindow extends TextEditorWindow {
   }
 }
 
-export class GitEditorWindow extends TextEditorWindow {
+export class GitEditorWindow extends UiComponent{
   private files: GitFile[] = [];
 
   constructor() {

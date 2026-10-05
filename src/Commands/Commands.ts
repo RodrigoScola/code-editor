@@ -1,7 +1,7 @@
 import { assert } from "../assert.js";
 import { InputParser } from "../Input/inputParser.js";
 import { EditorContext } from "../Editor/Editor/Editor.js";
-import { isTextEditorWindow, isStatusEditorWindow } from "../utils.js";
+import { isTextComponent, isStatusEditorWindow } from "../utils.js";
 import { StatusWindow } from "../Editor/windows/StatusEditor.js";
 
 type Command = (ctx: EditorContext) => void;
@@ -190,9 +190,9 @@ export class CommandMode implements EditorMode {
 
       ctx.setMode("normal");
     } else if (InputParser.isArrowDown(key.token)) {
-      editor.nextCommandLine();
+      editor.nextLine();
     } else if (InputParser.isArrowUp(key.token)) {
-      editor.previousCommandLine();
+      editor.previousLine();
     } else if (InputParser.isArrowLeft(key.token)) {
       editor.moveCursorLeft();
     } else if (InputParser.isArrowRight(key.token)) {
@@ -207,12 +207,12 @@ export class CommandMode implements EditorMode {
 
 export class InsertMode implements EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext) {
-    const editor = ctx.getActiveWindow();
+    const editor = ctx.getFocusedComponent();
     if (!editor) {
       return;
     }
 
-    isTextEditorWindow(editor);
+    isTextComponent(editor);
 
     const cursor = editor.cursor();
     const buffer = editor.buffer();
@@ -238,7 +238,7 @@ export class InsertMode implements EditorMode {
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isEnter(key.token)) {
       // todo: need to add more edge cases, very buggy
-      buffer.newLine();
+      buffer.newLineAt(cursor.line);
       editor.moveCursorDown();
     } else if (InputParser.isArrowDown(key.token)) {
       editor.moveCursorDown();

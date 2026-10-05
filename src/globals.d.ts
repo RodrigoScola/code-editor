@@ -87,3 +87,9 @@ type BorderDisplay = {
   top: string;
   bottom: string;
 };
+
+interface WindowLike {
+  contentLayout(): LayoutBounds;
+  viewport(): ViewPort;
+  buffer(): BufferLike;
+}

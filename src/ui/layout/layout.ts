@@ -1,4 +1,4 @@
-import { DisplayComponent, parseSize } from "../components/components.js";
+import { DisplayComponent, parseSize } from "../components/displayComponent.js";
 import { LayoutDimensions } from "./LayoutDimensions.js";
 import { LayoutBounds } from "./layoutStyle.js";
 
@@ -200,7 +200,6 @@ export class LayoutEngine {
         const width =
           LayoutDimensions.requestedOuterWidth(child, bounds.width) ??
           Math.max(0, columnWidth - margin.left - margin.right);
-
 
         y += margin.top;
 
@@ -503,6 +502,16 @@ export class LayoutEngine {
   static Unconstrained(): MeasureConstraints {
     return this.UNCONSTRAINED_LAYOUT;
   }
+
+  static Contains(cursor: LayoutBounds, bounds: LayoutBounds) {
+    return (
+      cursor.x >= bounds.x &&
+      cursor.x < bounds.x + bounds.width &&
+      cursor.y >= bounds.y &&
+      cursor.y < bounds.y + bounds.height
+    );
+  }
+
   static ClampSize(
     width: number,
     height: number,

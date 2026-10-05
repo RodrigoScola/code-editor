@@ -3,7 +3,7 @@ import { textEditorCommands } from "../Commands/editorCommands.js";
 import { WINDOW_NAMES } from "../constants.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
-import { DisplayComponent } from "../ui/components/components.js";
+import { DisplayComponent } from "../ui/components/displayComponent.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { Textdocument, DiskFile } from "./Documents/TextDocument.js";
 import { EditorContext } from "./Editor/Editor.js";
@@ -14,7 +14,7 @@ import { CodeEditorWindow } from "./windows/CodeEditorWindow.js";
 import { LayoutEngine } from "../ui/layout/layout.js";
 import { ListMenuWindow } from "./windows/ListMenuWindow.js";
 import { EditorRoot } from "./Editor/EditorRoot.js";
-import { isTextEditorWindow } from "../utils.js";
+import { isTextComponent } from "../utils.js";
 import { CodeEditorGroup, TabWindow } from "./windows/Tab/TabWindow.js";
 
 function setupGit(editor: EditorContext) {
@@ -47,6 +47,7 @@ function setupGit(editor: EditorContext) {
 function setupWindows(editor: EditorContext) {
   editor.canvas = new Canvas().setLayout(editor.layout);
   editor.rootWindow = new EditorRoot().setLayout(editor.layout);
+  editor.rootWindow.setName("root_window");
 }
 
 function statusWindow(editor: EditorContext) {
@@ -54,13 +55,11 @@ function statusWindow(editor: EditorContext) {
 
   statusWindow
     .view()
-    .setMaxHeight(1)
     .setStyles(
       ComponentStyle.Create()
         .setBackgroundColor(colors.YELLOW_BACKGROUND)
         .setColor(colors.WHITE_FOREGROUND),
     )
-
     .setName(WINDOW_NAMES.STATUS_WINDOW);
 
   editor.addWindow(statusWindow);
@@ -91,6 +90,7 @@ function setupFileTree(editor: EditorContext) {
 
 function setupTextEditor(editor: EditorContext) {
   const tab = new CodeEditorGroup();
+  tab.setName("tab_editor_group");
 
   const editorWindow: CodeEditorWindow = new CodeEditorWindow(
     new Textdocument(new DiskFile("./src/globals.d.ts")),
@@ -119,7 +119,7 @@ function setupVisualModeCommands(editor: EditorContext) {
   editor.visualMode.bind(["d"], (ctx) => {
     const editor = ctx.getActiveWindow();
     if (!editor) return;
-    isTextEditorWindow(editor);
+    isTextComponent(editor);
     const cursor = editor.cursor();
     const buffer = editor.buffer();
 
@@ -189,7 +189,7 @@ function setupNormalModeCommands(editor: EditorContext) {
 
   editor.normalMode.bind(["V"], (ctx) => {
     const activeEditor = ctx.getActiveWindow();
-    isTextEditorWindow(activeEditor);
+    isTextComponent(activeEditor);
 
     const cursor = activeEditor.cursor();
     cursor.startSelection();
@@ -200,7 +200,7 @@ function setupNormalModeCommands(editor: EditorContext) {
 
     const buffer = activeEditor.buffer();
     const line = buffer.at(cursor.line);
-    if (!line) return;
+    if (line === undefined) return;
 
     cursor.selection?.setHead({
       x: line.length,
@@ -215,34 +215,51 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["<C-p>"], (ctx) => {
     const editor = ctx.findWindow(ListMenuWindow);
     assert(editor);
-    if (editor.focused()) {
+
+    if (ctx.windowManager.activeWindow() == editor) {
       const previousWindow = ctx.windowManager.previousWindow();
       ctx.unfocus(editor);
+      editor.view().setVisible(false);
       if (previousWindow) ctx.focus(previousWindow);
     } else {
       ctx.focus(editor);
+      editor.view().setVisible(true);
     }
   });
   editor.normalMode
     .bind(["<C-w>", "<C-h>"], (ctx: EditorContext) => {
-      const success = ctx.windowManager.focusLeft();
+      const success = ctx.windowManager.activateLeft();
       if (!success) {
         const previous = ctx.windowManager.previousWindow();
-        if (previous) ctx.windowManager.focus(previous);
+        if (previous) {
+          ctx.windowManager.activate(previous);
+          ctx.focus(previous);
+        }
+      } else {
+        ctx.focus(success);
       }
     })
     .bind(["<C-w>", "<C-l>"], (ctx: EditorContext) => {
-      ctx.windowManager.focusRight();
+      const window = ctx.windowManager.activateRight();
+      if (window) {
+        ctx.focus(window);
+      }
     })
 
     .bind(["<C-w>", "<C-k>"], (ctx: EditorContext) => {
-      ctx.windowManager.focusUp();
+      const window = ctx.windowManager.activateUp();
+
+      if (window) {
+        ctx.focus(window);
+      }
     })
     .bind(["<C-w>", "<C-j>"], (ctx: EditorContext) => {
-      const success = ctx.windowManager.focusDown();
+      const success = ctx.windowManager.activateDown();
       if (!success) {
         const previous = ctx.windowManager.previousWindow();
-        if (previous) ctx.windowManager.focus(previous);
+        if (previous) ctx.focus(previous);
+      } else {
+        ctx.focus(success);
       }
     });
 

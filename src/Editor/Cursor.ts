@@ -1,15 +1,17 @@
 import { assert } from "../assert.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
+import { DisplayComponent } from "../ui/components/displayComponent.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { LayoutEngine } from "../ui/layout/layout.js";
 import { LayoutDimensions } from "../ui/layout/LayoutDimensions.js";
+import { LayoutBounds } from "../ui/layout/layoutStyle.js";
 import { ViewPort } from "../ui/windows/viewport.js";
 import { EditorSelection } from "./Selection.js";
-import { TextEditorWindow } from "./windows/EditorWindow.js";
 
 export class Cursor {
   prefferedColumn: number = 0;
+
 
   width: number = 1;
   height: number = 1;
@@ -20,30 +22,42 @@ export class Cursor {
     .setBackgroundColor(colors.RED_BACKGROUND)
     .setColor(colors.BRIGHT_WHITE_FOREGROUND);
 
-  unfocusedStyle: ComponentStyle = ComponentStyle.Create().setDim(true);
-
   selection: EditorSelection | null = null;
+  private _buffer?: BufferLike;
+  private _view?: DisplayComponent;
 
-  constructor(private editor: TextEditorWindow) {}
-
-  visible() {
-    return this.outOfBounds() == false && this.editor.view().visible() == true;
+  setBuffer(buffer: BufferLike) {
+    this._buffer = buffer;
+    return this;
+  }
+  view() {
+    return this._view;
+  }
+  setView(vp: DisplayComponent) {
+    this._view = vp;
+    return this;
+  }
+  layout(): LayoutBounds {
+    return {
+      height: this.height,
+      width: this.width,
+      x: this.column,
+      y: this.line,
+    };
   }
 
-  private outOfBounds() {
-    const layout = this.editor.view().contentLayout();
-
+  private outOfBounds(bounds: LayoutBounds) {
     const relative = LayoutDimensions.ApplyRelative(
       this.column,
-      this.line - this.editor.view().viewport().firstLine,
-      layout,
+      this.line - (this._view?.viewport()?.firstLine || 0),
+      bounds,
     );
 
     return (
-      relative.x < layout.x ||
-      relative.y < layout.y ||
-      relative.x >= layout.x + layout.width ||
-      relative.y >= layout.y + layout.height
+      relative.x < bounds.x ||
+      relative.y < bounds.y ||
+      relative.x >= bounds.x + bounds.width ||
+      relative.y >= bounds.y + bounds.height
     );
   }
 
@@ -63,13 +77,18 @@ export class Cursor {
   }
 
   paint(canvas: Canvas) {
-    const editor = this.editor;
+    if (!this._view) {
+      return;
+    }
+    const layout = this._view?.contentLayout();
 
-    const layout = editor.view().contentLayout();
+    if (this.outOfBounds(layout)) {
+      return;
+    }
 
     const relative = LayoutDimensions.ApplyRelative(
       this.column,
-      this.line - this.editor.view().viewport().firstLine,
+      this.line - (this._view?.viewport().firstLine || 0),
       layout,
     );
 
@@ -86,13 +105,43 @@ export class Cursor {
       final += str[i];
     }
 
-    canvas.drawText(relative, final, this.activeStyle());
+    canvas.drawText(relative, final, this.style);
   }
 
-  private activeStyle() {
-    return this.editor.focused()
-      ? this.style
-      : ComponentStyle.Blend(this.unfocusedStyle, this.style);
+  paintSelection(canvas: Canvas) {
+    const view = this.view();
+    const buffer = this._buffer;
+    if (!view || !buffer) {
+      return;
+    }
+    const selection = this.selection;
+    if (!selection) {
+      return;
+    }
+
+    const cl = view.contentLayout();
+
+    const bounds = selection.bounds(buffer);
+
+    for (const bound of bounds) {
+      let content = buffer.at(bound.y) ?? "";
+      content = content.slice(bound.x, bound.width);
+
+      const position = LayoutDimensions.ApplyRelative(
+        bound.x,
+        bound.y - view.viewport().firstLine,
+        cl,
+        content,
+      );
+      const nb = {
+        x: position.x,
+        y: position.y,
+        width: bound.width,
+        height: bound.height,
+      };
+      canvas.fillRect(nb, selection.styles);
+      canvas.drawText(nb, content);
+    }
   }
 
   ensureVisible(viewPort: ViewPort) {
@@ -115,7 +164,10 @@ export class Cursor {
     }
   }
   moveDown() {
-    const buffer = this.editor.buffer();
+    const buffer = this._buffer;
+    if (!buffer) {
+      return;
+    }
 
     this.line = Math.max(Math.min(this.line + 1, buffer.count() - 1), 0);
 
@@ -136,7 +188,10 @@ export class Cursor {
   }
 
   moveUp() {
-    const buffer = this.editor.buffer();
+    const buffer = this._buffer;
+    if (!buffer) {
+      return;
+    }
 
     this.line = Math.max(this.line - 1, 0);
 
@@ -157,7 +212,10 @@ export class Cursor {
     this.column = Math.max(this.column - 1, 0);
   }
   moveRight() {
-    const buffer = this.editor.buffer();
+    const buffer = this._buffer;
+    if (!buffer) {
+      return;
+    }
 
     const line = buffer.at(this.line);
 
@@ -179,5 +237,30 @@ export class Cursor {
     this.line = 0;
     this.column = 0;
     this.prefferedColumn = 0;
+  }
+
+  goToLineBeginning() {
+    const buffer = this._buffer;
+    if (!buffer) {
+      return;
+    }
+
+    const currentLine = buffer.at(this.line);
+    assert(currentLine !== undefined, `invalid current line: ${this.line}`);
+
+    this.column = 0;
+    this.prefferedColumn = 0;
+  }
+
+  goToLineEnd() {
+    const buffer = this._buffer;
+    if (!buffer) {
+      return;
+    }
+
+    const currentLine = buffer.at(this.line);
+    assert(currentLine !== undefined, `invalid current line: ${this.line}`);
+
+    this.prefferedColumn = this.column = currentLine.length - 1;
   }
 }

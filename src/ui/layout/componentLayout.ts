@@ -3,8 +3,8 @@ import {
   LayoutBounds,
   LayoutStyle,
   WrapStyle,
-} from "../layout/layoutStyle.js";
-import { DisplayComponent } from "./components.js";
+} from "./layoutStyle.js";
+import { DisplayComponent } from "../components/displayComponent.js";
 
 export class ComponentLayoutFns {
   private readonly _layoutStyle: LayoutStyle;
@@ -90,8 +90,7 @@ export class ComponentLayoutFns {
 
   setLayout(layout: LayoutBounds): this {
     this._layoutStyle.setLayout(layout);
-    
-    
+
     return this;
   }
   layoutStyle() {

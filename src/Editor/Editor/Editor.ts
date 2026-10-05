@@ -14,20 +14,23 @@ import {
   Textdocument,
 } from "../Documents/TextDocument.js";
 import { WindowManager } from "../windows/WindowManager/WindowManager.js";
-import { EditorWindow } from "../windows/EditorWindow.js";
 import { StatusWindow } from "../windows/StatusEditor.js";
 import { EditorRoot } from "./EditorRoot.js";
-import { isCodeEditorWindow, isTextEditorWindow, memory } from "../../utils.js";
+import { isCodeEditorWindow, isTextComponent, memory } from "../../utils.js";
 import { LayoutBounds } from "../../ui/layout/layoutStyle.js";
 import { CodeEditorWindow } from "../windows/CodeEditorWindow.js";
 import { Cursor } from "../Cursor.js";
 import { Configuration, EditorConfig, setConfiguration } from "../../config.js";
 import { CodeEditorGroup } from "../windows/Tab/TabWindow.js";
 import { config, title } from "process";
+import { FocusManager } from "../../ui/windows/FocusManager.js";
+import { DisplayComponent } from "../../ui/components/displayComponent.js";
+import { UiComponent } from "../../ui/components/UiComponent.js";
 
 export class EditorContext {
   layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
   windowManager: WindowManager;
+  focusManager: FocusManager = new FocusManager();
   static instance: EditorContext | null;
   canvas: Canvas = new Canvas();
   renderer: Renderer = new Renderer();
@@ -52,9 +55,7 @@ export class EditorContext {
     EditorContext.instance = this;
     this.windowManager = new WindowManager(this.rootWindow);
   }
-  findWindow<T extends EditorWindow>(
-    type: new (...args: any[]) => T,
-  ): T | null {
+  findWindow<T extends UiComponent>(type: new (...args: any[]) => T): T | null {
     return this.windowManager.find(type);
   }
 
@@ -64,12 +65,14 @@ export class EditorContext {
     }
     this.mode.handleKey(key, this);
   }
-  unfocus(window: EditorWindow) {
-    return this.windowManager.unfocus(window);
+  unfocus(window: UiComponent) {
+    this.windowManager.unfocus(window);
+    this.focusManager.unfocus(window.defaultFocus());
   }
 
-  focus(window: EditorWindow) {
-    return this.windowManager.focus(window);
+  focus(window: UiComponent) {
+    this.windowManager.activate(window);
+    this.focusManager.focus(window.defaultFocus());
   }
 
   openFile(path: string) {
@@ -98,8 +101,11 @@ export class EditorContext {
       return null;
     }
   }
-  getActiveWindow(): EditorWindow | null {
+  getActiveWindow(): UiComponent | null {
     return this.windowManager.activeWindow();
+  }
+  getFocusedComponent() {
+    return this.focusManager.active();
   }
 
   setMode(m: EditingModes) {
@@ -115,7 +121,7 @@ export class EditorContext {
 
       const statusWindow = this.windowManager.find(StatusWindow);
       assert(statusWindow, "no status window initialized");
-      this.windowManager.focus(statusWindow);
+      this.windowManager.activate(statusWindow);
     } else {
       throw new Error(`mode: ${m} has not been made yet`);
     }
@@ -133,6 +139,7 @@ export class EditorContext {
       this.repaint();
     });
   }
+
   private repaint() {
     process.stdout.write("\x1b[H" + this.render());
   }
@@ -152,28 +159,12 @@ export class EditorContext {
     //memory("after building");
     //memory("before render");
 
-    const cursors = this.windowManager.all().reduce((all: Cursor[], window) => {
-      try {
-        isTextEditorWindow(window);
-
-        if (window.cursor().visible()) {
-          all.push(window.cursor());
-        }
-      } catch (err) {}
-
-      return all;
-    }, []);
-
-    for (const cursor of cursors) {
-      cursor.paint(this.canvas);
-    }
-
     const render = this.renderer.render(this.canvas);
     //memory("after render");
     return render;
   }
   executeCommand() {}
-  addWindow(window: EditorWindow) {
+  addWindow(window: UiComponent) {
     this.windowManager.add(window);
     return this;
   }

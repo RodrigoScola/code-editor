@@ -1,28 +1,17 @@
-import { buffer } from "stream/consumers";
-import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { EditorWindow, TextEditorWindow } from "./EditorWindow.js";
 import { LayoutDimensions } from "../../ui/layout/LayoutDimensions.js";
+import { UiInput } from "../../ui/components/UiInput.js";
 
-export class StatusWindow extends TextEditorWindow {
+export class StatusWindow extends UiInput {
   editor: EditorContext;
-  currentCommandLine: number = 0;
+
   constructor(editor: EditorContext) {
     super();
+    this.setMultilineEnabled(true);
+
     this.editor = editor;
-  }
-
-  previousCommandLine() {
-    this.currentCommandLine = Math.max(0, this.currentCommandLine - 1);
-  }
-
-  nextCommandLine() {
-    this.currentCommandLine = Math.max(
-      Math.min(this.buffer().count() - 1, this.currentCommandLine + 1),
-      0,
-    );
   }
 
   paint(canvas: Canvas): void {
@@ -62,12 +51,6 @@ export class StatusWindow extends TextEditorWindow {
         this.currentCommandLine = Math.max(this.buffer().count() - 1, 0);
         this.moveCursorDown();
       }
-    }
-
-    if (event.name === "submitCommand") {
-      this.currentCommandLine++;
-      this.nextCommandLine();
-      this.buffer().newLine();
     }
   }
 }

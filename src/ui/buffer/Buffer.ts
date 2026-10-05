@@ -1,11 +1,24 @@
+import { start } from "repl";
 import { assert } from "../../assert.js";
 
 export class TextBuffer implements BufferLike {
   private lines: string[] = [];
+  private listeners = new Set<() => void>();
 
   constructor(text?: string | undefined) {
     if (text) {
       this.lines = text.split(/\r?\n/);
+    }
+  }
+  onChange(listener: () => void) {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+  private changed() {
+    for (const listener of this.listeners) {
+      listener();
     }
   }
   content() {
@@ -20,15 +33,17 @@ export class TextBuffer implements BufferLike {
   }
   update(lineNumber: number, content: string) {
     let ln = this.at(lineNumber);
-    if (!ln) {
+    if (ln === undefined) {
       return;
     }
     this.lines[lineNumber] = content;
+    this.changed();
   }
   removeLine(line: number) {
     const at = Math.max(0, Math.min(line, this.lines.length - 1));
 
     this.lines.splice(at, 1);
+    this.changed();
     return at;
   }
 
@@ -44,9 +59,11 @@ export class TextBuffer implements BufferLike {
     }
 
     this.lines[line] = current.slice(0, column) + current.slice(column + 1);
+    this.changed();
   }
   public addLine(content: string) {
     this.lines.push(content);
+    this.changed();
   }
   public addCharacter(line: number, column: number, ch: string) {
     if (ch.length == 2) {
@@ -69,13 +86,21 @@ export class TextBuffer implements BufferLike {
     const clamped = Math.max(0, Math.min(column, current.length));
 
     this.lines[line] = current.slice(0, clamped) + ch + current.slice(clamped);
+    this.changed();
   }
-  newLine() {
-    this.lines.push("");
+  newLineAt(line: number, content: string = "") {
+    this.lines.splice(line, 0, content);
+
+    this.changed();
+  }
+  newLine(content: string = "") {
+    this.lines.push(content);
+    this.changed();
   }
   insertLine(afterLine: number) {
     const at = Math.max(0, Math.min(afterLine + 1, this.lines.length));
     this.lines.splice(at, 0, "");
+    this.changed();
     return at;
   }
   maxLineLength() {

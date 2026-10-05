@@ -3,9 +3,11 @@ import { assert } from "../assert.js";
 import { POSITION_ORDER } from "../constants.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
-import { DisplayComponent } from "./components/components.js";
+import { DisplayComponent } from "./components/displayComponent.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 import { LayoutBounds } from "./layout/layoutStyle.js";
+import { TextLayout, VisualLine } from "./TextLayout/text.js";
+import { ViewPort } from "./windows/viewport.js";
 
 export class Renderer {
   static Create() {
@@ -39,10 +41,8 @@ export class Renderer {
     .setBackgroundColor(colors.BACKGROUND_OFF)
     .setColor(colors.FOREGROUND_OFF);
 
-  private paint(root: DisplayComponent, canvas: Canvas) {
-    const components = this.getComponents(root);
-
-    components.sort((a, b) => {
+  sortComponents(components: DisplayComponent[]) {
+    return components.sort((a, b) => {
       if (this.isAncestor(a, b)) {
         return -1;
       }
@@ -56,6 +56,13 @@ export class Renderer {
         POSITION_ORDER[a.positionMode()] - POSITION_ORDER[b.positionMode()]
       );
     });
+  }
+
+  private paint(root: DisplayComponent, canvas: Canvas) {
+    const components = this.getComponents(root);
+
+    this.sortComponents(components);
+
     let defaultBlend = ComponentStyle.Create();
 
     for (const component of components) {
@@ -72,8 +79,17 @@ export class Renderer {
 
       defaultBlend.blend(component.styles(), component.parent()?.styles());
 
-      this.paintContent(component, canvas, defaultBlend);
+      this.paintContent(
+        component.contentLayout(),
+        component.content(),
+        canvas,
+        defaultBlend,
+        component.viewport(),
+      );
       defaultBlend.reset();
+    }
+    for (const component of components) {
+      component.postPaint(canvas);
     }
   }
   private paintBorder(component: DisplayComponent, canvas: Canvas) {
@@ -167,31 +183,30 @@ export class Renderer {
     return false;
   }
 
+  paintLine() {}
+
   paintContent(
-    component: DisplayComponent,
+    cl: LayoutBounds,
+    text: TextLayout,
     canvas: Canvas,
     styles?: ComponentStyle,
+    viewport?: ViewPort,
   ) {
-    const cl = component.contentLayout();
-    const viewport = component.viewport();
-
-    const layout = component.content().layout();
-
-    if (layout.height <= 0) {
+    if (cl.height <= 0) {
       return;
     }
 
-    const firstLine = viewport.firstLine;
-    const lastLine = firstLine + Math.min(viewport.visibleLines, cl.height);
+    const firstLine = viewport?.firstLine || 0;
+    const lastLine =
+      firstLine + Math.min(viewport?.visibleLines || text.height(), cl.height);
 
     for (let lineNumber = firstLine; lineNumber < lastLine; lineNumber++) {
-      const line = component.content().lines().at(lineNumber);
+      const line = text.getLineAt(lineNumber);
       if (!line) {
         continue;
       }
 
       const screenY = cl.y + (lineNumber - firstLine);
-
 
       canvas.drawText(
         {

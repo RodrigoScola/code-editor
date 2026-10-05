@@ -3,7 +3,7 @@ import path from "path";
 import colors from "../../ui/colors.js";
 import { Canvas } from "../../ui/canvas.js";
 import { Cursor } from "../Cursor.js";
-import { EditorView, EditorWindow, TextEditorWindow } from "./EditorWindow.js";
+import { EditorView, UiComponent } from "../../ui/components/UiComponent.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
@@ -28,14 +28,14 @@ type FileTreeNode = TreeNodeBase & {
   isDirectory: false;
 };
 
-export class FileTreeWindow extends TextEditorWindow {
+export class FileTreeWindow extends UiComponent {
   root: TreeNode;
   ignoreDirs: string[] = [];
 
   ignoreFileExt: string[] = [];
 
   constructor(dir: string) {
-    super("");
+    super();
 
     ((this.cursor().style = ComponentStyle.Create()
       .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
@@ -50,7 +50,6 @@ export class FileTreeWindow extends TextEditorWindow {
         parent: null,
       }));
 
-    this.cursor().unfocusedStyle.setBold(true);
     this.walkTree(dir, this.root);
   }
   isDirectoryNode(node: TreeNode): node is DirectoryTreeNode {

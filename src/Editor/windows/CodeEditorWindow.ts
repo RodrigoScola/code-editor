@@ -1,16 +1,23 @@
 import { text } from "stream/consumers";
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import colors from "../../ui/colors.js";
-import { DisplayComponent } from "../../ui/components/components.js";
+import { DisplayComponent } from "../../ui/components/displayComponent.js";
 import { ViewPort } from "../../ui/windows/viewport.js";
 import { Cursor } from "../Cursor.js";
 import { Textdocument } from "../Documents/TextDocument.js";
-import { EWindow, TextEditorWindow } from "./EditorWindow.js";
+import {
+  EditorView,
+  EWindow,
+  UiComponent,
+} from "../../ui/components/UiComponent.js";
+import { Canvas } from "../../ui/canvas.js";
+import { assert } from "../../assert.js";
+import { EditorContext } from "../Editor/Editor.js";
 
-export class CodeEditorWindow extends TextEditorWindow implements EWindow {
+export class CodeEditorWindow extends UiComponent implements EWindow {
   document: Textdocument;
 
-  private _editor: TextEditorWindow = new TextEditorWindow();
+  private _editor: UiComponent;
   private lines: DisplayComponent;
 
   constructor(document: Textdocument) {
@@ -18,6 +25,7 @@ export class CodeEditorWindow extends TextEditorWindow implements EWindow {
     this.document = document;
 
     this._editor = this.initEditor(document);
+    assert(this._editor.cursor(), "invalid cursor on text editor?");
 
     this.view().addChildren(
       new DisplayComponent()
@@ -32,14 +40,14 @@ export class CodeEditorWindow extends TextEditorWindow implements EWindow {
             .setBold(true)
             .setTextAlign("center"),
         )
-        .addChildren(this._editor.view()),
+        .addChildren(this._editor.view().setName("editor_content")),
     );
 
     this.lines = this.view().findChildrenByName("editor_lines")!;
 
     // this.setupLines();
+    this.reset();
   }
-
   setupLines() {
     let txt = "";
 
@@ -63,14 +71,21 @@ export class CodeEditorWindow extends TextEditorWindow implements EWindow {
   }
 
   private initEditor(document: Textdocument) {
-    const editor = new TextEditorWindow(document.read());
+    const editor = new UiComponent();
+    editor.setText(document.read());
+    const cursor = editor.cursor();
 
-    editor.cursor().style.setBackgroundColor(colors.WHITE_BACKGROUND);
-    editor.view().setPaddingLeft(2);
+    assert(cursor, `invalid cursor on editor ${this.name()}`);
 
-    editor.view().styles().setBackgroundColor(colors.BRIGHT_RED_BACKGROUND);
+    cursor.style.setBackgroundColor(colors.WHITE_BACKGROUND);
 
-    editor.setName("txt");
+    editor
+      .view()
+      .setName("txt-" + document.file.path())
+      .setPaddingLeft(2)
+      .styles()
+      .setBackgroundColor(colors.BRIGHT_RED_BACKGROUND);
+
     return editor;
   }
   onPrePaint(): void {
@@ -86,11 +101,20 @@ export class CodeEditorWindow extends TextEditorWindow implements EWindow {
     this._editor.cursor().line = 0;
     this._editor.view().viewport().firstLine = 0;
     this._editor.view().viewport().firstColumn = 0;
+
+    this.cursor()
+      .setBuffer(this.buffer())
+      .setView(this.view().findChildrenByName("editor_content")!);
+  }
+  onPostPaint(canvas: Canvas): void {
+    this.cursor().paint(canvas);
   }
 
   openDocument(document: Textdocument) {
     this.document = document;
-    this._editor.view().content().setBuffer(new TextBuffer(document.read()));
+    const buffer = new TextBuffer(document.read());
+    this._editor.view().content().setBuffer(buffer);
+    this.cursor().setBuffer(buffer);
   }
   name() {
     return this.document.file.path();
