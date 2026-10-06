@@ -29,7 +29,6 @@ import { UiComponent } from "../../ui/components/UiComponent.js";
 
 export class EditorContext {
   layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
-  windowManager: WindowManager;
   focusManager: FocusManager = new FocusManager();
   static instance: EditorContext | null;
   canvas: Canvas = new Canvas();
@@ -38,6 +37,8 @@ export class EditorContext {
   normalMode: NormalMode = new NormalMode();
   visualMode: VisualMode = new VisualMode();
   insertMode: InsertMode = new InsertMode();
+
+  windowManager: WindowManager  = new WindowManager(this.rootWindow)
 
   commandMode: CommandMode = new CommandMode();
   private mode: EditorMode = this.normalMode;
@@ -53,7 +54,6 @@ export class EditorContext {
 
   constructor() {
     EditorContext.instance = this;
-    this.windowManager = new WindowManager(this.rootWindow);
   }
   findWindow<T extends UiComponent>(type: new (...args: any[]) => T): T | null {
     return this.windowManager.find(type);

@@ -3,13 +3,15 @@ import { DisplayComponent } from "../../../ui/components/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
 import { LayoutBounds } from "../../../ui/layout/layoutStyle.js";
 import { UiComponent } from "../../../ui/components/UiComponent.js";
+import { FocusManager } from '../../../ui/windows/FocusManager.js';
 
 export class WindowManager {
   private windows = new Map<string, UiComponent>();
   private active: UiComponent | null = null;
   root: EditorRoot;
+  focusManager: FocusManager | null= null
   history: string[];
-  constructor(root: EditorRoot) {
+  constructor(root: EditorRoot  ) {
     this.root = root;
     this.history = [];
   }

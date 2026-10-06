@@ -1,10 +1,6 @@
-import { Canvas } from "../../ui/canvas.js";
 import colors from "../../ui/colors.js";
-import { DisplayComponent } from "../../ui/components/displayComponent.js";
 import { UiComponent } from "../../ui/components/UiComponent.js";
 import { UiInput } from "../../ui/components/UiInput.js";
-import { ComponentStyle } from "../../ui/ComponentStyles.js";
-import { Focusable } from "../../ui/windows/FocusManager.js";
 import { EditorContext } from "../Editor/Editor.js";
 
 export class ListMenuWindow extends UiComponent {
