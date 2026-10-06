@@ -49,7 +49,7 @@ function setupGit(editor: EditorContext) {
 }
 
 function setupWindows(editor: EditorContext) {
-  editor.canvas = new Canvas().setLayout(editor.layout);
+  new Canvas().setLayout(editor.layout);
   editor.rootWindow = new EditorRoot().setLayout(editor.layout);
   editor.rootWindow.setName("root_window");
 }
@@ -320,7 +320,7 @@ async function handleResize(
   const resizedLayout = LayoutEngine.CreateBounds();
   resizedLayout.height = resolved.rows;
   resizedLayout.width = resolved.columns;
-  editor.canvas.setLayout(resizedLayout);
+  editor.setLayout(resizedLayout);
   editor.rootWindow.layoutConstraints = LayoutEngine.CreateConstraints(
     resizedLayout.width,
     resizedLayout.height,

@@ -43,7 +43,7 @@ describe("tests the visual highlight of the selection", () => {
       editor.view(),
       LayoutEngine.CreateConstraints(lt.width),
     ).Arrange(editor.view());
-    Renderer.Create().build(editor.view(), cnv);
+    Renderer.Create(cnv).build(editor.view());
 
     cnv.renderBoard();
   });

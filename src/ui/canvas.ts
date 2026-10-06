@@ -1,14 +1,33 @@
-import { assert } from "node:console";
 import colors from "./colors.js";
 import { ComponentBorder } from "./display/border.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 import { LayoutBounds } from "./layout/layoutStyle.js";
 import { Configuration } from "../config.js";
+import { TextLayout } from "./TextLayout/text.js";
+import { ViewPort } from "./windows/viewport.js";
 
 export interface DisplayTile {
   x: number;
   y: number;
   styles: ComponentStyle;
+}
+export interface ICanvas {
+  lineTo(start: Point, end: Point, style: ComponentStyle | null): void;
+  clear(): void;
+  fillRect(bounds: LayoutBounds, style: ComponentStyle | null): void;
+  drawText(bounds: LayoutBounds, text: string | TextLayout): void;
+  drawText(
+    bounds: LayoutBounds,
+    text: string | TextLayout,
+    style: ComponentStyle | null | undefined,
+    viewport?: ViewPort,
+  ): void;
+  drawText(
+    bounds: LayoutBounds,
+    text: string | TextLayout,
+    style?: ComponentStyle | null,
+    viewport?: ViewPort,
+  ): void;
 }
 
 const DEFAULT_STYLE: ComponentStyle = ComponentStyle.Create()
@@ -16,7 +35,7 @@ const DEFAULT_STYLE: ComponentStyle = ComponentStyle.Create()
   .setColor(colors.FOREGROUND_OFF)
   .setDisplay(" ");
 
-export class Canvas {
+export class Canvas implements ICanvas {
   l: LayoutBounds = {
     x: 0,
     y: 0,
@@ -35,8 +54,46 @@ export class Canvas {
     return this;
   }
 
-  constructor() {
+  constructor(layout?: LayoutBounds) {
     this.canvas = new Array();
+    if (layout) {
+      this.setLayout(layout);
+    }
+  }
+  // bresenham: walks one cell at a time from start to end (both included),
+  // in any direction, stepping on the minor axis when the error builds up
+  lineTo(start: Point, end: Point, style: ComponentStyle | null): void {
+    let x = Math.floor(start.x);
+    let y = Math.floor(start.y);
+    const endX = Math.floor(end.x);
+    const endY = Math.floor(end.y);
+
+    const dx = Math.abs(endX - x);
+    const dy = -Math.abs(endY - y);
+    const stepX = x < endX ? 1 : -1;
+    const stepY = y < endY ? 1 : -1;
+    let error = dx + dy;
+
+    while (true) {
+      const cell = this.getCell(x, y);
+      if (cell) {
+        cell.styles = ComponentStyle.Blend(style, DEFAULT_STYLE);
+      }
+
+      if (x === endX && y === endY) {
+        break;
+      }
+
+      const doubled = error * 2;
+      if (doubled >= dy) {
+        error += dy;
+        x += stepX;
+      }
+      if (doubled <= dx) {
+        error += dx;
+        y += stepY;
+      }
+    }
   }
 
   width(): number {
@@ -155,20 +212,63 @@ export class Canvas {
       }
     }
   }
+  private paintContent(
+    cl: LayoutBounds,
+    text: TextLayout,
+    styles?: ComponentStyle | null,
+    viewport?: ViewPort,
+  ) {
+    if (cl.height <= 0) {
+      return;
+    }
 
-  drawText(bounds: LayoutBounds, text: string): void;
+    const firstLine = viewport?.firstLine || 0;
+    const lastLine =
+      firstLine + Math.min(viewport?.visibleLines || text.height(), cl.height);
+
+    for (let lineNumber = firstLine; lineNumber < lastLine; lineNumber++) {
+      const line = text.getLineAt(lineNumber);
+      if (!line) {
+        continue;
+      }
+
+      const screenY = cl.y + (lineNumber - firstLine);
+
+      this.drawText(
+        {
+          height: cl.height,
+          width: cl.width,
+          x: cl.x + line.x(),
+          y: screenY,
+        },
+        line.content(),
+        styles,
+      );
+    }
+  }
+
+  drawText(bounds: LayoutBounds, text: string | TextLayout): void;
 
   drawText(
     bounds: LayoutBounds,
-    text: string,
+    text: string | TextLayout,
     style: ComponentStyle | null | undefined,
+    viewport?: ViewPort,
   ): void;
 
   drawText(
     bounds: LayoutBounds,
-    text: string,
+    text: string | TextLayout,
     style?: ComponentStyle | null,
+    viewport?: ViewPort,
   ): void {
+    // a TextLayout is already split into positioned lines, so it goes through
+    // the viewport-aware path and each visible line comes back here as a string
+    if (text instanceof TextLayout) {
+      this.paintContent(bounds, text, style, viewport);
+      return;
+    }
+
     if (!text) {
       return;
     }

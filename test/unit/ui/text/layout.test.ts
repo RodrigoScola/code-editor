@@ -317,7 +317,7 @@ function display(root: DisplayComponent, canvas: Canvas) {
   );
   LayoutEngine.Arrange(root);
 
-  Renderer.Create().build(root, canvas);
+  Renderer.Create(canvas).build(root);
   canvas.renderBoard();
 }
 
@@ -342,7 +342,7 @@ function build(root: DisplayComponent, canvas: Canvas) {
     LayoutEngine.CreateConstraints(canvas.layout().width),
   );
   LayoutEngine.Arrange(root);
-  Renderer.Create().build(root, canvas);
+  Renderer.Create(canvas).build(root);
 
   canvas.renderBoard();
 }

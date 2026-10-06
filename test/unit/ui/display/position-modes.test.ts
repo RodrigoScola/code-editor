@@ -276,7 +276,7 @@ function setupTests(height: number = 10, width: number = 10) {
       LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
       LayoutEngine.Arrange(root);
 
-      Renderer.Create().build(root, canvas);
+      Renderer.Create(canvas).build(root);
     },
   };
 }

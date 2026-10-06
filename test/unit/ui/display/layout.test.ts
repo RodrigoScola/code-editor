@@ -58,7 +58,7 @@ describe("LayoutEngine measurement", () => {
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(w));
     LayoutEngine.Arrange(root, layout);
 
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
 
@@ -98,7 +98,7 @@ describe("LayoutEngine measurement", () => {
     ).Arrange(root);
 
     const cnv = new Canvas().setLayout(layout);
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
   });
@@ -214,7 +214,7 @@ describe("LayoutEngine measurement", () => {
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
 
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
   });
@@ -247,7 +247,7 @@ describe("tests the invisible of component", () => {
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
     const cnv = new Canvas().setLayout(layout);
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
 
@@ -294,7 +294,7 @@ describe("tests the invisible of component", () => {
     ).Arrange(root);
 
     const cnv = new Canvas().setLayout(layout);
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
 
@@ -342,7 +342,7 @@ describe("tests the margin", () => {
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
 
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
 
@@ -386,7 +386,7 @@ describe("tests the relative height and width", () => {
     root.addChildren(oneThird).addChildren(rest);
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(10));
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
   });
@@ -415,7 +415,7 @@ describe("tests the relative height and width", () => {
     root.addChildren(oneThird).addChildren(rest);
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(10));
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
   });
@@ -440,7 +440,7 @@ describe("tests the relative height and width", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
 

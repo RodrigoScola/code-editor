@@ -23,7 +23,7 @@ describe("tests the buffer and rendering", () => {
       LayoutEngine.CreateConstraints(10),
     ).Arrange(editor.view());
 
-    Renderer.Create().build(editor.view(), cnv);
+    Renderer.Create(cnv).build(editor.view());
     cnv.renderBoard();
 
     const first = cnv.getCell(0, 0);

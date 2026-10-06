@@ -35,6 +35,9 @@ process.stdin.resume();
 
 const editor = new EditorContext();
 
+// draw every frame from the top left corner of the terminal
+editor.renderer.setOutput((frame) => process.stdout.write("\x1b[H" + frame));
+
 editor.layout = LayoutEngine.CreateBounds();
 editor.layout.height = process.stdout.rows;
 editor.layout.width = process.stdout.columns;

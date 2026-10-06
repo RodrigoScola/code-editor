@@ -64,7 +64,7 @@ describe("tests the window manager focus capabilities", () => {
       manager.root,
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(manager.root);
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     cnv.renderBoard();
 

@@ -23,7 +23,7 @@ describe("justify content tests", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
 
@@ -48,7 +48,7 @@ describe("justify content tests", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
 
@@ -81,7 +81,7 @@ describe("justify content tests", () => {
 
     LayoutEngine.Measure(parent, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(parent);
-    Renderer.Create().build(parent, canvas);
+    Renderer.Create(canvas).build(parent);
 
     canvas.renderBoard();
     expect(left.layout().x).eq(
@@ -114,7 +114,7 @@ describe("justify content tests", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     const rowWidth =
       left.layout().width + middle.layout().width + right.layout().width;
@@ -169,7 +169,7 @@ describe("justify content tests", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     const rowWidth =
       left.layout().width + middle.layout().width + right.layout().width;
@@ -217,7 +217,7 @@ describe("justify content tests", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
     canvas.renderBoard();
 
     const rowWidth =
@@ -261,7 +261,7 @@ describe("justify content tests", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
     canvas.renderBoard();
 
     expect(left.layout().y).eq(0);
@@ -319,7 +319,7 @@ function build(root: DisplayComponent, canvas: Canvas) {
     LayoutEngine.CreateConstraints(root.layout().width),
   );
   LayoutEngine.Arrange(root);
-  Renderer.Create().build(root, canvas);
+  Renderer.Create(canvas).build(root);
   canvas.renderBoard();
 }
 

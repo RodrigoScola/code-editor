@@ -251,7 +251,7 @@ function build(root: DisplayComponent, canvas: Canvas) {
     LayoutEngine.CreateConstraints(root.layout().width),
   );
   LayoutEngine.Arrange(root);
-  Renderer.Create().build(root, canvas);
+  Renderer.Create(canvas).build(root);
 
   canvas.renderBoard();
 }

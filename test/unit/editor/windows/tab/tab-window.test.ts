@@ -46,7 +46,7 @@ describe("tests the tab component", () => {
       root,
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
   });
@@ -81,7 +81,7 @@ function render(root: DisplayComponent, canvas: Canvas) {
   const cnc = LayoutEngine.CreateConstraints(canvas.layout().width);
 
   LayoutEngine.Measure(root, cnc).Arrange(root);
-  Renderer.Create().build(root, canvas);
+  Renderer.Create(canvas).build(root);
 
   canvas.renderBoard();
 }

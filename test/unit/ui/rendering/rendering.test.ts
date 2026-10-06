@@ -26,7 +26,7 @@ describe("Canvas", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(2));
 
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     let out = cnv.getCells().reduce((all, t) => all.concat(t), []);
 
@@ -71,7 +71,7 @@ describe("Renderer background colors", () => {
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(l.width));
     LayoutEngine.Arrange(root);
 
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
     cnv.renderBoard();
 
     const nmap = cnv.getCells();
@@ -101,7 +101,7 @@ describe("Renderer background colors", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(l.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
 
@@ -160,7 +160,7 @@ describe("Renderer background colors", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(l.height));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
     const map = cnv.getCells();
     cnv.renderBoard();
 
@@ -196,7 +196,7 @@ describe("Renderer background colors", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.height));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     const w = layout.width;
 
@@ -237,7 +237,7 @@ describe("editorComponent", () => {
 
     LayoutEngine.Arrange(display.view(), layout);
 
-    Renderer.Create().build(display.view(), cnv);
+    Renderer.Create(cnv).build(display.view());
     cnv.renderBoard();
 
     const firstLineCell = cnv.getCell(0, 0);
@@ -299,7 +299,7 @@ describe("editorComponent", () => {
     LayoutEngine.Measure(root, constraints);
     LayoutEngine.Arrange(root);
 
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     expect(child.contentLayout().height).eq(3);
     expect(child.contentLayout().width).eq(3);
@@ -309,6 +309,43 @@ describe("editorComponent", () => {
         .getCell(child.startX() as number, child.startY() as number)!
         .styles.backgroundColor(),
     ).eq(child.styles().backgroundColor());
+
+    canvas.renderBoard();
+  });
+  it("lines to and from", () => {
+    const layout = LayoutEngine.CreateBounds(30);
+    const canvas = new Canvas().setLayout(layout);
+
+    const yellow = ComponentStyle.Create().setBackgroundColor(
+      colors.YELLOW_BACKGROUND,
+    );
+    const isYellow = (x: number, y: number) =>
+      canvas.getCell(x, y)!.styles.backgroundColor() ===
+      colors.YELLOW_BACKGROUND;
+
+    // diagonal: only the diagonal is painted, not the whole square
+    canvas.lineTo({ x: 0, y: 0 }, { x: 29, y: 29 }, yellow);
+    expect(isYellow(0, 0)).eq(true);
+    expect(isYellow(15, 15)).eq(true);
+    expect(isYellow(29, 29)).eq(true);
+    expect(isYellow(1, 0)).eq(false);
+    expect(isYellow(0, 1)).eq(false);
+
+    // horizontal, drawn right to left
+    canvas.clear();
+    canvas.lineTo({ x: 9, y: 3 }, { x: 2, y: 3 }, yellow);
+    for (let x = 2; x <= 9; x++) {
+      expect(isYellow(x, 3)).eq(true);
+    }
+    expect(isYellow(1, 3)).eq(false);
+    expect(isYellow(10, 3)).eq(false);
+
+    // vertical, drawn bottom to top, going off the canvas is ignored
+    canvas.clear();
+    canvas.lineTo({ x: 4, y: 40 }, { x: 4, y: 25 }, yellow);
+    expect(isYellow(4, 25)).eq(true);
+    expect(isYellow(4, 29)).eq(true);
+    expect(isYellow(4, 24)).eq(false);
 
     canvas.renderBoard();
   });

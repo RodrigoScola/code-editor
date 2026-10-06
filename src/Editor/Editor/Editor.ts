@@ -31,8 +31,7 @@ export class EditorContext {
   layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
   focusManager: FocusManager = new FocusManager();
   static instance: EditorContext | null;
-  canvas: Canvas = new Canvas();
-  renderer: Renderer = new Renderer();
+  renderer: Renderer = new Renderer(new Canvas(this.layout));
   rootWindow: EditorRoot = new EditorRoot();
   normalMode: NormalMode = new NormalMode();
   visualMode: VisualMode = new VisualMode();
@@ -141,7 +140,7 @@ export class EditorContext {
   }
 
   private repaint() {
-    process.stdout.write("\x1b[H" + this.render());
+    this.render();
   }
   render() {
     assert(this.rootWindow, "cannot render anything without a root window");
@@ -155,17 +154,21 @@ export class EditorContext {
     //memory("after arrange");
 
     //memory("before building");
-    this.renderer.build(this.rootWindow, this.canvas);
+    this.renderer.build(this.rootWindow);
     //memory("after building");
     //memory("before render");
 
-    const render = this.renderer.render(this.canvas);
+    const render = this.renderer.render();
     //memory("after render");
     return render;
   }
   executeCommand() {}
   addWindow(window: UiComponent) {
     this.windowManager.add(window);
+    return this;
+  }
+  setLayout(layout: LayoutBounds) {
+    this.renderer.setLayout(layout);
     return this;
   }
 }

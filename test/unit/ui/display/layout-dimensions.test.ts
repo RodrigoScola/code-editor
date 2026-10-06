@@ -34,7 +34,7 @@ describe("tests the layout calculation on absolute", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     expect(oneThird.layout().height).eq(layout.height * 0.3);
     expect(oneThird.layout().width).eq(layout.width * 0.3);
@@ -70,7 +70,7 @@ describe("tests the layout calculation on absolute", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     expect(oneThird.layout().height).eq(layout.height * 0.3);
     expect(oneThird.layout().x).eq(3);
@@ -102,7 +102,7 @@ describe("on the new layout sizing children", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     const clt = child.contentLayout();
     expect(clt.height).eq(4);
@@ -149,7 +149,7 @@ describe("wrap children", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
 
@@ -194,7 +194,7 @@ describe("wrap children", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
 
@@ -232,7 +232,7 @@ describe("wrap children", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
 
@@ -270,7 +270,7 @@ describe("wrap children", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
   });
@@ -294,7 +294,7 @@ describe("wrap children", () => {
       root,
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
     expect(parent.layout().width).eq(phrase.length);
@@ -319,7 +319,7 @@ describe("wrap children", () => {
       root,
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
     expect(parent.layout().height).eq(parent.content().buffer().count());
@@ -345,7 +345,7 @@ describe("wrap children", () => {
       root,
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
     expect(parent.layout().width).eq(parent.content().width());
@@ -374,7 +374,7 @@ describe("wrap children", () => {
       root,
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
 

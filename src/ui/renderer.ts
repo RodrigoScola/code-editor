@@ -10,14 +10,35 @@ import { TextLayout } from "./TextLayout/text.js";
 import { ViewPort } from "./windows/viewport.js";
 import { DisplayLike } from "./layout/layout.js";
 
+// where a finished frame goes: the terminal in the app, console.log in tests
+export type RenderOutput = (frame: string) => void;
+
 export class Renderer {
-  static Create() {
-    return new Renderer();
+  private _canvas: Canvas = new Canvas();
+  private _output: RenderOutput = (frame) => console.log(frame);
+  setLayout(layout: LayoutBounds) {
+    this._canvas.setLayout(layout);
+
+    return this;
   }
-  build(root: DisplayLike, canvas: Canvas): Canvas {
-    canvas.clear();
-    this.paint(root, canvas);
-    return canvas;
+  setOutput(output: RenderOutput) {
+    this._output = output;
+    return this;
+  }
+
+  constructor(canvas: Canvas) {
+    if (canvas) {
+      this._canvas = canvas;
+    }
+  }
+
+  static Create(canvas: Canvas) {
+    return new Renderer(canvas);
+  }
+  build(root: DisplayLike) {
+    this._canvas.clear();
+    this.paint(root, this._canvas);
+    return this;
   }
   getComponents(root: DisplayLike) {
     const components: DisplayLike[] = [];
@@ -69,7 +90,7 @@ export class Renderer {
     let defaultBlend = ComponentStyle.Create();
 
     for (const componentLike of components) {
-      const component  = componentLike.view()
+      const component = componentLike.view();
       assert(component.visible(), "component should not be visible");
 
       defaultBlend.blend(component.styles(), component.parent()?.styles());
@@ -83,38 +104,37 @@ export class Renderer {
 
       defaultBlend.blend(component.styles(), component.parent()?.styles());
 
-      this.paintContent(
+      canvas.drawText(
         component.contentLayout(),
         component.content(),
-        canvas,
         defaultBlend,
         component.viewport(),
       );
       defaultBlend.reset();
     }
     for (const componentLike of components) {
-      const component = componentLike.view()
+      const component = componentLike.view();
       component.postPaint(canvas);
     }
   }
 
-  private borderBound: LayoutBounds= {
-      height: 0,
-      width: 0,
-      x: 0,
-      y: 0,
-    }
+  private borderBound: LayoutBounds = {
+    height: 0,
+    width: 0,
+    x: 0,
+    y: 0,
+  };
 
   private resetBorderBounds() {
-    this.borderBound.height = 0
-    this.borderBound.width= 0
-    this.borderBound.x= 0
-    this.borderBound.y= 0
-    return this.borderBound
+    this.borderBound.height = 0;
+    this.borderBound.width = 0;
+    this.borderBound.x = 0;
+    this.borderBound.y = 0;
+    return this.borderBound;
   }
   private paintBorder(componentLike: DisplayLike, canvas: Canvas) {
-    const component = componentLike.view()
-    const bound: LayoutBounds = this.resetBorderBounds()
+    const component = componentLike.view();
+    const bound: LayoutBounds = this.resetBorderBounds();
     const border = component.border();
 
     const cl = component.paddingLayout();
@@ -201,43 +221,13 @@ export class Renderer {
 
   paintLine() {}
 
-  paintContent(
-    cl: LayoutBounds,
-    text: TextLayout,
-    canvas: Canvas,
-    styles?: ComponentStyle,
-    viewport?: ViewPort,
-  ) {
-    if (cl.height <= 0) {
-      return;
-    }
-
-    const firstLine = viewport?.firstLine || 0;
-    const lastLine =
-      firstLine + Math.min(viewport?.visibleLines || text.height(), cl.height);
-
-    for (let lineNumber = firstLine; lineNumber < lastLine; lineNumber++) {
-      const line = text.getLineAt(lineNumber);
-      if (!line) {
-        continue;
-      }
-
-      const screenY = cl.y + (lineNumber - firstLine);
-
-      canvas.drawText(
-        {
-          height: cl.height,
-          width: cl.width,
-          x: cl.x + line.x(),
-          y: screenY,
-        },
-        line.content(),
-        styles,
-      );
-    }
-  }
-
-  render(canvas: Canvas) {
+  // builds the ansi string for the current canvas and sends it to the output
+  render(): string {
+    const canvas = this._canvas;
+    // each frame ends by resetting colors, so start from the reset state
+    this.style
+      .setBackgroundColor(colors.BACKGROUND_OFF)
+      .setColor(colors.FOREGROUND_OFF);
     const rows: string[] = [];
     // i know theres some optimization that we can do here
     for (let i = canvas.startY(); i < canvas.startY() + canvas.height(); i++) {
@@ -303,6 +293,9 @@ export class Renderer {
       }
       rows.push(row);
     }
-    return rows.join("\r\n");
+    const frame =
+      rows.join("\r\n") + colors.BACKGROUND_OFF + colors.FOREGROUND_OFF;
+    this._output(frame);
+    return frame;
   }
 }

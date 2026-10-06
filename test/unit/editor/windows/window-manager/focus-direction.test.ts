@@ -58,7 +58,7 @@ describe("tests the window manager focus capabilities", () => {
       LayoutEngine.CreateConstraints(layout.height),
     );
     LayoutEngine.Arrange(manager.root);
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     manager.activateRight();
     expect(manager.activeWindow()).toBe(output.topR);
@@ -78,7 +78,7 @@ describe("tests the window manager focus capabilities", () => {
       LayoutEngine.CreateConstraints(layout.width),
     );
     LayoutEngine.Arrange(manager.root);
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     manager.activateDown();
     expect(manager.activeWindow()).toBe(output.bottomL);
@@ -98,7 +98,7 @@ describe("tests the window manager focus capabilities", () => {
     );
     LayoutEngine.Arrange(manager.root);
 
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     manager.activateDown();
     manager.activateRight();

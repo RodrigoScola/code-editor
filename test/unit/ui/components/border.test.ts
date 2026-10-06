@@ -35,7 +35,7 @@ describe("tests the component border", () => {
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
     expect(canvas.getCell(9, 0)?.styles.backgroundColor()).eq(
       colors.RED_BACKGROUND,
     );
@@ -66,7 +66,7 @@ describe("tests the component border", () => {
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(10)).Arrange(
       root,
     );
-    Renderer.Create().build(root, canvas);
+    Renderer.Create(canvas).build(root);
 
     canvas.renderBoard();
   });
@@ -86,7 +86,7 @@ describe("tests the component border", () => {
     root.addChildAt(heavy, 0);
 
     LayoutEngine.Measure(root, constraints).Arrange(root);
-    Renderer.Create().build(root, cnv);
+    Renderer.Create(cnv).build(root);
 
     expect(heavy.contentLayout().height).eq(
       layout.height - heavy.border().vertical(),

@@ -1,7 +1,6 @@
 import { TextBuffer } from "../buffer/Buffer.js";
 import { Canvas } from "../canvas.js";
 import { ComponentStyle } from "../ComponentStyles.js";
-import { Renderer } from "../renderer.js";
 import { TextLayout } from "../TextLayout/text.js";
 import { UiComponent, UIScreen } from "./UiComponent.js";
 
@@ -38,10 +37,9 @@ export class UiInput extends UIScreen {
     super.paint(canvas);
     const line = this.buffer().at(this.currentCommandLine);
     if (!line || line.trim().length == 0) {
-      Renderer.Create().paintContent(
+      canvas.drawText(
         this.view().contentLayout(),
         this.placeholder,
-        canvas,
         ComponentStyle.Blend(this.placeholderStyle, this.view().styles()),
       );
     }

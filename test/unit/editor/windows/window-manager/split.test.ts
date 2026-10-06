@@ -41,10 +41,7 @@ describe("tests the window manager split capabilities", () => {
     manager.split(manager.activeWindow()!, other, "vertical");
 
     LayoutEngine.Measure(manager.root, LayoutEngine.CreateConstraints(20));
-    Renderer.Create().build(
-      manager.root,
-      new Canvas().setLayout({ x: 0, y: 0, height: 20, width: 20 }),
-    );
+    Renderer.Create(new Canvas().setLayout({ x: 0, y: 0, height: 20, width: 20 })).build(manager.root);
 
     expect(manager.activeWindow()).toBe(tree);
     expect(manager.root.children().at(0)).toBe(editor);
@@ -90,7 +87,7 @@ describe("tests the window manager split capabilities", () => {
 
     LayoutEngine.Measure(manager.root, constraints).Arrange(manager.root);
 
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     cnv.renderBoard();
 
@@ -115,7 +112,7 @@ describe("tests the window manager split capabilities", () => {
 
     LayoutEngine.Measure(manager.root, constraints).Arrange(root);
 
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     expect(
       cnv
@@ -134,7 +131,7 @@ describe("tests the window manager split capabilities", () => {
     manager.split(window, yellowWindow, "horizontal");
 
     LayoutEngine.Measure(manager.root, constraints).Arrange(root);
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     cnv.renderBoard();
 
@@ -166,7 +163,7 @@ describe("tests the window manager split capabilities", () => {
 
     LayoutEngine.Measure(manager.root, constraints);
     LayoutEngine.Arrange(manager.root);
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     expect(
       cnv
@@ -185,7 +182,7 @@ describe("tests the window manager split capabilities", () => {
     LayoutEngine.Measure(manager.root, constraints);
     LayoutEngine.Arrange(root);
 
-    Renderer.Create().build(manager.root, cnv);
+    Renderer.Create(cnv).build(manager.root);
 
     expect(root.children().length == 1, "did not replace correctly");
     expect(
