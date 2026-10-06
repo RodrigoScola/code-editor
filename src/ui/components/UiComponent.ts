@@ -9,6 +9,7 @@ import { EditorContext } from "../../Editor/Editor/Editor.js";
 import { assert } from "../../assert.js";
 import { LayoutDimensions } from "../layout/LayoutDimensions.js";
 import { Focusable } from "../windows/FocusManager.js";
+import { DisplayLike } from "../layout/layout.js";
 
 type WindowId = string;
 
@@ -19,22 +20,15 @@ export interface EWindow {
   onEnter(ctx: EditorContext): void;
 }
 
-export class UiComponent implements EWindow, Focusable {
-  private _cursorEnabled: boolean = true;
-  // buffer/view are attached in the constructor, once _view exists
-  private _cursor: Cursor = new Cursor();
-  private _view: EditorView;
+export class UiComponent implements EWindow, Focusable, DisplayLike {
+  private _view: EditorView = new EditorView(this);
   private readonly _id: WindowId = crypto.randomUUID();
 
-  private _focused = false;
+  private _parent: UiComponent | null = null;
 
-  cursorEnabled() {
-    return this._cursorEnabled;
-  }
-  setCursorEnabled(value: boolean) {
-    this._cursorEnabled = value;
-    return this;
-  }
+  private childs: UiComponent[] = [];
+
+  private _focused = false;
 
   focus(): void {
     this._focused = true;
@@ -59,11 +53,6 @@ export class UiComponent implements EWindow, Focusable {
     return this.view().name();
   }
 
-  constructor() {
-    this._view = new EditorView(this);
-
-    this._cursor.setBuffer(this.view().content().buffer()).setView(this.view());
-  }
   defaultFocus(): UiComponent | null {
     return this;
   }
@@ -87,25 +76,11 @@ export class UiComponent implements EWindow, Focusable {
     this.view().content().setBuffer(bffr);
     return this;
   }
+  onPostPaint(canvas: Canvas) {}
 
-  onPrePaint() {
+  onPrePaint(canvas: Canvas) {
     const cl = this._view.contentLayout();
     this._view.viewport().ensureVisible(cl.width, cl.height);
-    this.cursor().ensureVisible(this.view().viewport());
-  }
-  onPostPaint(canvas: Canvas) {
-    if (this.cursorEnabled()) {
-      this._cursor.paint(canvas);
-    }
-  }
-
-  paint(canvas: Canvas): void {
-    // the background is already filled by the renderer with styles blended
-    // from the parent; refilling here with the raw styles would drop inherited
-    // colors (e.g. an unset background would become the terminal default)
-    if (this.cursorEnabled()) {
-      this.cursor().paintSelection(canvas);
-    }
   }
 
   onEvent(event: EditorEvents): void {
@@ -115,14 +90,99 @@ export class UiComponent implements EWindow, Focusable {
     }
   }
 
-  cursor(): Cursor {
-    return this._cursor;
-  }
   buffer() {
     return this.view().content().buffer();
   }
 
   onEnter(ctx: EditorContext) {}
+
+  children(): UiComponent[] {
+    return this.childs;
+  }
+
+  addChildren(children: UiComponent[]): this;
+  addChildren(child: UiComponent): this;
+  addChildren(children: UiComponent | UiComponent[]): this {
+    for (const child of Array.isArray(children) ? children : [children]) {
+      this.addChildAt(child, this.childs.length);
+    }
+
+    return this;
+  }
+
+  // layout and painting walk view().children(), so every change to this tree
+  // has to be mirrored there or the two drift apart
+  addChildAt(child: UiComponent, index: number): this {
+    assert(child !== this, "cannot add a component to itself");
+
+    // detach from wherever it lives now, otherwise it ends up in two parents
+    child.parent()?.removeChild(child);
+    child.view().parent()?.removeChild(child.view());
+
+    index = Math.max(0, Math.min(index, this.childs.length));
+
+    // the view can hold raw DisplayComponents too, so place the child's view
+    // right before the view of the sibling it is inserted before
+    const next = this.childs[index];
+    const viewIndex = next ? this.view().children().indexOf(next.view()) : -1;
+
+    if (viewIndex === -1) {
+      this.view().addChildren(child.view());
+    } else {
+      this.view().addChildAt(child.view(), viewIndex);
+    }
+
+    this.childs.splice(index, 0, child);
+    child._parent = this;
+
+    return this;
+  }
+
+  removeChild(child: UiComponent): this {
+    this.childs = this.childs.filter((current) => current !== child);
+
+    if (child.view().parent() === this.view()) {
+      this.view().removeChild(child.view());
+    }
+    child._parent = null;
+
+    return this;
+  }
+
+  parent(): UiComponent | null {
+    return this._parent;
+  }
+  paint(canvas: Canvas) {}
+}
+
+export class UIScreen extends UiComponent {
+  private _cursorEnabled: boolean = true;
+  // buffer/view are attached in the constructor, once _view exists
+  private _cursor: Cursor = new Cursor();
+
+  constructor() {
+    super();
+    this._cursor.setBuffer(this.view().content().buffer()).setView(this.view());
+  }
+
+  // setText swaps the view's buffer, so the cursor has to follow it
+  setText(str?: TextBuffer | string | null | undefined) {
+    super.setText(str);
+    this._cursor.setBuffer(this.buffer());
+    return this;
+  }
+
+  cursorEnabled() {
+    return this._cursorEnabled;
+  }
+  setCursorEnabled(value: boolean) {
+    this._cursorEnabled = value;
+    return this;
+  }
+
+  cursor(): Cursor {
+    return this._cursor;
+  }
 
   moveCursorDown() {
     return this.cursor().moveDown();
@@ -141,6 +201,24 @@ export class UiComponent implements EWindow, Focusable {
   }
   endSelection() {
     return this.cursor().clearSelection();
+  }
+
+  paint(canvas: Canvas): void {
+    // the background is already filled by the renderer with styles blended
+    // from the parent; refilling here with the raw styles would drop inherited
+    // colors (e.g. an unset background would become the terminal default)
+    if (this.cursorEnabled()) {
+      this.cursor().paintSelection(canvas);
+    }
+  }
+
+  onPostPaint(canvas: Canvas) {
+    if (this.cursorEnabled()) {
+      this._cursor.paint(canvas);
+    }
+  }
+  onPrePaint(): void {
+    this.cursor().ensureVisible(this.view().viewport());
   }
 }
 

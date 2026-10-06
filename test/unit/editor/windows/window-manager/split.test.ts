@@ -11,32 +11,32 @@ import colors from "../../../../../src/ui/colors.js";
 import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
 import {
-  EditorWindow,
-  TextEditorWindow,
-} from "../../../../../src/Editor/windows/EditorWindow.js";
-import { isEditorWindow } from "../../../../../src/utils.js";
+  UiComponent,
+  UIScreen,
+} from "../../../../../src/ui/components/UiComponent.js";
+import { isTextComponent } from "../../../../../src/utils.js";
 import { FileTreeWindow } from "../../../../../src/Editor/windows/FileTreeWindow.js";
 
 describe("tests the window manager split capabilities", () => {
   it("focus the correct window at the correct time", () => {
     const manager = new WindowManager(new EditorRoot());
     const content = "one\ntwo\nthree\n";
-    const editor = new TextEditorWindow(content);
+    const editor = new UIScreen().setText(content);
 
     const tree = new FileTreeWindow(".");
 
-    manager.root.addChildren(editor.view()).addChildren(tree.view());
+    manager.root.addChildren(editor).addChildren(tree);
     manager.add(editor).add(tree);
 
-    manager.focus(editor);
+    manager.activate(editor);
 
-    expect(editor.focused()).eq(true);
-    expect(tree.focused()).eq(false);
-    manager.focus(tree);
+    expect(manager.activeWindow()).toBe(editor);
+    expect(manager.activeWindow()).not.toBe(tree);
+    manager.activate(tree);
 
-    expect(editor.focused()).eq(false);
-    expect(tree.focused()).eq(true);
-    const other = new TextEditorWindow("one\ntwo\nthree\n");
+    expect(manager.activeWindow()).not.toBe(editor);
+    expect(manager.activeWindow()).toBe(tree);
+    const other = new UIScreen().setText("one\ntwo\nthree\n");
 
     manager.split(manager.activeWindow()!, other, "vertical");
 
@@ -46,16 +46,14 @@ describe("tests the window manager split capabilities", () => {
       new Canvas().setLayout({ x: 0, y: 0, height: 20, width: 20 }),
     );
 
-    expect(manager.activeWindow()?.view().getId() === tree.view().getId());
-    expect(manager.root.children().at(0)?.getId() === editor.view().getId()).eq(
-      true,
-    );
+    expect(manager.activeWindow()).toBe(tree);
+    expect(manager.root.children().at(0)).toBe(editor);
     expect(manager.root.children().at(1)?.children().length == 2).eq(true);
   });
   it("can split more than once", () => {
     const manager = new WindowManager(new EditorRoot());
 
-    const editor = new TextEditorWindow("one\ntwo\nthree\n");
+    const editor = new UIScreen().setText("one\ntwo\nthree\n");
 
     editor.view().styles()?.setBackgroundColor(colors.YELLOW_BACKGROUND);
 
@@ -66,27 +64,25 @@ describe("tests the window manager split capabilities", () => {
 
     manager.root
       .setLayout(layout)
-      .addChildren(editor.view())
-      .addChildren(tree.view())
-      .styles();
-    manager.add(editor).add(tree).focus(editor);
+      .addChildren(editor)
+      .addChildren(tree);
+    manager.add(editor).add(tree);
+    manager.activate(editor);
 
     const cnv = new Canvas().setLayout(layout);
 
-    manager.focus(tree);
+    manager.activate(tree);
 
-    const other = new TextEditorWindow("four\nfive\nsix");
+    const other = new UIScreen().setText("four\nfive\nsix");
 
     other.view().styles()?.setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
     manager.split(manager.activeWindow()!, other, "horizontal");
 
     expect(manager.activeWindow()?.view().getId()).eq(tree.view().getId());
-    expect(manager.root.children().at(0)?.getId() === editor.view().getId()).eq(
-      true,
-    );
+    expect(manager.root.children().at(0)).toBe(editor);
     expect(manager.root.children().at(1)?.children().length == 2).eq(true);
 
-    const other2 = new TextEditorWindow("seven\neight\nnine");
+    const other2 = new UIScreen().setText("seven\neight\nnine");
 
     other2.view().styles()?.setBackgroundColor(colors.BRIGHT_RED_BACKGROUND);
 
@@ -111,10 +107,10 @@ describe("tests the window manager split capabilities", () => {
 
     const manager = new WindowManager(root);
 
-    const window = new EditorWindow();
+    const window = new UiComponent();
     window.view().styles()?.setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
 
-    root.addChildren(window.view());
+    root.addChildren(window);
     manager.add(window);
 
     LayoutEngine.Measure(manager.root, constraints).Arrange(root);
@@ -129,7 +125,7 @@ describe("tests the window manager split capabilities", () => {
 
     cnv.renderBoard();
 
-    const yellowWindow = new EditorWindow();
+    const yellowWindow = new UiComponent();
     yellowWindow
       .view()
       .styles()
@@ -162,10 +158,10 @@ describe("tests the window manager split capabilities", () => {
 
     const manager = new WindowManager(root);
 
-    const window = new EditorWindow();
+    const window = new UiComponent();
     window.view().styles()?.setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
 
-    root.addChildren(window.view());
+    root.addChildren(window);
     manager.add(window);
 
     LayoutEngine.Measure(manager.root, constraints);
@@ -178,7 +174,7 @@ describe("tests the window manager split capabilities", () => {
         ?.styles.backgroundColor(),
     ).eq(colors.BRIGHT_BLUE_BACKGROUND);
 
-    const yellowWindow = new EditorWindow();
+    const yellowWindow = new UiComponent();
     yellowWindow
       .view()
       .styles()

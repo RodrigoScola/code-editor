@@ -6,28 +6,29 @@ import colors from "./colors.js";
 import { DisplayComponent } from "./components/displayComponent.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 import { LayoutBounds } from "./layout/layoutStyle.js";
-import { TextLayout, VisualLine } from "./TextLayout/text.js";
+import { TextLayout } from "./TextLayout/text.js";
 import { ViewPort } from "./windows/viewport.js";
+import { DisplayLike } from "./layout/layout.js";
 
 export class Renderer {
   static Create() {
     return new Renderer();
   }
-  build(root: DisplayComponent, canvas: Canvas): Canvas {
+  build(root: DisplayLike, canvas: Canvas): Canvas {
     canvas.clear();
     this.paint(root, canvas);
     return canvas;
   }
-  getComponents(root: DisplayComponent) {
-    const components: DisplayComponent[] = [];
+  getComponents(root: DisplayLike) {
+    const components: DisplayLike[] = [];
 
-    const visit = (comp: DisplayComponent) => {
-      if (!comp.visible()) {
+    const visit = (comp: DisplayLike) => {
+      if (!comp.view().visible()) {
         return;
       }
       components.push(comp);
 
-      for (const child of comp.children()) {
+      for (const child of comp.view().children()) {
         visit(child);
       }
     };
@@ -41,8 +42,10 @@ export class Renderer {
     .setBackgroundColor(colors.BACKGROUND_OFF)
     .setColor(colors.FOREGROUND_OFF);
 
-  sortComponents(components: DisplayComponent[]) {
-    return components.sort((a, b) => {
+  sortComponents(components: DisplayLike[]) {
+    return components.sort((aLike, bLike) => {
+      const a = aLike.view();
+      const b = bLike.view();
       if (this.isAncestor(a, b)) {
         return -1;
       }
@@ -58,14 +61,15 @@ export class Renderer {
     });
   }
 
-  private paint(root: DisplayComponent, canvas: Canvas) {
+  private paint(root: DisplayLike, canvas: Canvas) {
     const components = this.getComponents(root);
 
     this.sortComponents(components);
 
     let defaultBlend = ComponentStyle.Create();
 
-    for (const component of components) {
+    for (const componentLike of components) {
+      const component  = componentLike.view()
       assert(component.visible(), "component should not be visible");
 
       defaultBlend.blend(component.styles(), component.parent()?.styles());
@@ -88,17 +92,29 @@ export class Renderer {
       );
       defaultBlend.reset();
     }
-    for (const component of components) {
+    for (const componentLike of components) {
+      const component = componentLike.view()
       component.postPaint(canvas);
     }
   }
-  private paintBorder(component: DisplayComponent, canvas: Canvas) {
-    const bound: LayoutBounds = {
+
+  private borderBound: LayoutBounds= {
       height: 0,
       width: 0,
       x: 0,
       y: 0,
-    };
+    }
+
+  private resetBorderBounds() {
+    this.borderBound.height = 0
+    this.borderBound.width= 0
+    this.borderBound.x= 0
+    this.borderBound.y= 0
+    return this.borderBound
+  }
+  private paintBorder(componentLike: DisplayLike, canvas: Canvas) {
+    const component = componentLike.view()
+    const bound: LayoutBounds = this.resetBorderBounds()
     const border = component.border();
 
     const cl = component.paddingLayout();
@@ -169,8 +185,8 @@ export class Renderer {
     }
   }
 
-  private isAncestor(ancestor: DisplayComponent, component: DisplayComponent) {
-    let parent = component.parent();
+  private isAncestor(ancestor: DisplayLike, componentLike: DisplayLike) {
+    let parent = componentLike.view().parent();
 
     while (parent) {
       if (parent === ancestor) {

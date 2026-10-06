@@ -9,13 +9,12 @@ import {
 } from "../../../../../src/Editor/Documents/TextDocument.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
 import {
-  EditorWindow,
-  TextEditorWindow,
-} from "../../../../../src/Editor/windows/EditorWindow.js";
+  UiComponent,
+  UIScreen,
+} from "../../../../../src/ui/components/UiComponent.js";
 import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
-import { DisplayComponent } from "../../../../../src/ui/components/components.js";
 
-const createTextWindow = (text: string) => new TextEditorWindow(text);
+const createTextWindow = (text: string) => new UIScreen().setText(text);
 
 const createCubes = (manager: WindowManager) => {
   const topL = createTextWindow("top left");
@@ -29,18 +28,12 @@ const createCubes = (manager: WindowManager) => {
   bottomR.view().styles()?.setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
 
   manager.add(topL).add(topR).add(bottomL).add(bottomR);
-  manager.root.addChildren(
-    new DisplayComponent()
-      .setDirection("horizontal")
-      .addChildren(topL.view())
-      .addChildren(topR.view()),
-  );
-  manager.root.addChildren(
-    new DisplayComponent()
-      .setDirection("horizontal")
-      .addChildren(bottomL.view())
-      .addChildren(bottomR.view()),
-  );
+  const topRow = new UiComponent().addChildren(topL).addChildren(topR);
+  topRow.view().setDirection("horizontal");
+  manager.root.addChildren(topRow);
+  const bottomRow = new UiComponent().addChildren(bottomL).addChildren(bottomR);
+  bottomRow.view().setDirection("horizontal");
+  manager.root.addChildren(bottomRow);
 
   return {
     topR,
@@ -58,7 +51,7 @@ describe("tests the window manager focus capabilities", () => {
 
     const output = createCubes(manager);
 
-    manager.focus(output.topL);
+    manager.activate(output.topL);
 
     LayoutEngine.Measure(
       manager.root,
@@ -67,8 +60,8 @@ describe("tests the window manager focus capabilities", () => {
     LayoutEngine.Arrange(manager.root);
     Renderer.Create().build(manager.root, cnv);
 
-    manager.focusRight();
-    expect(output.topR.focused()).eq(true);
+    manager.activateRight();
+    expect(manager.activeWindow()).toBe(output.topR);
   });
   it("can focus on the bottom window on focus down", () => {
     const layout = LayoutEngine.CreateBounds();
@@ -78,7 +71,7 @@ describe("tests the window manager focus capabilities", () => {
 
     const output = createCubes(manager);
 
-    manager.focus(output.topL);
+    manager.activate(output.topL);
 
     LayoutEngine.Measure(
       manager.root,
@@ -87,8 +80,8 @@ describe("tests the window manager focus capabilities", () => {
     LayoutEngine.Arrange(manager.root);
     Renderer.Create().build(manager.root, cnv);
 
-    manager.focusDown();
-    expect(output.bottomL.focused()).eq(true);
+    manager.activateDown();
+    expect(manager.activeWindow()).toBe(output.bottomL);
   });
   it("can focus on the bottom and right window on focus down", () => {
     const layout = LayoutEngine.CreateBounds(20);
@@ -97,7 +90,7 @@ describe("tests the window manager focus capabilities", () => {
 
     const output = createCubes(manager);
 
-    manager.focus(output.topL);
+    manager.activate(output.topL);
 
     LayoutEngine.Measure(
       manager.root,
@@ -107,8 +100,8 @@ describe("tests the window manager focus capabilities", () => {
 
     Renderer.Create().build(manager.root, cnv);
 
-    manager.focusDown();
-    manager.focusRight();
-    expect(output.bottomR.focused()).eq(true);
+    manager.activateDown();
+    manager.activateRight();
+    expect(manager.activeWindow()).toBe(output.bottomR);
   });
 });

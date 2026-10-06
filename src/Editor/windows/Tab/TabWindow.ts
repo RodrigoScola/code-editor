@@ -5,16 +5,16 @@ import colors from "../../../ui/colors.js";
 import { ComponentBorder } from "../../../ui/display/border.js";
 import { DisplayComponent } from "../../../ui/components/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
-import { UiComponent } from "../../../ui/components/UiComponent.js";
+import { UiComponent, UIScreen } from "../../../ui/components/UiComponent.js";
 import { WindowManager } from "../WindowManager/WindowManager.js";
 import { isCodeEditorWindow } from "../../../utils.js";
 
 export interface ETabWindow {}
 
-export class TabWindow extends UiComponent {
+export class TabWindow extends UIScreen {
   titles: DisplayComponent = new DisplayComponent();
   private _window: EditorRoot = new EditorRoot();
-  displayContent: DisplayComponent = new DisplayComponent();
+  displayContent: UiComponent = new UiComponent();
   management: WindowManager = new WindowManager(this._window);
   constructor() {
     super();
@@ -29,11 +29,11 @@ export class TabWindow extends UiComponent {
       .setBorderBottom(1);
 
     this.view().addChildren(this.titles);
-    this.view().addChildren(
-      this.displayContent
-        .setName("tab_editor_window")
-        .setBackgroundColor(colors.BLACK_BACKGROUND),
-    );
+    this.displayContent
+      .view()
+      .setName("tab_editor_window")
+      .setBackgroundColor(colors.BLACK_BACKGROUND);
+    this.addChildren(this.displayContent);
   }
 
   focusWindow(editor: UiComponent) {
@@ -46,10 +46,10 @@ export class TabWindow extends UiComponent {
     if (child) {
       parent.removeChild(parent.children().at(0)!);
     }
-    parent.addChildren(editor.view());
+    parent.addChildren(editor);
 
     if (this.management.activeWindow()) {
-      this.management.unfocus(this.management.activeWindow()!);
+      this.management.deactivate(this.management.activeWindow()!);
     }
 
     this.management.activate(editor);

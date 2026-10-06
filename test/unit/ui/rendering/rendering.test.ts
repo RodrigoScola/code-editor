@@ -1,7 +1,7 @@
 import colors from "../../../../src/ui/colors.js";
 import { describe, it, expect } from "vitest";
 import { Canvas } from "../../../../src/ui/canvas.js";
-import { DisplayComponent } from "../../../../src/ui/components/components.js";
+import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { assert } from "../../../../src/assert.js";
 import { Renderer } from "../../../../src/ui/renderer.js";
@@ -11,7 +11,7 @@ import {
 } from "../../../../src/Editor/Documents/TextDocument.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle.js";
-import { TextEditorWindow } from "../../../../src/Editor/windows/EditorWindow.js";
+import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
 import { LayoutDimensions } from "../../../../src/ui/layout/LayoutDimensions.js";
 
 describe("Canvas", () => {
@@ -216,7 +216,7 @@ describe("editorComponent", () => {
   it("the height of the text should be 1 by default", () => {
     const content = "firstline\nsecondline";
 
-    const display = new TextEditorWindow(content);
+    const display = new UIScreen().setText(content);
 
     const layout = LayoutEngine.CreateBounds();
     layout.height = layout.width = 10;
@@ -261,7 +261,7 @@ describe("editorComponent", () => {
 
   it("keeps the cursor visible by scrolling the viewport", () => {
     const content = ["one", "two", "three", "four"].join("\n");
-    const display = new TextEditorWindow(content);
+    const display = new UIScreen().setText(content);
 
     display.view().viewport().visibleLines = 3;
     display.view().viewport().visibleColumns = 10;

@@ -14,12 +14,18 @@ import {
 import { ListMenuWindow } from "./Editor/windows/ListMenuWindow.js";
 import colors from "./ui/colors.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
-import { CodeEditorGroup } from "./Editor/windows/Tab/TabWindow.js";
+import { CodeEditorGroup, TabWindow } from "./Editor/windows/Tab/TabWindow.js";
+import { captureLogs, logger } from "./logging/log.js";
+import { ConsoleLogWindow } from "./Editor/windows/ConsoleLogWindow.js";
+import { ErrorWindow } from "./Editor/windows/ErrorWindow.js";
+
+captureLogs((level, message) => logger.add(level, message));
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
 setup.terminal.disableMouseEvents();
 setup.terminal.enableKeyboardProtocol();
+setup.terminal.enableMouseEvents();
 
 readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) {
@@ -37,19 +43,21 @@ setup.root(editor);
 
 setup.windows.status(editor);
 
-const window = setup.windows.editor(editor).setDirection("horizontal");
+const window = setup.windows.editor(editor);
+window.view().setDirection("horizontal");
+
 editor.rootWindow.addChildren(window);
 
 const statusWindow = editor.findWindow(StatusWindow);
 assert(statusWindow, "status window not setup");
-editor.rootWindow.addChildren(statusWindow.view());
+editor.rootWindow.addChildren(statusWindow);
 
 // tree view
 
 setup.windows.fileTree(editor);
 const fileTree = editor.findWindow(FileTreeWindow);
 assert(fileTree, "invalid file tree window");
-window.addChildren(fileTree.view());
+window.addChildren(fileTree);
 // ---------
 
 // text editor
@@ -60,7 +68,7 @@ const textEditor = editor.findWindow(CodeEditorWindow);
 const tabEditor = editor.findWindow(CodeEditorGroup)!;
 assert(textEditor, "invalid text editor window");
 
-window.addChildren(tabEditor?.view());
+window.addChildren(tabEditor);
 // ---------
 
 // git view
@@ -70,7 +78,7 @@ const git = editor.findWindow(GitEditorWindow);
 assert(gitCommit, "invalid git commit window");
 // assert(git, "invalid git window");
 // window.addChildren(git.window);
-window.addChildren(gitCommit.view());
+window.addChildren(gitCommit);
 
 // todo: cleanup
 const list = new ListMenuWindow();
@@ -89,7 +97,10 @@ list
 list.view().border().setParameter(1);
 
 editor.windowManager.add(list);
-editor.rootWindow.addChildren(list.view());
+editor.rootWindow.addChildren(list);
+
+setup.windows.errorWindow(editor);
+setup.windows.debugWindow(editor);
 
 // ---------
 
@@ -99,6 +110,10 @@ setup.commands.commandMode(editor);
 
 editor.focus(fileTree);
 editor.requestRepaint();
+
+console.log("aaaaaaaaaaaaaaaaaaaaa");
+
+setup.terminal.errorsOnScreen(editor);
 
 process.stdout.on("resize", () => setup.terminal.handleResize(editor));
 
@@ -117,11 +132,15 @@ function dispatchKey(parsedKey: KeyEvent) {
 }
 
 process.stdin.on("data", (chunk) => {
-  for (const event of InputParser.parse(chunk)) {
-    dispatchKey(event);
+  for (const input of InputParser.parse(chunk)) {
+    if (input.type === "keyboard") {
+      dispatchKey(input.event);
+    }
+    // todo: mouse events are parsed but not dispatched yet
   }
 });
 
 process.on("exit", () => {
   setup.terminal.disableKeyboardProtocol();
+  setup.terminal.disableMouseEvents();
 });

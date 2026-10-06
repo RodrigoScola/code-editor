@@ -16,6 +16,10 @@ import { ListMenuWindow } from "./windows/ListMenuWindow.js";
 import { EditorRoot } from "./Editor/EditorRoot.js";
 import { isTextComponent } from "../utils.js";
 import { CodeEditorGroup, TabWindow } from "./windows/Tab/TabWindow.js";
+import { UiComponent } from "../ui/components/UiComponent.js";
+import { ErrorWindow } from "./windows/ErrorWindow.js";
+import { logger } from "../logging/log.js";
+import { ConsoleLogWindow } from "./windows/ConsoleLogWindow.js";
 
 function setupGit(editor: EditorContext) {
   const commit = new GitCommitWindow();
@@ -66,7 +70,8 @@ function statusWindow(editor: EditorContext) {
 }
 
 function editorWindow(editor: EditorContext) {
-  const window = new DisplayComponent().setLayout({
+  const window = new UiComponent();
+  window.view().setLayout({
     ...editor.layout,
     height: editor.layout.height - 1,
   });
@@ -283,6 +288,11 @@ function disableMouseEvents() {
   process.stdout.write("\x1b[?1000l");
   process.stdout.write("\x1b[?1006l");
 }
+function enableMouseEvents() {
+  process.stdout.write("\x1b[?1000h"); // press/release
+  process.stdout.write("\x1b[?1002h"); // drag (motion while a button is held)
+  process.stdout.write("\x1b[?1006h"); // SGR format: no 223-column limit, tells press from release
+}
 
 function clearOutput() {
   process.stdout.write("\x1b[?1049l");
@@ -400,14 +410,66 @@ function split(ctx: EditorContext, direction: DisplayDirection) {
   ctx.focus(demoWindow);
 }
 
+function errorsOnScreen(ctx: EditorContext) {
+  // from here on, errors go to the log window instead of killing the editor.
+  // registered after setup on purpose: a startup failure should still crash
+  // loudly rather than leave a half-built screen
+  function reportError(kind: string, err: unknown) {
+    const detail =
+      err instanceof Error ? (err.stack ?? err.message) : String(err);
+
+    try {
+      const errorWindow = ctx.findWindow(ErrorWindow);
+      if (!errorWindow) {
+        console.error(`could not find error window for error`);
+        console.error(detail);
+        return;
+      }
+
+      errorWindow.showError(`${kind} \n ${detail} \n${err}`);
+      ctx.requestRepaint();
+    } catch {
+      // an error thrown inside this handler would exit the process, so if
+      // logging itself fails there is nothing left to do but drop it
+    }
+  }
+
+  process.on("uncaughtException", (err) => reportError("uncaught", err));
+  process.on("unhandledRejection", (reason) =>
+    reportError("unhandled rejection", reason),
+  );
+}
+
+function errorWindow(ctx: EditorContext) {
+  const errorWindow = new ErrorWindow(ctx);
+
+  ctx.windowManager.add(errorWindow);
+  ctx.rootWindow.addChildren(errorWindow);
+}
+
+function debugWindow(ctx: EditorContext) {
+  const tab = ctx.findWindow(TabWindow);
+
+  const parentTab = tab?.parent();
+
+  const debugWindow = new ConsoleLogWindow();
+
+  ctx.windowManager.add(debugWindow);
+  ctx.windowManager.split(parentTab!, debugWindow, "horizontal");
+
+  logger.subscribe(debugWindow.attachListener);
+}
+
 export const setupEditor = {
   root: setupWindows,
   terminal: {
     clearOutput,
     disableMouseEvents,
+    enableMouseEvents,
     enableKeyboardProtocol,
     disableKeyboardProtocol,
     handleResize,
+    errorsOnScreen,
   },
   commands: {
     normalMode: setupNormalModeCommands,
@@ -421,5 +483,7 @@ export const setupEditor = {
     git: setupGit,
     fileTree: setupFileTree,
     textEditor: setupTextEditor,
+    debugWindow,
+    errorWindow,
   },
 };

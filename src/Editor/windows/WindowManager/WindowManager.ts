@@ -3,15 +3,14 @@ import { DisplayComponent } from "../../../ui/components/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
 import { LayoutBounds } from "../../../ui/layout/layoutStyle.js";
 import { UiComponent } from "../../../ui/components/UiComponent.js";
-import { FocusManager } from '../../../ui/windows/FocusManager.js';
 
 export class WindowManager {
   private windows = new Map<string, UiComponent>();
   private active: UiComponent | null = null;
   root: EditorRoot;
-  focusManager: FocusManager | null= null
+
   history: string[];
-  constructor(root: EditorRoot  ) {
+  constructor(root: EditorRoot) {
     this.root = root;
     this.history = [];
   }
@@ -29,7 +28,7 @@ export class WindowManager {
   all(): UiComponent[] {
     return [...this.windows.values()];
   }
-  unfocus(editorWindow: UiComponent) {
+  deactivate(editorWindow: UiComponent) {
     this.history.push(editorWindow.id());
 
     if (this.active?.id() === editorWindow.id()) {
@@ -46,7 +45,7 @@ export class WindowManager {
       "trying to focus an unmanaged window",
     );
     if (this.active) {
-      this.unfocus(this.active);
+      this.deactivate(this.active);
     }
     this.active = window;
 
@@ -81,22 +80,23 @@ export class WindowManager {
     newEditor: UiComponent,
     direction: DisplayDirection,
   ) {
-    const parent = editor.view().parent();
+    assert(editor !== newEditor, "cannot split a window with itself");
+
+    const parent = editor.parent();
 
     assert(parent, "cannot split a window without a parent");
 
-    const index = parent.children().indexOf(editor.view());
+    const index = parent.children().indexOf(editor);
 
     assert(index !== -1, "window is not part of its parent");
 
     // detach first: removeChild clears the child's parent, so doing it after
     // re-parenting into the split would orphan the view
-    parent.removeChild(editor.view());
+    parent.removeChild(editor);
 
-    const split = new DisplayComponent()
-      .addChildren(editor.view())
-      .addChildren(newEditor.view())
-      .setDirection(direction);
+    const split = new UiComponent().addChildren(editor).addChildren(newEditor);
+
+    split.view().setDirection(direction);
 
     parent.addChildAt(split, index);
 

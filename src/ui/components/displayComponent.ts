@@ -4,7 +4,7 @@ import { TextBuffer } from "../buffer/Buffer.js";
 import { Canvas } from "../canvas.js";
 import colors from "../colors.js";
 import { ComponentStyle } from "../ComponentStyles.js";
-import { LayoutEngine } from "../layout/layout.js";
+import { DisplayLike, LayoutEngine } from "../layout/layout.js";
 import { LayoutDimensions } from "../layout/LayoutDimensions.js";
 import { LayoutBounds } from "../layout/layoutStyle.js";
 import { OverflowTypes, TextAlign, TextLayout } from "../TextLayout/text.js";
@@ -12,7 +12,10 @@ import { ViewPort } from "../windows/viewport.js";
 import { BorderStyles, ComponentBorder } from "../display/border.js";
 import { ComponentLayoutFns } from "../layout/componentLayout.js";
 
-export class DisplayComponent extends ComponentLayoutFns {
+export class DisplayComponent
+  extends ComponentLayoutFns
+  implements DisplayLike
+{
   private static ID = 0;
 
   private readonly id: number;
@@ -736,12 +739,38 @@ export class DisplayComponent extends ComponentLayoutFns {
     return str;
   }
 
-  logChildren(indentation: number) {
-    console.log(" ".repeat(indentation * 2) + this.logSelf());
+  /*
+   * This component and its descendants as text, e.g.
+   *
+   *   id: 0 - name: root_window
+   *   ├── id: 3
+   *   │   ├── id: 4 - name: tree_window
+   *   │   └── id: 7
+   *   └── id: 9
+   */
+  logChildren(): string {
+    return this.treeLines().join("\n");
+  }
 
-    for (const child of this.children()) {
-      child.logChildren(indentation + 1);
-    }
+  private treeLines(): string[] {
+    const lines = [this.logSelf()];
+    const children = this.children();
+
+    children.forEach((child, i) => {
+      const last = i === children.length - 1;
+      const [first, ...rest] = child.treeLines();
+
+      lines.push((last ? "└── " : "├── ") + first);
+      // keep the parent's vertical line going past non-last children
+      for (const line of rest) {
+        lines.push((last ? "    " : "│   ") + line);
+      }
+    });
+
+    return lines;
+  }
+  view(): DisplayComponent {
+    return this;
   }
 
   // ---------------------------------------------------------------------------

@@ -1,9 +1,14 @@
+import { compose } from "stream";
 import { DisplayComponent, parseSize } from "../components/displayComponent.js";
 import { LayoutDimensions } from "./LayoutDimensions.js";
 import { LayoutBounds } from "./layoutStyle.js";
 
+export interface DisplayLike {
+  view(): DisplayComponent;
+}
+
 type RowItem = {
-  child: DisplayComponent;
+  child: DisplayLike;
   width: number;
   outerWidth: number;
 
@@ -24,21 +29,23 @@ export class LayoutEngine {
     };
   }
 
-  static ArrangeAbsolute(child: DisplayComponent, bounds: LayoutBounds) {
+  static ArrangeAbsolute(child: DisplayLike, bounds: LayoutBounds) {
     const width =
-      LayoutDimensions.requestedOuterWidth(child, bounds.width) ??
-      child.measuredSize().width;
+      LayoutDimensions.requestedOuterWidth(child.view(), bounds.width) ??
+      child.view().measuredSize().width;
 
     const height =
-      LayoutDimensions.requestedOuterHeight(child, bounds.height) ??
-      child.measuredSize().height;
+      LayoutDimensions.requestedOuterHeight(child.view(), bounds.height) ??
+      child.view().measuredSize().height;
 
-    const margin = child.margin();
-    const x = (parseSize(child.startX(), bounds.width) ?? 0) + margin.left;
+    const margin = child.view().margin();
+    const x =
+      (parseSize(child.view().startX(), bounds.width) ?? 0) + margin.left;
 
-    const y = (parseSize(child.startY(), bounds.height) ?? 0) + margin.top;
+    const y =
+      (parseSize(child.view().startY(), bounds.height) ?? 0) + margin.top;
 
-    child.arrange({
+    child.view().arrange({
       x: bounds.x + x,
       y: bounds.y + y,
       width,
@@ -46,10 +53,11 @@ export class LayoutEngine {
     });
   }
 
-  static ArrangeVertical(component: DisplayComponent, bounds: LayoutBounds) {
+  static ArrangeVertical(displayLike: DisplayLike, bounds: LayoutBounds) {
+    const component = displayLike.view();
     let remainingHeight = bounds.height;
 
-    const normalChildren = component.normalChildren();
+    const normalChildren = component.view().normalChildren();
 
     // First consume children with explicit heights.
     for (const child of normalChildren) {
@@ -76,25 +84,25 @@ export class LayoutEngine {
 
     // Allocate the remaining space to auto children while
     // respecting maxHeight.
-    const autoHeights = new Map<DisplayComponent, number>();
+    const autoHeights = new Map<DisplayLike, number>();
 
-    let unresolved = [...autoChildren];
+    let unresolved: DisplayLike[] = [...autoChildren];
     let available = remainingHeight;
 
     while (unresolved.length > 0) {
       const share = available / unresolved.length;
 
-      const capped: DisplayComponent[] = [];
-      const uncapped: DisplayComponent[] = [];
+      const capped: DisplayLike[] = [];
+      const uncapped: DisplayLike[] = [];
 
       for (const child of unresolved) {
-        const maxOuterHeight = LayoutDimensions.maxOuterHeight(child);
+        const maxOuterHeight = LayoutDimensions.maxOuterHeight(child.view());
 
         if (maxOuterHeight !== null && maxOuterHeight < share) {
           autoHeights.set(child, maxOuterHeight);
           available -= maxOuterHeight;
 
-          const margin = child.margin();
+          const margin = child.view().margin();
           available -= margin.top + margin.bottom;
 
           capped.push(child);
@@ -116,7 +124,7 @@ export class LayoutEngine {
     }
 
     const columns: {
-      child: DisplayComponent;
+      child: DisplayLike;
       height: number;
       outerHeight: number;
       margin: Insets;
@@ -198,7 +206,7 @@ export class LayoutEngine {
       for (const item of column) {
         const { child, margin } = item;
         const width =
-          LayoutDimensions.requestedOuterWidth(child, bounds.width) ??
+          LayoutDimensions.requestedOuterWidth(child.view(), bounds.width) ??
           Math.max(0, columnWidth - margin.left - margin.right);
 
         y += margin.top;
@@ -207,7 +215,7 @@ export class LayoutEngine {
           y += spacing;
         }
 
-        child.arrange({
+        child.view().arrange({
           x: x + margin.left,
           y,
           width,
@@ -228,29 +236,34 @@ export class LayoutEngine {
     }
   }
 
-  static getWidth(item: DisplayComponent, initial: number, totalWidth: number) {
+  static getWidth(item: DisplayLike, initial: number, totalWidth: number) {
     return (
-      LayoutDimensions.requestedOuterWidth(item, initial) ??
-      Math.max(0, totalWidth - item.margin().left - item.margin().right)
-    );
-  }
-
-  static getHeight(
-    component: DisplayComponent,
-    initial: number,
-    totalHeight: number,
-  ): number {
-    return (
-      LayoutDimensions.requestedOuterHeight(component, initial) ??
+      LayoutDimensions.requestedOuterWidth(item.view(), initial) ??
       Math.max(
         0,
-        totalHeight - component.margin().top - component.margin().bottom,
+        totalWidth - item.view().margin().left - item.view().margin().right,
       )
     );
   }
 
-  static ArrangeHorizontal(component: DisplayComponent, bounds: LayoutBounds) {
-    const normalChildren = component.normalChildren();
+  static getHeight(
+    displayLike: DisplayLike,
+    initial: number,
+    totalHeight: number,
+  ): number {
+    const component = displayLike.view();
+    return (
+      LayoutDimensions.requestedOuterHeight(component, initial) ??
+      Math.max(
+        0,
+        totalHeight - component.view().margin().top - component.margin().bottom,
+      )
+    );
+  }
+
+  static ArrangeHorizontal(displayLike: DisplayLike, bounds: LayoutBounds) {
+    const component = displayLike.view();
+    const normalChildren = component.view().normalChildren();
 
     let remainingWidth = this.calculateRemainingWidth(
       bounds.width,
@@ -261,19 +274,19 @@ export class LayoutEngine {
       (child) => child.width() === "auto",
     );
 
-    const autoWidths = new Map<DisplayComponent, number>();
+    const autoWidths = new Map<DisplayLike, number>();
 
-    let unresolved = [...autoChildren];
+    let unresolved: DisplayLike[] = [...autoChildren];
     let available = remainingWidth;
 
     while (unresolved.length > 0) {
       const share = available / unresolved.length;
 
-      const capped: DisplayComponent[] = [];
-      const uncapped: DisplayComponent[] = [];
+      const capped: DisplayLike[] = [];
+      const uncapped: DisplayLike[] = [];
 
       for (const child of unresolved) {
-        const maxOuterWidth = LayoutDimensions.maxOuterWidth(child);
+        const maxOuterWidth = LayoutDimensions.maxOuterWidth(child.view());
 
         if (maxOuterWidth !== null && maxOuterWidth < share) {
           autoWidths.set(child, maxOuterWidth);
@@ -286,7 +299,10 @@ export class LayoutEngine {
 
       if (capped.length === 0) {
         for (const child of uncapped) {
-          autoWidths.set(child, Math.max(0, share, child.measuredSize().width));
+          autoWidths.set(
+            child,
+            Math.max(0, share, child.view().measuredSize().width),
+          );
         }
 
         break;
@@ -298,7 +314,7 @@ export class LayoutEngine {
 
     const rows: RowItem[][] = [[]];
 
-    const shouldWrap = component.wrap() !== "no-wrap";
+    const shouldWrap = component.view().wrap() !== "no-wrap";
 
     for (const child of normalChildren) {
       const margin = child.margin();
@@ -333,7 +349,7 @@ export class LayoutEngine {
 
     let y = bounds.y;
 
-    if (component.wrap() === "wrap-reverse") {
+    if (component.view().wrap() === "wrap-reverse") {
       rows.reverse();
     }
 
@@ -346,7 +362,7 @@ export class LayoutEngine {
           item.width +
           item.margin.left +
           item.margin.right +
-          component.gap(),
+          component.view().gap(),
         0,
       );
 
@@ -384,7 +400,7 @@ export class LayoutEngine {
 
       for (let i = 0; i < row.length; i++) {
         const item = row[i];
-        const child = item.child;
+        const child = item.child.view();
         const margin = item.margin;
         const height = this.getHeight(item.child, bounds.height, rowHeight);
 
@@ -415,13 +431,12 @@ export class LayoutEngine {
       y += rowHeight;
     }
   }
-  static calculateRemainingWidth(
-    available: number,
-    components: DisplayComponent[],
-  ) {
+  static calculateRemainingWidth(available: number, components: DisplayLike[]) {
     let remainingWidth = available;
     // First consume children with explicit widths.
-    for (const child of components) {
+    for (const childLike of components) {
+      const child = childLike.view();
+
       const width = LayoutDimensions.requestedOuterWidth(child, available)!;
       if (child.width() === "auto") {
         continue;
@@ -435,12 +450,12 @@ export class LayoutEngine {
 
     remainingWidth = Math.max(0, remainingWidth);
 
-    const autoChildren = components.filter((child) => child.width() === "auto");
+    const autoChildren = components.filter((child) => child.view().width() === "auto");
 
     // Remove auto children's margins before distributing
     // the remaining space between their actual widths.
     for (const child of autoChildren) {
-      const margin = child.margin();
+      const margin = child.view().margin();
 
       remainingWidth -= margin.left + margin.right;
     }
@@ -467,13 +482,14 @@ export class LayoutEngine {
     minWidth: 0,
   };
 
-  static Measure(component: DisplayComponent, constraints: MeasureConstraints) {
-    component.measure(constraints);
+  static Measure(component: DisplayLike, constraints: MeasureConstraints) {
+    component.view().measure(constraints);
 
     return this;
   }
 
-  static Arrange(root: DisplayComponent, bounds?: LayoutBounds) {
+  static Arrange(rootLike: DisplayLike, bounds?: LayoutBounds) {
+    const root = rootLike.view()
     const layout = root.layout();
     const measured = root.measuredSize();
 
@@ -489,7 +505,7 @@ export class LayoutEngine {
     return this;
   }
   static Layout(
-    component: DisplayComponent,
+    component: DisplayLike,
     constraints: MeasureConstraints,
     bounds: LayoutBounds,
   ) {

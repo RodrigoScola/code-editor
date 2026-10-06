@@ -9,6 +9,7 @@ import {
   EditorView,
   EWindow,
   UiComponent,
+  UIScreen,
 } from "../../ui/components/UiComponent.js";
 import { Canvas } from "../../ui/canvas.js";
 import { assert } from "../../assert.js";
@@ -17,7 +18,7 @@ import { EditorContext } from "../Editor/Editor.js";
 export class CodeEditorWindow extends UiComponent implements EWindow {
   document: Textdocument;
 
-  private _editor: UiComponent;
+  private _editor: UIScreen;
   private lines: DisplayComponent;
 
   constructor(document: Textdocument) {
@@ -48,6 +49,10 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
     // this.setupLines();
     this.reset();
   }
+
+  defaultFocus(): UiComponent | null {
+    return this._editor
+  }
   setupLines() {
     let txt = "";
 
@@ -71,7 +76,7 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
   }
 
   private initEditor(document: Textdocument) {
-    const editor = new UiComponent();
+    const editor = new UIScreen();
     editor.setText(document.read());
     const cursor = editor.cursor();
 

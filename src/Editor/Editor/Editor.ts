@@ -38,7 +38,7 @@ export class EditorContext {
   visualMode: VisualMode = new VisualMode();
   insertMode: InsertMode = new InsertMode();
 
-  windowManager: WindowManager  = new WindowManager(this.rootWindow)
+  windowManager: WindowManager = new WindowManager(this.rootWindow);
 
   commandMode: CommandMode = new CommandMode();
   private mode: EditorMode = this.normalMode;
@@ -66,7 +66,7 @@ export class EditorContext {
     this.mode.handleKey(key, this);
   }
   unfocus(window: UiComponent) {
-    this.windowManager.unfocus(window);
+    this.windowManager.deactivate(window);
     this.focusManager.unfocus(window.defaultFocus());
   }
 
@@ -78,7 +78,7 @@ export class EditorContext {
   openFile(path: string) {
     try {
       const hasActive = this.windowManager.activeWindow();
-      if (hasActive) this.windowManager.unfocus(hasActive);
+      if (hasActive) this.windowManager.deactivate(hasActive);
 
       const editorGroup = this.windowManager.find(CodeEditorGroup);
 

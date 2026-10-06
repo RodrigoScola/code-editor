@@ -10,7 +10,7 @@ import {
   Textdocument,
 } from "../../../../../src/Editor/Documents/TextDocument.js";
 import { CodeEditorWindow } from "../../../../../src/Editor/windows/CodeEditorWindow.js";
-import { DisplayComponent } from "../../../../../src/ui/components/components.js";
+import { DisplayComponent } from "../../../../../src/ui/components/displayComponent.js";
 
 const createEditor = (content: string) => {
   return new CodeEditorWindow(
@@ -65,15 +65,15 @@ describe("tests the tab component", () => {
     tab.add("editor", editor);
 
     render(root.addChildren(tab.view()), canvas);
-    expect(getRow(tab.displayContent, canvas)).includes("this");
+    expect(getRow(tab.displayContent.view(), canvas)).includes("this");
 
     tab.add("otherEditor", ed).focusWindow(ed);
 
     render(root, canvas);
-    const out = getRow(tab.displayContent, canvas);
+    const out = getRow(tab.displayContent.view(), canvas);
     console.log(tab.displayContent.children()[0].name());
     console.log(out);
-    expect(getRow(tab.displayContent, canvas)).includes("awesomesauce");
+    expect(getRow(tab.displayContent.view(), canvas)).includes("awesomesauce");
   });
 });
 

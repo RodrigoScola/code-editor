@@ -8,12 +8,12 @@ import { Canvas } from "../../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { Renderer } from "../../../../src/ui/renderer.js";
 import colors from "../../../../src/ui/colors.js";
-import { TextEditorWindow } from "../../../../src/Editor/windows/EditorWindow.js";
+import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
 
 describe("tests the visual highlight of the selection", () => {
   it("keeps the cursor visible by scrolling the viewport", () => {
     const content = ["one", "two", "three", "four"].join("\n");
-    const editor = new TextEditorWindow(content);
+    const editor = new UIScreen().setText(content);
 
     const lt = LayoutEngine.CreateBounds(20);
     const cnv = new Canvas().setLayout(lt);

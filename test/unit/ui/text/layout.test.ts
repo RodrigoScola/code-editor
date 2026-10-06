@@ -1,11 +1,10 @@
 import { assert } from "../../../../src/assert";
 import { Canvas, DisplayTile } from "../../../../src/ui/canvas";
 import colors from "../../../../src/ui/colors";
-import { DisplayComponent } from "../../../../src/ui/components/components";
+import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout";
 import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle";
 import { Renderer } from "../../../../src/ui/renderer";
-import { TextLayout } from "../../../../src/ui/TextLayout/text";
 import { describe, expect, it } from "vitest";
 
 const rowText = (row: DisplayTile[]) => {
@@ -59,7 +58,8 @@ describe("text layout test", () => {
     const canvas = new Canvas().setLayout(
       LayoutEngine.CreateBounds(txt.length, 1),
     );
-    const root = new DisplayComponent().setText(new TextLayout().setText(txt));
+    const root = new DisplayComponent();
+    root.content().setText(txt);
 
     build(root, canvas);
 
@@ -72,12 +72,8 @@ describe("text layout test", () => {
     const canvas = new Canvas().setLayout(
       LayoutEngine.CreateBounds(str.length, 1),
     );
-    const root = new TextLayout()
-      .setLineWidth(3)
-      .setOverflow("clip")
-      .setText(str);
-
-    const dp = new DisplayComponent().setText(root);
+    const dp = new DisplayComponent();
+    const root = dp.content().setLineWidth(3).setOverflow("clip").setText(str);
 
     build(dp, canvas);
 
@@ -92,12 +88,12 @@ describe("text layout test", () => {
     const canvas = new Canvas().setLayout(
       LayoutEngine.CreateBounds(str.length, 1),
     );
-    const root = new TextLayout()
+    const dp = new DisplayComponent();
+    const root = dp
+      .content()
       .setLineWidth(3)
       .setOverflow("visible")
       .setText(str);
-
-    const dp = new DisplayComponent().setText(root);
     dp.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
 
     build(dp, canvas);

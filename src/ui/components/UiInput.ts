@@ -3,9 +3,9 @@ import { Canvas } from "../canvas.js";
 import { ComponentStyle } from "../ComponentStyles.js";
 import { Renderer } from "../renderer.js";
 import { TextLayout } from "../TextLayout/text.js";
-import { UiComponent } from "./UiComponent.js";
+import { UiComponent, UIScreen } from "./UiComponent.js";
 
-export class UiInput extends UiComponent {
+export class UiInput extends UIScreen {
   currentCommandLine: number = 0;
 
   placeholder: TextLayout = new TextLayout().setBuffer(
@@ -18,7 +18,6 @@ export class UiInput extends UiComponent {
 
   constructor(value?: string) {
     super();
-
 
     this.view().setMaxHeight(1);
     this.buffer().addLine("");

@@ -3,7 +3,11 @@ import path from "path";
 import colors from "../../ui/colors.js";
 import { Canvas } from "../../ui/canvas.js";
 import { Cursor } from "../Cursor.js";
-import { EditorView, UiComponent } from "../../ui/components/UiComponent.js";
+import {
+  EditorView,
+  UiComponent,
+  UIScreen,
+} from "../../ui/components/UiComponent.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
@@ -28,7 +32,7 @@ type FileTreeNode = TreeNodeBase & {
   isDirectory: false;
 };
 
-export class FileTreeWindow extends UiComponent {
+export class FileTreeWindow extends UIScreen {
   root: TreeNode;
   ignoreDirs: string[] = [];
 

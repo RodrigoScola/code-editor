@@ -1,9 +1,9 @@
 import colors from "../../ui/colors.js";
-import { UiComponent } from "../../ui/components/UiComponent.js";
+import { UiComponent, UIScreen } from "../../ui/components/UiComponent.js";
 import { UiInput } from "../../ui/components/UiInput.js";
 import { EditorContext } from "../Editor/Editor.js";
 
-export class ListMenuWindow extends UiComponent {
+export class ListMenuWindow extends UIScreen {
   _input: UiInput;
   listDisplay: UiComponent = new UiComponent();
   constructor() {

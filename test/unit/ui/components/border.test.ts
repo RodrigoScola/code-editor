@@ -4,8 +4,8 @@ import colors from "../../../../src/ui/colors.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { Renderer } from "../../../../src/ui/renderer.js";
-import { DisplayComponent } from "../../../../src/ui/components/components.js";
-import { ComponentBorder } from "../../../../src/ui/components/border.js";
+import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { ComponentBorder } from "../../../../src/ui/display/border.js";
 import { EditorRoot } from "../../../../src/Editor/Editor/EditorRoot.js";
 
 describe("tests the component border", () => {

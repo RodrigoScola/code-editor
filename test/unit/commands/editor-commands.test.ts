@@ -4,11 +4,11 @@ import {
   Textdocument,
   MemoryFile,
 } from "../../../src/Editor/Documents/TextDocument.js";
-import { DisplayComponent } from "../../../src/ui/components/components.js";
+import { DisplayComponent } from "../../../src/ui/components/displayComponent.js";
 import { WINDOW_NAMES } from "../../../src/constants.js";
 import { textEditorCommands } from "../../../src/Commands/editorCommands.js";
 import { EditorRoot } from "../../../src/Editor/Editor/EditorRoot.js";
-import { TextEditorWindow } from "../../../src/Editor/windows/EditorWindow.js";
+import { UIScreen } from "../../../src/ui/components/UiComponent.js";
 
 describe("textEditorCommands", () => {
   it("moves to the start of the next word", () => {
@@ -104,7 +104,7 @@ describe("textEditorCommands", () => {
 function setupContext({ fileContent }: { fileContent: string }) {
   const ctx = new EditorContext();
   const root = new EditorRoot();
-  const editorWindow = new TextEditorWindow(fileContent);
+  const editorWindow = new UIScreen().setText(fileContent);
 
   editorWindow.view().setName(WINDOW_NAMES.EDITOR_TEXT_WINDOW);
   root.addChildren(editorWindow.view());

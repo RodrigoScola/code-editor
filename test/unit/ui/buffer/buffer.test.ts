@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { Canvas } from "../../../../src/ui/canvas.js";
 import { Renderer } from "../../../../src/ui/renderer.js";
-import { TextEditorWindow } from "../../../../src/Editor/windows/EditorWindow.js";
+import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
 import { EditorContext } from "../../../../src/Editor/Editor/Editor.js";
 
 describe("tests the buffer and rendering", () => {
@@ -12,7 +12,7 @@ describe("tests the buffer and rendering", () => {
     layout.height = layout.width = 6;
     const cnv = new Canvas().setLayout(layout);
 
-    const editor = new TextEditorWindow("t\tb");
+    const editor = new UIScreen().setText("t\tb");
     EditorContext.SetConfiguration({ tab_width: 5 });
     EditorContext;
 

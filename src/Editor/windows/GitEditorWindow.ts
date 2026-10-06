@@ -1,6 +1,6 @@
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { UiComponent } from "../../ui/components/UiComponent.js";
+import { UiComponent, UIScreen } from "../../ui/components/UiComponent.js";
 import path from "path";
 import cp from "child_process";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
@@ -99,7 +99,7 @@ class GitFile {
     return Boolean(this.unstagedStatus);
   }
 }
-export class GitCommitWindow extends UiComponent {
+export class GitCommitWindow extends UIScreen {
   private files: GitFile[] = [];
   constructor() {
     super();
@@ -124,7 +124,7 @@ export class GitCommitWindow extends UiComponent {
   }
 }
 
-export class GitEditorWindow extends UiComponent{
+export class GitEditorWindow extends UIScreen {
   private files: GitFile[] = [];
 
   constructor() {

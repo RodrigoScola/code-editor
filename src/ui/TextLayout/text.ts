@@ -176,7 +176,12 @@ export class TextLayout {
         this.justifyLine(line, allLines.at(-1));
       }
 
-      line.setY(allLines.length).setStart(startAt).setEnd(endAt);
+      // allLines only grows once this buffer line is done, so count the
+      // pieces wrapped so far too
+      line
+        .setY(allLines.length + lines.length)
+        .setStart(startAt)
+        .setEnd(endAt);
 
       if (this.align() === "left") {
         line.setX(0);

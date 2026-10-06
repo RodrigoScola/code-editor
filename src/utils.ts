@@ -1,4 +1,4 @@
-import { UiComponent } from "./ui/components/UiComponent.js";
+import { UiComponent, UIScreen } from "./ui/components/UiComponent.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
 
@@ -22,8 +22,8 @@ export function isStatusEditorWindow(
 }
 export function isTextComponent(
   t: UiComponent | undefined | null,
-): asserts t is UiComponent {
-  if (!(t instanceof UiComponent)) {
+): asserts t is UIScreen {
+  if (!(t instanceof UIScreen)) {
     throw new Error("Expected an EditorComponent");
   }
 }
