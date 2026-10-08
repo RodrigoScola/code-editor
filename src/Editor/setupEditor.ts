@@ -225,8 +225,6 @@ function setupNormalModeCommands(editor: EditorContext) {
       ctx.windowManager.close(secondarySidebar);
     } else {
       ctx.windowManager.open(secondarySidebar);
-
-      console.log("open in the thing");
     }
   });
   editor.normalMode.bind(["v"], (ctx) => {
@@ -321,7 +319,7 @@ function setupNormalModeCommands(editor: EditorContext) {
     if (!window) {
       return;
     }
-    window.onEnter(ctx);
+    window.defaultFocus()?.onEnter(ctx);
   });
 
   editor.normalMode.bind(["d", "d"], textEditorCommands.textEditor.deleteLine);

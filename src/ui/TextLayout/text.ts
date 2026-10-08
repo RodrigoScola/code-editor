@@ -48,7 +48,7 @@ class TextLayoutOptions {
   }
 }
 
- class VisualLine {
+class VisualLine {
   private _content: string = "";
   private _start: number = 0;
   private _end: number = 0;
@@ -101,13 +101,19 @@ class TextLayoutOptions {
   }
 }
 
-export class TextLayout {
+export class TextLayout implements BufferLike {
   private _options: TextLayoutOptions = new TextLayoutOptions();
   private _dirty: boolean = false;
 
   private _lines: VisualLine[] = [];
 
   constructor(private _parent?: DisplayComponent) {}
+  at(line: number): string | undefined {
+    return this.lines().at(line)?.content();
+  }
+  count(): number {
+    return this.lines().length;
+  }
 
   setParent(parent: DisplayComponent) {
     this._parent = parent;

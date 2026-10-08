@@ -11,18 +11,18 @@ import { LayoutDimensions } from "../layout/LayoutDimensions.js";
 import { Focusable } from "../windows/FocusManager.js";
 import { DisplayLike } from "../layout/layout.js";
 
-type WindowId = string;
+type WindowId = number;
 
 export interface EWindow {
   view(): EditorView;
-  id(): string;
+  id(): number;
   onEvent(event: EditorEvents): void;
   onEnter(ctx: EditorContext): void;
 }
 
 export class UiComponent implements EWindow, Focusable, DisplayLike {
   private _view: EditorView = new EditorView(this);
-  private readonly _id: WindowId = crypto.randomUUID();
+  private readonly _id: WindowId = this._view.getId();
 
   private _parent: UiComponent | null = null;
 
@@ -42,7 +42,7 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
     return this._focused;
   }
 
-  id(): string {
+  id(): number {
     return this._id;
   }
   setName(name: string) {
@@ -108,6 +108,20 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
     }
 
     return this;
+  }
+
+  findChildrenById(id: number): UiComponent | null {
+    if (id === this.id()) {
+      return this;
+    }
+    for (const child of this.children()) {
+      const found = child.findChildrenById(id);
+
+      if (found) {
+        return found;
+      }
+    }
+    return null;
   }
   findChildrenByName(nm: string): UiComponent | null {
     if (this.name() === nm) {
@@ -179,13 +193,13 @@ export class UIScreen extends UiComponent {
 
   constructor() {
     super();
-    this._cursor.setBuffer(this.view().content().buffer()).setView(this.view());
+    this._cursor.setBuffer(this.view().content()).setView(this.view());
   }
 
   // setText swaps the view's buffer, so the cursor has to follow it
   setText(str?: TextBuffer | string | null | undefined) {
     super.setText(str);
-    this._cursor.setBuffer(this.buffer());
+    this._cursor.setBuffer(this.view().content());
     return this;
   }
 

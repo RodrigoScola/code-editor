@@ -169,4 +169,7 @@ export class EditorContext {
     this.renderer.setLayout(layout);
     return this;
   }
+  findComponentById(id:number) {
+    return this.rootWindow.findChildrenById(id)
+  }
 }

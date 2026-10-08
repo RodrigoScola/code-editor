@@ -6,7 +6,7 @@ import { UiComponent } from "../../../ui/components/UiComponent.js";
 import { FocusManager } from "../../../ui/windows/FocusManager.js";
 
 export class WindowManager {
-  private windows = new Map<string, UiComponent>();
+  private windows = new Map<number, UiComponent>();
   private active: UiComponent | null = null;
   root: EditorRoot;
   // activating a window moves keyboard focus to its default component. left
@@ -14,7 +14,7 @@ export class WindowManager {
   // the editor's manager over the same components' focus
   private focusManager: FocusManager | null;
 
-  history: string[];
+  history: number[];
   constructor(root: EditorRoot, focusManager: FocusManager | null = null) {
     this.root = root;
     this.focusManager = focusManager;

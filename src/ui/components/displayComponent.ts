@@ -455,7 +455,10 @@ export class DisplayComponent
   }
 
   normalChildren() {
-    return this.children().filter((child) => child.positionMode() === "normal");
+    // hidden children take no space; siblings share it as if they weren't there
+    return this.children().filter(
+      (child) => child.positionMode() === "normal" && child.visible(),
+    );
   }
   absoluteChildren() {
     return this.children().filter(
@@ -652,6 +655,10 @@ export class DisplayComponent
   // ---------------------------------------------------------------------------
 
   setVisible(value: boolean): this {
+    // hidden children take no space, so the parent has to lay out again
+    if (this.vs !== value) {
+      this.setDirty(true);
+    }
     this.vs = value;
     return this;
   }
@@ -734,6 +741,14 @@ export class DisplayComponent
     if (this.name()) {
       str += " - ";
       str += `name: ${this.name()}`;
+      str += " - ";
+    }
+
+    const txt = this.text();
+    if (txt) {
+      const max = Math.min(10, txt.length);
+      str += ` content: ${this.text()?.slice(0, max)}`;
+      str += " - ";
     }
 
     return str;
