@@ -16,10 +16,15 @@ import { ListMenuWindow } from "./windows/ListMenuWindow.js";
 import { EditorRoot } from "./Editor/EditorRoot.js";
 import { isTextComponent } from "../utils.js";
 import { CodeEditorGroup, TabWindow } from "./windows/Tab/TabWindow.js";
-import { UiComponent } from "../ui/components/UiComponent.js";
+import {
+  UiComponent,
+  UiPanel,
+  UIScreen,
+} from "../ui/components/UiComponent.js";
 import { ErrorWindow } from "./windows/ErrorWindow.js";
 import { logger } from "../logging/log.js";
 import { ConsoleLogWindow } from "./windows/ConsoleLogWindow.js";
+import { SecondarySidebar } from "./windows/SecondarySidebar.js";
 
 function setupGit(editor: EditorContext) {
   const commit = new GitCommitWindow();
@@ -48,9 +53,32 @@ function setupGit(editor: EditorContext) {
   editor.windowManager.split(codeGroup, gitEditor, "vertical");
 }
 
+function setupSecondarySideBar(editor: EditorContext) {
+  const screen = new SecondarySidebar().setName(WINDOW_NAMES.SECONDARY_SIDEBAR);
+
+  screen.view().setWidth("30%");
+
+  const primary = editor.rootWindow.findChildrenByName(
+    WINDOW_NAMES.PRIMARY_WINDOW,
+  );
+
+  editor.addWindow(screen);
+
+  screen.view().setVisible(false).setBackgroundColor(colors.CYAN_BACKGROUND);
+  assert(
+    primary,
+    `primary window not found. need to setup before calling this function`,
+  );
+
+  // hidden children take no space in the layout, so it can live in the tree
+  // while closed; Ctrl+B only flips its visibility
+  primary.addChildren(screen);
+}
+
 function setupWindows(editor: EditorContext) {
-  new Canvas().setLayout(editor.layout);
-  editor.rootWindow = new EditorRoot().setLayout(editor.layout);
+  const layout = editor.renderer.layout();
+
+  editor.rootWindow = new EditorRoot().setLayout(layout);
   editor.rootWindow.setName("root_window");
 }
 
@@ -70,10 +98,11 @@ function statusWindow(editor: EditorContext) {
 }
 
 function editorWindow(editor: EditorContext) {
-  const window = new UiComponent();
+  const window = new UiPanel().setName(WINDOW_NAMES.PRIMARY_WINDOW);
+  const layout = editor.renderer.layout();
   window.view().setLayout({
-    ...editor.layout,
-    height: editor.layout.height - 1,
+    ...editor.renderer.layout(),
+    height: layout.height - 1,
   });
   return window;
 }
@@ -186,6 +215,20 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
   editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
   editor.normalMode.bind(["G"], textEditorCommands.textEditor.goToDocumentEnd);
+  editor.normalMode.bind(["<C-b>"], (ctx: EditorContext) => {
+    const secondarySidebar = ctx.findWindow(SecondarySidebar);
+    if (!secondarySidebar) {
+      console.error("secondary sidebar not found");
+      return;
+    }
+    if (ctx.windowManager.isActiveWindow(secondarySidebar)) {
+      ctx.windowManager.close(secondarySidebar);
+    } else {
+      ctx.windowManager.open(secondarySidebar);
+
+      console.log("open in the thing");
+    }
+  });
   editor.normalMode.bind(["v"], (ctx) => {
     const textEditor = ctx.findWindow(CodeEditorWindow);
     textEditor?.cursor().startSelection();
@@ -397,6 +440,9 @@ function setupCommandModes(editor: EditorContext) {
   editor.commandMode.bind("split", (ctx) => split(ctx, "vertical"));
   editor.commandMode.bind("split v", (ctx) => split(ctx, "vertical"));
   editor.commandMode.bind("split h", (ctx) => split(ctx, "horizontal"));
+
+  // the exit handler in index.ts puts the terminal back the way it was
+  editor.commandMode.bind("q", () => process.exit(0));
 }
 
 function split(ctx: EditorContext, direction: DisplayDirection) {
@@ -444,18 +490,27 @@ function errorWindow(ctx: EditorContext) {
   const errorWindow = new ErrorWindow(ctx);
 
   ctx.windowManager.add(errorWindow);
-  ctx.rootWindow.addChildren(errorWindow);
+
+  ctx.rootWindow
+    .findChildrenByName(WINDOW_NAMES.POPUP_WINDOW)
+    ?.addChildren(errorWindow);
 }
 
 function debugWindow(ctx: EditorContext) {
-  const tab = ctx.findWindow(TabWindow);
+  const secondary = ctx.rootWindow.findChildrenByName(
+    WINDOW_NAMES.SECONDARY_SIDEBAR,
+  );
 
-  const parentTab = tab?.parent();
+  if (!secondary) {
+    console.error("invalid secondary sidebar ");
+    return;
+  }
 
   const debugWindow = new ConsoleLogWindow();
 
   ctx.windowManager.add(debugWindow);
-  ctx.windowManager.split(parentTab!, debugWindow, "horizontal");
+
+  secondary.addChildren(debugWindow);
 
   logger.subscribe(debugWindow.attachListener);
 }
@@ -485,5 +540,6 @@ export const setupEditor = {
     textEditor: setupTextEditor,
     debugWindow,
     errorWindow,
+    setupSecondarySideBar,
   },
 };

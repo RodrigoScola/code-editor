@@ -5,6 +5,7 @@ export class ErrorWindow extends UIScreen {
   constructor(private ctx: EditorContext) {
     super();
     this.setCursorEnabled(false);
+    this.setName("error_window");
 
     this.view()
       .setWidth("50%")

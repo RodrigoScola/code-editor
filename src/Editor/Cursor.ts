@@ -12,7 +12,6 @@ import { EditorSelection } from "./Selection.js";
 export class Cursor {
   prefferedColumn: number = 0;
 
-
   width: number = 1;
   height: number = 1;
 
@@ -96,7 +95,7 @@ export class Cursor {
     relative.width = this.width;
 
     const content = canvas.getRow(relative.y);
-    assert(content, "invalid display row");
+    assert(content, `invalid display row at ${relative.y}`);
 
     const str = content.map((tile) => tile.styles.display());
 

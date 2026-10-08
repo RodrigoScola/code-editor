@@ -2,6 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
+      // rebuilds and restarts the editor on save; the debugger follows each restart
+      "name": "Hot Reload",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/dev.mjs",
+      "console": "externalTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+    },
+    {
       "name": "Run in Integrated Terminal",
       "type": "node",
       "request": "launch",

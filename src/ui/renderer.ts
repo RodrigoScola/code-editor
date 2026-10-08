@@ -16,6 +16,10 @@ export type RenderOutput = (frame: string) => void;
 export class Renderer {
   private _canvas: Canvas = new Canvas();
   private _output: RenderOutput = (frame) => console.log(frame);
+
+  layout() {
+    return this._canvas.layout()
+  }
   setLayout(layout: LayoutBounds) {
     this._canvas.setLayout(layout);
 

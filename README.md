@@ -5,7 +5,8 @@ Bare-bones TypeScript starter for a JavaScript program.
 ## Scripts
 
 - `npm run build` compiles `src/index.ts` into `dist/`
-- `npm run dev` recompiles on file changes
+- `npm run dev` hot reload: rebuilds on save and restarts the editor (`:q` quits)
+- `npm run watch` only recompiles on file changes
 - `npm start` runs the compiled output
 
 ## Setup

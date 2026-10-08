@@ -63,9 +63,16 @@ export class LayoutDimensions {
       }
     }
 
-    return contentWidth === null
-      ? null
-      : this.outerWidth(component, contentWidth);
+    if (contentWidth === null) {
+      return null;
+    }
+    // maxWidth wins over width, as it does when the component is finally
+    // arranged (resolveArrangedBounds). clamp here too, or the parent reserves
+    // the unclamped width and leaves a gap the component never fills
+    const outerWidth = this.outerWidth(component, contentWidth);
+    const maxWidth = this.maxOuterWidth(component);
+
+    return maxWidth === null ? outerWidth : Math.min(outerWidth, maxWidth);
   }
   static requestedOuterHeight(
     component: DisplayComponent,
@@ -94,9 +101,14 @@ export class LayoutDimensions {
         contentHeight = component.content().height();
       }
     }
-    return contentHeight === null
-      ? null
-      : this.outerHeight(component, contentHeight);
+    if (contentHeight === null) {
+      return null;
+    }
+    // see requestedOuterWidth
+    const outerHeight = this.outerHeight(component, contentHeight);
+    const maxHeight = this.maxOuterHeight(component);
+
+    return maxHeight === null ? outerHeight : Math.min(outerHeight, maxHeight);
   }
 
   /**

@@ -166,6 +166,11 @@ export class CommandMode implements EditorMode {
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
     } else if (InputParser.isEscape(key.token)) {
+      // entering command mode moved focus to the status window; give it back
+      const previousWindow = ctx.windowManager.previousWindow();
+      if (previousWindow) {
+        ctx.focus(previousWindow);
+      }
       ctx.setMode("normal");
     } else if (InputParser.isBackspace(key.token)) {
       cursor.column -= 1;

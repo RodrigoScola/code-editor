@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
+    "dev": "node scripts/dev.mjs",
+    "watch": "tsc --watch",
     "start": "node dist/index.js",
     "test": "vitest run"
   },

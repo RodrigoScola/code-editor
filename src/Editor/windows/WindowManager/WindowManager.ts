@@ -3,15 +3,21 @@ import { DisplayComponent } from "../../../ui/components/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
 import { LayoutBounds } from "../../../ui/layout/layoutStyle.js";
 import { UiComponent } from "../../../ui/components/UiComponent.js";
+import { FocusManager } from "../../../ui/windows/FocusManager.js";
 
 export class WindowManager {
   private windows = new Map<string, UiComponent>();
   private active: UiComponent | null = null;
   root: EditorRoot;
+  // activating a window moves keyboard focus to its default component. left
+  // out by managers that only track a selection (tabs), so they don't fight
+  // the editor's manager over the same components' focus
+  private focusManager: FocusManager | null;
 
   history: string[];
-  constructor(root: EditorRoot) {
+  constructor(root: EditorRoot, focusManager: FocusManager | null = null) {
     this.root = root;
+    this.focusManager = focusManager;
     this.history = [];
   }
 
@@ -34,6 +40,7 @@ export class WindowManager {
     if (this.active?.id() === editorWindow.id()) {
       this.active = null;
     }
+    this.focusManager?.unfocus(editorWindow.defaultFocus());
   }
   has(window: UiComponent): boolean {
     return this.windows.has(window.id());
@@ -48,8 +55,12 @@ export class WindowManager {
       this.deactivate(this.active);
     }
     this.active = window;
+    this.focusManager?.focus(window.defaultFocus());
 
     return this.active;
+  }
+  isActiveWindow(component: UiComponent): boolean {
+    return this.active?.id() == component.id();
   }
   activeWindow(): UiComponent | null {
     return this.active;
@@ -73,8 +84,23 @@ export class WindowManager {
     return null;
   }
 
-  open() {}
-  close() {}
+  open(window: UiComponent) {
+    if (!this.has(window)) {
+      this.add(window);
+    }
+    window.view().setVisible(true);
+    this.activate(window);
+  }
+  close(window: UiComponent) {
+    // read it before deactivate(), which pushes `window` onto the history and
+    // would make previousWindow() return the window we're closing
+    const previous = this.previousWindow();
+    window.view().setVisible(false);
+    this.deactivate(window);
+    if (previous && previous !== window) {
+      this.activate(previous);
+    }
+  }
   split(
     editor: UiComponent,
     newEditor: UiComponent,

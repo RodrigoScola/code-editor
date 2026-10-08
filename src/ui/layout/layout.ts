@@ -450,7 +450,9 @@ export class LayoutEngine {
 
     remainingWidth = Math.max(0, remainingWidth);
 
-    const autoChildren = components.filter((child) => child.view().width() === "auto");
+    const autoChildren = components.filter(
+      (child) => child.view().width() === "auto",
+    );
 
     // Remove auto children's margins before distributing
     // the remaining space between their actual widths.
@@ -487,9 +489,16 @@ export class LayoutEngine {
 
     return this;
   }
+  static Calculate(root: DisplayLike) {
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(root.view().layout().width),
+    );
+    LayoutEngine.Arrange(root);
+  }
 
   static Arrange(rootLike: DisplayLike, bounds?: LayoutBounds) {
-    const root = rootLike.view()
+    const root = rootLike.view();
     const layout = root.layout();
     const measured = root.measuredSize();
 

@@ -8,36 +8,30 @@ import { assert } from "../../assert.js";
 import { Canvas } from "../../ui/canvas.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
 import { Renderer } from "../../ui/renderer.js";
-import {
-  DiskFile,
-  MemoryFile,
-  Textdocument,
-} from "../Documents/TextDocument.js";
+import { DiskFile, Textdocument } from "../Documents/TextDocument.js";
 import { WindowManager } from "../windows/WindowManager/WindowManager.js";
 import { StatusWindow } from "../windows/StatusEditor.js";
 import { EditorRoot } from "./EditorRoot.js";
-import { isCodeEditorWindow, isTextComponent, memory } from "../../utils.js";
 import { LayoutBounds } from "../../ui/layout/layoutStyle.js";
 import { CodeEditorWindow } from "../windows/CodeEditorWindow.js";
-import { Cursor } from "../Cursor.js";
 import { Configuration, EditorConfig, setConfiguration } from "../../config.js";
 import { CodeEditorGroup } from "../windows/Tab/TabWindow.js";
-import { config, title } from "process";
 import { FocusManager } from "../../ui/windows/FocusManager.js";
-import { DisplayComponent } from "../../ui/components/displayComponent.js";
 import { UiComponent } from "../../ui/components/UiComponent.js";
 
 export class EditorContext {
-  layout: LayoutBounds = { height: 0, width: 0, x: 0, y: 0 };
   focusManager: FocusManager = new FocusManager();
   static instance: EditorContext | null;
-  renderer: Renderer = new Renderer(new Canvas(this.layout));
+  renderer: Renderer = new Renderer(new Canvas());
   rootWindow: EditorRoot = new EditorRoot();
   normalMode: NormalMode = new NormalMode();
   visualMode: VisualMode = new VisualMode();
   insertMode: InsertMode = new InsertMode();
 
-  windowManager: WindowManager = new WindowManager(this.rootWindow);
+  windowManager: WindowManager = new WindowManager(
+    this.rootWindow,
+    this.focusManager,
+  );
 
   commandMode: CommandMode = new CommandMode();
   private mode: EditorMode = this.normalMode;
@@ -55,6 +49,11 @@ export class EditorContext {
     EditorContext.instance = this;
   }
   findWindow<T extends UiComponent>(type: new (...args: any[]) => T): T | null {
+
+
+
+
+
     return this.windowManager.find(type);
   }
 
@@ -66,12 +65,10 @@ export class EditorContext {
   }
   unfocus(window: UiComponent) {
     this.windowManager.deactivate(window);
-    this.focusManager.unfocus(window.defaultFocus());
   }
 
   focus(window: UiComponent) {
     this.windowManager.activate(window);
-    this.focusManager.focus(window.defaultFocus());
   }
 
   openFile(path: string) {
@@ -167,6 +164,7 @@ export class EditorContext {
     this.windowManager.add(window);
     return this;
   }
+
   setLayout(layout: LayoutBounds) {
     this.renderer.setLayout(layout);
     return this;

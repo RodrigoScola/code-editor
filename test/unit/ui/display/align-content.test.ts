@@ -246,11 +246,7 @@ function setup(root: DisplayComponent) {
 }
 
 function build(root: DisplayComponent, canvas: Canvas) {
-  LayoutEngine.Measure(
-    root,
-    LayoutEngine.CreateConstraints(root.layout().width),
-  );
-  LayoutEngine.Arrange(root);
+  LayoutEngine.Calculate(root);
   Renderer.Create(canvas).build(root);
 
   canvas.renderBoard();

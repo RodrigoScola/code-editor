@@ -109,6 +109,21 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
 
     return this;
   }
+  findChildrenByName(nm: string): UiComponent | null {
+    if (this.name() === nm) {
+      return this;
+    }
+
+    for (const child of this.children()) {
+      const found = child.findChildrenByName(nm);
+
+      if (found) {
+        return found;
+      }
+    }
+
+    return null;
+  }
 
   // layout and painting walk view().children(), so every change to this tree
   // has to be mirrored there or the two drift apart
@@ -154,6 +169,8 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
   }
   paint(canvas: Canvas) {}
 }
+
+export class UiPanel extends UiComponent {}
 
 export class UIScreen extends UiComponent {
   private _cursorEnabled: boolean = true;

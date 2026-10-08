@@ -18,6 +18,8 @@ import { CodeEditorGroup, TabWindow } from "./Editor/windows/Tab/TabWindow.js";
 import { captureLogs, logger } from "./logging/log.js";
 import { ConsoleLogWindow } from "./Editor/windows/ConsoleLogWindow.js";
 import { ErrorWindow } from "./Editor/windows/ErrorWindow.js";
+import { UIScreen } from "./ui/components/UiComponent.js";
+import { WINDOW_NAMES } from "./constants.js";
 
 captureLogs((level, message) => logger.add(level, message));
 
@@ -38,9 +40,10 @@ const editor = new EditorContext();
 // draw every frame from the top left corner of the terminal
 editor.renderer.setOutput((frame) => process.stdout.write("\x1b[H" + frame));
 
-editor.layout = LayoutEngine.CreateBounds();
-editor.layout.height = process.stdout.rows;
-editor.layout.width = process.stdout.columns;
+const bounds = LayoutEngine.CreateBounds();
+bounds.height = process.stdout.rows;
+bounds.width = process.stdout.columns;
+editor.renderer.setLayout(bounds);
 
 setup.root(editor);
 
@@ -49,7 +52,13 @@ setup.windows.status(editor);
 const window = setup.windows.editor(editor);
 window.view().setDirection("horizontal");
 
+assert(window.name()!.length > 0, "window has  to have a name");
 editor.rootWindow.addChildren(window);
+
+const popup = new UIScreen().setName(WINDOW_NAMES.POPUP_WINDOW);
+popup.view().setPositionMode("absolute");
+
+editor.rootWindow.addChildren(popup);
 
 const statusWindow = editor.findWindow(StatusWindow);
 assert(statusWindow, "status window not setup");
@@ -83,24 +92,7 @@ assert(gitCommit, "invalid git commit window");
 // window.addChildren(git.window);
 window.addChildren(gitCommit);
 
-// todo: cleanup
-const list = new ListMenuWindow();
-
-list
-  .view()
-  .setWidth("50%")
-  .setHeight("50%")
-  .setIndex(10)
-  .setStartX("20%")
-  .setVisible(false)
-  .setStartY("0%")
-  .setPositionMode("absolute")
-  .setBackgroundColor(colors.YELLOW_BACKGROUND);
-
-list.view().border().setParameter(1);
-
-editor.windowManager.add(list);
-editor.rootWindow.addChildren(list);
+setup.windows.setupSecondarySideBar(editor);
 
 setup.windows.errorWindow(editor);
 setup.windows.debugWindow(editor);
@@ -113,8 +105,6 @@ setup.commands.commandMode(editor);
 
 editor.focus(fileTree);
 editor.requestRepaint();
-
-console.log("aaaaaaaaaaaaaaaaaaaaa");
 
 setup.terminal.errorsOnScreen(editor);
 
