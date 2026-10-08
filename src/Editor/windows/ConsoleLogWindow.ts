@@ -1,14 +1,11 @@
-import { assert } from "vitest";
 import { LogEntry, LogLevel } from "../../logging/log.js";
 import colors from "../../ui/colors.js";
-import { ComponentBorder } from "../../ui/display/border.js";
 import {
   UiComponent,
   UiPanel,
   UIScreen,
 } from "../../ui/components/UiComponent.js";
 import { EditorContext } from "../Editor/Editor.js";
-import { ComponentStyle } from "../../ui/ComponentStyles.js";
 
 export class TreeViewWindow extends UIScreen {
   constructor() {
@@ -25,53 +22,7 @@ export class TreeViewWindow extends UIScreen {
       this.setText(EditorContext.instance?.rootWindow.view().logChildren());
     }
   }
-  onEnter(ctx: EditorContext): void {
-    const hoveringLine: BufferLike = this.view().content();
-    const line = hoveringLine.at(this.cursor().line);
-    if (!line) {
-      console.error(`invalid line to get at: ${this.cursor().line}`);
-      return;
-    }
-    const hasId = line.includes("id");
-    if (!hasId) {
-      console.error(`component doesnt have identification `);
-      return;
-    }
-
-    if (hasId) {
-
-      EditorContext.instance?.rootWindow.findChildrenById(id)
-
-
-      const child = EditorContext.instance?.findComponentById(nm);
-      if (child) {
-        // border() returns the live object, so editing it in place would also
-        // change `previous`. swap in a separate one and put the original back
-        const previous = child.view().styles();
-
-        child
-          .view()
-          .setStyles(
-            ComponentStyle.Blend(
-              ComponentStyle.Create().setBackgroundColor(
-                colors.BLACK_BACKGROUND,
-              ),
-              child.view().styles(),
-            ),
-          );
-
-        setTimeout(() => {
-          child.view().setStyles(previous);
-        }, 1000);
-      }
-
-      console.log(
-        `start at: ${startAt}, ends at  ${endAt}, rest:${rest}, child?: ${Boolean(child)}`,
-      );
-    }
-
-    // EditorContext.instance?.windowManager.activate(window)
-  }
+  onEnter(ctx: EditorContext): void {}
 }
 
 export class ConsoleLogWindow extends UiPanel {

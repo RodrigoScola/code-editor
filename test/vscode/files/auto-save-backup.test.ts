@@ -1,0 +1,155 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { BackupStore } from "../../../src/Files/backup.js";
+import { workspace } from "../../ide/harness.js";
+import { code } from "../harness.js";
+
+// Auto save (files.autoSave, files.autoSaveDelay):
+//   "off"            never
+//   "afterDelay"     files.autoSaveDelay ms (default 1000) after the last
+//                    edit; every edit restarts the wait
+//   "onFocusChange"  when the editor loses focus
+//   "onWindowChange" when the app window loses focus
+//                    (ctx.windowFocusChanged(false))
+//
+// Hot exit (files.hotExit): unsaved changes are written to backups so
+// they come back after a restart. Proposed module src/Files/backup.ts:
+//   new BackupStore(folder)
+//   store.backup(path, text) / store.discard(path) / store.list() / store.read(path)
+//   ctx.backups is one; saving a file discards its backup.
+//
+// Saving over a newer file: if the file changed on disk since it was read,
+// a save doesn't overwrite it; it reports the conflict instead
+// (VS Code's "The content of the file is newer").
+
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => vi.useRealTimers());
+
+describe("auto save afterDelay", () => {
+  function editing() {
+    const vs = code("|a", { path: "a.txt" })
+      .setting("files.autoSave", "afterDelay")
+      .setting("files.autoSaveDelay", 1000);
+    vs.type("X");
+    return vs;
+  }
+
+  it("saves after the delay", () => {
+    const vs = editing();
+
+    vi.advanceTimersByTime(1000);
+
+    expect(vs.window().document.read()).eq("Xa");
+  });
+
+  it("does not save before the delay", () => {
+    const vs = editing();
+
+    vi.advanceTimersByTime(999);
+
+    expect(vs.window().document.read()).eq("a");
+  });
+
+  it("each edit restarts the wait", () => {
+    const vs = editing();
+    vi.advanceTimersByTime(800);
+    vs.type("Y");
+    vi.advanceTimersByTime(800);
+
+    expect(vs.window().document.read()).eq("a");
+
+    vi.advanceTimersByTime(200);
+    expect(vs.window().document.read()).eq("XYa");
+  });
+
+  it("does nothing when off", () => {
+    const vs = code("|a", { path: "a.txt" }).setting("files.autoSave", "off").type("X");
+
+    vi.advanceTimersByTime(60_000);
+
+    expect(vs.window().document.read()).eq("a");
+  });
+});
+
+describe("auto save on focus change", () => {
+  it("onFocusChange saves when another editor gets focus", () => {
+    const vs = code("|a", { path: "a.txt" }).setting("files.autoSave", "onFocusChange").type("X");
+    const first = vs.window();
+
+    vs.ide.open("b.txt", "b");
+
+    expect(first.document.read()).eq("Xa");
+  });
+
+  it("onWindowChange saves when the app window loses focus", () => {
+    const vs = code("|a", { path: "a.txt" }).setting("files.autoSave", "onWindowChange").type("X");
+
+    vs.ctx.windowFocusChanged(false);
+
+    expect(vs.window().document.read()).eq("Xa");
+  });
+
+  it("onWindowChange does not save on a switch between editors", () => {
+    const vs = code("|a", { path: "a.txt" }).setting("files.autoSave", "onWindowChange").type("X");
+    const first = vs.window();
+
+    vs.ide.open("b.txt", "b");
+
+    expect(first.document.read()).eq("a");
+  });
+});
+
+describe("backups", () => {
+  it("keeps and reads back unsaved text", () => {
+    const store = new BackupStore(workspace({}));
+
+    store.backup("/p/a.ts", "draft");
+
+    expect(store.read("/p/a.ts")).eq("draft");
+    expect(store.list()).toEqual(["/p/a.ts"]);
+  });
+
+  it("survives a new store on the same folder (a restart)", () => {
+    const folder = workspace({});
+    new BackupStore(folder).backup("/p/a.ts", "draft");
+
+    expect(new BackupStore(folder).read("/p/a.ts")).eq("draft");
+  });
+
+  it("discard removes a backup", () => {
+    const store = new BackupStore(workspace({}));
+    store.backup("/p/a.ts", "draft");
+
+    store.discard("/p/a.ts");
+
+    expect(store.list()).toEqual([]);
+  });
+
+  it("the editor backs up modified documents and saving discards the backup", () => {
+    const vs = code("|a", { path: "a.txt" }).type("X");
+    vs.ctx.backups.backupAll();
+    expect(vs.ctx.backups.read("a.txt")).eq("Xa");
+
+    vs.run("workbench.action.files.save");
+
+    expect(vs.ctx.backups.list()).toEqual([]);
+  });
+});
+
+describe("saving over a newer file", () => {
+  it("does not overwrite a file that changed on disk and reports it", () => {
+    vi.useRealTimers();
+    const root = workspace({ "a.txt": "old" });
+    const path = join(root, "a.txt");
+    const vs = code("|", { width: 100 });
+    vs.ide.openFile(path);
+    vs.type("mine ");
+
+    writeFileSync(path, "theirs");
+    vs.run("workbench.action.files.save");
+
+    expect(readFileSync(path, "utf8")).eq("theirs");
+    expect(vs.ctx.messages().at(-1)?.text).toContain("newer");
+  });
+});

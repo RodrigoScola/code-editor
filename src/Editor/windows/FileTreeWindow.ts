@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs, { Dirent } from "fs";
 import path from "path";
 import colors from "../../ui/colors.js";
 import { Canvas } from "../../ui/canvas.js";
@@ -13,27 +13,38 @@ import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
 import { ViewPort } from "../../ui/windows/viewport.js";
 import { LayoutBounds } from "../../ui/layout/layoutStyle.js";
+import { TextBuffer } from "../../ui/buffer/Buffer.js";
+import { UiInput } from "../../ui/components/UiInput.js";
+import { assert } from "../../assert.js";
 
-type TreeNode = DirectoryTreeNode | FileTreeNode;
-
-type TreeNodeBase = {
-  name: string;
+class TreeInput extends UiInput {
   path: string;
-  children: TreeNode[];
-  parent: TreeNode | null;
-};
-
-type DirectoryTreeNode = TreeNodeBase & {
-  isDirectory: true;
+  parent() {
+    return super.parent() as TreeInput | null;
+  }
+  children(): TreeInput[] {
+    return super.children() as TreeInput[];
+  }
+  isDirectory: boolean;
   folded: boolean;
-};
 
-type FileTreeNode = TreeNodeBase & {
-  isDirectory: false;
-};
+  constructor(
+    path: string,
+    name: string,
+    isDirectory: boolean,
+    folded: boolean,
+  ) {
+    super();
+    this.path = path;
+    this.setName(name);
+    this.isDirectory = isDirectory;
+    this.folded = folded;
+    this.setCursorEnabled(false);
+  }
+}
 
 export class FileTreeWindow extends UIScreen {
-  root: TreeNode;
+  root: TreeInput;
   ignoreDirs: string[] = [];
 
   ignoreFileExt: string[] = [];
@@ -41,73 +52,80 @@ export class FileTreeWindow extends UIScreen {
   constructor(dir: string) {
     super();
 
-    ((this.cursor().style = ComponentStyle.Create()
+    this.cursor().style = ComponentStyle.Create()
       .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
 
-      .setColor(colors.WHITE_FOREGROUND)),
-      // @ts-expect-error
-      (this.root = {
-        path: "",
-        children: [],
-        isDirectory: true,
-        name: dir,
-        parent: null,
-      }));
+      .setColor(colors.WHITE_FOREGROUND);
 
-    this.walkTree(dir, this.root);
-  }
-  isDirectoryNode(node: TreeNode): node is DirectoryTreeNode {
-    return node.isDirectory === true;
-  }
-  isFileNode(node: TreeNode): node is FileTreeNode {
-    return node.isDirectory === false;
+    this.root = new TreeInput(".", dir, true, false);
+
+    this.refresh();
   }
 
   setIgnoreDirs(newVal: string[]) {
     this.ignoreDirs = newVal;
-    this.walkTree(this.root.name, this.root);
+    this.refresh();
     return this;
   }
   setIgnoreFileExt(newVal: string[]) {
     this.ignoreFileExt = newVal;
-    this.walkTree(this.root.name, this.root);
+    this.refresh();
     return this;
   }
 
   refresh() {
-    this.walkTree(this.root.name, this.root);
+    assert(this.root.name(), "invalid name to root");
+    assert(typeof this.root.name() === "string", `root name has to be string`);
+    this.walkTree(this.root.name()!, this.root);
+
+    this.view().content().setBuffer(this.treeToBuffer());
   }
 
-  walkTree(
+  private formatNodes(
     dir: string,
-    node: TreeNode,
-    ignoreDirs: Set<string> = new Set(this.ignoreDirs),
-  ) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    parent: TreeInput,
+    entries: Dirent<string>[],
+  ): TreeInput[] {
+    const ignoreDirs = new Set(this.ignoreDirs);
 
-    node.children = [];
+    const nodes: TreeInput[] = [];
 
     for (const entry of entries) {
-      // @ts-expect-error
-      const child: TreeNode = {
-        name: entry.name,
-        children: [],
-        isDirectory: entry.isDirectory(),
-        path: path.join(dir, entry.name),
-        parent: node,
-      };
+      const tempNode = new TreeInput(
+        path.join(dir, entry.name),
+        entry.name,
+        entry.isDirectory(),
 
-      if (ignoreDirs.has(entry.name)) {
+        true,
+      );
+      assert(
+        tempNode.name(),
+        `invalid name on node, child of ${parent.name()}`,
+      );
+
+      if (ignoreDirs.has(tempNode.name()!)) {
+        continue;
+      } else if (this.ignoreFileExt.some((f) => tempNode.name()!.endsWith(f))) {
         continue;
       }
-      if (this.ignoreFileExt.some((file) => entry.name.endsWith(file))) {
-        continue;
-      }
+      nodes.push(tempNode);
+    }
 
-      node.children.push(child);
+    return nodes.sort(
+      (a, b) => (b.isDirectory ? 1 : -1) - (a.isDirectory ? 1 : -1),
+    );
+  }
 
-      if (entry.isDirectory()) {
-        this.walkTree(path.join(dir, entry.name), child);
+  walkTree(dir: string, node: TreeInput) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+    node.clearChildren();
+
+    for (const entry of this.formatNodes(dir, node, entries)) {
+      node.addChildren(entry);
+
+      if (entry.isDirectory) {
+        this.walkTree(path.join(dir, entry.name()!), entry);
       }
     }
   }
@@ -116,13 +134,30 @@ export class FileTreeWindow extends UIScreen {
     this.cursor().width = this.view().contentLayout().width;
   }
 
-  paint(canvas: Canvas): void {
+  treeToBuffer() {
+    const buffer = new TextBuffer();
+
+    const totalChildren = this.count();
+
+    for (let i = 0; i < totalChildren; i++) {
+      const line = this.at(i);
+      if (line) {
+        buffer.addLine(line);
+      }
+    }
+    return buffer;
+  }
+
+  onPostPaint(canvas: Canvas): void {
+    super.paint(canvas);
+    canvas.fillRect(this.view().contentLayout(), this.view().styles());
     let total = 0 + this.view().contentLayout().y;
 
     this.paintChild(this.root, total, -1, canvas);
+    this.cursor().paint(canvas);
   }
   private paintChild(
-    node: TreeNode,
+    node: TreeInput,
     y: number,
     indent: number,
     canvas: Canvas,
@@ -155,9 +190,9 @@ export class FileTreeWindow extends UIScreen {
         height: 1,
       };
 
-      let label = node.name;
+      let label = node.name() + ``;
 
-      if (this.isDirectoryNode(node)) {
+      if (node.isDirectory == true) {
         label =
           (node.folded ? ICONS.arrow.triangleRight : ICONS.arrow.triangleDown) +
           label;
@@ -168,11 +203,11 @@ export class FileTreeWindow extends UIScreen {
 
     y++;
 
-    if (this.isDirectoryNode(node) && node.folded) {
+    if (node.isDirectory && node.folded) {
       return y;
     }
 
-    for (const child of node.children) {
+    for (const child of node.children()) {
       y = this.paintChild(child, y, indent + 1, canvas);
 
       // Once we've gone past the viewport, stop traversing.
@@ -189,42 +224,35 @@ export class FileTreeWindow extends UIScreen {
     return y;
   }
   at(line: number): string | undefined {
-    return this.getNodeAtIndex(this.root, line)?.name;
+    return this.getNodeAtIndex(this.root, line)?.name()!;
   }
-  count(): number {
-    return this.getNodeCount(this.root);
-  }
-  private getNodeCount(node: TreeNode): number {
-    let count = 1; // count this node
 
-    for (const child of node.children) {
-      count += this.getNodeCount(child);
-    }
-
+  private getNodeCount(node: TreeInput): number {
+    let count = 1; // this node
+    if (node.isDirectory && node.folded) return count; // children are hidden
+    for (const child of node.children()) count += this.getNodeCount(child);
     return count;
   }
 
+  count() {
+    return this.getNodeCount(this.root);
+  }
+
   private getNodeAtIndex(
-    node: TreeNode,
+    node: TreeInput,
     target: number,
     index = { value: 0 },
-  ): TreeNode | null {
-    if (index.value === target) {
-      return node;
-    }
-
+  ): TreeInput | null {
+    if (index.value === target) return node;
     index.value++;
-
-    for (const child of node.children) {
+    if (node.isDirectory && node.folded) return null; // same rule as paintChild
+    for (const child of node.children()) {
       const result = this.getNodeAtIndex(child, target, index);
-
-      if (result) {
-        return result;
-      }
+      if (result) return result;
     }
-
     return null;
   }
+
   moveCursorDown(): void {
     const total = this.count();
     this.cursor().line = Math.min(total, this.cursor().line + 1);
@@ -239,9 +267,9 @@ export class FileTreeWindow extends UIScreen {
 
     if (!node) return;
 
-    if (this.isDirectoryNode(node)) {
+    if (node.isDirectory) {
       node.folded = !node.folded;
-    } else if (this.isFileNode(node)) {
+    } else if (!node.isDirectory) {
       const editor = ctx.openFile(node?.path);
 
       if (editor) ctx.focus(editor);

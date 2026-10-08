@@ -1,5 +1,5 @@
 import { EditorContext } from "../Editor/Editor/Editor.js";
-import { isCodeEditorWindow, isTextComponent } from "../utils.js";
+import { isCodeEditorWindow, isFileTreeWindow, isTextComponent } from "../utils.js";
 import { log } from "../log.js";
 import { assert } from "../assert.js";
 import { isatty } from "node:tty";
@@ -99,6 +99,14 @@ function deleteLine(ctx: EditorContext) {
 function editorInsertModeAfter(ctx: EditorContext) {
   const editor = ctx.getFocusedComponent();
   isTextComponent(editor);
+
+  try {
+    isFileTreeWindow(editor)
+    
+
+  } catch (err) {
+  }
+  }
 
   const buffer = editor.buffer();
   const cursor = editor.cursor();

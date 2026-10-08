@@ -1,6 +1,7 @@
 import { UiComponent, UIScreen } from "./ui/components/UiComponent.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
+import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
 
 export function memory(label: string) {
   const m = process.memoryUsage();
@@ -24,6 +25,14 @@ export function isTextComponent(
   t: UiComponent | undefined | null,
 ): asserts t is UIScreen {
   if (!(t instanceof UIScreen)) {
+    throw new Error("Expected an EditorComponent");
+  }
+}
+
+export function isFileTreeWindow(
+  t: UiComponent | undefined | null,
+): asserts t is FileTreeWindow {
+  if (!(t instanceof FileTreeWindow)) {
     throw new Error("Expected an EditorComponent");
   }
 }

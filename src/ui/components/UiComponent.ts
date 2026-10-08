@@ -167,6 +167,10 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
     return this;
   }
 
+  clearChildren() {
+    this.childs = [];
+    return this;
+  }
   removeChild(child: UiComponent): this {
     this.childs = this.childs.filter((current) => current !== child);
 
