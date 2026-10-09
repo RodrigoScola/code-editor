@@ -32,10 +32,12 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
 
   focus(): void {
     this._focused = true;
+    this.onFocus();
   }
 
   blur(): void {
     this._focused = false;
+    this.onBlur();
   }
 
   isFocused(): boolean {
@@ -186,6 +188,8 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
     return this._parent;
   }
   paint(canvas: Canvas) {}
+  onFocus() {}
+  onBlur() {}
 }
 
 export class UiPanel extends UiComponent {}
@@ -254,6 +258,14 @@ export class UIScreen extends UiComponent {
   }
   onPrePaint(): void {
     this.cursor().ensureVisible(this.view().viewport());
+  }
+  onEnter(ctx: EditorContext): void {
+    // todo: need to add more edge cases, very buggy
+    this.buffer().newLineAt(this.cursor().line + 1);
+    this.moveCursorDown();
+  }
+  removeLine(at: number) {
+    this.buffer().removeLine(at);
   }
 }
 

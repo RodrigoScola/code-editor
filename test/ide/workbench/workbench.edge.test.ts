@@ -10,43 +10,43 @@ import { code } from "../harness.js";
 // Edge cases for the workbench (base specs: editor-groups, tabs, quick-open,
 // status-bar, notifications, layout, output, problems).
 
-const tabs = (vs: ReturnType<typeof code>) => vs.ctx.editorGroups.groups()[0].editors;
+const tabs = (ide: ReturnType<typeof code>) => ide.editorGroups.groups()[0].editors;
 
 describe("tabs", () => {
   it("opening a file that is already open just switches to it", () => {
-    const vs = code("|", { path: "a.ts" });
-    vs.ctx.editors.open("b.ts");
-    vs.ctx.editors.open("a.ts");
+    const ide = code("|", { path: "a.ts" });
+    ide.editors.open("b.ts");
+    ide.editors.open("a.ts");
 
-    expect(tabs(vs)).toEqual(["a.ts", "b.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts", "b.ts"]);
   });
 
   it("a modified tab is never closed by the editor limit", () => {
-    const vs = code("|", { path: "a.ts" })
-      .setting("workbench.editor.limit.enabled", true)
-      .setting("workbench.editor.limit.value", 1)
+    const ide = code("|", { path: "a.ts" })
+      .setting("tab_limit_enabled", true)
+      .setting("tab_limit", 1)
       .type("x");
-    vs.ctx.editors.open("b.ts");
+    ide.editors.open("b.ts");
 
-    expect(tabs(vs)).toEqual(["a.ts", "b.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts", "b.ts"]);
   });
 
   it("closing the active tab activates the most recently used one", () => {
-    const vs = code("|", { path: "a.ts" });
-    vs.ctx.editors.open("b.ts");
-    vs.ctx.editors.open("c.ts");
-    vs.ctx.editors.open("a.ts");
-    vs.ctx.editors.open("c.ts");
+    const ide = code("|", { path: "a.ts" });
+    ide.editors.open("b.ts");
+    ide.editors.open("c.ts");
+    ide.editors.open("a.ts");
+    ide.editors.open("c.ts");
 
-    vs.run("workbench.action.closeActiveEditor");
+    ide.executeCommand("tabs.close");
 
-    expect(vs.window().document.file.path()).eq("a.ts");
+    expect(ide.window().document.file.path()).eq("a.ts");
   });
 
   it("reopenClosedEditor with nothing closed does nothing", () => {
-    const vs = code("|", { path: "a.ts" }).run("workbench.action.reopenClosedEditor");
+    const ide = code("|", { path: "a.ts" }).executeCommand("tabs.reopenClosed");
 
-    expect(tabs(vs)).toEqual(["a.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts"]);
   });
 
   it("three files with the same name each get a different description", () => {
@@ -58,17 +58,17 @@ describe("tabs", () => {
 
 describe("editor groups", () => {
   it("splitting a modified editor shares its unsaved text", () => {
-    const vs = code("|a", { path: "a.ts" }).type("X").run("workbench.action.splitEditor");
+    const ide = code("|a", { path: "a.ts" }).type("X").executeCommand("window.splitEditorRight");
 
-    expect(vs.lines()).toEqual(["Xa"]);
+    expect(ide.lines()).toEqual(["Xa"]);
   });
 
   it("moving the only editor of a group to the next group when there is no next group makes one", () => {
-    const vs = code("|", { path: "a.ts" }).run("workbench.action.moveEditorToNextGroup");
+    const ide = code("|", { path: "a.ts" }).executeCommand("window.moveTabToNextGroup");
 
     // the old group is left empty and closes (closeEmptyGroups)
-    expect(vs.ctx.editorGroups.groups().map((g: { editors: string[] }) => g.editors)).toEqual([["a.ts"]]);
-    expect(vs.ctx.editorGroups.activeGroupIndex()).eq(0);
+    expect(ide.editorGroups.groups().map((g: { editors: string[] }) => g.editors)).toEqual([["a.ts"]]);
+    expect(ide.editorGroups.activeGroupIndex()).eq(0);
   });
 });
 
@@ -82,8 +82,8 @@ describe("status bar", () => {
   });
 
   it("with several cursors the count replaces Ln/Col", () => {
-    const vs = code("|a\nb|");
-    const texts = vs.ctx.statusBar.right().map((i: { text: string }) => i.text);
+    const ide = code("|a\nb|");
+    const texts = ide.statusBar.right().map((i: { text: string }) => i.text);
 
     expect(texts.some((t: string) => t.startsWith("Ln"))).eq(false);
     expect(texts).toContain("2 selections");

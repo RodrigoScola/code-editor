@@ -55,8 +55,8 @@ describe("StatusBar", () => {
   });
 });
 
-const items = (vs: ReturnType<typeof code>) =>
-  [...vs.ctx.statusBar.left(), ...vs.ctx.statusBar.right()].map((i: { text: string }) => i.text);
+const items = (ide: ReturnType<typeof code>) =>
+  [...ide.statusBar.left(), ...ide.statusBar.right()].map((i: { text: string }) => i.text);
 
 describe("editor items", () => {
   it("cursor position", () => {
@@ -81,7 +81,7 @@ describe("editor items", () => {
 
   it("indentation", () => {
     expect(items(code("|a"))).toContain("Spaces: 4");
-    expect(items(code("|a").setting("editor.insertSpaces", false))).toContain("Tab Size: 4");
+    expect(items(code("|a").setting("expand_tab", false))).toContain("Tab Size: 4");
   });
 
   it("encoding and line endings", () => {

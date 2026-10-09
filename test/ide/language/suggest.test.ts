@@ -116,65 +116,65 @@ describe("rankSuggestions", () => {
 
 describe("suggestions in the editor", () => {
   function withWords(text: string, words: string[]) {
-    const vs = code(text, { path: "a.ts" });
-    vs.ctx.languages.registerCompletionItemProvider("typescript", {
+    const ide = code(text, { path: "a.ts" });
+    ide.languages.registerCompletionItemProvider("typescript", {
       provideCompletionItems: () => words.map((label) => ({ label })),
     });
-    return vs;
+    return ide;
   }
 
   it("accepting inserts the selected suggestion", () => {
-    const vs = withWords("fo|", ["foobar"])
-      .run("editor.action.triggerSuggest")
-      .run("acceptSelectedSuggestion");
+    const ide = withWords("fo|", ["foobar"])
+      .executeCommand("suggest.trigger")
+      .executeCommand("suggest.accept");
 
-    expect(vs.state()).eq("foobar|");
+    expect(ide.state()).eq("foobar|");
   });
 
   it("insert mode keeps the text after the cursor", () => {
-    const vs = withWords("fo|xyz", ["foo"])
-      .setting("editor.suggest.insertMode", "insert")
-      .run("editor.action.triggerSuggest")
-      .run("acceptSelectedSuggestion");
+    const ide = withWords("fo|xyz", ["foo"])
+      .setting("suggest_insert_mode", "insert")
+      .executeCommand("suggest.trigger")
+      .executeCommand("suggest.accept");
 
-    expect(vs.state()).eq("foo|xyz");
+    expect(ide.state()).eq("foo|xyz");
   });
 
   it("replace mode replaces the rest of the word", () => {
-    const vs = withWords("fo|xyz", ["foo"])
-      .setting("editor.suggest.insertMode", "replace")
-      .run("editor.action.triggerSuggest")
-      .run("acceptSelectedSuggestion");
+    const ide = withWords("fo|xyz", ["foo"])
+      .setting("suggest_insert_mode", "replace")
+      .executeCommand("suggest.trigger")
+      .executeCommand("suggest.accept");
 
-    expect(vs.state()).eq("foo|");
+    expect(ide.state()).eq("foo|");
   });
 
   it("selectNextSuggestion moves down the list", () => {
-    const vs = withWords("f|", ["fa", "fb"])
-      .run("editor.action.triggerSuggest")
-      .run("selectNextSuggestion")
-      .run("acceptSelectedSuggestion");
+    const ide = withWords("f|", ["fa", "fb"])
+      .executeCommand("suggest.trigger")
+      .executeCommand("suggest.selectNext")
+      .executeCommand("suggest.accept");
 
-    expect(vs.state()).eq("fb|");
+    expect(ide.state()).eq("fb|");
   });
 
   it("smart Enter does not accept a suggestion that changes nothing", () => {
-    const vs = withWords("foo|", ["foo"])
-      .setting("editor.acceptSuggestionOnEnter", "smart")
-      .run("editor.action.triggerSuggest")
+    const ide = withWords("foo|", ["foo"])
+      .setting("accept_suggestion_on_enter", "smart")
+      .executeCommand("suggest.trigger")
       .type("\n");
 
-    expect(vs.lines()).toEqual(["foo", ""]);
+    expect(ide.lines()).toEqual(["foo", ""]);
   });
 
   it("a commit character accepts and is then typed", () => {
-    const vs = code("con|", { path: "a.ts" });
-    vs.ctx.languages.registerCompletionItemProvider("typescript", {
+    const ide = code("con|", { path: "a.ts" });
+    ide.languages.registerCompletionItemProvider("typescript", {
       provideCompletionItems: () => [{ label: "console", commitCharacters: ["."] }],
     });
 
-    vs.run("editor.action.triggerSuggest").type(".");
+    ide.executeCommand("suggest.trigger").type(".");
 
-    expect(vs.state()).eq("console.|");
+    expect(ide.state()).eq("console.|");
   });
 });

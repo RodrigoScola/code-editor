@@ -56,51 +56,51 @@ describe("guessIndentation", () => {
 
 describe("tab and outdent", () => {
   it("tab at the start inserts one level of spaces", () => {
-    expect(exec("|x", "tab")).eq("    |x");
+    expect(exec("|x", "textEditor.tab")).eq("    |x");
   });
 
   it("tab after text goes to the next tab stop", () => {
-    expect(exec("a|", "tab")).eq("a   |");
+    expect(exec("a|", "textEditor.tab")).eq("a   |");
   });
 
   it("tab with a multi-line selection indents the lines", () => {
-    expect(code("«a\nb»").run("tab").lines()).toEqual(["    a", "    b"]);
+    expect(code("«a\nb»").executeCommand("textEditor.tab").lines()).toEqual(["    a", "    b"]);
   });
 
   it("outdent removes a level", () => {
-    expect(exec("    |x", "outdent")).eq("|x");
+    expect(exec("    |x", "textEditor.outdent")).eq("|x");
   });
 
   it("tab inserts a tab character with insertSpaces off", () => {
-    expect(code("|x").setting("editor.insertSpaces", false).run("tab").lines()).toEqual(["\tx"]);
+    expect(code("|x").setting("expand_tab", false).executeCommand("textEditor.tab").lines()).toEqual(["\tx"]);
   });
 
   it("follows editor.tabSize", () => {
-    expect(code("|x").setting("editor.tabSize", 2).run("tab").lines()).toEqual(["  x"]);
+    expect(code("|x").setting("tab_width", 2).executeCommand("textEditor.tab").lines()).toEqual(["  x"]);
   });
 
   it("deleteLeft in leading spaces goes back a whole tab stop", () => {
-    expect(exec("        |x", "deleteLeft")).eq("    |x");
+    expect(exec("        |x", "textEditor.deleteLeft")).eq("    |x");
   });
 });
 
 describe("converting indentation", () => {
   it("indentationToSpaces turns tabs into spaces", () => {
-    expect(code("\tx\n\t\ty").run("editor.action.indentationToSpaces").lines()).toEqual([
+    expect(code("\tx\n\t\ty").executeCommand("textEditor.indentationToSpaces").lines()).toEqual([
       "    x",
       "        y",
     ]);
   });
 
   it("indentationToTabs turns each full level into a tab", () => {
-    expect(code("    x\n      y").run("editor.action.indentationToTabs").lines()).toEqual([
+    expect(code("    x\n      y").executeCommand("textEditor.indentationToTabs").lines()).toEqual([
       "\tx",
       "\t  y",
     ]);
   });
 
   it("only touches leading white space", () => {
-    expect(code("\tx\ty").run("editor.action.indentationToSpaces").lines()).toEqual([
+    expect(code("\tx\ty").executeCommand("textEditor.indentationToSpaces").lines()).toEqual([
       "    x\ty",
     ]);
   });
@@ -108,7 +108,7 @@ describe("converting indentation", () => {
 
 describe("reindenting", () => {
   it("reindentlines fixes indentation from the language's rules", () => {
-    expect(code("{\nx\n}", { path: "a.ts" }).run("editor.action.reindentlines").lines()).toEqual([
+    expect(code("{\nx\n}", { path: "a.ts" }).executeCommand("textEditor.reindentLines").lines()).toEqual([
       "{",
       "    x",
       "}",
@@ -116,8 +116,8 @@ describe("reindenting", () => {
   });
 
   it("detectIndentation applies what it finds to the editor", () => {
-    const vs = code("a {\n  b\n}").run("editor.action.detectIndentation");
+    const ide = code("a {\n  b\n}").executeCommand("textEditor.detectIndentation");
 
-    expect(vs.run("editor.action.indentLines").lines()[0]).eq("  a {");
+    expect(ide.executeCommand("textEditor.indentLines").lines()[0]).eq("  a {");
   });
 });

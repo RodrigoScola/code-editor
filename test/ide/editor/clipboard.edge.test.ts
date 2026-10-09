@@ -3,87 +3,87 @@ import { code } from "../harness.js";
 
 // Edge cases for clipboard and undo (base spec: clipboard.test.ts).
 
-const copy = "editor.action.clipboardCopyAction";
-const cut = "editor.action.clipboardCutAction";
-const paste = "editor.action.clipboardPasteAction";
+const copy = "textEditor.copy";
+const cut = "textEditor.cut";
+const paste = "textEditor.paste";
 
 describe("copy and cut", () => {
   it("copy with nothing selected does nothing with emptySelectionClipboard off", () => {
-    const vs = code("a|b").setting("editor.emptySelectionClipboard", false);
-    vs.ctx.clipboard.writeText("before");
+    const ide = code("a|b").setting("empty_selection_clipboard", false);
+    ide.clipboard.writeText("before");
 
-    vs.run(copy);
+    ide.executeCommand(copy);
 
-    expect(vs.ctx.clipboard.readText()).eq("before");
+    expect(ide.clipboard.readText()).eq("before");
   });
 
   it("cutting the last line removes it and puts the cursor on the line above", () => {
-    const vs = code("ab\nc|d").run(cut);
+    const ide = code("ab\nc|d").executeCommand(cut);
 
-    expect(vs.lines()).toEqual(["ab"]);
-    expect(vs.selections()[0].active.line).eq(0);
-    expect(vs.ctx.clipboard.readText()).toContain("cd");
+    expect(ide.lines()).toEqual(["ab"]);
+    expect(ide.selections()[0].active.line).eq(0);
+    expect(ide.clipboard.readText()).toContain("cd");
   });
 
   it("copy of a multi-line selection keeps its line breaks", () => {
-    const vs = code("«ab\ncd»").run(copy);
+    const ide = code("«ab\ncd»").executeCommand(copy);
 
-    expect(vs.ctx.clipboard.readText()).eq("ab\ncd");
+    expect(ide.clipboard.readText()).eq("ab\ncd");
   });
 });
 
 describe("paste", () => {
   it("pasting several lines leaves the cursor after the last one", () => {
-    const vs = code("|x");
-    vs.ctx.clipboard.writeText("a\nb");
+    const ide = code("|x");
+    ide.clipboard.writeText("a\nb");
 
-    expect(vs.run(paste).state()).eq("a\nb|x");
+    expect(ide.executeCommand(paste).state()).eq("a\nb|x");
   });
 
   it("spreading needs the same number of lines as cursors", () => {
-    const vs = code("a|\nb|\nc|");
-    vs.ctx.clipboard.writeText("x\ny");
+    const ide = code("a|\nb|\nc|");
+    ide.clipboard.writeText("x\ny");
 
-    expect(vs.run(paste).lines()).toEqual(["ax", "y", "bx", "y", "cx", "y"]);
+    expect(ide.executeCommand(paste).lines()).toEqual(["ax", "y", "bx", "y", "cx", "y"]);
   });
 
   it("a full line pasted with text selected replaces the selection", () => {
-    const vs = code("a|b\ncd").run(copy);
-    vs.window().setSelections([{ anchor: { line: 1, column: 0 }, active: { line: 1, column: 2 } }]);
+    const ide = code("a|b\ncd").executeCommand(copy);
+    ide.setSelections([{ anchor: { line: 1, column: 0 }, active: { line: 1, column: 2 } }]);
 
-    vs.run(paste);
+    ide.executeCommand(paste);
 
-    expect(vs.lines()).toEqual(["ab", "ab", ""]);
+    expect(ide.lines()).toEqual(["ab", "ab", ""]);
   });
 
   it("text from outside the editor is never treated as a full line", () => {
-    const vs = code("a|b");
-    vs.ctx.clipboard.writeText("x\n");
+    const ide = code("a|b");
+    ide.clipboard.writeText("x\n");
 
-    expect(vs.run(paste).lines()).toEqual(["ax", "b"]);
+    expect(ide.executeCommand(paste).lines()).toEqual(["ax", "b"]);
   });
 });
 
 describe("undo grouping", () => {
   it("moving the cursor ends an undo group", () => {
-    const vs = code("|").type("a").run("cursorLeft").run("cursorRight").type("b");
+    const ide = code("|").type("a").executeCommand("textEditor.cursorLeft").executeCommand("textEditor.cursorRight").type("b");
 
-    expect(vs.run("undo").state()).eq("a|");
+    expect(ide.executeCommand("textEditor.undo").state()).eq("a|");
   });
 
   it("deleting after typing is a separate step", () => {
-    const vs = code("|").type("abc").run("deleteLeft");
+    const ide = code("|").type("abc").executeCommand("textEditor.deleteLeft");
 
-    expect(vs.run("undo").state()).eq("abc|");
+    expect(ide.executeCommand("textEditor.undo").state()).eq("abc|");
   });
 
   it("undo puts back the selection that was there", () => {
-    expect(code("a«bc»d").type("X").run("undo").state()).eq("a«bc»d");
+    expect(code("a«bc»d").type("X").executeCommand("textEditor.undo").state()).eq("a«bc»d");
   });
 
   it("redo after a new edit does nothing", () => {
-    const vs = code("|").type("a").run("undo").type("b");
+    const ide = code("|").type("a").executeCommand("textEditor.undo").type("b");
 
-    expect(vs.run("redo").state()).eq("b|");
+    expect(ide.executeCommand("textEditor.redo").state()).eq("b|");
   });
 });

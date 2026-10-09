@@ -21,7 +21,11 @@ describe("splitting", () => {
   it("<C-w>v puts two windows side by side", () => {
     const ide = vim("|abc", size).keys("<C-w>v");
     ide.screen();
-    const [left, right] = ide.visibleCodeWindows().map((w) => w.view().layout());
+    const [left, right] = ide
+      .visibleCodeWindows()
+      .map((w) => w.view().layout());
+
+    ide.show();
 
     expect(ide.visibleCodeWindows()).length(2);
     expect(left.y).eq(right.y);
@@ -31,7 +35,9 @@ describe("splitting", () => {
   it("<C-w>s puts them on top of each other", () => {
     const ide = vim("|abc", size).keys("<C-w>s");
     ide.screen();
-    const [top, bottom] = ide.visibleCodeWindows().map((w) => w.view().layout());
+    const [top, bottom] = ide
+      .visibleCodeWindows()
+      .map((w) => w.view().layout());
 
     expect(ide.visibleCodeWindows()).length(2);
     expect(top.x).eq(bottom.x);
@@ -39,7 +45,9 @@ describe("splitting", () => {
   });
 
   it(":vsplit and :split work too", () => {
-    expect(vim("|abc", size).keys(":vsplit<CR>").visibleCodeWindows()).length(2);
+    expect(vim("|abc", size).keys(":vsplit<CR>").visibleCodeWindows()).length(
+      2,
+    );
     expect(vim("|abc", size).keys(":split<CR>").visibleCodeWindows()).length(2);
   });
 

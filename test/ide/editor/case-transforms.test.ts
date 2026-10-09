@@ -11,84 +11,84 @@ import { code, exec } from "../harness.js";
 // or a number up and down by its last digit.
 //   editor.action.inPlaceReplace.up / editor.action.inPlaceReplace.down
 
-const words = (text: string, command: string) => code(text).run(command).lines()[0];
+const words = (text: string, command: string) => code(text).executeCommand(command).lines()[0];
 
 describe("upper and lower case", () => {
   it("uppercases the selection", () => {
-    expect(exec("«hello» world", "editor.action.transformToUppercase")).eq("«HELLO» world");
+    expect(exec("«hello» world", "textEditor.transformToUpperCase")).eq("«HELLO» world");
   });
 
   it("lowercases the selection", () => {
-    expect(exec("«HELLO» world", "editor.action.transformToLowercase")).eq("«hello» world");
+    expect(exec("«HELLO» world", "textEditor.transformToLowerCase")).eq("«hello» world");
   });
 
   it("uses the word under the cursor when nothing is selected", () => {
-    expect(exec("he|llo world", "editor.action.transformToUppercase")).eq("HE|LLO world");
+    expect(exec("he|llo world", "textEditor.transformToUpperCase")).eq("HE|LLO world");
   });
 
   it("transforms every selection", () => {
-    expect(exec("«ab» x «cd»", "editor.action.transformToUppercase")).eq("«AB» x «CD»");
+    expect(exec("«ab» x «cd»", "textEditor.transformToUpperCase")).eq("«AB» x «CD»");
   });
 });
 
 describe("title case", () => {
   it("capitalizes each word", () => {
-    expect(words("«hello world»", "editor.action.transformToTitlecase")).eq("Hello World");
+    expect(words("«hello world»", "textEditor.transformToTitleCase")).eq("Hello World");
   });
 
   it("lowercases the rest of each word", () => {
-    expect(words("«hELLO wORLD»", "editor.action.transformToTitlecase")).eq("Hello World");
+    expect(words("«hELLO wORLD»", "textEditor.transformToTitleCase")).eq("Hello World");
   });
 
   it("does not capitalize after an apostrophe", () => {
-    expect(words("«don't stop»", "editor.action.transformToTitlecase")).eq("Don't Stop");
+    expect(words("«don't stop»", "textEditor.transformToTitleCase")).eq("Don't Stop");
   });
 });
 
 describe("programming cases", () => {
   it("snake case splits camelCase", () => {
-    expect(words("«fooBarBaz»", "editor.action.transformToSnakecase")).eq("foo_bar_baz");
+    expect(words("«fooBarBaz»", "textEditor.transformToSnakeCase")).eq("foo_bar_baz");
   });
 
   it("snake case keeps acronyms together", () => {
-    expect(words("«parseHTMLString»", "editor.action.transformToSnakecase")).eq(
+    expect(words("«parseHTMLString»", "textEditor.transformToSnakeCase")).eq(
       "parse_html_string",
     );
   });
 
   it("kebab case", () => {
-    expect(words("«fooBarBaz»", "editor.action.transformToKebabcase")).eq("foo-bar-baz");
+    expect(words("«fooBarBaz»", "textEditor.transformToKebabCase")).eq("foo-bar-baz");
   });
 
   it("camel case joins words on _ - and spaces", () => {
-    expect(words("«foo_bar»", "editor.action.transformToCamelcase")).eq("fooBar");
-    expect(words("«foo bar baz»", "editor.action.transformToCamelcase")).eq("fooBarBaz");
+    expect(words("«foo_bar»", "textEditor.transformToCamelCase")).eq("fooBar");
+    expect(words("«foo bar baz»", "textEditor.transformToCamelCase")).eq("fooBarBaz");
   });
 
   it("pascal case", () => {
-    expect(words("«foo_bar»", "editor.action.transformToPascalcase")).eq("FooBar");
+    expect(words("«foo_bar»", "textEditor.transformToPascalCase")).eq("FooBar");
   });
 });
 
 describe("in-place replace", () => {
   it("swaps true and false", () => {
-    expect(words("x = |true", "editor.action.inPlaceReplace.down")).eq("x = false");
+    expect(words("x = |true", "textEditor.inPlaceReplaceDown")).eq("x = false");
   });
 
   it("goes through public, protected, private", () => {
-    expect(words("|public x", "editor.action.inPlaceReplace.down")).eq("private x");
-    expect(words("|public x", "editor.action.inPlaceReplace.up")).eq("protected x");
+    expect(words("|public x", "textEditor.inPlaceReplaceDown")).eq("private x");
+    expect(words("|public x", "textEditor.inPlaceReplaceUp")).eq("protected x");
   });
 
   it("up adds one to a number", () => {
-    expect(words("x = |5", "editor.action.inPlaceReplace.up")).eq("x = 6");
+    expect(words("x = |5", "textEditor.inPlaceReplaceUp")).eq("x = 6");
   });
 
   it("down subtracts one", () => {
-    expect(words("x = |5", "editor.action.inPlaceReplace.down")).eq("x = 4");
+    expect(words("x = |5", "textEditor.inPlaceReplaceDown")).eq("x = 4");
   });
 
   it("steps by the last decimal place", () => {
-    expect(words("x = |1.5", "editor.action.inPlaceReplace.up")).eq("x = 1.6");
+    expect(words("x = |1.5", "textEditor.inPlaceReplaceUp")).eq("x = 1.6");
   });
 });

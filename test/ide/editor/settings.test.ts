@@ -69,18 +69,18 @@ describe("settings files", () => {
   });
 
   it("a file overrides the defaults", () => {
-    expect(loadSettings(['{ "tab_width": 2 }']).settings.tab_width).eq(2);
+    expect(loadSettings(['{ tab_width: 2 }']).settings.tab_width).eq(2);
   });
 
   it("later files win (workspace over user)", () => {
-    const { settings } = loadSettings(['{ "tab_width": 2 }', '{ "tab_width": 8 }']);
+    const { settings } = loadSettings(['{ tab_width: 2 }', '{ tab_width: 8 }']);
 
     expect(settings.tab_width).eq(8);
   });
 
   it("allows comments and trailing commas", () => {
     const { settings, errors } = loadSettings([
-      '{\n  // two is plenty\n  "tab_width": 2,\n}',
+      '{\n  // two is plenty\n  tab_width: 2,\n}',
     ]);
 
     expect(errors).toEqual([]);
@@ -88,7 +88,7 @@ describe("settings files", () => {
   });
 
   it("reports a broken file and still applies the others", () => {
-    const { settings, errors } = loadSettings(['{ "tab_width": 2 }', "{ oops"]);
+    const { settings, errors } = loadSettings(['{ tab_width: 2 }', "{ oops"]);
 
     expect(settings.tab_width).eq(2);
     expect(errors).length(1);
@@ -101,7 +101,7 @@ describe("settings files", () => {
   });
 
   it("reports values of the wrong type and keeps the default", () => {
-    const { settings, errors } = loadSettings(['{ "tab_width": "big" }']);
+    const { settings, errors } = loadSettings(['{ tab_width: "big" }']);
 
     expect(settings.tab_width).eq(4);
     expect(errors.join("\n")).toContain("tab_width");

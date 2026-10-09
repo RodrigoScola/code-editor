@@ -72,17 +72,17 @@ describe("on enter rules", () => {
 
 describe("word pattern", () => {
   it("a CSS word includes dashes", () => {
-    const vs = code("fo|nt-size: 1px", { path: "a.css" }).run(
-      "editor.action.addSelectionToNextFindMatch",
+    const ide = code("fo|nt-size: 1px", { path: "a.css" }).executeCommand(
+      "textEditor.addSelectionToNextMatch",
     );
 
-    expect(vs.state()).eq("«font-size»: 1px");
+    expect(ide.state()).eq("«font-size»: 1px");
   });
 
   it("a TypeScript word stops at a dash", () => {
-    const vs = code("fo|nt-size", ts).run("editor.action.addSelectionToNextFindMatch");
+    const ide = code("fo|nt-size", ts).executeCommand("textEditor.addSelectionToNextMatch");
 
-    expect(vs.state()).eq("«font»-size");
+    expect(ide.state()).eq("«font»-size");
   });
 });
 
@@ -90,9 +90,9 @@ describe("linked editing", () => {
   const html = { path: "a.html" };
 
   it("typing in an opening tag name changes the closing tag", () => {
-    const vs = code("<di|v></div>", html).setting("editor.linkedEditing", true).type("x");
+    const ide = code("<di|v></div>", html).setting("linked_editing", true).type("x");
 
-    expect(vs.lines()).toEqual(["<dixv></dixv>"]);
+    expect(ide.lines()).toEqual(["<dixv></dixv>"]);
   });
 
   it("is off by default", () => {

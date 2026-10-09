@@ -85,7 +85,7 @@ describe("<C-p> file finder", () => {
       "README.md": "readme",
     });
     const ide = vim("|", { width: 60, height: 16 });
-    ide.ctx.setWorkspace(root);
+    ide.setWorkspace(root);
     return { root, ide };
   }
 

@@ -9,60 +9,60 @@ import { code } from "../harness.js";
 //   editor.action.fontZoomIn / fontZoomOut / fontZoomReset   editor zoom level
 // editor.rulers draws vertical lines at the given columns.
 
-const get = (vs: ReturnType<typeof code>, key: string) => vs.ctx.configuration.get(key);
+const get = (ide: ReturnType<typeof code>, key: string) => ide.setting(key);
 
 describe("toggles", () => {
   it("toggleWordWrap switches word wrap on and off", () => {
-    const vs = code("|a").setting("editor.wordWrap", "off");
+    const ide = code("|a").setting("wrap", "off");
 
-    expect(get(vs.run("editor.action.toggleWordWrap"), "editor.wordWrap")).eq("on");
-    expect(get(vs.run("editor.action.toggleWordWrap"), "editor.wordWrap")).eq("off");
+    expect(get(ide.executeCommand("view.toggleWordWrap"), "wrap")).eq("on");
+    expect(get(ide.executeCommand("view.toggleWordWrap"), "wrap")).eq("off");
   });
 
   it("toggleMinimap switches the minimap", () => {
-    const vs = code("|a").setting("editor.minimap.enabled", true);
+    const ide = code("|a").setting("minimap", true);
 
-    expect(get(vs.run("editor.action.toggleMinimap"), "editor.minimap.enabled")).eq(false);
+    expect(get(ide.executeCommand("view.toggleMinimap"), "minimap")).eq(false);
   });
 
   it("toggleStickyScroll switches sticky scroll", () => {
-    const vs = code("|a").setting("editor.stickyScroll.enabled", true);
+    const ide = code("|a").setting("sticky_scroll", true);
 
-    expect(get(vs.run("editor.action.toggleStickyScroll"), "editor.stickyScroll.enabled")).eq(
+    expect(get(ide.executeCommand("view.toggleStickyScroll"), "sticky_scroll")).eq(
       false,
     );
   });
 
   it("breadcrumbs.toggle switches breadcrumbs", () => {
-    const vs = code("|a").setting("breadcrumbs.enabled", true);
+    const ide = code("|a").setting("breadcrumbs", true);
 
-    expect(get(vs.run("breadcrumbs.toggle"), "breadcrumbs.enabled")).eq(false);
+    expect(get(ide.executeCommand("view.toggleBreadcrumbs"), "breadcrumbs")).eq(false);
   });
 });
 
 describe("font zoom", () => {
   it("zoom in and out change the editor zoom level by one", () => {
-    const vs = code("|a");
+    const ide = code("|a");
 
-    vs.run("editor.action.fontZoomIn").run("editor.action.fontZoomIn");
-    expect(vs.ctx.configuration.get("editor.zoomLevel")).eq(2);
+    ide.executeCommand("view.zoomIn").executeCommand("view.zoomIn");
+    expect(ide.setting("zoom_level")).eq(2);
 
-    vs.run("editor.action.fontZoomOut");
-    expect(vs.ctx.configuration.get("editor.zoomLevel")).eq(1);
+    ide.executeCommand("view.zoomOut");
+    expect(ide.setting("zoom_level")).eq(1);
   });
 
   it("reset goes back to 0", () => {
-    const vs = code("|a").run("editor.action.fontZoomIn").run("editor.action.fontZoomReset");
+    const ide = code("|a").executeCommand("view.zoomIn").executeCommand("view.zoomReset");
 
-    expect(vs.ctx.configuration.get("editor.zoomLevel")).eq(0);
+    expect(ide.setting("zoom_level")).eq(0);
   });
 });
 
 describe("rulers", () => {
   it("draws a ruler at each configured column", () => {
-    const vs = code("|short line", { width: 60, height: 8 }).setting("editor.rulers", [20]);
-    const area = vs.ide.textArea();
-    const rows = vs.ide.textRows();
+    const ide = code("|short line", { width: 60, height: 8 }).setting("rulers", [20]);
+    const area = ide.textArea();
+    const rows = ide.textRows();
 
     // the empty rows below the text show the ruler in column 20
     expect(rows.at(-1)?.[area.x + 20]).not.eq(" ");

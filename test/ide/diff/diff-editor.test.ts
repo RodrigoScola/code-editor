@@ -123,22 +123,22 @@ describe("revertChange", () => {
 
 describe("compare commands", () => {
   it("compareWithSaved shows the saved text against the editor's text", () => {
-    const vs = code("|saved", { path: "a.txt" }).type("new ");
+    const ide = code("|saved", { path: "a.txt" }).type("new ");
 
-    vs.run("workbench.files.action.compareWithSaved");
+    ide.executeCommand("diff.compareWithSaved");
 
-    expect(vs.ctx.diffEditor()).toMatchObject({
+    expect(ide.diffEditor()).toMatchObject({
       original: "saved",
       modified: "new saved",
     });
   });
 
   it("compareWithClipboard shows the clipboard against the editor's text", () => {
-    const vs = code("|mine", { path: "a.txt" });
-    vs.ctx.clipboard.writeText("copied");
+    const ide = code("|mine", { path: "a.txt" });
+    ide.clipboard.writeText("copied");
 
-    vs.run("workbench.files.action.compareWithClipboard");
+    ide.executeCommand("diff.compareWithClipboard");
 
-    expect(vs.ctx.diffEditor()).toMatchObject({ original: "copied", modified: "mine" });
+    expect(ide.diffEditor()).toMatchObject({ original: "copied", modified: "mine" });
   });
 });

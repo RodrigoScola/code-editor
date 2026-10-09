@@ -93,7 +93,7 @@ describe("DiagnosticsStore", () => {
 describe("diagnostics in the editor", () => {
   function withDiagnostics() {
     const ide = vim("|a\nb\nc\nd\ne", { path: "a.ts", width: 100, height: 12 });
-    ide.ctx.diagnostics.set("a.ts", [
+    ide.diagnostics.set("a.ts", [
       at(1, 0, "error", "first problem"),
       at(3, 0, "warning", "second problem"),
     ]);
@@ -119,7 +119,7 @@ describe("diagnostics in the editor", () => {
 
     ide.keys("Ox<Esc>");
 
-    expect(ide.ctx.diagnostics.get("a.ts")[0].range.start.line).eq(2);
+    expect(ide.diagnostics.get("a.ts")[0].range.start.line).eq(2);
   });
 
   it("the status line shows the counts", () => {

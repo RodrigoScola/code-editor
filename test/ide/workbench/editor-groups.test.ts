@@ -15,94 +15,94 @@ import { code } from "../harness.js";
 //   activeGroupIndex()
 //   orientation() -> "horizontal" (side by side) | "vertical" (stacked)
 
-const groups = (vs: ReturnType<typeof code>) =>
-  vs.ctx.editorGroups.groups().map((g: { editors: string[] }) => g.editors);
+const groups = (ide: ReturnType<typeof code>) =>
+  ide.editorGroups.groups().map((g: { editors: string[] }) => g.editors);
 
 function twoFiles() {
-  const vs = code("|a", { path: "a.ts" });
-  vs.ide.open("b.ts", "b");
-  return vs;
+  const ide = code("|a", { path: "a.ts" });
+  ide.openMemoryFile("b.ts", "b");
+  return ide;
 }
 
 describe("splitting", () => {
   it("splitEditor opens the active file in a new group to the right", () => {
-    const vs = code("|a", { path: "a.ts" }).run("workbench.action.splitEditor");
+    const ide = code("|a", { path: "a.ts" }).executeCommand("window.splitEditorRight");
 
-    expect(groups(vs)).toEqual([["a.ts"], ["a.ts"]]);
-    expect(vs.ctx.editorGroups.orientation()).eq("horizontal");
-    expect(vs.ctx.editorGroups.activeGroupIndex()).eq(1);
+    expect(groups(ide)).toEqual([["a.ts"], ["a.ts"]]);
+    expect(ide.editorGroups.orientation()).eq("horizontal");
+    expect(ide.editorGroups.activeGroupIndex()).eq(1);
   });
 
   it("splitEditorDown stacks the groups", () => {
-    const vs = code("|a", { path: "a.ts" }).run("workbench.action.splitEditorDown");
+    const ide = code("|a", { path: "a.ts" }).executeCommand("window.splitEditorDown");
 
-    expect(vs.ctx.editorGroups.orientation()).eq("vertical");
+    expect(ide.editorGroups.orientation()).eq("vertical");
   });
 
   it("openSideBySideDirection down makes splitEditor stack too", () => {
-    const vs = code("|a", { path: "a.ts" })
-      .setting("workbench.editor.openSideBySideDirection", "down")
-      .run("workbench.action.splitEditor");
+    const ide = code("|a", { path: "a.ts" })
+      .setting("split_direction", "down")
+      .executeCommand("window.splitEditorRight");
 
-    expect(vs.ctx.editorGroups.orientation()).eq("vertical");
+    expect(ide.editorGroups.orientation()).eq("vertical");
   });
 });
 
 describe("moving editors between groups", () => {
   it("moveEditorToNextGroup makes a new group when there is none", () => {
-    const vs = twoFiles().run("workbench.action.moveEditorToNextGroup");
+    const ide = twoFiles().executeCommand("window.moveTabToNextGroup");
 
-    expect(groups(vs)).toEqual([["a.ts"], ["b.ts"]]);
+    expect(groups(ide)).toEqual([["a.ts"], ["b.ts"]]);
   });
 
   it("moveEditorToPreviousGroup moves it back and closes the empty group", () => {
-    const vs = twoFiles()
-      .run("workbench.action.moveEditorToNextGroup")
-      .run("workbench.action.moveEditorToPreviousGroup");
+    const ide = twoFiles()
+      .executeCommand("window.moveTabToNextGroup")
+      .executeCommand("window.moveTabToPreviousGroup");
 
-    expect(groups(vs)).toEqual([["a.ts", "b.ts"]]);
+    expect(groups(ide)).toEqual([["a.ts", "b.ts"]]);
   });
 
   it("joinTwoGroups merges the active group into the previous one", () => {
-    const vs = twoFiles().run("workbench.action.moveEditorToNextGroup").run("workbench.action.joinTwoGroups");
+    const ide = twoFiles().executeCommand("window.moveTabToNextGroup").executeCommand("window.joinGroups");
 
-    expect(groups(vs)).toEqual([["a.ts", "b.ts"]]);
+    expect(groups(ide)).toEqual([["a.ts", "b.ts"]]);
   });
 });
 
 describe("focusing groups", () => {
   it("focusFirstEditorGroup and focusSecondEditorGroup", () => {
-    const vs = twoFiles().run("workbench.action.moveEditorToNextGroup");
+    const ide = twoFiles().executeCommand("window.moveTabToNextGroup");
 
-    vs.run("workbench.action.focusFirstEditorGroup");
-    expect(vs.window().document.file.path()).eq("a.ts");
+    ide.executeCommand("window.focusGroup1");
+    expect(ide.window().document.file.path()).eq("a.ts");
 
-    vs.run("workbench.action.focusSecondEditorGroup");
-    expect(vs.window().document.file.path()).eq("b.ts");
+    ide.executeCommand("window.focusGroup2");
+    expect(ide.window().document.file.path()).eq("b.ts");
   });
 });
 
 describe("closing", () => {
   it("closing the last editor of a group closes the group", () => {
-    const vs = twoFiles()
-      .run("workbench.action.moveEditorToNextGroup")
-      .run("workbench.action.closeActiveEditor");
+    const ide = twoFiles()
+      .executeCommand("window.moveTabToNextGroup")
+      .executeCommand("tabs.close");
 
-    expect(groups(vs)).toEqual([["a.ts"]]);
+    expect(groups(ide)).toEqual([["a.ts"]]);
   });
 
   it("closeEmptyGroups false keeps the empty group", () => {
-    const vs = twoFiles()
-      .setting("workbench.editor.closeEmptyGroups", false)
-      .run("workbench.action.moveEditorToNextGroup")
-      .run("workbench.action.closeActiveEditor");
+    const ide = twoFiles()
+      .setting("close_empty_groups", false)
+      .executeCommand("window.moveTabToNextGroup")
+      .executeCommand("tabs.close");
 
-    expect(groups(vs)).toEqual([["a.ts"], []]);
+    expect(groups(ide)).toEqual([["a.ts"], []]);
   });
 
   it("closeEditorsInGroup closes every editor in the active group", () => {
-    const vs = twoFiles().run("workbench.action.splitEditor").run("workbench.action.closeEditorsInGroup");
+    const ide = twoFiles().executeCommand("window.splitEditorRight").executeCommand("tabs.closeGroup");
 
-    expect(groups(vs)).toEqual([["a.ts", "b.ts"]]);
+    expect(groups(ide)).toEqual([["a.ts", "b.ts"]]);
   });
 });

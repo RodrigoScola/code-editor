@@ -9,14 +9,14 @@ import { code } from "../harness.js";
 // and outward. These specs check the order of the steps rather than every
 // step, because other steps (like the whole line) may come in between.
 
-const expand = "editor.action.smartSelect.expand";
-const shrink = "editor.action.smartSelect.shrink";
+const expand = "textEditor.expandSelection";
+const shrink = "textEditor.shrinkSelection";
 
 function steps(text: string, count: number) {
-  const vs = code(text);
+  const ide = code(text);
   const states: string[] = [];
   for (let i = 0; i < count; i++) {
-    states.push(vs.run(expand).state());
+    states.push(ide.executeCommand(expand).state());
   }
   return states;
 }
@@ -59,22 +59,22 @@ describe("expand selection", () => {
   });
 
   it("expands every cursor", () => {
-    expect(code("a|a b|b").run(expand).state()).eq("«aa» «bb»");
+    expect(code("a|a b|b").executeCommand(expand).state()).eq("«aa» «bb»");
   });
 });
 
 describe("shrink selection", () => {
   it("goes back one step", () => {
-    const vs = code("foo(b|ar, baz)").run(expand).run(expand);
-    const second = vs.state();
-    vs.run(expand);
+    const ide = code("foo(b|ar, baz)").executeCommand(expand).executeCommand(expand);
+    const second = ide.state();
+    ide.executeCommand(expand);
 
-    expect(vs.run(shrink).state()).eq(second);
+    expect(ide.executeCommand(shrink).state()).eq(second);
   });
 
   it("goes all the way back to the cursor", () => {
-    const vs = code("foo(b|ar, baz)").run(expand).run(expand);
+    const ide = code("foo(b|ar, baz)").executeCommand(expand).executeCommand(expand);
 
-    expect(vs.run(shrink).run(shrink).state()).eq("foo(b|ar, baz)");
+    expect(ide.executeCommand(shrink).executeCommand(shrink).state()).eq("foo(b|ar, baz)");
   });
 });

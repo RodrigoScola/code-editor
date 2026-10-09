@@ -4,7 +4,26 @@ import { EditorContext } from "../Editor/Editor/Editor.js";
 import { isTextComponent, isStatusEditorWindow } from "../utils.js";
 import { StatusWindow } from "../Editor/windows/StatusEditor.js";
 
-type Command = (ctx: EditorContext) => void;
+export type CommandHandler = (ctx: EditorContext, args?: unknown) => void;
+
+// a command with a name people can read. The id is what code and key
+// bindings use ("textEditor.moveDown"), the title is what a user sees
+// ("Text Editor: Move Cursor Down"), and the description says what it does
+export type EditorCommand = {
+  id: string;
+  title: string;
+  description?: string;
+  // the key that runs it, only to show next to the title
+  keybinding?: string;
+  run: CommandHandler;
+};
+
+// key bindings take either one
+type Command = CommandHandler | EditorCommand;
+
+function handlerOf(command: Command): CommandHandler {
+  return typeof command === "function" ? command : command.run;
+}
 
 type TrieNodeKey = {
   key: string;
@@ -59,7 +78,7 @@ function controlTokenToKey(token: string): string {
 class TrieNode {
   children: Map<string, TrieNode> = new Map<string, TrieNode>();
 
-  command?: Command;
+  command?: CommandHandler;
 }
 
 export class KeyMapCommands {
@@ -79,7 +98,7 @@ export class KeyMapCommands {
       assert(created, "invalid node created");
       current = created;
     }
-    current.command = command;
+    current.command = handlerOf(command);
   }
   handleKey(key: KeyEvent | undefined, ctx: EditorContext) {
     if (!key) {
@@ -135,10 +154,10 @@ export class VisualMode implements EditorMode {
 }
 
 export class CommandMode implements EditorMode {
-  commands: Map<string, Command> = new Map<string, Command>();
+  commands: Map<string, CommandHandler> = new Map<string, CommandHandler>();
 
   bind(name: string, command: Command) {
-    this.commands.set(name, command);
+    this.commands.set(name, handlerOf(command));
   }
 
   executeCommand(name: string, ctx: EditorContext) {
@@ -242,9 +261,7 @@ export class InsertMode implements EditorMode {
     } else if (InputParser.isDelete(key.token)) {
       buffer.remove(cursor.line, cursor.column);
     } else if (InputParser.isEnter(key.token)) {
-      // todo: need to add more edge cases, very buggy
-      buffer.newLineAt(cursor.line);
-      editor.moveCursorDown();
+      editor.onEnter(ctx);
     } else if (InputParser.isArrowDown(key.token)) {
       editor.moveCursorDown();
     } else if (InputParser.isArrowUp(key.token)) {

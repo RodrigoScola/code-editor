@@ -171,19 +171,19 @@ describe("renderPreview", () => {
 
 describe("pasting a URL over a selection", () => {
   it("makes a Markdown link", () => {
-    const vs = code("see «docs» here", { path: "a.md" });
-    vs.ctx.clipboard.writeText("https://example.com");
+    const ide = code("see «docs» here", { path: "a.md" });
+    ide.clipboard.writeText("https://example.com");
 
-    vs.run("editor.action.clipboardPasteAction");
+    ide.executeCommand("textEditor.paste");
 
-    expect(vs.lines()).toEqual(["see [docs](https://example.com) here"]);
+    expect(ide.lines()).toEqual(["see [docs](https://example.com) here"]);
   });
 
   it("pastes plain text when nothing is selected", () => {
-    const vs = code("see |", { path: "a.md" });
-    vs.ctx.clipboard.writeText("https://example.com");
+    const ide = code("see |", { path: "a.md" });
+    ide.clipboard.writeText("https://example.com");
 
-    expect(vs.run("editor.action.clipboardPasteAction").lines()).toEqual([
+    expect(ide.executeCommand("textEditor.paste").lines()).toEqual([
       "see https://example.com",
     ]);
   });

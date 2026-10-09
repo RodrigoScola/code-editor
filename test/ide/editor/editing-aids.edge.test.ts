@@ -5,43 +5,43 @@ import { code, exec } from "../harness.js";
 // indentation (base specs: smart-select, column-selection, brackets,
 // comments, indentation).
 
-const expand = "editor.action.smartSelect.expand";
+const expand = "textEditor.expandSelection";
 
 describe("smart select", () => {
   it("expanding on a selection that already covers a word goes outward", () => {
-    expect(code("foo(«bar», baz)").run(expand).state()).eq("foo(«bar, baz»)");
+    expect(code("foo(«bar», baz)").executeCommand(expand).state()).eq("foo(«bar, baz»)");
   });
 
   it("shrink with nothing expanded does nothing", () => {
-    expect(exec("a|b", "editor.action.smartSelect.shrink")).eq("a|b");
+    expect(exec("a|b", "textEditor.shrinkSelection")).eq("a|b");
   });
 
   it("selectSubwords off goes straight to the whole word", () => {
-    const vs = code("fooB|arBaz").setting("editor.smartSelect.selectSubwords", false);
+    const ide = code("fooB|arBaz").setting("smart_select_subwords", false);
 
-    expect(vs.run(expand).state()).eq("«fooBarBaz»");
+    expect(ide.executeCommand(expand).state()).eq("«fooBarBaz»");
   });
 });
 
 describe("column selection", () => {
   it("leaves out lines shorter than the box", () => {
     expect(
-      exec("ab|c\nx\nabc", "cursorColumnSelectDown", "cursorColumnSelectDown"),
+      exec("ab|c\nx\nabc", "textEditor.cursorColumnSelectDown", "textEditor.cursorColumnSelectDown"),
     ).eq("ab|c\nx\nab|c");
   });
 
   it("going back up shrinks the box", () => {
-    expect(exec("a|bc\ndef", "cursorColumnSelectDown", "cursorColumnSelectUp")).eq("a|bc\ndef");
+    expect(exec("a|bc\ndef", "textEditor.cursorColumnSelectDown", "textEditor.cursorColumnSelectUp")).eq("a|bc\ndef");
   });
 });
 
 describe("brackets", () => {
   it("jumpToBracket away from brackets goes to the closing bracket around the cursor", () => {
-    expect(exec("(a| b)", "editor.action.jumpToBracket")).eq("(a b|)");
+    expect(exec("(a| b)", "textEditor.jumpToBracket")).eq("(a b|)");
   });
 
   it("removeBrackets does nothing outside brackets", () => {
-    expect(exec("a|b", "editor.action.removeBrackets")).eq("a|b");
+    expect(exec("a|b", "textEditor.removeBrackets")).eq("a|b");
   });
 
   it("auto-surround works across lines", () => {
@@ -57,29 +57,29 @@ describe("comments", () => {
   const ts = { path: "a.ts" };
 
   it("uncommenting accepts a comment with no space after //", () => {
-    expect(code("|//a", ts).run("editor.action.commentLine").lines()).toEqual(["a"]);
+    expect(code("|//a", ts).executeCommand("textEditor.toggleLineComment").lines()).toEqual(["a"]);
   });
 
   it("a block comment over several lines", () => {
-    expect(code("«a\nb»", ts).run("editor.action.blockComment").lines()).toEqual(["/* a", "b */"]);
+    expect(code("«a\nb»", ts).executeCommand("textEditor.toggleBlockComment").lines()).toEqual(["/* a", "b */"]);
   });
 });
 
 describe("indentation", () => {
   it("outdent on a line with less than a level removes what is there", () => {
-    expect(exec("  |x", "outdent")).eq("|x");
+    expect(exec("  |x", "textEditor.outdent")).eq("|x");
   });
 
   it("tab with a single-line selection replaces it with indentation", () => {
-    expect(exec("a«bc»d", "tab")).eq("a   |d");
+    expect(exec("a«bc»d", "textEditor.tab")).eq("a   |d");
   });
 
   it("indentationToTabs keeps a partial level as spaces", () => {
-    expect(code("  x").run("editor.action.indentationToTabs").lines()).toEqual(["  x"]);
+    expect(code("  x").executeCommand("textEditor.indentationToTabs").lines()).toEqual(["  x"]);
   });
 
   it("follows editor.tabSize when converting", () => {
-    expect(code("\tx").setting("editor.tabSize", 2).run("editor.action.indentationToSpaces").lines()).toEqual([
+    expect(code("\tx").setting("tab_width", 2).executeCommand("textEditor.indentationToSpaces").lines()).toEqual([
       "  x",
     ]);
   });

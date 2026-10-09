@@ -14,56 +14,56 @@ import { code } from "../harness.js";
 const range = (line: number) => ({ start: { line, character: 0 }, end: { line, character: 1 } });
 
 function withLenses(lenses: unknown[], resolve?: (lens: any) => unknown) {
-  const vs = code("a\nb\nc", { path: "a.ts" });
-  vs.ctx.languages.registerCodeLensProvider("typescript", {
+  const ide = code("a\nb\nc", { path: "a.ts" });
+  ide.languages.registerCodeLensProvider("typescript", {
     provideCodeLenses: () => lenses,
     resolveCodeLens: resolve,
   });
-  return vs;
+  return ide;
 }
 
 describe("code lens", () => {
   it("shows lenses that already have a command", () => {
-    const vs = withLenses([{ range: range(1), command: { title: "Run Test", command: "test.run" } }]);
+    const ide = withLenses([{ range: range(1), command: { title: "Run Test", command: "test.run" } }]);
 
-    expect(vs.ctx.codeLenses("a.ts")).toEqual([{ line: 1, title: "Run Test", command: { title: "Run Test", command: "test.run" } }]);
+    expect(ide.codeLenses("a.ts")).toEqual([{ line: 1, title: "Run Test", command: { title: "Run Test", command: "test.run" } }]);
   });
 
   it("resolves lenses without a command", () => {
-    const vs = withLenses([{ range: range(0) }], (lens) => ({ ...lens, command: { title: "3 references", command: "refs" } }));
+    const ide = withLenses([{ range: range(0) }], (lens) => ({ ...lens, command: { title: "3 references", command: "refs" } }));
 
-    expect(vs.ctx.codeLenses("a.ts")[0].title).eq("3 references");
+    expect(ide.codeLenses("a.ts")[0].title).eq("3 references");
   });
 
   it("orders lenses by line", () => {
-    const vs = withLenses([
+    const ide = withLenses([
       { range: range(2), command: { title: "c", command: "x" } },
       { range: range(0), command: { title: "a", command: "x" } },
     ]);
 
-    expect(vs.ctx.codeLenses("a.ts").map((l: { title: string }) => l.title)).toEqual(["a", "c"]);
+    expect(ide.codeLenses("a.ts").map((l: { title: string }) => l.title)).toEqual(["a", "c"]);
   });
 
   it("joins lenses on the same line with |", () => {
-    const vs = withLenses([
+    const ide = withLenses([
       { range: range(0), command: { title: "Run", command: "x" } },
       { range: range(0), command: { title: "Debug", command: "y" } },
     ]);
 
-    expect(vs.ctx.codeLensLine("a.ts", 0)).eq("Run | Debug");
+    expect(ide.codeLensLine("a.ts", 0)).eq("Run | Debug");
   });
 
   it("is off with editor.codeLens false", () => {
-    const vs = withLenses([{ range: range(0), command: { title: "Run", command: "x" } }]).setting("editor.codeLens", false);
+    const ide = withLenses([{ range: range(0), command: { title: "Run", command: "x" } }]).setting("code_lens", false);
 
-    expect(vs.ctx.codeLenses("a.ts")).toEqual([]);
+    expect(ide.codeLenses("a.ts")).toEqual([]);
   });
 
   it("a lens whose resolve fails is left out", () => {
-    const vs = withLenses([{ range: range(0) }], () => {
+    const ide = withLenses([{ range: range(0) }], () => {
       throw new Error("no");
     });
 
-    expect(vs.ctx.codeLenses("a.ts")).toEqual([]);
+    expect(ide.codeLenses("a.ts")).toEqual([]);
   });
 });

@@ -232,14 +232,14 @@ describe("actions", () => {
 
 describe("in the editor", () => {
   it("expandAbbreviation expands the abbreviation before the cursor", () => {
-    const vs = code("ul>li*2|", { path: "a.html" }).run("editor.emmet.action.expandAbbreviation");
+    const ide = code("ul>li*2|", { path: "a.html" }).executeCommand("emmet.expandAbbreviation");
 
-    expect(vs.lines()).toEqual(["<ul>", "\t<li></li>", "\t<li></li>", "</ul>"]);
+    expect(ide.lines()).toEqual(["<ul>", "\t<li></li>", "\t<li></li>", "</ul>"]);
   });
 
   it("leaves the cursor in the first empty spot", () => {
-    const vs = code("p|", { path: "a.html" }).run("editor.emmet.action.expandAbbreviation");
+    const ide = code("p|", { path: "a.html" }).executeCommand("emmet.expandAbbreviation");
 
-    expect(vs.state()).eq("<p>|</p>");
+    expect(ide.state()).eq("<p>|</p>");
   });
 });

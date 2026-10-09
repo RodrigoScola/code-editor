@@ -6,7 +6,7 @@ import {
   incrementFileName,
   validateFileName,
 } from "../../../src/Explorer/fileOperations.js";
-import { workspace } from "../../ide/harness.js";
+import { workspace } from "../harness.js";
 
 // Proposed module src/Explorer/fileOperations.ts: what the Explorer does to
 // files, kept apart from the tree UI.

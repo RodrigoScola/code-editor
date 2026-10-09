@@ -28,17 +28,15 @@ export interface KeyEvent {
   shift: boolean;
 }
 
-export type InputEvent = {
-  type: MouseInputKind,
-  event: MouseEvent,
-
-} | {
-  type: KeyboardInputKind,
-  event:KeyEvent
-}
-
-
-
+export type InputEvent =
+  | {
+      type: MouseInputKind;
+      event: MouseEvent;
+    }
+  | {
+      type: KeyboardInputKind;
+      event: KeyEvent;
+    };
 
 export const DEFAULT_TOKENS = {
   RETURN: "<CR>",
@@ -83,7 +81,14 @@ export abstract class InputParser {
   static isSpace(token: string): boolean {
     return token === DEFAULT_TOKENS.SPACE;
   }
-
+  static isArrow(token: string) {
+    return (
+      InputParser.isArrowDown(token) ||
+      InputParser.isArrowUp(token) ||
+      InputParser.isArrowLeft(token) ||
+      InputParser.isArrowRight(token)
+    );
+  }
   static isArrowUp(token: string): boolean {
     return token === DEFAULT_TOKENS.UP;
   }
@@ -497,7 +502,10 @@ export abstract class InputParser {
     };
   }
 
-  private static parseSgrMouse(params: string, final: string): MouseEvent | null {
+  private static parseSgrMouse(
+    params: string,
+    final: string,
+  ): MouseEvent | null {
     const [b, x, y] = params.split(";").map(Number);
 
     if (![b, x, y].every(Number.isFinite)) {

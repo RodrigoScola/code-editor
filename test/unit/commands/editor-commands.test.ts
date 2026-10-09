@@ -14,7 +14,7 @@ describe("textEditorCommands", () => {
   it("moves to the start of the next word", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: "foo bar baz" });
 
-    textEditorCommands.textEditor.nextWordStart(ctx);
+    textEditorCommands.textEditor.nextWordStart.run(ctx);
 
     const cursor = editorWindow.cursor();
 
@@ -25,7 +25,7 @@ describe("textEditorCommands", () => {
   it("moves to the start of the next whitespace-separated word", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: "foo,bar baz" });
 
-    textEditorCommands.textEditor.nextCompleteWordStart(ctx);
+    textEditorCommands.textEditor.nextCompleteWordStart.run(ctx);
     const cursor = editorWindow.cursor();
 
     expect(cursor.column).toBe(8);
@@ -36,7 +36,7 @@ describe("textEditorCommands", () => {
       fileContent: "thing1 () thing2()",
     });
 
-    textEditorCommands.textEditor.nextWordStart(ctx);
+    textEditorCommands.textEditor.nextWordStart.run(ctx);
 
     const cursor = editorWindow.cursor();
 
@@ -46,11 +46,11 @@ describe("textEditorCommands", () => {
   it("moves from a word to the dot and then to the next word in filenames", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: "out.txt" });
 
-    textEditorCommands.textEditor.nextWordStart(ctx);
+    textEditorCommands.textEditor.nextWordStart.run(ctx);
     const cursor = editorWindow.cursor();
     expect(cursor.column).toBe(3);
 
-    textEditorCommands.textEditor.nextWordStart(ctx);
+    textEditorCommands.textEditor.nextWordStart.run(ctx);
     expect(editorWindow.cursor().column).toBe(4);
   });
 
@@ -59,7 +59,7 @@ describe("textEditorCommands", () => {
 
     editorWindow.cursor().column = 2;
 
-    textEditorCommands.textEditor.nextWordStart(ctx);
+    textEditorCommands.textEditor.nextWordStart.run(ctx);
 
     expect(editorWindow.cursor().line).toBe(1);
     expect(editorWindow.cursor().column).toBe(0);
@@ -68,10 +68,10 @@ describe("textEditorCommands", () => {
   it("moves from a word to the dot and then to the next word in filenames", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: "out.txt" });
 
-    textEditorCommands.textEditor.nextWordStart(ctx);
+    textEditorCommands.textEditor.nextWordStart.run(ctx);
     expect(editorWindow.cursor().column).toBe(3);
 
-    textEditorCommands.textEditor.nextWordStart(ctx);
+    textEditorCommands.textEditor.nextWordStart.run(ctx);
     expect(editorWindow.cursor().column).toBe(4);
   });
   it("moves to a previous word start", () => {
@@ -80,7 +80,7 @@ describe("textEditorCommands", () => {
     const { ctx, editorWindow } = setupContext({ fileContent: sentence });
 
     editorWindow.cursor().column = sentence.length - 1;
-    textEditorCommands.textEditor.prevWordStart(ctx);
+    textEditorCommands.textEditor.prevWordStart.run(ctx);
 
     console.log(sentence[editorWindow.cursor().column], "this ");
 
@@ -93,7 +93,7 @@ describe("textEditorCommands", () => {
 
     editorWindow.cursor().column = sentence.indexOf(".");
 
-    textEditorCommands.textEditor.prevWordStart(ctx);
+    textEditorCommands.textEditor.prevWordStart.run(ctx);
     console.log(sentence[editorWindow.cursor().column], "this ");
 
     expect(editorWindow.cursor().column).eq(0);

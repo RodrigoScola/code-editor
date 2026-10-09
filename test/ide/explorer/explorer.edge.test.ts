@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { FileOperations, incrementFileName, validateFileName } from "../../../src/Explorer/fileOperations.js";
 import { buildTree } from "../../../src/Explorer/treeModel.js";
 import { LocalHistory } from "../../../src/Workspace/localHistory.js";
-import { workspace } from "../../ide/harness.js";
+import { workspace } from "../harness.js";
 
 // Edge cases for the Explorer (base specs: file-operations, tree-model,
 // outline, local-history).

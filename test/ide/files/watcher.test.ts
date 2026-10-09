@@ -2,7 +2,7 @@ import { writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { coalesceEvents, filterEvents } from "../../../src/Files/watcher.js";
-import { workspace } from "../../ide/harness.js";
+import { workspace } from "../harness.js";
 import { code } from "../harness.js";
 
 // Proposed module src/Files/watcher.ts. File system watchers report bursts
@@ -71,36 +71,36 @@ describe("editors reacting to file events", () => {
   function opened(content = "old") {
     const root = workspace({ "a.txt": content });
     const path = join(root, "a.txt");
-    const vs = code("|");
-    vs.ide.openFile(path);
-    return { vs, path };
+    const ide = code("|");
+    ide.openAndFocus(path);
+    return { ide, path };
   }
 
   it("reloads an unmodified editor whose file changed", () => {
-    const { vs, path } = opened();
+    const { ide, path } = opened();
     writeFileSync(path, "new");
 
-    vs.ctx.handleFileEvents([e("changed", path)]);
+    ide.handleFileEvents([e("changed", path)]);
 
-    expect(vs.lines()).toEqual(["new"]);
+    expect(ide.lines()).toEqual(["new"]);
   });
 
   it("leaves a modified editor alone", () => {
-    const { vs, path } = opened();
-    vs.type("mine ");
+    const { ide, path } = opened();
+    ide.type("mine ");
     writeFileSync(path, "new");
 
-    vs.ctx.handleFileEvents([e("changed", path)]);
+    ide.handleFileEvents([e("changed", path)]);
 
-    expect(vs.lines()).toEqual(["mine old"]);
+    expect(ide.lines()).toEqual(["mine old"]);
   });
 
   it("marks an editor whose file was deleted", () => {
-    const { vs, path } = opened();
+    const { ide, path } = opened();
     rmSync(path);
 
-    vs.ctx.handleFileEvents([e("deleted", path)]);
+    ide.handleFileEvents([e("deleted", path)]);
 
-    expect(vs.window().document.deleted).eq(true);
+    expect(ide.window().document.deleted).eq(true);
   });
 });

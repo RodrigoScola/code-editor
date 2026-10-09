@@ -10,20 +10,20 @@ import { code } from "../harness.js";
 //     "explicit" runs on a manual save, "always" also on auto save,
 //     "never" not at all
 // Formatters and code actions come from ctx.languages providers (see
-// test/vscode/languages/lsp-features.test.ts).
+// test/ide/language/lsp-features.test.ts).
 
-const save = "workbench.action.files.save";
+const save = "textEditor.saveFile";
 
 function saved(text: string, settings: Record<string, unknown>, path = "a.txt") {
-  const vs = code(text, { path });
-  for (const [key, value] of Object.entries(settings)) vs.setting(key, value);
-  vs.run(save);
-  return vs.window().document.read();
+  const ide = code(text, { path });
+  for (const [key, value] of Object.entries(settings)) ide.setting(key, value);
+  ide.executeCommand(save);
+  return ide.window().document.read();
 }
 
 describe("whitespace on save", () => {
   it("trims trailing white space", () => {
-    expect(saved("a  \nb\t", { "files.trimTrailingWhitespace": true })).eq("a\nb");
+    expect(saved("a  \nb\t", { trim_trailing_whitespace: true })).eq("a\nb");
   });
 
   it("leaves it alone by default", () => {
@@ -31,31 +31,31 @@ describe("whitespace on save", () => {
   });
 
   it("inserts a final newline", () => {
-    expect(saved("a", { "files.insertFinalNewline": true })).eq("a\n");
+    expect(saved("a", { insert_final_newline: true })).eq("a\n");
   });
 
   it("does not add a second final newline", () => {
-    expect(saved("a\n", { "files.insertFinalNewline": true })).eq("a\n");
+    expect(saved("a\n", { insert_final_newline: true })).eq("a\n");
   });
 
   it("trims extra final newlines", () => {
-    expect(saved("a\n\n\n", { "files.trimFinalNewlines": true })).eq("a\n");
+    expect(saved("a\n\n\n", { trim_final_newlines: true })).eq("a\n");
   });
 
   it("does all three together", () => {
     expect(
       saved("a  \n\n\n", {
-        "files.trimTrailingWhitespace": true,
-        "files.insertFinalNewline": true,
-        "files.trimFinalNewlines": true,
+        trim_trailing_whitespace: true,
+        insert_final_newline: true,
+        trim_final_newlines: true,
       }),
     ).eq("a\n");
   });
 
   it("uses language-specific settings", () => {
     const text = saved("a  ", {
-      "files.trimTrailingWhitespace": true,
-      "[markdown]": { "files.trimTrailingWhitespace": false },
+      trim_trailing_whitespace: true,
+      "[markdown]": { trim_trailing_whitespace: false },
     }, "a.md");
 
     expect(text).eq("a  ");
@@ -64,32 +64,32 @@ describe("whitespace on save", () => {
 
 describe("format on save", () => {
   function withFormatter() {
-    const vs = code("x=1", { path: "a.ts" });
-    vs.ctx.languages.registerDocumentFormattingEditProvider("typescript", {
+    const ide = code("x=1", { path: "a.ts" });
+    ide.languages.registerDocumentFormattingEditProvider("typescript", {
       provideDocumentFormattingEdits: () => [
         { range: { start: { line: 0, character: 0 }, end: { line: 0, character: 3 } }, newText: "x = 1;" },
       ],
     });
-    return vs;
+    return ide;
   }
 
   it("formats before saving when formatOnSave is on", () => {
-    const vs = withFormatter().setting("editor.formatOnSave", true).run(save);
+    const ide = withFormatter().setting("format_on_save", true).executeCommand(save);
 
-    expect(vs.window().document.read()).eq("x = 1;");
+    expect(ide.window().document.read()).eq("x = 1;");
   });
 
   it("does not format when it is off", () => {
-    const vs = withFormatter().run(save);
+    const ide = withFormatter().executeCommand(save);
 
-    expect(vs.window().document.read()).eq("x=1");
+    expect(ide.window().document.read()).eq("x=1");
   });
 });
 
 describe("code actions on save", () => {
   function withOrganizeImports(mode: string) {
-    const vs = code("import b;\nimport a;", { path: "a.ts" });
-    vs.ctx.languages.registerCodeActionsProvider("typescript", {
+    const ide = code("import b;\nimport a;", { path: "a.ts" });
+    ide.languages.registerCodeActionsProvider("typescript", {
       provideCodeActions: () => [
         {
           title: "Organize Imports",
@@ -107,33 +107,33 @@ describe("code actions on save", () => {
         },
       ],
     });
-    vs.setting("editor.codeActionsOnSave", { "source.organizeImports": mode });
-    return vs;
+    ide.setting("code_actions_on_save", { "source.organizeImports": mode });
+    return ide;
   }
 
   it("explicit runs on a manual save", () => {
-    const vs = withOrganizeImports("explicit").run(save);
+    const ide = withOrganizeImports("explicit").executeCommand(save);
 
-    expect(vs.window().document.read()).eq("import a;\nimport b;");
+    expect(ide.window().document.read()).eq("import a;\nimport b;");
   });
 
   it("explicit does not run on an auto save", () => {
-    const vs = withOrganizeImports("explicit");
-    vs.ctx.commands.execute(save, vs.ctx, { reason: "autoSave" });
+    const ide = withOrganizeImports("explicit");
+    ide.executeCommand(save, { reason: "autoSave" });
 
-    expect(vs.window().document.read()).eq("import b;\nimport a;");
+    expect(ide.window().document.read()).eq("import b;\nimport a;");
   });
 
   it("always runs on an auto save too", () => {
-    const vs = withOrganizeImports("always");
-    vs.ctx.commands.execute(save, vs.ctx, { reason: "autoSave" });
+    const ide = withOrganizeImports("always");
+    ide.executeCommand(save, { reason: "autoSave" });
 
-    expect(vs.window().document.read()).eq("import a;\nimport b;");
+    expect(ide.window().document.read()).eq("import a;\nimport b;");
   });
 
   it("never does not run", () => {
-    const vs = withOrganizeImports("never").run(save);
+    const ide = withOrganizeImports("never").executeCommand(save);
 
-    expect(vs.window().document.read()).eq("import b;\nimport a;");
+    expect(ide.window().document.read()).eq("import b;\nimport a;");
   });
 });

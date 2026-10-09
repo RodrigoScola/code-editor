@@ -93,29 +93,29 @@ describe("resolving", () => {
 
 describe("in the editor", () => {
   it("accept.current resolves the conflict at the cursor", () => {
-    const vs = code(conflict.replace("ours", "o|urs"));
+    const ide = code(conflict.replace("ours", "o|urs"));
 
-    expect(vs.run("merge-conflict.accept.current").lines()).toEqual(["top", "ours", "bottom"]);
+    expect(ide.executeCommand("merge-conflict.accept.current").lines()).toEqual(["top", "ours", "bottom"]);
   });
 
   it("accept.all-incoming resolves every conflict", () => {
-    const vs = code(`|${conflict}\n${conflict}`);
+    const ide = code(`|${conflict}\n${conflict}`);
 
-    vs.run("merge-conflict.accept.all-incoming");
+    ide.executeCommand("merge-conflict.accept.all-incoming");
 
-    expect(vs.lines()).toEqual(["top", "theirs", "bottom", "top", "theirs", "bottom"]);
+    expect(ide.lines()).toEqual(["top", "theirs", "bottom", "top", "theirs", "bottom"]);
   });
 
   it("next moves to the start of the next conflict", () => {
-    const vs = code(`|${conflict}\n${conflict}`);
+    const ide = code(`|${conflict}\n${conflict}`);
 
-    expect(vs.run("merge-conflict.next").window().cursor().line).eq(1);
-    expect(vs.run("merge-conflict.next").window().cursor().line).eq(8);
+    expect(ide.executeCommand("merge-conflict.next").window().cursor().line).eq(1);
+    expect(ide.executeCommand("merge-conflict.next").window().cursor().line).eq(8);
   });
 
   it("previous wraps around", () => {
-    const vs = code(`|${conflict}\n${conflict}`);
+    const ide = code(`|${conflict}\n${conflict}`);
 
-    expect(vs.run("merge-conflict.previous").window().cursor().line).eq(8);
+    expect(ide.executeCommand("merge-conflict.previous").window().cursor().line).eq(8);
   });
 });

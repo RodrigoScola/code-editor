@@ -31,35 +31,35 @@ describe("encodings", () => {
 });
 
 describe("save actions", () => {
-  const save = "workbench.action.files.save";
+  const save = "textEditor.saveFile";
 
   it("an auto save keeps the white space right before the cursor", () => {
-    const vs = code("a  \nb  |", { path: "a.txt" }).setting("files.trimTrailingWhitespace", true);
+    const ide = code("a  \nb  |", { path: "a.txt" }).setting("trim_trailing_whitespace", true);
 
-    vs.ctx.commands.execute(save, vs.ctx, { reason: "autoSave" });
+    ide.executeCommand(save, { reason: "autoSave" });
 
-    expect(vs.window().document.read()).eq("a\nb  ");
+    expect(ide.window().document.read()).eq("a\nb  ");
   });
 
   it("trimFinalNewlines on a file that is only newlines leaves it empty", () => {
-    const vs = code("\n\n\n", { path: "a.txt" }).setting("files.trimFinalNewlines", true).run(save);
+    const ide = code("\n\n\n", { path: "a.txt" }).setting("trim_final_newlines", true).executeCommand(save);
 
-    expect(vs.window().document.read()).eq("");
+    expect(ide.window().document.read()).eq("");
   });
 
   it("insertFinalNewline does not add one to an empty file", () => {
-    const vs = code("", { path: "a.txt" }).setting("files.insertFinalNewline", true).run(save);
+    const ide = code("", { path: "a.txt" }).setting("insert_final_newline", true).executeCommand(save);
 
-    expect(vs.window().document.read()).eq("");
+    expect(ide.window().document.read()).eq("");
   });
 
   it("an explicit save runs the save actions even when nothing changed", () => {
-    const vs = code("a  ", { path: "a.txt" }).setting("files.trimTrailingWhitespace", true);
-    vs.window().document.dirty = false;
+    const ide = code("a  ", { path: "a.txt" }).setting("trim_trailing_whitespace", true);
+    ide.window().document.dirty = false;
 
-    vs.run(save);
+    ide.executeCommand(save);
 
-    expect(vs.window().document.read()).eq("a");
+    expect(ide.window().document.read()).eq("a");
   });
 });
 

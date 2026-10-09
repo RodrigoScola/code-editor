@@ -90,49 +90,49 @@ const ts = { path: "a.ts" };
 
 describe("fold commands", () => {
   it("fold closes the range starting at the cursor line", () => {
-    const vs = code(source, ts);
-    vs.window().cursor().line = 1;
+    const ide = code(source, ts);
+    ide.window().cursor().line = 1;
 
-    vs.run("editor.fold");
+    ide.executeCommand("folding.fold");
 
-    expect(vs.window().foldedRanges()).toEqual([{ start: 1, end: 2 }]);
+    expect(ide.window().foldedRanges()).toEqual([{ start: 1, end: 2 }]);
   });
 
   it("fold inside a block closes the block around the cursor", () => {
-    const vs = code(source, ts);
-    vs.window().cursor().line = 2;
+    const ide = code(source, ts);
+    ide.window().cursor().line = 2;
 
-    vs.run("editor.fold");
+    ide.executeCommand("folding.fold");
 
-    expect(vs.window().foldedRanges()).toEqual([{ start: 1, end: 2 }]);
+    expect(ide.window().foldedRanges()).toEqual([{ start: 1, end: 2 }]);
   });
 
   it("unfold opens it again", () => {
-    const vs = code(source, ts);
-    vs.window().cursor().line = 1;
+    const ide = code(source, ts);
+    ide.window().cursor().line = 1;
 
-    expect(vs.run("editor.fold").run("editor.unfold").window().foldedRanges()).toEqual([]);
+    expect(ide.executeCommand("folding.fold").executeCommand("folding.unfold").window().foldedRanges()).toEqual([]);
   });
 
   it("toggleFold switches", () => {
-    const vs = code(source, ts);
-    vs.window().cursor().line = 1;
+    const ide = code(source, ts);
+    ide.window().cursor().line = 1;
 
-    expect(vs.run("editor.toggleFold").window().foldedRanges()).toHaveLength(1);
-    expect(vs.run("editor.toggleFold").window().foldedRanges()).toHaveLength(0);
+    expect(ide.executeCommand("folding.toggle").window().foldedRanges()).toHaveLength(1);
+    expect(ide.executeCommand("folding.toggle").window().foldedRanges()).toHaveLength(0);
   });
 
   it("foldAll closes every range and unfoldAll opens them", () => {
-    const vs = code(source, ts).run("editor.foldAll");
-    expect(vs.window().foldedRanges()).toHaveLength(3);
+    const ide = code(source, ts).executeCommand("folding.foldAll");
+    expect(ide.window().foldedRanges()).toHaveLength(3);
 
-    expect(vs.run("editor.unfoldAll").window().foldedRanges()).toEqual([]);
+    expect(ide.executeCommand("folding.unfoldAll").window().foldedRanges()).toEqual([]);
   });
 
   it("foldRecursively closes the range and everything inside it", () => {
-    const vs = code(source, ts).run("editor.foldRecursively");
+    const ide = code(source, ts).executeCommand("folding.foldRecursively");
 
-    expect(vs.window().foldedRanges()).toEqual([
+    expect(ide.window().foldedRanges()).toEqual([
       { start: 0, end: 6 },
       { start: 1, end: 2 },
       { start: 4, end: 5 },
@@ -140,21 +140,21 @@ describe("fold commands", () => {
   });
 
   it("foldLevel2 closes only the second-level ranges", () => {
-    const vs = code(source, ts).run("editor.foldLevel2");
+    const ide = code(source, ts).executeCommand("folding.foldLevel2");
 
-    expect(vs.window().foldedRanges()).toEqual([
+    expect(ide.window().foldedRanges()).toEqual([
       { start: 1, end: 2 },
       { start: 4, end: 5 },
     ]);
   });
 
   it("cursorDown skips over a closed range", () => {
-    const vs = code(source, ts);
-    vs.window().cursor().line = 1;
+    const ide = code(source, ts);
+    ide.window().cursor().line = 1;
 
-    vs.run("editor.fold").run("cursorDown");
+    ide.executeCommand("folding.fold").executeCommand("textEditor.cursorDown");
 
-    expect(vs.window().cursor().line).eq(3);
+    expect(ide.window().cursor().line).eq(3);
   });
 });
 
@@ -162,55 +162,55 @@ describe("marker regions", () => {
   const regions = ["//#region a", "x", "//#endregion", "y {", "  z", "}"].join("\n");
 
   it("foldAllMarkerRegions closes only the marker regions", () => {
-    const vs = code(regions, ts).run("editor.foldAllMarkerRegions");
+    const ide = code(regions, ts).executeCommand("folding.foldRegions");
 
-    expect(vs.window().foldedRanges()).toEqual([{ start: 0, end: 2 }]);
+    expect(ide.window().foldedRanges()).toEqual([{ start: 0, end: 2 }]);
   });
 
   it("unfoldAllMarkerRegions opens them", () => {
-    const vs = code(regions, ts)
-      .run("editor.foldAllMarkerRegions")
-      .run("editor.unfoldAllMarkerRegions");
+    const ide = code(regions, ts)
+      .executeCommand("folding.foldRegions")
+      .executeCommand("folding.unfoldRegions");
 
-    expect(vs.window().foldedRanges()).toEqual([]);
+    expect(ide.window().foldedRanges()).toEqual([]);
   });
 });
 
 describe("manual folding ranges", () => {
   it("createFoldingRangeFromSelection folds the selected lines", () => {
-    const vs = code("«a\nb\nc»\nd").run("editor.createFoldingRangeFromSelection");
+    const ide = code("«a\nb\nc»\nd").executeCommand("folding.createFromSelection");
 
-    expect(vs.window().foldedRanges()).toEqual([{ start: 0, end: 2 }]);
+    expect(ide.window().foldedRanges()).toEqual([{ start: 0, end: 2 }]);
   });
 
   it("removeManualFoldingRanges removes them", () => {
-    const vs = code("«a\nb\nc»\nd")
-      .run("editor.createFoldingRangeFromSelection")
-      .run("editor.removeManualFoldingRanges");
+    const ide = code("«a\nb\nc»\nd")
+      .executeCommand("folding.createFromSelection")
+      .executeCommand("folding.removeManualRanges");
 
-    expect(vs.window().foldedRanges()).toEqual([]);
+    expect(ide.window().foldedRanges()).toEqual([]);
   });
 });
 
 describe("moving between folds", () => {
   it("gotoParentFold goes to the start of the enclosing range", () => {
-    const vs = code(source, ts);
-    vs.window().cursor().line = 2;
+    const ide = code(source, ts);
+    ide.window().cursor().line = 2;
 
-    expect(vs.run("editor.gotoParentFold").window().cursor().line).eq(1);
+    expect(ide.executeCommand("folding.goToParent").window().cursor().line).eq(1);
   });
 
   it("gotoNextFold goes to the start of the next range", () => {
-    const vs = code(source, ts);
-    vs.window().cursor().line = 2;
+    const ide = code(source, ts);
+    ide.window().cursor().line = 2;
 
-    expect(vs.run("editor.gotoNextFold").window().cursor().line).eq(4);
+    expect(ide.executeCommand("folding.goToNext").window().cursor().line).eq(4);
   });
 
   it("gotoPreviousFold goes to the start of the previous range", () => {
-    const vs = code(source, ts);
-    vs.window().cursor().line = 5;
+    const ide = code(source, ts);
+    ide.window().cursor().line = 5;
 
-    expect(vs.run("editor.gotoPreviousFold").window().cursor().line).eq(1);
+    expect(ide.executeCommand("folding.goToPrevious").window().cursor().line).eq(1);
   });
 });

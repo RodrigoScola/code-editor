@@ -11,15 +11,15 @@ import { code } from "../harness.js";
 //                                          save decision)
 //   workbench.files.action.closeEditor with { path } closes one
 
-const view = (vs: ReturnType<typeof code>) => vs.ctx.openEditors();
+const view = (ide: ReturnType<typeof code>) => ide.openEditors();
 
 describe("open editors", () => {
   it("lists the editors of each group with their state", () => {
-    const vs = code("|a", { path: "a.ts" });
-    vs.ide.open("b.ts", "b");
-    vs.type("x");
+    const ide = code("|a", { path: "a.ts" });
+    ide.openMemoryFile("b.ts", "b");
+    ide.type("x");
 
-    expect(view(vs)).toEqual([
+    expect(view(ide)).toEqual([
       {
         group: 0,
         editors: [
@@ -31,36 +31,36 @@ describe("open editors", () => {
   });
 
   it("lists each group separately", () => {
-    const vs = code("|a", { path: "a.ts" }).run("workbench.action.splitEditor");
+    const ide = code("|a", { path: "a.ts" }).executeCommand("window.splitEditorRight");
 
-    expect(view(vs).map((g: { group: number }) => g.group)).toEqual([0, 1]);
+    expect(view(ide).map((g: { group: number }) => g.group)).toEqual([0, 1]);
   });
 
   it("saveAll saves every modified editor", () => {
-    const vs = code("|a", { path: "a.ts" }).type("x");
-    vs.ide.open("b.ts", "b");
-    vs.type("y");
+    const ide = code("|a", { path: "a.ts" }).type("x");
+    ide.openMemoryFile("b.ts", "b");
+    ide.type("y");
 
-    vs.run("workbench.action.files.saveAll");
+    ide.executeCommand("textEditor.saveAll");
 
-    expect(view(vs)[0].editors.every((e: { dirty: boolean }) => !e.dirty)).eq(true);
+    expect(view(ide)[0].editors.every((e: { dirty: boolean }) => !e.dirty)).eq(true);
   });
 
   it("closeEditor closes one editor by path", () => {
-    const vs = code("|a", { path: "a.ts" });
-    vs.ide.open("b.ts", "b");
+    const ide = code("|a", { path: "a.ts" });
+    ide.openMemoryFile("b.ts", "b");
 
-    vs.run("workbench.files.action.closeEditor", { path: "a.ts" });
+    ide.executeCommand("tabs.close", { path: "a.ts" });
 
-    expect(view(vs)[0].editors.map((e: { path: string }) => e.path)).toEqual(["b.ts"]);
+    expect(view(ide)[0].editors.map((e: { path: string }) => e.path)).toEqual(["b.ts"]);
   });
 
   it("closeAllEditors keeps modified editors", () => {
-    const vs = code("|a", { path: "a.ts" }).type("x");
-    vs.ide.open("b.ts", "b");
+    const ide = code("|a", { path: "a.ts" }).type("x");
+    ide.openMemoryFile("b.ts", "b");
 
-    vs.run("workbench.action.closeAllEditors");
+    ide.executeCommand("tabs.closeAll");
 
-    expect(view(vs)[0].editors.map((e: { path: string }) => e.path)).toEqual(["a.ts"]);
+    expect(view(ide)[0].editors.map((e: { path: string }) => e.path)).toEqual(["a.ts"]);
   });
 });

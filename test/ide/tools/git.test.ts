@@ -113,7 +113,7 @@ describe.skipIf(!hasGit())("with a real repository", () => {
     const root = repository();
     const ide = vim("|", { width: 100 });
 
-    ide.ctx.setWorkspace(root);
+    ide.setWorkspace(root);
 
     await vi.waitFor(() => expect(ide.statusLine()).toContain("main"));
   });

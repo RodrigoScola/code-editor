@@ -15,34 +15,34 @@ import { code, exec } from "../harness.js";
 
 describe("adding cursors above and below", () => {
   it("insertCursorBelow adds a cursor on the next line, same column", () => {
-    expect(exec("a|bc\ndef", "editor.action.insertCursorBelow")).eq("a|bc\nd|ef");
+    expect(exec("a|bc\ndef", "textEditor.addCursorBelow")).eq("a|bc\nd|ef");
   });
 
   it("insertCursorAbove adds a cursor on the previous line", () => {
-    expect(exec("abc\nd|ef", "editor.action.insertCursorAbove")).eq("a|bc\nd|ef");
+    expect(exec("abc\nd|ef", "textEditor.addCursorAbove")).eq("a|bc\nd|ef");
   });
 
   it("insertCursorBelow on the last line does nothing", () => {
-    expect(exec("abc\nd|ef", "editor.action.insertCursorBelow")).eq("abc\nd|ef");
+    expect(exec("abc\nd|ef", "textEditor.addCursorBelow")).eq("abc\nd|ef");
   });
 
   it("can be repeated", () => {
     expect(
-      exec("a|bc\ndef\nghi", "editor.action.insertCursorBelow", "editor.action.insertCursorBelow"),
+      exec("a|bc\ndef\nghi", "textEditor.addCursorBelow", "textEditor.addCursorBelow"),
     ).eq("a|bc\nd|ef\ng|hi");
   });
 
   it("addCursorsToBottom adds a cursor on every line below", () => {
-    expect(exec("a|bc\ndef\nghi", "editor.action.addCursorsToBottom")).eq("a|bc\nd|ef\ng|hi");
+    expect(exec("a|bc\ndef\nghi", "textEditor.addCursorsToBottom")).eq("a|bc\nd|ef\ng|hi");
   });
 
   it("addCursorsToTop adds a cursor on every line above", () => {
-    expect(exec("abc\ndef\ng|hi", "editor.action.addCursorsToTop")).eq("a|bc\nd|ef\ng|hi");
+    expect(exec("abc\ndef\ng|hi", "textEditor.addCursorsToTop")).eq("a|bc\nd|ef\ng|hi");
   });
 });
 
 describe("Ctrl+D: add selection to next find match", () => {
-  const next = "editor.action.addSelectionToNextFindMatch";
+  const next = "textEditor.addSelectionToNextMatch";
 
   it("with an empty selection, first selects the word under the cursor", () => {
     expect(exec("f|oo bar foo", next)).eq("«foo» bar foo");
@@ -75,7 +75,7 @@ describe("Ctrl+D: add selection to next find match", () => {
 
 describe("Ctrl+K Ctrl+D: move selection to next find match", () => {
   it("moves the last selection to the next occurrence instead of adding one", () => {
-    expect(exec("«foo» bar foo", "editor.action.moveSelectionToNextFindMatch")).eq(
+    expect(exec("«foo» bar foo", "textEditor.moveSelectionToNextMatch")).eq(
       "foo bar «foo»",
     );
   });
@@ -83,19 +83,19 @@ describe("Ctrl+K Ctrl+D: move selection to next find match", () => {
 
 describe("Ctrl+Shift+L: select all occurrences", () => {
   it("selects every occurrence of the word under the cursor", () => {
-    expect(exec("f|oo bar foo\nfoo", "editor.action.selectHighlights")).eq(
+    expect(exec("f|oo bar foo\nfoo", "textEditor.selectAllMatches")).eq(
       "«foo» bar «foo»\n«foo»",
     );
   });
 
   it("selects every occurrence of the selected text", () => {
-    expect(exec("«a-» a-b a-", "editor.action.selectHighlights")).eq("«a-» «a-»b «a-»");
+    expect(exec("«a-» a-b a-", "textEditor.selectAllMatches")).eq("«a-» «a-»b «a-»");
   });
 });
 
 describe("Shift+Alt+I: cursor at the end of each selected line", () => {
   it("puts a cursor at the end of every line in the selection", () => {
-    expect(exec("«ab\ncd\nef»", "editor.action.insertCursorAtEndOfEachLineSelected")).eq(
+    expect(exec("«ab\ncd\nef»", "textEditor.addCursorsToLineEnds")).eq(
       "ab|\ncd|\nef|",
     );
   });
@@ -111,38 +111,38 @@ describe("editing with several cursors", () => {
   });
 
   it("deleteLeft deletes before every cursor", () => {
-    expect(code("ab|c\nde|f").run("deleteLeft").state()).eq("a|c\nd|f");
+    expect(code("ab|c\nde|f").executeCommand("textEditor.deleteLeft").state()).eq("a|c\nd|f");
   });
 
   it("cursors that meet merge into one", () => {
-    expect(code("a|b|c").run("deleteLeft").run("deleteLeft").state()).eq("|c");
+    expect(code("a|b|c").executeCommand("textEditor.deleteLeft").executeCommand("textEditor.deleteLeft").state()).eq("|c");
   });
 
   it("cursor movement moves every cursor", () => {
-    expect(code("a|bc\nd|ef").run("cursorRight").state()).eq("ab|c\nde|f");
+    expect(code("a|bc\nd|ef").executeCommand("textEditor.cursorRight").state()).eq("ab|c\nde|f");
   });
 });
 
 describe("getting back to one cursor", () => {
   it("removeSecondaryCursors keeps only the primary cursor", () => {
-    expect(exec("a|b c|d", "removeSecondaryCursors")).eq("a|b cd");
+    expect(exec("a|b c|d", "textEditor.removeSecondaryCursors")).eq("a|b cd");
   });
 
   it("cursorUndo undoes the last cursor change", () => {
-    const vs = code("f|oo bar foo")
-      .run("editor.action.addSelectionToNextFindMatch")
-      .run("editor.action.addSelectionToNextFindMatch");
-    expect(vs.state()).eq("«foo» bar «foo»");
+    const ide = code("f|oo bar foo")
+      .executeCommand("textEditor.addSelectionToNextMatch")
+      .executeCommand("textEditor.addSelectionToNextMatch");
+    expect(ide.state()).eq("«foo» bar «foo»");
 
-    expect(vs.run("cursorUndo").state()).eq("«foo» bar foo");
+    expect(ide.executeCommand("textEditor.cursorUndo").state()).eq("«foo» bar foo");
   });
 
   it("cursorRedo redoes it", () => {
-    const vs = code("f|oo bar foo")
-      .run("editor.action.addSelectionToNextFindMatch")
-      .run("editor.action.addSelectionToNextFindMatch")
-      .run("cursorUndo");
+    const ide = code("f|oo bar foo")
+      .executeCommand("textEditor.addSelectionToNextMatch")
+      .executeCommand("textEditor.addSelectionToNextMatch")
+      .executeCommand("textEditor.cursorUndo");
 
-    expect(vs.run("cursorRedo").state()).eq("«foo» bar «foo»");
+    expect(ide.executeCommand("textEditor.cursorRedo").state()).eq("«foo» bar «foo»");
   });
 });

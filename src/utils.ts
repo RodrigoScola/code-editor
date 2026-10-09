@@ -29,11 +29,19 @@ export function isTextComponent(
   }
 }
 
+// returns true/false and narrows the type inside an if
 export function isFileTreeWindow(
   t: UiComponent | undefined | null,
+): t is FileTreeWindow {
+  return t instanceof FileTreeWindow;
+}
+
+// throws instead, for code that can't continue without a file tree
+export function assertFileTreeWindow(
+  t: UiComponent | undefined | null,
 ): asserts t is FileTreeWindow {
-  if (!(t instanceof FileTreeWindow)) {
-    throw new Error("Expected an EditorComponent");
+  if (!isFileTreeWindow(t)) {
+    throw new Error("Expected a FileTreeWindow");
   }
 }
 

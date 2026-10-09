@@ -50,52 +50,52 @@ const source = ["a {", "  b {", "    c", "  }", "}"].join("\n");
 
 describe("fold commands", () => {
   it("fold on a line that starts no range folds the range around it", () => {
-    const vs = code(source, { path: "a.ts" });
-    vs.window().cursor().line = 2;
+    const ide = code(source, { path: "a.ts" });
+    ide.window().cursor().line = 2;
 
-    expect(vs.run("editor.fold").window().foldedRanges()).toEqual([{ start: 1, end: 2 }]);
+    expect(ide.executeCommand("folding.fold").window().foldedRanges()).toEqual([{ start: 1, end: 2 }]);
   });
 
   it("folding twice closes the next range out", () => {
-    const vs = code(source, { path: "a.ts" });
-    vs.window().cursor().line = 2;
+    const ide = code(source, { path: "a.ts" });
+    ide.window().cursor().line = 2;
 
-    vs.run("editor.fold").run("editor.fold");
+    ide.executeCommand("folding.fold").executeCommand("folding.fold");
 
-    expect(vs.window().foldedRanges()).toEqual(expect.arrayContaining([{ start: 0, end: 3 }]));
+    expect(ide.window().foldedRanges()).toEqual(expect.arrayContaining([{ start: 0, end: 3 }]));
   });
 
   it("unfoldRecursively opens the range and everything inside", () => {
-    const vs = code(source, { path: "a.ts" }).run("editor.foldAll").run("editor.unfoldRecursively");
+    const ide = code(source, { path: "a.ts" }).executeCommand("folding.foldAll").executeCommand("folding.unfoldRecursively");
 
-    expect(vs.window().foldedRanges()).toEqual([]);
+    expect(ide.window().foldedRanges()).toEqual([]);
   });
 
   it("foldLevel does not fold the range the cursor is in", () => {
-    const vs = code(source, { path: "a.ts" });
-    vs.window().cursor().line = 2;
+    const ide = code(source, { path: "a.ts" });
+    ide.window().cursor().line = 2;
 
-    expect(vs.run("editor.foldLevel2").window().foldedRanges()).toEqual([]);
+    expect(ide.executeCommand("folding.foldLevel2").window().foldedRanges()).toEqual([]);
   });
 
   it("editing inside a folded range opens it", () => {
-    const vs = code(source, { path: "a.ts" });
-    vs.window().cursor().line = 1;
-    vs.run("editor.fold");
-    vs.window().setSelections([{ anchor: { line: 2, column: 0 }, active: { line: 2, column: 0 } }]);
+    const ide = code(source, { path: "a.ts" });
+    ide.window().cursor().line = 1;
+    ide.executeCommand("folding.fold");
+    ide.setSelections([{ anchor: { line: 2, column: 0 }, active: { line: 2, column: 0 } }]);
 
-    vs.type("x");
+    ide.type("x");
 
-    expect(vs.window().foldedRanges()).toEqual([]);
+    expect(ide.window().foldedRanges()).toEqual([]);
   });
 
   it("deleting the lines of a folded range removes the fold", () => {
-    const vs = code(source, { path: "a.ts" });
-    vs.window().cursor().line = 1;
-    vs.run("editor.fold");
+    const ide = code(source, { path: "a.ts" });
+    ide.window().cursor().line = 1;
+    ide.executeCommand("folding.fold");
 
-    vs.run("editor.action.deleteLines");
+    ide.executeCommand("textEditor.deleteLines");
 
-    expect(vs.window().foldedRanges()).toEqual([]);
+    expect(ide.window().foldedRanges()).toEqual([]);
   });
 });

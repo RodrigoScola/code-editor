@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "fs";
+import { existsSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
 import { FileTreeWindow } from "../../../src/Editor/windows/FileTreeWindow.js";
@@ -6,6 +6,7 @@ import { Canvas } from "../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../src/ui/layout/layout.js";
 import { Renderer } from "../../../src/ui/renderer.js";
 import { vim, workspace } from "../harness.js";
+import fs from "fs";
 
 // The file tree, like nvim-tree or VS Code's explorer:
 // - folders first, then files, each sorted by name
@@ -31,7 +32,7 @@ function explorer(root: string) {
   const ide = vim("|", { width: 30, height: 20 });
   const tree = new FileTreeWindow(root);
   ide.addSidebar(tree);
-  ide.ctx.focus(tree);
+  ide.focus(tree);
   return { ide, tree };
 }
 
@@ -132,7 +133,16 @@ describe("changing files", () => {
     const root = project();
     const { ide } = explorer(root);
 
+    if (existsSync(join(root, "docs"))) {
+      rmSync(join(root, "docs"));
+    }
+
     ide.keys("a").keys("docs/<CR>");
+
+    ide.show();
+
+    const out = existsSync(join(root, "docs"));
+    console.log(join(root, "docs"));
 
     expect(existsSync(join(root, "docs"))).eq(true);
   });
@@ -145,7 +155,7 @@ describe("changing files", () => {
 
     expect(existsSync(join(root, "a.txt"))).eq(false);
     expect(existsSync(join(root, "c.txt"))).eq(true);
-    expect(tree.root.children.map((node) => node.name)).toContain("c.txt");
+    expect(tree.root.children().map((node) => node.name)).toContain("c.txt");
   });
 
   it("renaming an open file keeps its tab pointing at it", () => {
@@ -154,8 +164,8 @@ describe("changing files", () => {
     ide.keys("jjj<CR>");
     const window = ide.window();
 
-    const tree = ide.ctx.findWindow(FileTreeWindow)!;
-    ide.ctx.focus(tree);
+    const tree = ide.findWindow(FileTreeWindow)!;
+    ide.focus(tree);
     ide.keys("r<C-u>c.txt<CR>");
 
     expect(window.document.file.path()).eq(join(root, "c.txt"));
@@ -187,6 +197,8 @@ describe("reveal", () => {
   it("opens the folders down to a file and selects it", () => {
     const root = project();
     const tree = new FileTreeWindow(root);
+
+    expect(root).eq(tree.root.path);
 
     tree.reveal(join(root, "src", "x.ts"));
 

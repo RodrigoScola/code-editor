@@ -1,3 +1,4 @@
+import { EditorContext } from "../../Editor/Editor/Editor.js";
 import { TextBuffer } from "../buffer/Buffer.js";
 import { Canvas } from "../canvas.js";
 import { ComponentStyle } from "../ComponentStyles.js";
@@ -19,18 +20,23 @@ export class UiInput extends UIScreen {
     super();
 
     this.view().setMaxHeight(1);
-    this.buffer().addLine("");
 
     if (value) {
       this.buffer().addLine(value || "");
       for (let i = 0; i < (value?.length || 0); i++) {
         this.cursor().moveRight();
       }
+    } else {
+      this.buffer().addLine("");
     }
   }
 
-  setMultilineEnabled(val: boolean) {
+  multiLine() {
     return this._multiline;
+  }
+  setMultilineEnabled(val: boolean) {
+    this._multiline = false;
+    return this;
   }
 
   paint(canvas: Canvas): void {
@@ -66,6 +72,12 @@ export class UiInput extends UIScreen {
       this.currentCommandLine++;
       this.nextLine();
       this.buffer().newLine();
+    }
+  }
+  onEnter(ctx: EditorContext): void {
+    if (this._multiline) {
+      super.onEnter(ctx);
+      return;
     }
   }
 }

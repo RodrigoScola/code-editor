@@ -101,7 +101,7 @@ describe(":grep and the quickfix list", () => {
   it(":grep jumps to the first result", () => {
     const root = project();
     const ide = vim("|", { width: 60, height: 16 });
-    ide.ctx.setWorkspace(root);
+    ide.setWorkspace(root);
 
     ide.keys(":grep world<CR>");
 
@@ -112,7 +112,7 @@ describe(":grep and the quickfix list", () => {
   it(":cnext goes to the next result, across files", () => {
     const root = project();
     const ide = vim("|", { width: 60, height: 16 });
-    ide.ctx.setWorkspace(root);
+    ide.setWorkspace(root);
 
     ide.keys(":grep hello<CR>:cnext<CR>:cnext<CR>");
 

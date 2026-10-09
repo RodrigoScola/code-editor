@@ -18,35 +18,35 @@ import { code } from "../harness.js";
 // bar and line numbers; leaving it restores what was there before.
 // ctx.layout.serialize() / ctx.layout.restore(state) keep it across runs.
 
-const layout = (vs: ReturnType<typeof code>) => vs.ctx.layout.state();
+const layout = (ide: ReturnType<typeof code>) => ide.layout.state();
 
 describe("toggles", () => {
   it("toggleSidebarVisibility", () => {
-    const vs = code("|");
-    const before = layout(vs).sidebarVisible;
+    const ide = code("|");
+    const before = layout(ide).sidebarVisible;
 
-    expect(layout(vs.run("workbench.action.toggleSidebarVisibility")).sidebarVisible).eq(!before);
+    expect(layout(ide.executeCommand("layout.toggleSidebar")).sidebarVisible).eq(!before);
   });
 
   it("togglePanel", () => {
-    const vs = code("|");
-    const before = layout(vs).panelVisible;
+    const ide = code("|");
+    const before = layout(ide).panelVisible;
 
-    expect(layout(vs.run("workbench.action.togglePanel")).panelVisible).eq(!before);
+    expect(layout(ide.executeCommand("layout.togglePanel")).panelVisible).eq(!before);
   });
 
   it("toggleStatusbarVisibility", () => {
-    const vs = code("|").run("workbench.action.toggleStatusbarVisibility");
+    const ide = code("|").executeCommand("layout.toggleStatusBar");
 
-    expect(layout(vs).statusBarVisible).eq(false);
+    expect(layout(ide).statusBarVisible).eq(false);
   });
 
   it("positionPanelRight moves the panel", () => {
-    expect(layout(code("|").run("workbench.action.positionPanelRight")).panelPosition).eq("right");
+    expect(layout(code("|").executeCommand("layout.panelRight")).panelPosition).eq("right");
   });
 
   it("toggleMaximizedPanel opens and maximizes the panel", () => {
-    const state = layout(code("|").run("workbench.action.toggleMaximizedPanel"));
+    const state = layout(code("|").executeCommand("layout.toggleMaximizedPanel"));
 
     expect(state.panelVisible).eq(true);
     expect(state.panelMaximized).eq(true);
@@ -55,7 +55,7 @@ describe("toggles", () => {
 
 describe("zen mode", () => {
   it("hides everything but the editor", () => {
-    const state = layout(code("|").run("workbench.action.toggleZenMode"));
+    const state = layout(code("|").executeCommand("layout.toggleZenMode"));
 
     expect(state).toMatchObject({
       zenMode: true,
@@ -68,41 +68,41 @@ describe("zen mode", () => {
   });
 
   it("keeps the status bar with zenMode.hideStatusBar false", () => {
-    const vs = code("|").setting("zenMode.hideStatusBar", false).run("workbench.action.toggleZenMode");
+    const ide = code("|").setting("zen_hide_status_bar", false).executeCommand("layout.toggleZenMode");
 
-    expect(layout(vs).statusBarVisible).eq(true);
+    expect(layout(ide).statusBarVisible).eq(true);
   });
 
   it("leaving restores what was there before", () => {
-    const vs = code("|").run("workbench.action.togglePanel");
-    const before = layout(vs);
+    const ide = code("|").executeCommand("layout.togglePanel");
+    const before = layout(ide);
 
-    vs.run("workbench.action.toggleZenMode").run("workbench.action.toggleZenMode");
+    ide.executeCommand("layout.toggleZenMode").executeCommand("layout.toggleZenMode");
 
-    expect(layout(vs)).toEqual(before);
+    expect(layout(ide)).toEqual(before);
   });
 
   it("exitZenMode leaves it", () => {
-    const vs = code("|").run("workbench.action.toggleZenMode").run("workbench.action.exitZenMode");
+    const ide = code("|").executeCommand("layout.toggleZenMode").executeCommand("layout.exitZenMode");
 
-    expect(layout(vs).zenMode).eq(false);
+    expect(layout(ide).zenMode).eq(false);
   });
 });
 
 describe("centered layout", () => {
   it("toggles", () => {
-    expect(layout(code("|").run("workbench.action.toggleCenteredLayout")).centered).eq(true);
+    expect(layout(code("|").executeCommand("layout.toggleCentered")).centered).eq(true);
   });
 });
 
 describe("persistence", () => {
   it("restores a saved layout", () => {
-    const vs = code("|").run("workbench.action.toggleSidebarVisibility").run("workbench.action.positionPanelLeft");
-    const saved = JSON.parse(JSON.stringify(vs.ctx.layout.serialize()));
+    const ide = code("|").executeCommand("layout.toggleSidebar").executeCommand("layout.panelLeft");
+    const saved = JSON.parse(JSON.stringify(ide.layout.serialize()));
 
     const fresh = code("|");
-    fresh.ctx.layout.restore(saved);
+    fresh.layout.restore(saved);
 
-    expect(layout(fresh)).toEqual(layout(vs));
+    expect(layout(fresh)).toEqual(layout(ide));
   });
 });

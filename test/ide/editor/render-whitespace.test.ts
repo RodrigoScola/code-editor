@@ -47,12 +47,12 @@ describe("renderWhitespace", () => {
 
 describe("toggleRenderWhitespace", () => {
   it("switches the setting between none and all", () => {
-    const vs = code("|a").setting("editor.renderWhitespace", "none");
+    const ide = code("|a").setting("render_whitespace", "none");
 
-    vs.run("editor.action.toggleRenderWhitespace");
-    expect(vs.ctx.configuration.get("editor.renderWhitespace")).eq("all");
+    ide.executeCommand("view.toggleRenderWhitespace");
+    expect(ide.setting("render_whitespace")).eq("all");
 
-    vs.run("editor.action.toggleRenderWhitespace");
-    expect(vs.ctx.configuration.get("editor.renderWhitespace")).eq("none");
+    ide.executeCommand("view.toggleRenderWhitespace");
+    expect(ide.setting("render_whitespace")).eq("none");
   });
 });

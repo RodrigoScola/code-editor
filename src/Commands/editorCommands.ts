@@ -1,30 +1,134 @@
+import path from "path";
 import { EditorContext } from "../Editor/Editor/Editor.js";
-import { isCodeEditorWindow, isFileTreeWindow, isTextComponent } from "../utils.js";
+import type { EditorCommand } from "./Commands.js";
+import {
+  isCodeEditorWindow,
+  isFileTreeWindow,
+  isTextComponent,
+} from "../utils.js";
 import { log } from "../log.js";
 import { assert } from "../assert.js";
 import { isatty } from "node:tty";
+import { UiInput } from "../ui/components/UiInput.js";
+import { TreeInput } from "../Editor/windows/FileTreeWindow.js";
+import { dir } from "node:console";
 
 export const textEditorCommands = {
   textEditor: {
-    saveFile: saveFileCommand,
-    moveDown: moveDownEditorCommand,
-    moveUp: moveUpEditorCommand,
-    moveLeft: moveLeftEditorCommand,
-    moveRight: moveRightEditorCommand,
-    insertMode: editorInsertMode,
-    newLine: newLineEditorCommand,
-    commandMode: setCommandMode,
-    deleteLine: deleteLine,
-    insertAfter: editorInsertModeAfter,
-    nextWordStart: nextWordStart,
-    nextCompleteWordStart: nextCompleteWordStart,
-    goToEndLine,
-    goToBeginLine,
-    prevWordStart,
-    goToDocumentStart,
-    goToDocumentEnd,
+    saveFile: {
+      id: "textEditor.saveFile",
+      title: "Text Editor: Save File",
+      description: "Writes the focused document to disk (:w).",
+      run: saveFileCommand,
+    },
+    moveDown: {
+      id: "textEditor.moveDown",
+      title: "Text Editor: Move Cursor Down",
+      description: "Moves the cursor one line down, keeping its column (j).",
+      run: moveDownEditorCommand,
+    },
+    moveUp: {
+      id: "textEditor.moveUp",
+      title: "Text Editor: Move Cursor Up",
+      description: "Moves the cursor one line up, keeping its column (k).",
+      run: moveUpEditorCommand,
+    },
+    moveLeft: {
+      id: "textEditor.moveLeft",
+      title: "Text Editor: Move Cursor Left",
+      description: "Moves the cursor one character left (h).",
+      run: moveLeftEditorCommand,
+    },
+    moveRight: {
+      id: "textEditor.moveRight",
+      title: "Text Editor: Move Cursor Right",
+      description: "Moves the cursor one character right (l).",
+      run: moveRightEditorCommand,
+    },
+    insertMode: {
+      id: "textEditor.insertMode",
+      title: "Text Editor: Insert Before Cursor",
+      description: "Switches to insert mode at the cursor (i).",
+      run: editorInsertMode,
+    },
+    newLine: {
+      id: "textEditor.newLine",
+      title: "Text Editor: Open Line Below",
+      description:
+        "Adds an empty line below the cursor and starts typing on it (o).",
+      run: newLineEditorCommand,
+    },
+    commandMode: {
+      id: "textEditor.commandMode",
+      title: "Text Editor: Command Line",
+      description:
+        "Moves focus to the status line to type a command, like :w (:).",
+      run: setCommandMode,
+    },
+    deleteLine: {
+      id: "textEditor.deleteLine",
+      title: "Text Editor: Delete Line",
+      description: "Deletes the line the cursor is on (dd).",
+      run: deleteLine,
+    },
+    insertAfter: {
+      id: "textEditor.insertAfter",
+      title: "Text Editor: Insert After Cursor",
+      description:
+        "Switches to insert mode after the cursor (a). In the file tree it starts a new file instead.",
+      run: editorInsertModeAfter,
+    },
+    renameCharacter: {
+      id: "textEditor.rename",
+      title: "Text Editor: Rename",
+      description: "renames files or characters in editor",
+      run: renameCharacter,
+    },
+    nextWordStart: {
+      id: "textEditor.nextWordStart",
+      title: "Text Editor: Next Word",
+      description: "Jumps forward to the start of the next word (w).",
+      run: nextWordStart,
+    },
+    nextCompleteWordStart: {
+      id: "textEditor.nextCompleteWordStart",
+      title: "Text Editor: Next WORD",
+      description:
+        "Jumps forward to the start of the next word, where words are split only by spaces (W).",
+      run: nextCompleteWordStart,
+    },
+    goToEndLine: {
+      id: "textEditor.goToEndLine",
+      title: "Text Editor: Go to End of Line",
+      description: "Moves the cursor to the last character of the line ($).",
+      run: goToEndLine,
+    },
+    goToBeginLine: {
+      id: "textEditor.goToBeginLine",
+      title: "Text Editor: Go to Start of Line",
+      description: "Moves the cursor to the first column of the line (0).",
+      run: goToBeginLine,
+    },
+    prevWordStart: {
+      id: "textEditor.prevWordStart",
+      title: "Text Editor: Previous Word",
+      description: "Jumps back to the start of the word before the cursor (b).",
+      run: prevWordStart,
+    },
+    goToDocumentStart: {
+      id: "textEditor.goToDocumentStart",
+      title: "Text Editor: Go to First Line",
+      description: "Moves the cursor to the first line of the document (gg).",
+      run: goToDocumentStart,
+    },
+    goToDocumentEnd: {
+      id: "textEditor.goToDocumentEnd",
+      title: "Text Editor: Go to Last Line",
+      description: "Moves the cursor to the last line of the document (G).",
+      run: goToDocumentEnd,
+    },
   },
-};
+} satisfies Record<string, Record<string, EditorCommand>>;
 
 function moveDownEditorCommand(ctx: EditorContext) {
   const editor = ctx.getFocusedComponent();
@@ -89,27 +193,49 @@ function setCommandMode(ctx: EditorContext) {
 function deleteLine(ctx: EditorContext) {
   const editor = ctx.getFocusedComponent();
   isTextComponent(editor);
+  const cursor = editor.cursor();
+  if (isFileTreeWindow(editor)) {
+    editor.deleteNodeAt(cursor.line, ctx);
+    return;
+  }
 
-  const buffer = editor.buffer();
+  editor.removeLine(cursor.line);
+}
+
+function renameCharacter(ctx: EditorContext) {
+  const editor = ctx.getFocusedComponent();
+  isTextComponent(editor);
+
   const cursor = editor.cursor();
 
-  buffer.removeLine(cursor.line);
+  if (isFileTreeWindow(editor)) {
+    const file = editor.getNodeAt(cursor.line);
+    assert(file, "invalid file on position " + cursor.line);
+    ctx.focus(file);
+    cursor.goToLineBeginning();
+    cursor.startSelection();
+    cursor.goToLineEnd();
+    cursor.selection?.setHead({ x: cursor.column + 1, y: cursor.line }); // end is exclusive
+
+    ctx.setMode("insert");
+  }
 }
 
 function editorInsertModeAfter(ctx: EditorContext) {
   const editor = ctx.getFocusedComponent();
   isTextComponent(editor);
 
-  try {
-    isFileTreeWindow(editor)
-    
+  const cursor = editor.cursor();
 
-  } catch (err) {
-  }
+  if (isFileTreeWindow(editor)) {
+    const file = editor.createNewFileInput();
+
+    ctx.focus(file);
+    ctx.setMode("insert");
+    return;
   }
 
   const buffer = editor.buffer();
-  const cursor = editor.cursor();
   // check if at the end of the line
 
   const line = buffer.at(cursor.line);

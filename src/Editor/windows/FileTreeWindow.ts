@@ -17,7 +17,7 @@ import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { UiInput } from "../../ui/components/UiInput.js";
 import { assert } from "../../assert.js";
 
-class TreeInput extends UiInput {
+export class TreeInput extends UiInput {
   path: string;
   parent() {
     return super.parent() as TreeInput | null;
@@ -28,19 +28,79 @@ class TreeInput extends UiInput {
   isDirectory: boolean;
   folded: boolean;
 
+  onFocus(): void {
+    assert(
+      this.buffer().count() == 1 && this.multiLine() == false,
+      "has more than one  count on focus",
+    );
+    this.setCursorEnabled(true);
+  }
+  onBlur(): void {
+    assert(
+      this.buffer().count() == 1 && this.multiLine() == false,
+      "added more than one line while on focus",
+    );
+    this.setCursorEnabled(false);
+  }
+
   constructor(
     path: string,
     name: string,
     isDirectory: boolean,
     folded: boolean,
   ) {
-    super();
+    super(name);
     this.path = path;
     this.setName(name);
     this.isDirectory = isDirectory;
     this.folded = folded;
     this.setCursorEnabled(false);
+
+    assert(
+      this.buffer().count() == 1 && this.multiLine() == false,
+      "has more than one line on buffer creation. " + this.buffer().count(),
+    );
   }
+  onEnter(ctx: EditorContext): void {
+    super.onEnter(ctx);
+    const fileName = this.buffer().at(this.currentCommandLine);
+    assert(fileName, `trying to save file with invalid filename`);
+
+    // a new-file input's path is the folder it goes in; a real node's path
+    // is the file or folder itself
+    const creating = !this.name();
+    const folder = creating ? this.path : path.dirname(this.path);
+    const target = path.join(folder, fileName);
+
+    if (ctx.fileExists(target)) {
+      // add notification
+      return;
+    }
+
+    if (creating) {
+      if (fileName.endsWith("/")) {
+        ctx.newDirectory(target);
+      } else {
+        ctx.newFile(target);
+      }
+    } else {
+      ctx.renameFile(this.path, target);
+      this.setName(fileName);
+      this.setPath(target);
+    }
+
+    ctx.setMode("normal");
+    ctx.focusPrevious();
+  }
+
+  // moves this node, and everything under it, to a new path
+  setPath(newPath: string) {
+    this.path = newPath;
+    for (const child of this.children()) {
+      child.setPath(path.join(newPath, child.name()!));
+    }
+  }
+  save() {}
 }
 
 export class FileTreeWindow extends UIScreen {
@@ -49,15 +109,29 @@ export class FileTreeWindow extends UIScreen {
 
   ignoreFileExt: string[] = [];
 
+  files: Map<string, TreeInput> = new Map();
+  private _defaultFolded: boolean = true;
+
+  defaultFolded() {
+    return this._defaultFolded;
+  }
+  setDefaultFolded(val: boolean) {
+    this._defaultFolded = val;
+
+    return this;
+  }
+
   constructor(dir: string) {
     super();
+
+    assert(typeof dir === "string", `expected string, got:${typeof dir}`);
 
     this.cursor().style = ComponentStyle.Create()
       .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
 
       .setColor(colors.WHITE_FOREGROUND);
 
-    this.root = new TreeInput(".", dir, true, false);
+    this.root = new TreeInput(dir, dir, true, false);
 
     this.refresh();
   }
@@ -78,7 +152,11 @@ export class FileTreeWindow extends UIScreen {
     assert(typeof this.root.name() === "string", `root name has to be string`);
     this.walkTree(this.root.name()!, this.root);
 
-    this.view().content().setBuffer(this.treeToBuffer());
+    const buffer = this.treeToBuffer();
+
+    this.view().content().setBuffer(buffer);
+    this.cursor().setBuffer(buffer);
+    return this;
   }
 
   private formatNodes(
@@ -95,8 +173,7 @@ export class FileTreeWindow extends UIScreen {
         path.join(dir, entry.name),
         entry.name,
         entry.isDirectory(),
-
-        true,
+        this._defaultFolded,
       );
       assert(
         tempNode.name(),
@@ -123,15 +200,19 @@ export class FileTreeWindow extends UIScreen {
 
     for (const entry of this.formatNodes(dir, node, entries)) {
       node.addChildren(entry);
+      this.files.set(entry.path, entry);
 
       if (entry.isDirectory) {
-        this.walkTree(path.join(dir, entry.name()!), entry);
+        this.walkTree(entry.path, entry);
       }
     }
   }
 
   onPrePaint(): void {
     this.cursor().width = this.view().contentLayout().width;
+    const cl = this.view().contentLayout();
+    this.view().viewport().ensureVisible(cl.width, cl.height);
+    this.cursor().ensureVisible(this.view().viewport());
   }
 
   treeToBuffer() {
@@ -155,6 +236,11 @@ export class FileTreeWindow extends UIScreen {
 
     this.paintChild(this.root, total, -1, canvas);
     this.cursor().paint(canvas);
+    this.cursor().selection?.styles.setBackgroundColor(
+      colors.YELLOW_BACKGROUND,
+    );
+
+    this.cursor().paintSelection(canvas);
   }
   private paintChild(
     node: TreeInput,
@@ -190,7 +276,7 @@ export class FileTreeWindow extends UIScreen {
         height: 1,
       };
 
-      let label = node.name() + ``;
+      let label = node.buffer().content() + ``;
 
       if (node.isDirectory == true) {
         label =
@@ -237,6 +323,27 @@ export class FileTreeWindow extends UIScreen {
   count() {
     return this.getNodeCount(this.root);
   }
+  getNodeAt(line: number) {
+    return this.getNodeAtIndex(this.root, line);
+  }
+
+  getIndex(node: TreeInput) {
+    return this.walkIndex(this.root, node, 0);
+  }
+  private walkIndex(root: TreeInput, target: TreeInput, ind: number): number {
+    if (root === target) return ind;
+
+    if (root.isDirectory && root.folded) return -1;
+
+    let index = ind + 1;
+    for (const child of root.children()) {
+      const childIndex = this.walkIndex(child, target, index);
+      if (childIndex !== -1) return childIndex;
+      index += this.getNodeCount(child);
+    }
+
+    return -1;
+  }
 
   private getNodeAtIndex(
     node: TreeInput,
@@ -261,18 +368,81 @@ export class FileTreeWindow extends UIScreen {
   moveCursorUp(): void {
     this.cursor().line = Math.max(0, this.cursor().line - 1);
   }
-  onEvent(event: EditorEvents): void {}
   onEnter(ctx: EditorContext): void {
     const node = this.getNodeAtIndex(this.root, this.cursor().line);
 
     if (!node) return;
+    this.select(node, ctx);
+  }
+  private select(node: TreeInput, ctx: EditorContext) {
+    const ind = this.getIndex(node);
 
-    if (node.isDirectory) {
-      node.folded = !node.folded;
-    } else if (!node.isDirectory) {
-      const editor = ctx.openFile(node?.path);
-
-      if (editor) ctx.focus(editor);
+    if (ind !== -1) {
+      this.cursor().scrollTo(ind, this.cursor().column);
     }
+
+    try {
+      if (node.isDirectory) {
+        node.folded = !node.folded;
+      } else if (!node.isDirectory) {
+        const editor = ctx.openFile(node?.path);
+
+        if (editor) ctx.focus(editor);
+      }
+    } catch (err) {
+      console.error(`prob context is not defined`);
+    }
+  }
+  createNewFileInput() {
+    const cursor = this.cursor();
+    const currentNode = this.getNodeAt(cursor.line);
+    assert(currentNode, `invalid node at ${cursor.line}`);
+
+    let parent = currentNode.parent();
+
+    if (currentNode.isDirectory) {
+      parent = currentNode;
+    } else {
+      parent = currentNode.parent();
+    }
+    assert(parent, `invalid parent for new file`);
+
+    // its path is the folder the new file goes in (see TreeInput.onEnter)
+    const input = new TreeInput(parent.path, "", false, false);
+
+    parent.addChildAt(input, cursor.line);
+    this.moveCursorDown();
+
+    return input;
+  }
+  reveal(p: string) {
+    const hasFile = this.files.get(p);
+
+    if (!hasFile) {
+      console.error("could not find the thing");
+      return;
+    }
+
+    let parent = hasFile.parent();
+
+    while (parent) {
+      parent.folded = false;
+      parent = parent.parent();
+    }
+    this.select(hasFile, EditorContext.instance!);
+    console.log("finalized");
+  }
+
+  deleteNodeAt(at: number, ctx: EditorContext): void {
+    const node = this.getNodeAt(at);
+    assert(node, `invalid input at position: ${at}`);
+
+    if (node?.isDirectory) {
+      ctx.removeDirectory(node.path);
+    } else {
+      ctx.removeFile(node!.path);
+    }
+
+    this.refresh();
   }
 }

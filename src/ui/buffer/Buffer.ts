@@ -1,5 +1,6 @@
 import { start } from "repl";
 import { assert } from "../../assert.js";
+import { EditorSelection } from "../../Editor/Selection.js";
 
 export class TextBuffer implements BufferLike {
   private lines: string[] = [];
@@ -97,6 +98,7 @@ export class TextBuffer implements BufferLike {
     this.lines.push(content);
     this.changed();
   }
+  
   insertLine(afterLine: number) {
     const at = Math.max(0, Math.min(afterLine + 1, this.lines.length));
     this.lines.splice(at, 0, "");

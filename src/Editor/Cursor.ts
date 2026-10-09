@@ -25,6 +25,10 @@ export class Cursor {
   private _buffer?: BufferLike;
   private _view?: DisplayComponent;
 
+  hasSelection() {
+    return Boolean(this.selection);
+  }
+
   setBuffer(buffer: BufferLike) {
     this._buffer = buffer;
     return this;
@@ -74,7 +78,6 @@ export class Cursor {
   clearSelection() {
     this.selection = null;
   }
-
   paint(canvas: Canvas) {
     if (!this._view) {
       return;
@@ -183,6 +186,24 @@ export class Cursor {
 
     if (this.selection) {
       this.updateSelection();
+    }
+  }
+
+  scrollTo(line: number, column: number) {
+    const lineOperation =
+      this.line > line ? () => this.moveUp() : () => this.moveDown();
+
+    let deltaLine = Math.abs(this.line - line);
+    let deltaWidth = Math.abs(this.column - column);
+
+    const widthOperation =
+      this.column > column ? () => this.moveLeft() : () => this.moveRight();
+
+    for (let i = 0; i < deltaLine; i++) {
+      lineOperation();
+    }
+    for (let i = 0; i < deltaWidth; i++) {
+      widthOperation();
     }
   }
 

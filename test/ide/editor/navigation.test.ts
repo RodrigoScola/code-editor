@@ -16,55 +16,55 @@ import { code } from "../harness.js";
 
 const lines = (count: number) => Array.from({ length: count }, (_, i) => `line ${i}`).join("\n");
 
-const path = (vs: ReturnType<typeof code>) => vs.window().document.file.path();
+const path = (ide: ReturnType<typeof code>) => ide.window().document.file.path();
 
 describe("navigation history", () => {
   it("navigateBack returns to the previous editor", () => {
-    const vs = code("|a", { path: "a.ts" });
-    vs.ide.open("b.ts", "b");
+    const ide = code("|a", { path: "a.ts" });
+    ide.openMemoryFile("b.ts", "b");
 
-    vs.run("workbench.action.navigateBack");
+    ide.executeCommand("navigation.back");
 
-    expect(path(vs)).eq("a.ts");
+    expect(path(ide)).eq("a.ts");
   });
 
   it("navigateForward goes forward again", () => {
-    const vs = code("|a", { path: "a.ts" });
-    vs.ide.open("b.ts", "b");
+    const ide = code("|a", { path: "a.ts" });
+    ide.openMemoryFile("b.ts", "b");
 
-    vs.run("workbench.action.navigateBack").run("workbench.action.navigateForward");
+    ide.executeCommand("navigation.back").executeCommand("navigation.forward");
 
-    expect(path(vs)).eq("b.ts");
+    expect(path(ide)).eq("b.ts");
   });
 
   it("remembers big jumps inside a file", () => {
-    const vs = code(lines(100)).run("cursorBottom");
+    const ide = code(lines(100)).executeCommand("textEditor.cursorBottom");
 
-    vs.run("workbench.action.navigateBack");
+    ide.executeCommand("navigation.back");
 
-    expect(vs.window().cursor().line).eq(0);
+    expect(ide.window().cursor().line).eq(0);
   });
 
   it("does not remember small moves", () => {
-    const vs = code(lines(100)).run("cursorDown").run("cursorDown");
+    const ide = code(lines(100)).executeCommand("textEditor.cursorDown").executeCommand("textEditor.cursorDown");
 
-    vs.run("workbench.action.navigateBack");
+    ide.executeCommand("navigation.back");
 
-    expect(vs.window().cursor().line).eq(2);
+    expect(ide.window().cursor().line).eq(2);
   });
 });
 
 describe("edit locations", () => {
   it("navigateToLastEditLocation goes back to where text was last changed", () => {
-    const vs = code(lines(100), { path: "a.ts" });
-    vs.window().cursor().line = 50;
-    vs.type("X");
-    vs.ide.open("b.ts", "b");
+    const ide = code(lines(100), { path: "a.ts" });
+    ide.window().cursor().line = 50;
+    ide.type("X");
+    ide.openMemoryFile("b.ts", "b");
 
-    vs.run("workbench.action.navigateToLastEditLocation");
+    ide.executeCommand("navigation.lastEdit");
 
-    expect(path(vs)).eq("a.ts");
-    expect(vs.window().cursor().line).eq(50);
+    expect(path(ide)).eq("a.ts");
+    expect(ide.window().cursor().line).eq(50);
   });
 });
 
@@ -77,57 +77,57 @@ describe("problems", () => {
   });
 
   it("marker.next goes to the next problem in the file", () => {
-    const vs = code(lines(20), { path: "a.ts" });
-    vs.ctx.diagnostics.set("a.ts", [at(5), at(10)]);
+    const ide = code(lines(20), { path: "a.ts" });
+    ide.diagnostics.set("a.ts", [at(5), at(10)]);
 
-    vs.run("editor.action.marker.next");
+    ide.executeCommand("problems.next");
 
-    expect(vs.window().cursor()).toMatchObject({ line: 5, column: 2 });
+    expect(ide.window().cursor()).toMatchObject({ line: 5, column: 2 });
   });
 
   it("marker.next wraps around inside the file", () => {
-    const vs = code(lines(20), { path: "a.ts" });
-    vs.ctx.diagnostics.set("a.ts", [at(5)]);
-    vs.window().cursor().line = 15;
+    const ide = code(lines(20), { path: "a.ts" });
+    ide.diagnostics.set("a.ts", [at(5)]);
+    ide.window().cursor().line = 15;
 
-    expect(vs.run("editor.action.marker.next").window().cursor().line).eq(5);
+    expect(ide.executeCommand("problems.next").window().cursor().line).eq(5);
   });
 
   it("marker.prev goes backwards", () => {
-    const vs = code(lines(20), { path: "a.ts" });
-    vs.ctx.diagnostics.set("a.ts", [at(5), at(10)]);
-    vs.window().cursor().line = 12;
+    const ide = code(lines(20), { path: "a.ts" });
+    ide.diagnostics.set("a.ts", [at(5), at(10)]);
+    ide.window().cursor().line = 12;
 
-    expect(vs.run("editor.action.marker.prev").window().cursor().line).eq(10);
+    expect(ide.executeCommand("problems.previous").window().cursor().line).eq(10);
   });
 
   it("marker.nextInFiles goes on to the next file with problems", () => {
-    const vs = code(lines(20), { path: "a.ts" });
-    vs.ide.open("b.ts", lines(20));
-    vs.ide.open("a.ts", lines(20));
-    vs.ctx.diagnostics.set("a.ts", [at(5)]);
-    vs.ctx.diagnostics.set("b.ts", [at(3)]);
-    vs.window().cursor().line = 10;
+    const ide = code(lines(20), { path: "a.ts" });
+    ide.openMemoryFile("b.ts", lines(20));
+    ide.openMemoryFile("a.ts", lines(20));
+    ide.diagnostics.set("a.ts", [at(5)]);
+    ide.diagnostics.set("b.ts", [at(3)]);
+    ide.window().cursor().line = 10;
 
-    vs.run("editor.action.marker.nextInFiles");
+    ide.executeCommand("problems.nextInFiles");
 
-    expect(path(vs)).eq("b.ts");
-    expect(vs.window().cursor().line).eq(3);
+    expect(path(ide)).eq("b.ts");
+    expect(ide.window().cursor().line).eq(3);
   });
 });
 
 describe("changes", () => {
   it("nextChange goes to the next changed line", () => {
-    const vs = code("|a\nX\nc\nd");
-    vs.window().setDiffBase("a\nb\nc\nd");
+    const ide = code("|a\nX\nc\nd");
+    ide.window().setDiffBase("a\nb\nc\nd");
 
-    expect(vs.run("workbench.action.editor.nextChange").window().cursor().line).eq(1);
+    expect(ide.executeCommand("textEditor.nextChange").window().cursor().line).eq(1);
   });
 
   it("previousChange wraps around", () => {
-    const vs = code("|a\nX\nc\nd");
-    vs.window().setDiffBase("a\nb\nc\nd");
+    const ide = code("|a\nX\nc\nd");
+    ide.window().setDiffBase("a\nb\nc\nd");
 
-    expect(vs.run("workbench.action.editor.previousChange").window().cursor().line).eq(1);
+    expect(ide.executeCommand("textEditor.previousChange").window().cursor().line).eq(1);
   });
 });

@@ -69,7 +69,6 @@ export class EditorSelection {
     return this._anchor;
   }
   getSelectionBounds(
-    canvas: Canvas,
     layout: LayoutBounds,
     start: Point,
     end: Point,

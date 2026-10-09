@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { applyWorkspaceEdit } from "../../../src/Lsp/workspaceEdit.js";
-import { workspace } from "../../ide/harness.js";
+import { workspace } from "../harness.js";
 import { code } from "../harness.js";
 
 // Proposed module src/Lsp/workspaceEdit.ts: what rename, code actions and
@@ -27,17 +27,17 @@ const range = (sl: number, sc: number, el: number, ec: number) => ({ start: pos(
 
 describe("text edits", () => {
   it("edits several open documents", () => {
-    const vs = code("|foo", { path: "a.ts" });
-    vs.ide.open("b.ts", "foo()");
+    const ide = code("|foo", { path: "a.ts" });
+    ide.openMemoryFile("b.ts", "foo()");
 
-    applyWorkspaceEdit(vs.ctx, {
+    applyWorkspaceEdit(ide, {
       changes: {
         "a.ts": [{ range: range(0, 0, 0, 3), newText: "bar" }],
         "b.ts": [{ range: range(0, 0, 0, 3), newText: "bar" }],
       },
     });
 
-    const texts = vs.ide.group.management
+    const texts = ide.editorGroup().management
       .all()
       .map((w: { buffer(): { content(): string } }) => w.buffer().content());
     expect(texts).toEqual(["bar", "bar()"]);
@@ -45,9 +45,9 @@ describe("text edits", () => {
 
   it("edits files on disk that aren't open", () => {
     const root = workspace({ "c.ts": "foo" });
-    const vs = code("|");
+    const ide = code("|");
 
-    applyWorkspaceEdit(vs.ctx, {
+    applyWorkspaceEdit(ide, {
       changes: { [join(root, "c.ts")]: [{ range: range(0, 0, 0, 3), newText: "bar" }] },
     });
 
@@ -55,50 +55,50 @@ describe("text edits", () => {
   });
 
   it("applies when the document version matches", () => {
-    const vs = code("|foo", { path: "a.ts" });
-    const version = vs.window().document.version;
+    const ide = code("|foo", { path: "a.ts" });
+    const version = ide.window().document.version;
 
-    const result = applyWorkspaceEdit(vs.ctx, {
+    const result = applyWorkspaceEdit(ide, {
       documentChanges: [
         { textDocument: { path: "a.ts", version }, edits: [{ range: range(0, 0, 0, 3), newText: "bar" }] },
       ],
     });
 
     expect(result.applied).eq(true);
-    expect(vs.lines()).toEqual(["bar"]);
+    expect(ide.lines()).toEqual(["bar"]);
   });
 
   it("applies nothing when a version is out of date", () => {
-    const vs = code("|foo", { path: "a.ts" });
-    const version = vs.window().document.version;
-    vs.type("x");
+    const ide = code("|foo", { path: "a.ts" });
+    const version = ide.window().document.version;
+    ide.type("x");
 
-    const result = applyWorkspaceEdit(vs.ctx, {
+    const result = applyWorkspaceEdit(ide, {
       documentChanges: [
         { textDocument: { path: "a.ts", version }, edits: [{ range: range(0, 0, 0, 1), newText: "y" }] },
       ],
     });
 
     expect(result.applied).eq(false);
-    expect(vs.lines()).toEqual(["xfoo"]);
+    expect(ide.lines()).toEqual(["xfoo"]);
   });
 });
 
 describe("file operations", () => {
   it("creates a file", () => {
     const root = workspace({});
-    const vs = code("|");
+    const ide = code("|");
 
-    applyWorkspaceEdit(vs.ctx, { documentChanges: [{ kind: "create", path: join(root, "new.ts") }] });
+    applyWorkspaceEdit(ide, { documentChanges: [{ kind: "create", path: join(root, "new.ts") }] });
 
     expect(existsSync(join(root, "new.ts"))).eq(true);
   });
 
   it("does not overwrite an existing file unless asked", () => {
     const root = workspace({ "a.ts": "keep" });
-    const vs = code("|");
+    const ide = code("|");
 
-    const result = applyWorkspaceEdit(vs.ctx, {
+    const result = applyWorkspaceEdit(ide, {
       documentChanges: [{ kind: "create", path: join(root, "a.ts") }],
     });
 
@@ -108,9 +108,9 @@ describe("file operations", () => {
 
   it("ignoreIfExists skips the create without failing", () => {
     const root = workspace({ "a.ts": "keep" });
-    const vs = code("|");
+    const ide = code("|");
 
-    const result = applyWorkspaceEdit(vs.ctx, {
+    const result = applyWorkspaceEdit(ide, {
       documentChanges: [{ kind: "create", path: join(root, "a.ts"), options: { ignoreIfExists: true } }],
     });
 
@@ -120,9 +120,9 @@ describe("file operations", () => {
 
   it("renames a file", () => {
     const root = workspace({ "a.ts": "x" });
-    const vs = code("|");
+    const ide = code("|");
 
-    applyWorkspaceEdit(vs.ctx, {
+    applyWorkspaceEdit(ide, {
       documentChanges: [{ kind: "rename", oldPath: join(root, "a.ts"), newPath: join(root, "b.ts") }],
     });
 
@@ -132,26 +132,26 @@ describe("file operations", () => {
 
   it("an open editor follows its file when it is renamed", () => {
     const root = workspace({ "a.ts": "x" });
-    const vs = code("|");
-    vs.ide.openFile(join(root, "a.ts"));
+    const ide = code("|");
+    ide.openAndFocus(join(root, "a.ts"));
 
-    applyWorkspaceEdit(vs.ctx, {
+    applyWorkspaceEdit(ide, {
       documentChanges: [{ kind: "rename", oldPath: join(root, "a.ts"), newPath: join(root, "b.ts") }],
     });
 
-    expect(vs.window().document.file.path()).eq(join(root, "b.ts"));
+    expect(ide.window().document.file.path()).eq(join(root, "b.ts"));
   });
 
   it("deletes a folder only when recursive", () => {
     const root = workspace({ "dir/a.ts": "x" });
-    const vs = code("|");
+    const ide = code("|");
 
-    const refused = applyWorkspaceEdit(vs.ctx, {
+    const refused = applyWorkspaceEdit(ide, {
       documentChanges: [{ kind: "delete", path: join(root, "dir") }],
     });
     expect(refused.applied).eq(false);
 
-    applyWorkspaceEdit(vs.ctx, {
+    applyWorkspaceEdit(ide, {
       documentChanges: [{ kind: "delete", path: join(root, "dir"), options: { recursive: true } }],
     });
     expect(existsSync(join(root, "dir"))).eq(false);
@@ -160,9 +160,9 @@ describe("file operations", () => {
   it("runs operations in order: create then edit the new file", () => {
     const root = workspace({});
     const path = join(root, "new.ts");
-    const vs = code("|");
+    const ide = code("|");
 
-    applyWorkspaceEdit(vs.ctx, {
+    applyWorkspaceEdit(ide, {
       documentChanges: [
         { kind: "create", path },
         { textDocument: { path, version: null }, edits: [{ range: range(0, 0, 0, 0), newText: "hi" }] },
@@ -175,8 +175,8 @@ describe("file operations", () => {
 
 describe("rename symbol", () => {
   function withRename(prepare?: () => unknown) {
-    const vs = code("let fo|o = foo;", { path: "a.ts", width: 100 });
-    vs.ctx.languages.registerRenameProvider("typescript", {
+    const ide = code("let fo|o = foo;", { path: "a.ts", width: 100 });
+    ide.languages.registerRenameProvider("typescript", {
       prepareRename: prepare,
       provideRenameEdits: (_doc: unknown, _pos: unknown, newName: string) => ({
         changes: {
@@ -187,27 +187,27 @@ describe("rename symbol", () => {
         },
       }),
     });
-    return vs;
+    return ide;
   }
 
   it("renames every occurrence", () => {
-    expect(withRename().run("editor.action.rename", { newName: "bar" }).lines()).toEqual([
+    expect(withRename().executeCommand("language.rename", { newName: "bar" }).lines()).toEqual([
       "let bar = bar;",
     ]);
   });
 
   it("is one undo step", () => {
-    const vs = withRename().run("editor.action.rename", { newName: "bar" }).run("undo");
+    const ide = withRename().executeCommand("language.rename", { newName: "bar" }).executeCommand("textEditor.undo");
 
-    expect(vs.lines()).toEqual(["let foo = foo;"]);
+    expect(ide.lines()).toEqual(["let foo = foo;"]);
   });
 
   it("does nothing when prepareRename refuses, and says so", () => {
-    const vs = withRename(() => {
+    const ide = withRename(() => {
       throw new Error("You cannot rename this element.");
-    }).run("editor.action.rename", { newName: "bar" });
+    }).executeCommand("language.rename", { newName: "bar" });
 
-    expect(vs.lines()).toEqual(["let foo = foo;"]);
-    expect(vs.ctx.messages().at(-1)?.text).toContain("cannot rename");
+    expect(ide.lines()).toEqual(["let foo = foo;"]);
+    expect(ide.messages().at(-1)?.text).toContain("cannot rename");
   });
 });

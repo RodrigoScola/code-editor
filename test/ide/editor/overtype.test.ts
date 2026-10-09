@@ -7,35 +7,35 @@ import { code } from "../harness.js";
 //   editor.action.toggleOvertypeInsertMode
 //   editor.overtypeOnPaste: pasting in overtype mode replaces too
 
-const toggle = "editor.action.toggleOvertypeInsertMode";
+const toggle = "textEditor.toggleOvertype";
 
 describe("overtype mode", () => {
   it("typing replaces the character under the cursor", () => {
-    expect(code("a|bc").run(toggle).type("X").state()).eq("aX|c");
+    expect(code("a|bc").executeCommand(toggle).type("X").state()).eq("aX|c");
   });
 
   it("typing at the end of the line still appends", () => {
-    expect(code("ab|").run(toggle).type("X").state()).eq("abX|");
+    expect(code("ab|").executeCommand(toggle).type("X").state()).eq("abX|");
   });
 
   it("toggling again goes back to inserting", () => {
-    expect(code("a|bc").run(toggle).run(toggle).type("X").state()).eq("aX|bc");
+    expect(code("a|bc").executeCommand(toggle).executeCommand(toggle).type("X").state()).eq("aX|bc");
   });
 
   it("does not replace the line break", () => {
-    expect(code("a|\nb").run(toggle).type("XY").lines()).toEqual(["aXY", "b"]);
+    expect(code("a|\nb").executeCommand(toggle).type("XY").lines()).toEqual(["aXY", "b"]);
   });
 
   it("the status line shows OVR", () => {
-    const vs = code("a|bc", { width: 100 }).run(toggle);
+    const ide = code("a|bc", { width: 100 }).executeCommand(toggle);
 
-    expect(vs.statusLine()).toContain("OVR");
+    expect(ide.statusLine()).toContain("OVR");
   });
 
   it("pasting replaces too with overtypeOnPaste", () => {
-    const vs = code("a|bcd").setting("editor.overtypeOnPaste", true).run(toggle);
-    vs.ctx.clipboard.writeText("XY");
+    const ide = code("a|bcd").setting("overtype_on_paste", true).executeCommand(toggle);
+    ide.clipboard.writeText("XY");
 
-    expect(vs.run("editor.action.clipboardPasteAction").state()).eq("aXY|d");
+    expect(ide.executeCommand("textEditor.paste").state()).eq("aXY|d");
   });
 });

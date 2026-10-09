@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { Repository } from "../../../src/Scm/repository.js";
 import { parseWorktreeList } from "../../../src/Scm/worktrees.js";
-import { workspace } from "../../ide/harness.js";
+import { workspace } from "../harness.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // Tags and worktrees.

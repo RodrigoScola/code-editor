@@ -4,61 +4,61 @@ import { code } from "../harness.js";
 // Edge cases for navigation (base spec: navigation.test.ts).
 
 const lines = (count: number) => Array.from({ length: count }, (_, i) => `line ${i}`).join("\n");
-const path = (vs: ReturnType<typeof code>) => vs.window().document.file.path();
+const path = (ide: ReturnType<typeof code>) => ide.window().document.file.path();
 
 describe("navigation history", () => {
   it("navigateBack with no history does nothing", () => {
-    const vs = code("a|b", { path: "a.ts" }).run("workbench.action.navigateBack");
+    const ide = code("a|b", { path: "a.ts" }).executeCommand("navigation.back");
 
-    expect(vs.state()).eq("a|b");
+    expect(ide.state()).eq("a|b");
   });
 
   it("a new jump after going back drops the forward history", () => {
-    const vs = code("|a", { path: "a.ts" });
-    vs.ide.open("b.ts", "b");
-    vs.run("workbench.action.navigateBack");
-    vs.ide.open("c.ts", "c");
+    const ide = code("|a", { path: "a.ts" });
+    ide.openMemoryFile("b.ts", "b");
+    ide.executeCommand("navigation.back");
+    ide.openMemoryFile("c.ts", "c");
 
-    vs.run("workbench.action.navigateForward");
+    ide.executeCommand("navigation.forward");
 
-    expect(path(vs)).eq("c.ts");
+    expect(path(ide)).eq("c.ts");
   });
 
   it("goes back to the position in the file, not just the file", () => {
-    const vs = code(lines(100), { path: "a.ts" });
-    vs.window().cursor().line = 40;
-    vs.ide.open("b.ts", "b");
+    const ide = code(lines(100), { path: "a.ts" });
+    ide.window().cursor().line = 40;
+    ide.openMemoryFile("b.ts", "b");
 
-    vs.run("workbench.action.navigateBack");
+    ide.executeCommand("navigation.back");
 
-    expect(vs.window().cursor().line).eq(40);
+    expect(ide.window().cursor().line).eq(40);
   });
 
   it("reopens a file that was closed since", () => {
-    const vs = code("|a", { path: "a.ts" });
-    vs.ide.open("b.ts", "b");
-    vs.run("workbench.action.closeActiveEditor");
+    const ide = code("|a", { path: "a.ts" });
+    ide.openMemoryFile("b.ts", "b");
+    ide.executeCommand("tabs.close");
 
-    vs.run("workbench.action.navigateBack");
+    ide.executeCommand("navigation.back");
 
-    expect(path(vs)).eq("b.ts");
+    expect(path(ide)).eq("b.ts");
   });
 });
 
 describe("edit locations", () => {
   it("navigateBackInEditLocations goes through earlier edits", () => {
-    const vs = code(lines(100), { path: "a.ts" });
-    vs.window().cursor().line = 10;
-    vs.type("X");
-    vs.window().cursor().line = 60;
-    vs.type("Y");
-    vs.run("cursorBottom");
+    const ide = code(lines(100), { path: "a.ts" });
+    ide.window().cursor().line = 10;
+    ide.type("X");
+    ide.window().cursor().line = 60;
+    ide.type("Y");
+    ide.executeCommand("textEditor.cursorBottom");
 
-    vs.run("workbench.action.navigateBackInEditLocations");
-    expect(vs.window().cursor().line).eq(60);
+    ide.executeCommand("navigation.backInEdits");
+    expect(ide.window().cursor().line).eq(60);
 
-    vs.run("workbench.action.navigateBackInEditLocations");
-    expect(vs.window().cursor().line).eq(10);
+    ide.executeCommand("navigation.backInEdits");
+    expect(ide.window().cursor().line).eq(10);
   });
 });
 
@@ -70,30 +70,30 @@ describe("problems", () => {
   });
 
   it("marker.next with two problems on one line goes to the second", () => {
-    const vs = code(lines(5), { path: "a.ts" });
-    vs.ctx.diagnostics.set("a.ts", [at(2, 0), at(2, 4)]);
-    vs.window().cursor().line = 2;
+    const ide = code(lines(5), { path: "a.ts" });
+    ide.diagnostics.set("a.ts", [at(2, 0), at(2, 4)]);
+    ide.window().cursor().line = 2;
 
-    vs.run("editor.action.marker.next");
+    ide.executeCommand("problems.next");
 
-    expect(vs.window().cursor()).toMatchObject({ line: 2, column: 4 });
+    expect(ide.window().cursor()).toMatchObject({ line: 2, column: 4 });
   });
 
   it("marker.next with no problems does nothing", () => {
-    const vs = code("a|b", { path: "a.ts" });
+    const ide = code("a|b", { path: "a.ts" });
 
-    expect(vs.run("editor.action.marker.next").state()).eq("a|b");
+    expect(ide.executeCommand("problems.next").state()).eq("a|b");
   });
 
   it("marker.nextInFiles wraps from the last file to the first", () => {
-    const vs = code(lines(5), { path: "a.ts" });
-    vs.ide.open("b.ts", lines(5));
-    vs.ctx.diagnostics.set("a.ts", [at(1)]);
-    vs.ctx.diagnostics.set("b.ts", [at(1)]);
-    vs.window().cursor().line = 3;
+    const ide = code(lines(5), { path: "a.ts" });
+    ide.openMemoryFile("b.ts", lines(5));
+    ide.diagnostics.set("a.ts", [at(1)]);
+    ide.diagnostics.set("b.ts", [at(1)]);
+    ide.window().cursor().line = 3;
 
-    vs.run("editor.action.marker.nextInFiles");
+    ide.executeCommand("problems.nextInFiles");
 
-    expect(path(vs)).eq("a.ts");
+    expect(path(ide)).eq("a.ts");
   });
 });

@@ -11,98 +11,98 @@ import { code } from "../harness.js";
 // "full" pastes everything at every cursor.
 // Consecutive typing is undone in one step. cursorUndo undoes cursor moves.
 
-const copy = "editor.action.clipboardCopyAction";
-const cut = "editor.action.clipboardCutAction";
-const paste = "editor.action.clipboardPasteAction";
+const copy = "textEditor.copy";
+const cut = "textEditor.cut";
+const paste = "textEditor.paste";
 
 describe("copy and cut", () => {
   it("copy puts the selection on the clipboard", () => {
-    const vs = code("a«bc»d").run(copy);
+    const ide = code("a«bc»d").executeCommand(copy);
 
-    expect(vs.ctx.clipboard.readText()).eq("bc");
+    expect(ide.clipboard.readText()).eq("bc");
   });
 
   it("copy with nothing selected copies the whole line", () => {
-    const vs = code("a|b\ncd").run(copy);
+    const ide = code("a|b\ncd").executeCommand(copy);
 
-    expect(vs.ctx.clipboard.readText()).eq("ab\n");
+    expect(ide.clipboard.readText()).eq("ab\n");
   });
 
   it("cut removes the selection", () => {
-    const vs = code("a«bc»d").run(cut);
+    const ide = code("a«bc»d").executeCommand(cut);
 
-    expect(vs.state()).eq("a|d");
-    expect(vs.ctx.clipboard.readText()).eq("bc");
+    expect(ide.state()).eq("a|d");
+    expect(ide.clipboard.readText()).eq("bc");
   });
 
   it("cut with nothing selected cuts the whole line", () => {
-    const vs = code("a|b\ncd").run(cut);
+    const ide = code("a|b\ncd").executeCommand(cut);
 
-    expect(vs.lines()).toEqual(["cd"]);
-    expect(vs.ctx.clipboard.readText()).eq("ab\n");
+    expect(ide.lines()).toEqual(["cd"]);
+    expect(ide.clipboard.readText()).eq("ab\n");
   });
 
   it("copy with several selections joins them with line breaks", () => {
-    const vs = code("«a» x «b»").run(copy);
+    const ide = code("«a» x «b»").executeCommand(copy);
 
-    expect(vs.ctx.clipboard.readText()).eq("a\nb");
+    expect(ide.clipboard.readText()).eq("a\nb");
   });
 });
 
 describe("paste", () => {
   it("replaces the selection", () => {
-    const vs = code("a«bc»d");
-    vs.ctx.clipboard.writeText("X");
+    const ide = code("a«bc»d");
+    ide.clipboard.writeText("X");
 
-    expect(vs.run(paste).state()).eq("aX|d");
+    expect(ide.executeCommand(paste).state()).eq("aX|d");
   });
 
   it("a whole line copied with nothing selected is pasted above the current line", () => {
-    const vs = code("a|b\ncd").run(copy);
-    vs.window().setSelections([{ anchor: { line: 1, column: 1 }, active: { line: 1, column: 1 } }]);
+    const ide = code("a|b\ncd").executeCommand(copy);
+    ide.setSelections([{ anchor: { line: 1, column: 1 }, active: { line: 1, column: 1 } }]);
 
-    vs.run(paste);
+    ide.executeCommand(paste);
 
-    expect(vs.lines()).toEqual(["ab", "ab", "cd"]);
+    expect(ide.lines()).toEqual(["ab", "ab", "cd"]);
   });
 
   it("spreads one line to each cursor when the counts match", () => {
-    const vs = code("a|\nb|");
-    vs.ctx.clipboard.writeText("x\ny");
+    const ide = code("a|\nb|");
+    ide.clipboard.writeText("x\ny");
 
-    expect(vs.run(paste).state()).eq("ax|\nby|");
+    expect(ide.executeCommand(paste).state()).eq("ax|\nby|");
   });
 
   it("pastes everything at every cursor with multiCursorPaste full", () => {
-    const vs = code("a|\nb|").setting("editor.multiCursorPaste", "full");
-    vs.ctx.clipboard.writeText("x\ny");
+    const ide = code("a|\nb|").setting("multi_cursor_paste", "full");
+    ide.clipboard.writeText("x\ny");
 
-    expect(vs.run(paste).lines()).toEqual(["ax", "y", "bx", "y"]);
+    expect(ide.executeCommand(paste).lines()).toEqual(["ax", "y", "bx", "y"]);
   });
 });
 
 describe("undo and redo", () => {
   it("undoes consecutive typing in one step", () => {
-    const vs = code("|").type("a").type("b").type("c");
+    const ide = code("|").type("a").type("b").type("c");
 
-    expect(vs.run("undo").state()).eq("|");
+    expect(ide.executeCommand("textEditor.undo").state()).eq("|");
   });
 
   it("redo puts it back", () => {
-    const vs = code("|").type("a").type("b").run("undo");
+    const ide = code("|").type("a").type("b").executeCommand("textEditor.undo");
 
-    expect(vs.run("redo").state()).eq("ab|");
+    expect(ide.executeCommand("textEditor.redo").state()).eq("ab|");
   });
 
   it("a paste is its own undo step", () => {
-    const vs = code("|").type("a");
-    vs.ctx.clipboard.writeText("XY");
-    vs.run(paste);
+    const ide = code("|").type("a");
+    ide.clipboard.writeText("XY");
+    ide.executeCommand(paste);
 
-    expect(vs.run("undo").state()).eq("a|");
+    expect(ide.executeCommand("textEditor.undo").state()).eq("a|");
   });
 
   it("cursorUndo goes back to the previous cursor position", () => {
-    expect(code("ab|c").run("cursorEnd").run("cursorUndo").state()).eq("ab|c");
+    expect(code("ab|c").executeCommand("textEditor.cursorEnd").executeCommand("textEditor.cursorUndo").state()).eq("ab|c");
   });
 });

@@ -23,146 +23,146 @@ import { code } from "../harness.js";
 //     workbench.editor.customLabels.patterns, using ${filename} (no
 //     extension), ${extname}, ${dirname}, ${dirname(N)}
 
-const tabs = (vs: ReturnType<typeof code>) => vs.ctx.editorGroups.groups()[0].editors;
+const tabs = (ide: ReturnType<typeof code>) => ide.editorGroups.groups()[0].editors;
 
 function opened(...paths: string[]) {
-  const vs = code("|", { path: paths[0] });
-  for (const path of paths.slice(1)) vs.ctx.editors.open(path);
-  return vs;
+  const ide = code("|", { path: paths[0] });
+  for (const path of paths.slice(1)) ide.editors.open(path);
+  return ide;
 }
 
 describe("preview tabs", () => {
   it("a preview tab is replaced by the next preview", () => {
-    const vs = opened("a.ts");
-    vs.ctx.editors.open("b.ts", { preview: true });
-    vs.ctx.editors.open("c.ts", { preview: true });
+    const ide = opened("a.ts");
+    ide.editors.open("b.ts", { preview: true });
+    ide.editors.open("c.ts", { preview: true });
 
-    expect(tabs(vs)).toEqual(["a.ts", "c.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts", "c.ts"]);
   });
 
   it("editing a preview tab keeps it", () => {
-    const vs = opened("a.ts");
-    vs.ctx.editors.open("b.ts", { preview: true });
-    vs.type("x");
-    vs.ctx.editors.open("c.ts", { preview: true });
+    const ide = opened("a.ts");
+    ide.editors.open("b.ts", { preview: true });
+    ide.type("x");
+    ide.editors.open("c.ts", { preview: true });
 
-    expect(tabs(vs)).toEqual(["a.ts", "b.ts", "c.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts", "b.ts", "c.ts"]);
   });
 
   it("keepEditor keeps it", () => {
-    const vs = opened("a.ts");
-    vs.ctx.editors.open("b.ts", { preview: true });
-    vs.run("workbench.action.keepEditor");
-    vs.ctx.editors.open("c.ts", { preview: true });
+    const ide = opened("a.ts");
+    ide.editors.open("b.ts", { preview: true });
+    ide.executeCommand("tabs.keepOpen");
+    ide.editors.open("c.ts", { preview: true });
 
-    expect(tabs(vs)).toEqual(["a.ts", "b.ts", "c.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts", "b.ts", "c.ts"]);
   });
 
   it("enablePreview false never makes preview tabs", () => {
-    const vs = opened("a.ts").setting("workbench.editor.enablePreview", false);
-    vs.ctx.editors.open("b.ts", { preview: true });
-    vs.ctx.editors.open("c.ts", { preview: true });
+    const ide = opened("a.ts").setting("preview_tabs", false);
+    ide.editors.open("b.ts", { preview: true });
+    ide.editors.open("c.ts", { preview: true });
 
-    expect(tabs(vs)).toEqual(["a.ts", "b.ts", "c.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts", "b.ts", "c.ts"]);
   });
 });
 
 describe("where new tabs go", () => {
   it("right of the active tab by default", () => {
-    const vs = opened("a.ts", "b.ts", "c.ts");
-    vs.ctx.editors.open("a.ts");
-    vs.ctx.editors.open("d.ts");
+    const ide = opened("a.ts", "b.ts", "c.ts");
+    ide.editors.open("a.ts");
+    ide.editors.open("d.ts");
 
-    expect(tabs(vs)).toEqual(["a.ts", "d.ts", "b.ts", "c.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts", "d.ts", "b.ts", "c.ts"]);
   });
 
   it("last puts them at the end", () => {
-    const vs = opened("a.ts", "b.ts").setting("workbench.editor.openPositioning", "last");
-    vs.ctx.editors.open("a.ts");
-    vs.ctx.editors.open("c.ts");
+    const ide = opened("a.ts", "b.ts").setting("tab_open_position", "last");
+    ide.editors.open("a.ts");
+    ide.editors.open("c.ts");
 
-    expect(tabs(vs)).toEqual(["a.ts", "b.ts", "c.ts"]);
+    expect(tabs(ide)).toEqual(["a.ts", "b.ts", "c.ts"]);
   });
 
   it("first puts them at the start", () => {
-    const vs = opened("a.ts", "b.ts").setting("workbench.editor.openPositioning", "first");
-    vs.ctx.editors.open("c.ts");
+    const ide = opened("a.ts", "b.ts").setting("tab_open_position", "first");
+    ide.editors.open("c.ts");
 
-    expect(tabs(vs)).toEqual(["c.ts", "a.ts", "b.ts"]);
+    expect(tabs(ide)).toEqual(["c.ts", "a.ts", "b.ts"]);
   });
 });
 
 describe("pinned tabs", () => {
   it("pinEditor moves the tab to the front", () => {
-    const vs = opened("a.ts", "b.ts", "c.ts").run("workbench.action.pinEditor");
+    const ide = opened("a.ts", "b.ts", "c.ts").executeCommand("tabs.pin");
 
-    expect(tabs(vs)).toEqual(["c.ts", "a.ts", "b.ts"]);
+    expect(tabs(ide)).toEqual(["c.ts", "a.ts", "b.ts"]);
   });
 
   it("close others keeps pinned tabs", () => {
-    const vs = opened("a.ts", "b.ts", "c.ts").run("workbench.action.pinEditor");
-    vs.ctx.editors.open("b.ts");
+    const ide = opened("a.ts", "b.ts", "c.ts").executeCommand("tabs.pin");
+    ide.editors.open("b.ts");
 
-    vs.run("workbench.action.closeOtherEditors");
+    ide.executeCommand("tabs.closeOthers");
 
-    expect(tabs(vs)).toEqual(["c.ts", "b.ts"]);
+    expect(tabs(ide)).toEqual(["c.ts", "b.ts"]);
   });
 });
 
 describe("closing tabs", () => {
   it("closeOtherEditors keeps only the active tab", () => {
-    const vs = opened("a.ts", "b.ts", "c.ts");
-    vs.ctx.editors.open("b.ts");
+    const ide = opened("a.ts", "b.ts", "c.ts");
+    ide.editors.open("b.ts");
 
-    expect(tabs(vs.run("workbench.action.closeOtherEditors"))).toEqual(["b.ts"]);
+    expect(tabs(ide.executeCommand("tabs.closeOthers"))).toEqual(["b.ts"]);
   });
 
   it("closeEditorsToTheRight", () => {
-    const vs = opened("a.ts", "b.ts", "c.ts");
-    vs.ctx.editors.open("a.ts");
+    const ide = opened("a.ts", "b.ts", "c.ts");
+    ide.editors.open("a.ts");
 
-    expect(tabs(vs.run("workbench.action.closeEditorsToTheRight"))).toEqual(["a.ts"]);
+    expect(tabs(ide.executeCommand("tabs.closeToTheRight"))).toEqual(["a.ts"]);
   });
 
   it("closeUnmodifiedEditors keeps the modified ones", () => {
-    const vs = opened("a.ts", "b.ts", "c.ts");
-    vs.ctx.editors.open("b.ts");
-    vs.type("x");
+    const ide = opened("a.ts", "b.ts", "c.ts");
+    ide.editors.open("b.ts");
+    ide.type("x");
 
-    expect(tabs(vs.run("workbench.action.closeUnmodifiedEditors"))).toEqual(["b.ts"]);
+    expect(tabs(ide.executeCommand("tabs.closeSaved"))).toEqual(["b.ts"]);
   });
 
   it("reopenClosedEditor brings the last closed tab back where it was", () => {
-    const vs = opened("a.ts", "b.ts", "c.ts");
-    vs.ctx.editors.open("b.ts");
-    vs.run("workbench.action.closeActiveEditor");
+    const ide = opened("a.ts", "b.ts", "c.ts");
+    ide.editors.open("b.ts");
+    ide.executeCommand("tabs.close");
 
-    expect(tabs(vs.run("workbench.action.reopenClosedEditor"))).toEqual(["a.ts", "b.ts", "c.ts"]);
-    expect(vs.window().document.file.path()).eq("b.ts");
+    expect(tabs(ide.executeCommand("tabs.reopenClosed"))).toEqual(["a.ts", "b.ts", "c.ts"]);
+    expect(ide.window().document.file.path()).eq("b.ts");
   });
 });
 
 describe("recently used order", () => {
   it("Ctrl+Tab goes to the previously used tab, not the neighbour", () => {
-    const vs = opened("a.ts", "b.ts", "c.ts");
-    vs.ctx.editors.open("a.ts");
-    vs.ctx.editors.open("c.ts");
+    const ide = opened("a.ts", "b.ts", "c.ts");
+    ide.editors.open("a.ts");
+    ide.editors.open("c.ts");
 
-    vs.run("workbench.action.openPreviousRecentlyUsedEditorInGroup");
+    ide.executeCommand("tabs.previousUsed");
 
-    expect(vs.window().document.file.path()).eq("a.ts");
+    expect(ide.window().document.file.path()).eq("a.ts");
   });
 });
 
 describe("editor limit", () => {
   it("closes the least recently used tab when over the limit", () => {
-    const vs = code("|", { path: "a.ts" })
-      .setting("workbench.editor.limit.enabled", true)
-      .setting("workbench.editor.limit.value", 2);
-    vs.ctx.editors.open("b.ts");
-    vs.ctx.editors.open("c.ts");
+    const ide = code("|", { path: "a.ts" })
+      .setting("tab_limit_enabled", true)
+      .setting("tab_limit", 2);
+    ide.editors.open("b.ts");
+    ide.editors.open("c.ts");
 
-    expect(tabs(vs)).toEqual(["b.ts", "c.ts"]);
+    expect(tabs(ide)).toEqual(["b.ts", "c.ts"]);
   });
 });
 

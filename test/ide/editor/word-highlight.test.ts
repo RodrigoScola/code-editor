@@ -42,13 +42,13 @@ describe("wordOccurrences", () => {
 
 describe("moving between highlights", () => {
   it("next selects the next occurrence", () => {
-    expect(code("f|oo bar foo").run("editor.action.wordHighlight.next").state()).eq(
+    expect(code("f|oo bar foo").executeCommand("textEditor.nextHighlight").state()).eq(
       "foo bar «foo»",
     );
   });
 
   it("prev wraps around to the last one", () => {
-    expect(code("f|oo bar foo").run("editor.action.wordHighlight.prev").state()).eq(
+    expect(code("f|oo bar foo").executeCommand("textEditor.previousHighlight").state()).eq(
       "foo bar «foo»",
     );
   });

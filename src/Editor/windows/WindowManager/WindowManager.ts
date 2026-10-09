@@ -47,14 +47,14 @@ export class WindowManager {
   }
 
   activate(window: UiComponent): UiComponent | null {
-    assert(
-      this.windows.has(window.id()),
-      "trying to focus an unmanaged window",
-    );
+    if (!this.has(window)) {
+      this.add(window);
+    }
     if (this.active) {
       this.deactivate(this.active);
     }
     this.active = window;
+      
     this.focusManager?.focus(window.defaultFocus());
 
     return this.active;

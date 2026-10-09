@@ -1,0 +1,16 @@
+{
+  // Type checking for the specs. The root tsconfig only builds src/, so
+  // without this the editor gives test files a default project that misses
+  // src/globals.d.ts (KeyEvent, EditingModes, ...).
+  //
+  //   npx tsc -p test
+  //
+  // Specs for features that aren't built yet still show errors: a missing
+  // module or method is how those specs fail.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "noEmit": true
+  },
+  "include": ["../src", "."]
+}

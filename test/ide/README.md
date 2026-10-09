@@ -1,8 +1,13 @@
 # IDE specs
 
 Failing-first specs for turning the editor into a full IDE: Vim editing,
-editor features, files and workspace, language support, and tools. Each file
-is one feature. Make a file pass, then move to the next one.
+editor features, files and workspace, language support, tools, and the VS
+Code feature catalog. Each file is one feature. Make a file pass, then move
+to the next one.
+
+[FEATURES.md](FEATURES.md) is the catalog of what VS Code has, what this
+editor has today, and which spec covers each feature. This README covers how
+the specs work and the Vim/IDE side.
 
 The UI engine's specs live next to the existing unit tests in
 `test/unit/ui/` (events, focus, clipping, scrolling, text, flex, styles,
@@ -15,13 +20,17 @@ designer.
 npx vitest run test/ide                    # everything
 npx vitest run test/ide/vim/motions        # one feature
 npx vitest test/ide/vim/motions            # watch mode while implementing
+npx tsc -p test                            # type check the specs
 ```
 
 ## How the specs work
 
-[`harness.ts`](harness.ts) builds a real `EditorContext` (tab group, code
-window, status line, the real normal/visual key bindings) and drives it with
-keys, the way a user does:
+[`harness.ts`](harness.ts) builds a real editor (tab group, code window,
+status line, the registered commands and the real normal/visual key
+bindings) and hands back its `EditorContext`. Everything a spec does is a
+method on `EditorContext` itself
+([Editor.ts](../../src/Editor/Editor/Editor.ts)), so the specs and the
+editor use the same API, and you can call the same methods from editor code:
 
 ```ts
 expect(after("foo |bar baz", "dw")).eq("foo |baz");
@@ -29,17 +38,53 @@ expect(after("foo |bar baz", "dw")).eq("foo |baz");
 const ide = vim("|abc", { path: "a.ts", width: 80, height: 20 });
 ide.keys("iX<Esc>:w<CR>");
 ide.lines(); ide.cursor(); ide.mode(); ide.statusLine(); ide.textRows();
+
+// command specs: run a command by its id, read the marked text back
+expect(exec("a|b\ncd", "textEditor.copyLinesDown")).eq("ab\na|b\ncd");
+const ide = code("«foo» bar").executeCommand("textEditor.transformToUpperCase");
+ide.state();                     // "«FOO» bar"
+ide.setting("tab_width", 2);     // change a setting; ide.setting("tab_width") reads it
+ide.show();                      // print the screen to look at it
 ```
 
-- `|` is the cursor. In normal mode it sits on the character after it; in
-  insert mode it is the insertion point.
-- Keys use Vim notation: `<Esc> <CR> <BS> <Tab> <C-r> <Space> <lt>` (a
-  literal `<`).
+| On `EditorContext` | What it does |
+|---|---|
+| `keys(sequence)` | presses keys in Vim notation |
+| `executeCommand(id, args?)` | runs a command from `ctx.commands`; throws for an unknown id |
+| `type(text)` | runs `textEditor.type`, typing at every cursor in any mode |
+| `setting(key)` / `setting(key, value)` | reads or changes a setting in `src/config.ts` |
+| `text()` | the document with `\|` at the cursor |
+| `state()` | the document with its selections marked (`\|`, `«»`) |
+| `selections()` / `setSelections(list)` | cursors and selections as `{ anchor, active }` |
+| `lines()`, `cursor()`, `mode()`, `window()`, `document()`, `editorGroup()` | reading state |
+| `openMemoryFile(path, content)` | opens a document that isn't on disk, in a new tab |
+| `openAndFocus(path)` | opens a file from disk and focuses it, like the file tree |
+| `addSidebar(window, width?)` | puts a window left of the editor group |
+| `screen()`, `statusLine()`, `textRows()`, `textArea()`, `viewport()`, `canvas()`, `visibleCodeWindows()` | rendering a frame and reading it |
+| `show(label?)` | prints the frame with colors, the mode, the cursor and the marked text |
+
+- Marked text ([textMarkers.ts](../../src/Editor/textMarkers.ts)): `|` is a
+  cursor. In normal mode it sits on the character after it; in insert mode
+  it is the insertion point. `«` is a selection's anchor and `»` its active
+  end, so `«abc»` is selected left to right and `»abc«` right to left.
+  Several of them mean multiple cursors. Until multiple cursors exist,
+  `setSelections` throws "multiple cursors aren't supported yet".
+- Keys use Vim notation ([keyNotation.ts](../../src/Input/keyNotation.ts)):
+  `<Esc> <CR> <BS> <Tab> <C-r> <Space> <lt>` (a literal `<`).
+- Commands have an id, a title and a description
+  ([Commands.ts](../../src/Commands/Commands.ts)) and live in `ctx.commands`
+  ([CommandRegistry.ts](../../src/Commands/CommandRegistry.ts)). Ids are
+  `area.camelCase`: `textEditor.moveDown`, `window.focusLeft`,
+  `folding.toggle`. Specs for commands that don't exist yet fail with
+  "no command with the id ...".
+- Settings use the flat snake_case keys of `src/config.ts`: `tab_width`,
+  `expand_tab`, `render_whitespace`, `auto_save`. `test/setup.ts` puts the
+  defaults back before every test.
 - `screen()`, `textRows()`, `statusLine()` render a frame and return plain
   text, so specs check what the user would see.
 - `workspace({ "src/a.ts": "..." })` makes a temp folder for file features.
 - The command-mode setup isn't loaded, because it binds `:q` to
-  `process.exit`. The harness also makes any `process.exit` call throw.
+  `process.exit`. `test/setup.ts` also makes any `process.exit` call throw.
 
 [`harness.test.ts`](harness.test.ts) proves the harness drives today's editor.
 It passes, and should stay passing.

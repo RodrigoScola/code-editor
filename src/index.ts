@@ -99,6 +99,7 @@ setup.windows.debugWindow(editor);
 
 // ---------
 
+setup.commands.register(editor);
 setup.commands.normalMode(editor);
 setup.commands.visualMode(editor);
 setup.commands.commandMode(editor);

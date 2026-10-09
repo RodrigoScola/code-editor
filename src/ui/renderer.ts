@@ -20,6 +20,10 @@ export class Renderer {
   layout() {
     return this._canvas.layout()
   }
+  // the painted cells of the last frame
+  canvas() {
+    return this._canvas;
+  }
   setLayout(layout: LayoutBounds) {
     this._canvas.setLayout(layout);
 
@@ -302,4 +306,9 @@ export class Renderer {
     this._output(frame);
     return frame;
   }
+}
+
+// a rendered frame without its colors and cursor codes
+export function stripAnsi(text: string) {
+  return text.replace(/\x1b\[[0-9;?<>]*[A-Za-z]/g, "");
 }

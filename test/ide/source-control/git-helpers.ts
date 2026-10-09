@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { workspace } from "../../ide/harness.js";
+import { workspace } from "../harness.js";
 
 // Real, throwaway git repositories for the source control specs. Only local
 // git commands are used; nothing talks to a remote.

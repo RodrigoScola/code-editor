@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BackupStore } from "../../../src/Files/backup.js";
-import { workspace } from "../../ide/harness.js";
+import { workspace } from "../harness.js";
 import { code } from "../harness.js";
 
 // Auto save (files.autoSave, files.autoSaveDelay):
@@ -28,73 +28,73 @@ afterEach(() => vi.useRealTimers());
 
 describe("auto save afterDelay", () => {
   function editing() {
-    const vs = code("|a", { path: "a.txt" })
-      .setting("files.autoSave", "afterDelay")
-      .setting("files.autoSaveDelay", 1000);
-    vs.type("X");
-    return vs;
+    const ide = code("|a", { path: "a.txt" })
+      .setting("auto_save", "afterDelay")
+      .setting("auto_save_delay", 1000);
+    ide.type("X");
+    return ide;
   }
 
   it("saves after the delay", () => {
-    const vs = editing();
+    const ide = editing();
 
     vi.advanceTimersByTime(1000);
 
-    expect(vs.window().document.read()).eq("Xa");
+    expect(ide.window().document.read()).eq("Xa");
   });
 
   it("does not save before the delay", () => {
-    const vs = editing();
+    const ide = editing();
 
     vi.advanceTimersByTime(999);
 
-    expect(vs.window().document.read()).eq("a");
+    expect(ide.window().document.read()).eq("a");
   });
 
   it("each edit restarts the wait", () => {
-    const vs = editing();
+    const ide = editing();
     vi.advanceTimersByTime(800);
-    vs.type("Y");
+    ide.type("Y");
     vi.advanceTimersByTime(800);
 
-    expect(vs.window().document.read()).eq("a");
+    expect(ide.window().document.read()).eq("a");
 
     vi.advanceTimersByTime(200);
-    expect(vs.window().document.read()).eq("XYa");
+    expect(ide.window().document.read()).eq("XYa");
   });
 
   it("does nothing when off", () => {
-    const vs = code("|a", { path: "a.txt" }).setting("files.autoSave", "off").type("X");
+    const ide = code("|a", { path: "a.txt" }).setting("auto_save", "off").type("X");
 
     vi.advanceTimersByTime(60_000);
 
-    expect(vs.window().document.read()).eq("a");
+    expect(ide.window().document.read()).eq("a");
   });
 });
 
 describe("auto save on focus change", () => {
   it("onFocusChange saves when another editor gets focus", () => {
-    const vs = code("|a", { path: "a.txt" }).setting("files.autoSave", "onFocusChange").type("X");
-    const first = vs.window();
+    const ide = code("|a", { path: "a.txt" }).setting("auto_save", "onFocusChange").type("X");
+    const first = ide.window();
 
-    vs.ide.open("b.txt", "b");
+    ide.openMemoryFile("b.txt", "b");
 
     expect(first.document.read()).eq("Xa");
   });
 
   it("onWindowChange saves when the app window loses focus", () => {
-    const vs = code("|a", { path: "a.txt" }).setting("files.autoSave", "onWindowChange").type("X");
+    const ide = code("|a", { path: "a.txt" }).setting("auto_save", "onWindowChange").type("X");
 
-    vs.ctx.windowFocusChanged(false);
+    ide.windowFocusChanged(false);
 
-    expect(vs.window().document.read()).eq("Xa");
+    expect(ide.window().document.read()).eq("Xa");
   });
 
   it("onWindowChange does not save on a switch between editors", () => {
-    const vs = code("|a", { path: "a.txt" }).setting("files.autoSave", "onWindowChange").type("X");
-    const first = vs.window();
+    const ide = code("|a", { path: "a.txt" }).setting("auto_save", "onWindowChange").type("X");
+    const first = ide.window();
 
-    vs.ide.open("b.txt", "b");
+    ide.openMemoryFile("b.txt", "b");
 
     expect(first.document.read()).eq("a");
   });
@@ -127,13 +127,13 @@ describe("backups", () => {
   });
 
   it("the editor backs up modified documents and saving discards the backup", () => {
-    const vs = code("|a", { path: "a.txt" }).type("X");
-    vs.ctx.backups.backupAll();
-    expect(vs.ctx.backups.read("a.txt")).eq("Xa");
+    const ide = code("|a", { path: "a.txt" }).type("X");
+    ide.backups.backupAll();
+    expect(ide.backups.read("a.txt")).eq("Xa");
 
-    vs.run("workbench.action.files.save");
+    ide.executeCommand("textEditor.saveFile");
 
-    expect(vs.ctx.backups.list()).toEqual([]);
+    expect(ide.backups.list()).toEqual([]);
   });
 });
 
@@ -142,14 +142,14 @@ describe("saving over a newer file", () => {
     vi.useRealTimers();
     const root = workspace({ "a.txt": "old" });
     const path = join(root, "a.txt");
-    const vs = code("|", { width: 100 });
-    vs.ide.openFile(path);
-    vs.type("mine ");
+    const ide = code("|", { width: 100 });
+    ide.openAndFocus(path);
+    ide.type("mine ");
 
     writeFileSync(path, "theirs");
-    vs.run("workbench.action.files.save");
+    ide.executeCommand("textEditor.saveFile");
 
     expect(readFileSync(path, "utf8")).eq("theirs");
-    expect(vs.ctx.messages().at(-1)?.text).toContain("newer");
+    expect(ide.messages().at(-1)?.text).toContain("newer");
   });
 });

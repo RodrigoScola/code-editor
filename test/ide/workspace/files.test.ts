@@ -71,11 +71,11 @@ describe(":e", () => {
 
     ide.keys(`:e ${path}<CR>`);
     expect(ide.document().file.path()).eq(path);
-    expect(ide.group.management.all()).length(2);
+    expect(ide.editorGroup().management.all()).length(2);
 
     ide.keys(`:e ${path}<CR>`);
 
-    expect(ide.group.management.all()).length(2);
+    expect(ide.editorGroup().management.all()).length(2);
   });
 
   it("opens a file that doesn't exist yet as an empty buffer, and :w creates it", () => {
@@ -93,7 +93,7 @@ describe(":e", () => {
     const root = workspace({ "b.txt": "old" });
     const path = join(root, "b.txt");
     const ide = vim("|a");
-    ide.openFile(path);
+    ide.openAndFocus(path);
     ide.keys("iX<Esc>");
 
     writeFileSync(path, "new");
@@ -115,7 +115,7 @@ describe("closing", () => {
   it(":q on the last window asks the app to quit instead of exiting", () => {
     const ide = vim("|abc");
     const quit = vi.fn();
-    ide.ctx.onQuit(quit);
+    ide.onQuit(quit);
 
     ide.keys(":q<CR>");
 
@@ -125,7 +125,7 @@ describe("closing", () => {
   it(":q! quits even with unsaved changes", () => {
     const ide = vim("|abc");
     const quit = vi.fn();
-    ide.ctx.onQuit(quit);
+    ide.onQuit(quit);
 
     ide.keys("iX<Esc>:q!<CR>");
 
@@ -135,7 +135,7 @@ describe("closing", () => {
   it(":wq writes and quits", () => {
     const ide = vim("|abc");
     const quit = vi.fn();
-    ide.ctx.onQuit(quit);
+    ide.onQuit(quit);
 
     ide.keys("iX<Esc>:wq<CR>");
 
@@ -152,7 +152,7 @@ describe("line endings", () => {
   it("a final newline is not shown as an extra empty line", () => {
     const root = workspace({ "a.txt": "a\nb\n" });
     const ide = vim("|x");
-    ide.openFile(join(root, "a.txt"));
+    ide.openAndFocus(join(root, "a.txt"));
 
     expect(ide.lines()).toEqual(["a", "b"]);
   });
@@ -161,7 +161,7 @@ describe("line endings", () => {
     const root = workspace({ "a.txt": "a\nb\n" });
     const path = join(root, "a.txt");
     const ide = vim("|x");
-    ide.openFile(path);
+    ide.openAndFocus(path);
 
     ide.keys("A!<Esc>:w<CR>");
 
@@ -172,7 +172,7 @@ describe("line endings", () => {
     const root = workspace({ "a.txt": "a\nb" });
     const path = join(root, "a.txt");
     const ide = vim("|x");
-    ide.openFile(path);
+    ide.openAndFocus(path);
 
     ide.keys("A!<Esc>:w<CR>");
 
@@ -183,7 +183,7 @@ describe("line endings", () => {
     const root = workspace({ "a.txt": "a\r\nb\r\n" });
     const path = join(root, "a.txt");
     const ide = vim("|x");
-    ide.openFile(path);
+    ide.openAndFocus(path);
 
     ide.keys("A!<Esc>:w<CR>");
 

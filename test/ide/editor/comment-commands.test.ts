@@ -13,59 +13,59 @@ import { code, exec } from "../harness.js";
 // comment for every line command.
 
 const ts = { path: "a.ts" };
-const toggle = "editor.action.commentLine";
+const toggle = "textEditor.toggleLineComment";
 
 describe("toggle line comment", () => {
   it("comments the line and keeps the cursor on the same text", () => {
-    expect(code("|foo();", ts).run(toggle).state()).eq("// |foo();");
+    expect(code("|foo();", ts).executeCommand(toggle).state()).eq("// |foo();");
   });
 
   it("uncomments a commented line", () => {
-    expect(code("// fo|o();", ts).run(toggle).state()).eq("fo|o();");
+    expect(code("// fo|o();", ts).executeCommand(toggle).state()).eq("fo|o();");
   });
 
   it("lines comment tokens up at the smallest indentation", () => {
-    expect(code("«  a\n    b»", ts).run(toggle).lines()).toEqual(["  // a", "  //   b"]);
+    expect(code("«  a\n    b»", ts).executeCommand(toggle).lines()).toEqual(["  // a", "  //   b"]);
   });
 
   it("skips empty lines", () => {
-    expect(code("«a\n\nb»", ts).run(toggle).lines()).toEqual(["// a", "", "// b"]);
+    expect(code("«a\n\nb»", ts).executeCommand(toggle).lines()).toEqual(["// a", "", "// b"]);
   });
 
   it("comments everything when only some lines are commented", () => {
-    expect(code("«// a\nb»", ts).run(toggle).lines()).toEqual(["// // a", "// b"]);
+    expect(code("«// a\nb»", ts).executeCommand(toggle).lines()).toEqual(["// // a", "// b"]);
   });
 
   it("uncomments everything when all lines are commented", () => {
-    expect(code("«// a\n// b»", ts).run(toggle).lines()).toEqual(["a", "b"]);
+    expect(code("«// a\n// b»", ts).executeCommand(toggle).lines()).toEqual(["a", "b"]);
   });
 
   it("insertSpace false leaves out the space", () => {
-    const vs = code("|foo();", ts).setting("editor.comments.insertSpace", false);
+    const ide = code("|foo();", ts).setting("comment_insert_space", false);
 
-    expect(vs.run(toggle).lines()).toEqual(["//foo();"]);
+    expect(ide.executeCommand(toggle).lines()).toEqual(["//foo();"]);
   });
 
   it("uses # in Python", () => {
-    expect(code("|x = 1", { path: "a.py" }).run(toggle).lines()).toEqual(["# x = 1"]);
+    expect(code("|x = 1", { path: "a.py" }).executeCommand(toggle).lines()).toEqual(["# x = 1"]);
   });
 
   it("uses a block comment in HTML, which has no line comment", () => {
-    expect(code("|<p>", { path: "a.html" }).run(toggle).lines()).toEqual(["<!-- <p> -->"]);
+    expect(code("|<p>", { path: "a.html" }).executeCommand(toggle).lines()).toEqual(["<!-- <p> -->"]);
   });
 });
 
 describe("add and remove line comments", () => {
   it("addCommentLine adds a comment even if there already is one", () => {
-    expect(code("|// a", ts).run("editor.action.addCommentLine").lines()).toEqual(["// // a"]);
+    expect(code("|// a", ts).executeCommand("textEditor.addLineComment").lines()).toEqual(["// // a"]);
   });
 
   it("removeCommentLine leaves an uncommented line alone", () => {
-    expect(exec("|a", "editor.action.removeCommentLine")).eq("|a");
+    expect(exec("|a", "textEditor.removeLineComment")).eq("|a");
   });
 
   it("removeCommentLine removes one level", () => {
-    expect(code("|// // a", ts).run("editor.action.removeCommentLine").lines()).toEqual([
+    expect(code("|// // a", ts).executeCommand("textEditor.removeLineComment").lines()).toEqual([
       "// a",
     ]);
   });
@@ -73,23 +73,23 @@ describe("add and remove line comments", () => {
 
 describe("block comment", () => {
   it("wraps the selection and keeps it selected", () => {
-    expect(code("«abc»", ts).run("editor.action.blockComment").state()).eq("/* «abc» */");
+    expect(code("«abc»", ts).executeCommand("textEditor.toggleBlockComment").state()).eq("/* «abc» */");
   });
 
   it("toggling again removes it", () => {
-    const vs = code("«abc»", ts)
-      .run("editor.action.blockComment")
-      .run("editor.action.blockComment");
+    const ide = code("«abc»", ts)
+      .executeCommand("textEditor.toggleBlockComment")
+      .executeCommand("textEditor.toggleBlockComment");
 
-    expect(vs.lines()).toEqual(["abc"]);
+    expect(ide.lines()).toEqual(["abc"]);
   });
 
   it("removes a block comment when the selection is inside it", () => {
-    expect(code("/* a«b»c */", ts).run("editor.action.blockComment").lines()).toEqual(["abc"]);
+    expect(code("/* a«b»c */", ts).executeCommand("textEditor.toggleBlockComment").lines()).toEqual(["abc"]);
   });
 
   it("uses CSS block comments", () => {
-    expect(code("«a {}»", { path: "a.css" }).run("editor.action.blockComment").lines()).toEqual([
+    expect(code("«a {}»", { path: "a.css" }).executeCommand("textEditor.toggleBlockComment").lines()).toEqual([
       "/* a {} */",
     ]);
   });

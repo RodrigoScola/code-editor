@@ -81,7 +81,7 @@ describe("parseSnippet", () => {
 describe("snippets in the editor", () => {
   function withSnippet() {
     const ide = vim("|", { path: "a.ts" });
-    ide.ctx.snippets.add("typescript", {
+    ide.snippets.add("typescript", {
       prefix: "fn",
       body: "function ${1:name}() {\n\t$0\n}",
     });

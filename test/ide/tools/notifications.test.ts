@@ -13,14 +13,14 @@ describe("notifications", () => {
   it("shows a message in the status line", () => {
     const ide = vim("|abc", wide);
 
-    ide.ctx.notify("Saved a.txt", "info");
+    ide.notify("Saved a.txt", "info");
 
     expect(ide.statusLine()).toContain("Saved a.txt");
   });
 
   it("clears it on the next key", () => {
     const ide = vim("|abc\ndef", wide);
-    ide.ctx.notify("Saved a.txt", "info");
+    ide.notify("Saved a.txt", "info");
 
     ide.keys("j");
 
@@ -30,10 +30,10 @@ describe("notifications", () => {
   it("keeps a history of messages", () => {
     const ide = vim("|abc", wide);
 
-    ide.ctx.notify("one", "info");
-    ide.ctx.notify("two", "error");
+    ide.notify("one", "info");
+    ide.notify("two", "error");
 
-    expect(ide.ctx.messages().slice(-2)).toEqual([
+    expect(ide.messages().slice(-2)).toEqual([
       { text: "one", level: "info" },
       { text: "two", level: "error" },
     ]);
@@ -42,7 +42,7 @@ describe("notifications", () => {
   it("errors from commands end up in the history", () => {
     const ide = vim("|abc", wide).keys(":foo<CR>");
 
-    const last = ide.ctx.messages().at(-1);
+    const last = ide.messages().at(-1);
 
     expect(last?.level).eq("error");
     expect(last?.text).toContain("Not an editor command");

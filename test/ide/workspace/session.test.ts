@@ -17,9 +17,9 @@ import { vim, workspace } from "../harness.js";
 function withFiles() {
   const root = workspace({ "a.txt": "aaa\nbbb", "b.txt": "ccc" });
   const ide = vim("|", { width: 60, height: 16 });
-  ide.openFile(join(root, "a.txt"));
+  ide.openAndFocus(join(root, "a.txt"));
   ide.keys("jl");
-  ide.openFile(join(root, "b.txt"));
+  ide.openAndFocus(join(root, "b.txt"));
   return { root, ide };
 }
 
@@ -27,7 +27,7 @@ describe("sessions", () => {
   it("saves the open files and which one is active", () => {
     const { root, ide } = withFiles();
 
-    const session = saveSession(ide.ctx);
+    const session = saveSession(ide);
 
     expect(session.files.map((f: { path: string }) => f.path)).toEqual(
       expect.arrayContaining([join(root, "a.txt"), join(root, "b.txt")]),
@@ -38,7 +38,7 @@ describe("sessions", () => {
   it("saves each file's cursor", () => {
     const { root, ide } = withFiles();
 
-    const session = saveSession(ide.ctx);
+    const session = saveSession(ide);
     const a = session.files.find((f: { path: string }) => f.path === join(root, "a.txt"));
 
     expect(a).toMatchObject({ line: 1, column: 1 });
@@ -46,31 +46,31 @@ describe("sessions", () => {
 
   it("is plain data that survives JSON", () => {
     const { ide } = withFiles();
-    const session = saveSession(ide.ctx);
+    const session = saveSession(ide);
 
     expect(JSON.parse(JSON.stringify(session))).toEqual(session);
   });
 
   it("restoring opens the files with their cursors", () => {
     const { root, ide } = withFiles();
-    const session = JSON.parse(JSON.stringify(saveSession(ide.ctx)));
+    const session = JSON.parse(JSON.stringify(saveSession(ide)));
 
     const fresh = vim("|", { width: 60, height: 16 });
-    restoreSession(fresh.ctx, session);
+    restoreSession(fresh, session);
 
     expect(fresh.window().document.file.path()).eq(join(root, "b.txt"));
-    fresh.openFile(join(root, "a.txt"));
+    fresh.openAndFocus(join(root, "a.txt"));
     expect(fresh.cursor()).toEqual({ line: 1, column: 1 });
   });
 
   it("skips files that no longer exist", () => {
     const { root, ide } = withFiles();
-    const session = saveSession(ide.ctx);
+    const session = saveSession(ide);
     rmSync(join(root, "a.txt"));
 
     const fresh = vim("|", { width: 60, height: 16 });
 
-    expect(() => restoreSession(fresh.ctx, session)).not.toThrow();
+    expect(() => restoreSession(fresh, session)).not.toThrow();
     expect(fresh.window().document.file.path()).eq(join(root, "b.txt"));
   });
 });
@@ -80,11 +80,11 @@ describe("recent files", () => {
     const root = workspace({ "a.txt": "", "b.txt": "" });
     const ide = vim("|");
 
-    ide.openFile(join(root, "a.txt"));
-    ide.openFile(join(root, "b.txt"));
-    ide.openFile(join(root, "a.txt"));
+    ide.openAndFocus(join(root, "a.txt"));
+    ide.openAndFocus(join(root, "b.txt"));
+    ide.openAndFocus(join(root, "a.txt"));
 
-    expect(ide.ctx.recentFiles().slice(0, 2)).toEqual([
+    expect(ide.recentFiles().slice(0, 2)).toEqual([
       join(root, "a.txt"),
       join(root, "b.txt"),
     ]);

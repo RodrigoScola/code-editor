@@ -8,33 +8,33 @@ import { code, exec } from "../harness.js";
 
 describe("column select commands", () => {
   it("cursorColumnSelectDown adds a cursor in the same column below", () => {
-    expect(exec("a|bc\ndef", "cursorColumnSelectDown")).eq("a|bc\nd|ef");
+    expect(exec("a|bc\ndef", "textEditor.cursorColumnSelectDown")).eq("a|bc\nd|ef");
   });
 
   it("cursorColumnSelectRight then Down makes a box", () => {
-    expect(exec("|abc\ndef", "cursorColumnSelectRight", "cursorColumnSelectDown")).eq(
+    expect(exec("|abc\ndef", "textEditor.cursorColumnSelectRight", "textEditor.cursorColumnSelectDown")).eq(
       "«a»bc\n«d»ef",
     );
   });
 
   it("cursorColumnSelectUp grows the box upward", () => {
-    expect(exec("abc\nd|ef", "cursorColumnSelectUp")).eq("a|bc\nd|ef");
+    expect(exec("abc\nd|ef", "textEditor.cursorColumnSelectUp")).eq("a|bc\nd|ef");
   });
 
   it("typing into a box types on every line", () => {
-    const vs = code("|abc\ndef").run("cursorColumnSelectDown");
+    const ide = code("|abc\ndef").executeCommand("textEditor.cursorColumnSelectDown");
 
-    expect(vs.type("X").state()).eq("X|abc\nX|def");
+    expect(ide.type("X").state()).eq("X|abc\nX|def");
   });
 
   it("a box over three lines and two columns", () => {
     expect(
       exec(
         "|abc\ndef\nghi",
-        "cursorColumnSelectRight",
-        "cursorColumnSelectRight",
-        "cursorColumnSelectDown",
-        "cursorColumnSelectDown",
+        "textEditor.cursorColumnSelectRight",
+        "textEditor.cursorColumnSelectRight",
+        "textEditor.cursorColumnSelectDown",
+        "textEditor.cursorColumnSelectDown",
       ),
     ).eq("«ab»c\n«de»f\n«gh»i");
   });
@@ -42,22 +42,22 @@ describe("column select commands", () => {
 
 describe("column selection mode", () => {
   it("makes Shift+Down select a column", () => {
-    const vs = code("a|bc\ndef").run("editor.action.toggleColumnSelection");
+    const ide = code("a|bc\ndef").executeCommand("textEditor.toggleColumnSelection");
 
-    expect(vs.run("cursorDownSelect").state()).eq("a|bc\nd|ef");
+    expect(ide.executeCommand("textEditor.cursorDownSelect").state()).eq("a|bc\nd|ef");
   });
 
   it("toggling it off goes back to normal selections", () => {
-    const vs = code("a|bc\ndef")
-      .run("editor.action.toggleColumnSelection")
-      .run("editor.action.toggleColumnSelection");
+    const ide = code("a|bc\ndef")
+      .executeCommand("textEditor.toggleColumnSelection")
+      .executeCommand("textEditor.toggleColumnSelection");
 
-    expect(vs.run("cursorDownSelect").state()).eq("a«bc\nd»ef");
+    expect(ide.executeCommand("textEditor.cursorDownSelect").state()).eq("a«bc\nd»ef");
   });
 
   it("is a setting, so it shows in the configuration", () => {
-    const vs = code("|a").run("editor.action.toggleColumnSelection");
+    const ide = code("|a").executeCommand("textEditor.toggleColumnSelection");
 
-    expect(vs.ctx.configuration.get("editor.columnSelection")).eq(true);
+    expect(ide.setting("column_selection")).eq(true);
   });
 });

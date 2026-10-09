@@ -206,29 +206,29 @@ describe("snippet files", () => {
 
 describe("insertSnippet", () => {
   it("inserts a snippet given in the arguments", () => {
-    const vs = code("|").run("editor.action.insertSnippet", { snippet: "console.log($1)$0" });
+    const ide = code("|").executeCommand("textEditor.insertSnippet", { snippet: "console.log($1)$0" });
 
-    expect(vs.state()).eq("console.log(|)");
+    expect(ide.state()).eq("console.log(|)");
   });
 
   it("wraps the selection when the snippet uses TM_SELECTED_TEXT", () => {
-    const vs = code("«abc»").run("editor.action.insertSnippet", { snippet: "($TM_SELECTED_TEXT)" });
+    const ide = code("«abc»").executeCommand("textEditor.insertSnippet", { snippet: "($TM_SELECTED_TEXT)" });
 
-    expect(vs.lines()).toEqual(["(abc)"]);
+    expect(ide.lines()).toEqual(["(abc)"]);
   });
 
   it("numbers the cursors with CURSOR_NUMBER", () => {
-    const vs = code("a|\nb|").run("editor.action.insertSnippet", { snippet: "$CURSOR_NUMBER" });
+    const ide = code("a|\nb|").executeCommand("textEditor.insertSnippet", { snippet: "$CURSOR_NUMBER" });
 
-    expect(vs.lines()).toEqual(["a1", "b2"]);
+    expect(ide.lines()).toEqual(["a1", "b2"]);
   });
 
   it("finds a registered snippet by language and name", () => {
-    const vs = code("|", { path: "a.ts" });
-    vs.ctx.snippets.add("typescript", { name: "Log", prefix: "log", body: "console.log($1)" });
+    const ide = code("|", { path: "a.ts" });
+    ide.snippets.add("typescript", { name: "Log", prefix: "log", body: "console.log($1)" });
 
-    vs.run("editor.action.insertSnippet", { langId: "typescript", name: "Log" });
+    ide.executeCommand("textEditor.insertSnippet", { langId: "typescript", name: "Log" });
 
-    expect(vs.state()).eq("console.log(|)");
+    expect(ide.state()).eq("console.log(|)");
   });
 });

@@ -10,7 +10,7 @@ import { vim, workspace } from "../harness.js";
 
 function twoTabs() {
   const ide = vim("a|bc", { path: "a.txt", width: 60, height: 12 });
-  ide.open("b.txt", "bee");
+  ide.openMemoryFile("b.txt", "bee");
   return ide;
 }
 
@@ -22,9 +22,9 @@ describe("tabs", () => {
     const root = workspace({ "c.txt": "see" });
     const ide = vim("|a");
 
-    ide.openFile(join(root, "c.txt"));
+    ide.openAndFocus(join(root, "c.txt"));
 
-    expect(ide.group.management.all()).length(2);
+    expect(ide.editorGroup().management.all()).length(2);
     expect(activeName(ide)).eq(join(root, "c.txt"));
   });
 
@@ -52,14 +52,14 @@ describe("tabs", () => {
   it(":bd closes the tab and focuses the one next to it", () => {
     const ide = twoTabs().keys(":bd<CR>");
 
-    expect(ide.group.management.all()).length(1);
+    expect(ide.editorGroup().management.all()).length(1);
     expect(activeName(ide)).eq("a.txt");
   });
 
   it(":bd refuses to close a tab with unsaved changes", () => {
     const ide = twoTabs().keys("iX<Esc>:bd<CR>");
 
-    expect(ide.group.management.all()).length(2);
+    expect(ide.editorGroup().management.all()).length(2);
     expect(ide.statusLine()).toContain("No write since last change");
   });
 

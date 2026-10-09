@@ -58,11 +58,11 @@ describe("hunkAt", () => {
 
 describe("reverting a hunk in the editor", () => {
   it("puts the change at the cursor back", () => {
-    const vs = code("a\nB|\nc\nd\ne");
-    vs.window().setDiffBase("a\nb\nc\nd");
+    const ide = code("a\nB|\nc\nd\ne");
+    ide.window().setDiffBase("a\nb\nc\nd");
 
-    vs.run("git.revertSelectedRanges");
+    ide.executeCommand("git.revertSelectedRanges");
 
-    expect(vs.lines()).toEqual(["a", "b", "c", "d", "e"]);
+    expect(ide.lines()).toEqual(["a", "b", "c", "d", "e"]);
   });
 });
