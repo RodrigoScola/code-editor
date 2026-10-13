@@ -79,11 +79,9 @@ export class GitFile {
       return;
     }
 
-    const stagedKey = entry[0];
-    const unstagedKey = entry[1];
-
-    this.stagedStatus = getFileStatusByKey(stagedKey);
-    this.worktree = getFileStatusByKey(unstagedKey);
+    this.index = entry[0];
+    this.worktree = entry[1];
+    this.stagedStatus = getFileStatusByKey(this.index);
 
     this.path = entry.slice(3);
   }
@@ -97,16 +95,19 @@ export class GitFile {
     }
     return false;
   }
-
-  isStaged(): boolean {
-    return Boolean(this.stagedStatus);
-  }
   static ValidKey(char: string) {
-    return isValidStatusKey(char)
+    return isValidStatusKey(char);
+  }
+
+  // "?" (untracked) and "!" (ignored) fill both columns but aren't staged
+  isStaged(): boolean {
+    return this.index !== " " && this.index !== "?" && this.index !== "!";
   }
 
   isUnstaged(): boolean {
-    return Boolean(this.worktree);
+    return (
+      this.worktree !== null && this.worktree !== " " && this.worktree !== "!"
+    );
   }
   private isStatus(status: GitFileStatus) {
     if (this.worktree && getFileStatusByKey(this.worktree) === status) {
@@ -129,7 +130,7 @@ export class GitFile {
       return false;
     }
 
-    const out = validConflicts.includes(`${this.worktree}${this.index}`);
+    const out = validConflicts.includes(`${this.index}${this.worktree}`);
 
     return out;
   }

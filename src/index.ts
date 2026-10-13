@@ -7,10 +7,7 @@ import { assert } from "./assert.js";
 import { setupEditor as setup } from "./Editor/setupEditor.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
-import {
-  GitCommitWindow,
-  GitEditorWindow,
-} from "./Editor/windows/GitEditorWindow.js";
+import { GitEditorWindow } from "./Editor/windows/GitEditorWindow.js";
 import { ListMenuWindow } from "./Editor/windows/ListMenuWindow.js";
 import colors from "./ui/colors.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
@@ -88,12 +85,9 @@ window.addChildren(tabEditor);
 
 // git view
 setup.windows.git(editor);
-const gitCommit = editor.findWindow(GitCommitWindow);
 const git = editor.findWindow(GitEditorWindow);
-assert(gitCommit, "invalid git commit window");
 // assert(git, "invalid git window");
 // window.addChildren(git.window);
-window.addChildren(gitCommit);
 
 setup.windows.setupSecondarySideBar(editor);
 

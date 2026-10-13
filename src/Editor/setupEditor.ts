@@ -9,7 +9,7 @@ import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { Textdocument, DiskFile } from "./Documents/TextDocument.js";
 import { EditorContext } from "./Editor/Editor.js";
 import { FileTreeWindow } from "./windows/FileTreeWindow.js";
-import { GitCommitWindow, GitEditorWindow } from "./windows/GitEditorWindow.js";
+import { GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
 import { CodeEditorWindow } from "./windows/CodeEditorWindow.js";
 import { LayoutEngine } from "../ui/layout/layout.js";
@@ -31,23 +31,11 @@ import {
 import { SecondarySidebar } from "./windows/SecondarySidebar.js";
 
 function setupGit(editor: EditorContext) {
-  const commit = new GitCommitWindow();
-
-  commit
-    .view()
-    .setIndex(5)
-    .setPositionMode("absolute")
-    .setName(WINDOW_NAMES.GIT_WINDOW)
-    .setMargin({ bottom: 2, left: 2, right: 2, top: 2 });
-
-  commit.view().setDisplay("none");
-
   const codeGroup = editor.findWindow(CodeEditorGroup);
   assert(codeGroup, "text should be first");
 
-  editor.addWindow(commit);
 
-  const gitEditor = new GitEditorWindow();
+  const gitEditor = new GitEditorWindow(editor.workspace());
 
   gitEditor
     .view()

@@ -106,3 +106,13 @@ type GitFileStatus =
   | "untracked"
   | "ignored"
   | "broken pairing";
+
+
+type GitStatus = {
+  branch: string | null;
+  upstream: string | null;
+  ahead: number;
+  behind: number;
+  gone: boolean;
+  files: GitFile[];
+};

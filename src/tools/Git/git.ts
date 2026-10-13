@@ -37,14 +37,6 @@ export function gitStatus(root: string): GitStatus | null {
 // " D gone.ts",
 // ' M "with space.txt"',
 
-type GitStatus = {
-  branch: string | null;
-  upstream: string | null;
-  ahead: number;
-  behind: number;
-  gone: boolean;
-  files: GitFile[];
-};
 
 function validEntry(line: string) {
   return line.includes("##");
