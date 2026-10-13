@@ -260,9 +260,26 @@ export class UIScreen extends UiComponent {
     this.cursor().ensureVisible(this.view().viewport());
   }
   onEnter(ctx: EditorContext): void {
-    // todo: need to add more edge cases, very buggy
-    this.buffer().newLineAt(this.cursor().line + 1);
-    this.moveCursorDown();
+    const y = this.cursor().line;
+    const x = this.cursor().column;
+
+    const currentLine = this.buffer().at(y);
+
+    if (!currentLine) {
+      this.buffer().newLine();
+      this.cursor().moveDown();
+      return;
+    }
+
+    const currentLineContent = currentLine.slice(0, x);
+    const newLineContent = currentLine.slice(x);
+
+    this.buffer()
+      .update(y, currentLineContent)
+      .newLineAt(y + 1, newLineContent);
+
+    this.cursor().moveDown();
+    this.cursor().goToLineBeginning();
   }
   removeLine(at: number) {
     this.buffer().removeLine(at);

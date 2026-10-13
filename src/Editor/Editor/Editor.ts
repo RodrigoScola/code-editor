@@ -1,6 +1,5 @@
 import {
   CommandMode,
-  InsertMode,
   NormalMode,
   VisualMode,
 } from "../../Commands/Commands.js";
@@ -32,6 +31,7 @@ import { CURSOR, renderSelections, TextSelection } from "../textMarkers.js";
 import fs from "fs";
 import { resolve } from "path";
 import { gitStatus } from "../../tools/Git/git.js";
+import { InsertMode } from "../Modes/InsertMode.js";
 
 export class EditorContext {
   focusManager: FocusManager = new FocusManager();
@@ -442,8 +442,11 @@ export class EditorContext {
     };
     invalidate(root.view());
 
-    const { width, height } = this.renderer.layout();
-    LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(width, height));
+    const lt = this.renderer.layout();
+    LayoutEngine.Measure(
+      root,
+      LayoutEngine.CreateConstraints(lt.width, lt.height),
+    );
     LayoutEngine.Arrange(root);
     this.renderer.build(root);
     return this.renderer.render();

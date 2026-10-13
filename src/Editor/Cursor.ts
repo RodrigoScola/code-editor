@@ -281,6 +281,6 @@ export class Cursor {
     const currentLine = buffer.at(this.line);
     assert(currentLine !== undefined, `invalid current line: ${this.line}`);
 
-    this.prefferedColumn = this.column = currentLine.length - 1;
+    this.prefferedColumn = this.column = Math.max(currentLine.length - 1, 0);
   }
 }

@@ -18,6 +18,13 @@ describe("harness", () => {
     ]);
   });
 
+  it("parses Shift with a named key", () => {
+    expect(parseKeys("<S-Right><s-home>").map((k) => [k.token, k.shift])).toEqual([
+      ["<Right>", true],
+      ["<Home>", true],
+    ]);
+  });
+
   it("drives existing motions", () => {
     const ide = vim("foo |bar baz\nqux");
 

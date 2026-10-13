@@ -35,10 +35,11 @@ export class TextBuffer implements BufferLike {
   update(lineNumber: number, content: string) {
     let ln = this.at(lineNumber);
     if (ln === undefined) {
-      return;
+      return this;
     }
     this.lines[lineNumber] = content;
     this.changed();
+    return this
   }
   removeLine(line: number) {
     const at = Math.max(0, Math.min(line, this.lines.length - 1));

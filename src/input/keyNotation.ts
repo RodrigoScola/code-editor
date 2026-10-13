@@ -9,8 +9,9 @@ import { DEFAULT_TOKENS, KeyEvent } from "./inputParser.js";
 //
 // Plain characters are typed as they are. Named keys: <Esc> <CR> <Enter>
 // <BS> <Del> <Tab> <Up> <Down> <Left> <Right> <Home> <End> <PageUp>
-// <PageDown> <Space> <lt> (a literal "<"). <C-x> is Ctrl+x. Names are not
-// case sensitive.
+// <PageDown> <Space> <lt> (a literal "<"). <C-x> is Ctrl+x. <S-Right> is
+// Shift with a named key, the way the terminal parser reports Shift+arrows
+// (<S-Home>, <S-End>, <S-Up>, ...). Names are not case sensitive.
 
 const NAMED: Record<string, string> = {
   esc: DEFAULT_TOKENS.ESCAPE,
@@ -47,6 +48,14 @@ export function parseKeys(sequence: string): KeyEvent[] {
         alt: false,
         shift: false,
       });
+      i = close + 1;
+      continue;
+    }
+
+    const shifted = name.match(/^S-(.+)$/i);
+    const shiftedKey = shifted && NAMED[shifted[1].toLowerCase()];
+    if (shiftedKey !== undefined && shiftedKey !== null) {
+      keys.push({ token: shiftedKey, ctrl: false, alt: false, shift: true });
       i = close + 1;
       continue;
     }
