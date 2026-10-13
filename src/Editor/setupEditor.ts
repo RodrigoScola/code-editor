@@ -91,10 +91,13 @@ function statusWindow(editor: EditorContext) {
 function editorWindow(editor: EditorContext) {
   const window = new UiPanel().setName(WINDOW_NAMES.PRIMARY_WINDOW);
   const layout = editor.renderer.layout();
-  window.view().setLayout({
-    ...editor.renderer.layout(),
-    height: layout.height - 1,
-  });
+
+  window.view().setLayout(
+    editor.renderer
+      .layout()
+      .clone()
+      .setHeight(layout.height - 1),
+  );
   return window;
 }
 function setupFileTree(editor: EditorContext) {
@@ -263,25 +266,6 @@ const windowCommands = {
       }
     },
   },
-  toggleListMenu: {
-    id: "window.toggleListMenu",
-    title: "Window: Toggle List Menu",
-    description: "Shows the list menu and focuses it, or hides it (Ctrl+P).",
-    run: (ctx: EditorContext) => {
-      const editor = ctx.findWindow(ListMenuWindow);
-      assert(editor);
-
-      if (ctx.windowManager.activeWindow() == editor) {
-        const previousWindow = ctx.windowManager.previousWindow();
-        ctx.unfocus(editor);
-        editor.view().setVisible(false);
-        if (previousWindow) ctx.focus(previousWindow);
-      } else {
-        ctx.focus(editor);
-        editor.view().setVisible(true);
-      }
-    },
-  },
   focusLeft: {
     id: "window.focusLeft",
     title: "Window: Focus Left",
@@ -374,7 +358,6 @@ function setupNormalModeCommands(editor: EditorContext) {
     ["g", "g"],
     textEditorCommands.textEditor.goToDocumentStart,
   );
-  editor.normalMode.bind(["<C-p>"], windowCommands.toggleListMenu);
   editor.normalMode
     .bind(["<C-w>", "<C-h>"], windowCommands.focusLeft)
     .bind(["<C-w>", "<C-l>"], windowCommands.focusRight)
@@ -432,8 +415,7 @@ async function handleResize(
 
   clearOutput();
   const resizedLayout = LayoutEngine.CreateBounds();
-  resizedLayout.height = resolved.rows;
-  resizedLayout.width = resolved.columns;
+  resizedLayout.setHeight(resolved.rows).setWidth(resolved.columns);
   editor.setLayout(resizedLayout);
   editor.rootWindow.layoutConstraints = LayoutEngine.CreateConstraints(
     resizedLayout.width,

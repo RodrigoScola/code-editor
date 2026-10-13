@@ -1,7 +1,7 @@
 import { Configuration } from "../../config.js";
 import { DisplayComponent, parseSize } from "../components/displayComponent.js";
 import { LayoutEngine } from "./layout.js";
-import { LayoutBounds } from "./layoutStyle.js";
+import { LayoutBounds } from "./LayoutBounds.js";
 
 export class LayoutDimensions {
   static horizontalExtras(component: DisplayComponent) {
@@ -211,8 +211,8 @@ export class LayoutDimensions {
     component: DisplayComponent,
     bounds: LayoutBounds,
   ): LayoutBounds {
-    let width = bounds.width;
-    let height = bounds.height;
+    let width = bounds.width
+    let height = bounds.height
 
     const maxWidth = this.maxOuterWidth(component);
     if (maxWidth !== null) {
@@ -224,12 +224,11 @@ export class LayoutDimensions {
       height = Math.min(height, maxHeight);
     }
 
-    return {
-      x: Math.round(bounds.x),
-      y: Math.round(bounds.y),
-      width: Math.round(Math.max(0, width)),
-      height: Math.round(Math.max(0, height)),
-    };
+    return new LayoutBounds()
+      .setX(Math.round(bounds.x))
+      .setY(Math.round(bounds.y))
+      .setWidth(Math.round(Math.max(0, width)))
+      .setHeight(Math.round(Math.max(0, height)));
   }
 
   static ApplyRelative(
@@ -249,14 +248,14 @@ export class LayoutDimensions {
     layout: LayoutBounds,
     text: string = "",
   ): LayoutBounds {
-    return {
-      height: 1,
-      width: 1,
-      x:
+    return new LayoutBounds()
+      .setHeight(1)
+      .setWidth(1)
+      .setX(
         layout.x +
-        bufferColumnToScreenColumn(text, x, Configuration().tab_width),
-      y: layout.y + y,
-    };
+          bufferColumnToScreenColumn(text, x, Configuration().tab_width),
+      )
+      .setY(layout.y + y);
   }
 }
 

@@ -6,11 +6,11 @@ import colors from "../colors.js";
 import { ComponentStyle } from "../ComponentStyles.js";
 import { DisplayLike, LayoutEngine } from "../layout/layout.js";
 import { LayoutDimensions } from "../layout/LayoutDimensions.js";
-import { LayoutBounds } from "../layout/layoutStyle.js";
 import { OverflowTypes, TextAlign, TextLayout } from "../TextLayout/text.js";
 import { ViewPort } from "../windows/viewport.js";
 import { BorderStyles, ComponentBorder } from "../display/border.js";
 import { ComponentLayoutFns } from "../layout/componentLayout.js";
+import { LayoutBounds } from "../layout/LayoutBounds.js";
 
 export class DisplayComponent
   extends ComponentLayoutFns
@@ -136,47 +136,71 @@ export class DisplayComponent
    * Margin is intentionally NOT included here because margin is outside
    * the component's layout box.
    */
+  private _layoutBounds = new LayoutBounds();
   contentLayout(): LayoutBounds {
     const layout = this.layout();
     const padding = this.padding();
     const border = this.border();
 
-    return {
-      x: layout.x + padding.left + border.left(),
-
-      y: layout.y + padding.top + border.top(),
-
-      width: Math.max(
-        0,
-        layout.width -
-          padding.left -
-          padding.right -
-          border.left() -
-          border.right(),
-      ),
-
-      height: Math.max(
-        0,
-        layout.height -
-          padding.top -
-          padding.bottom -
-          border.top() -
-          border.bottom(),
-      ),
-    };
+    return this._layoutBounds
+      .setX(layout.x + padding.left + border.left())
+      .setY(layout.y + padding.top + border.top())
+      .setWidth(
+        Math.max(
+          0,
+          layout.width -
+            padding.left -
+            padding.right -
+            border.left() -
+            border.right(),
+        ),
+      )
+      .setHeight(
+        Math.max(
+          0,
+          layout.height -
+            padding.top -
+            padding.bottom -
+            border.top() -
+            border.bottom(),
+        ),
+      );
   }
 
   /** The containing block used by absolutely positioned descendants. */
+  private _paddingLayoutBounds = new LayoutBounds();
   paddingLayout(): LayoutBounds {
     const layout = this.layout();
     const border = this.border();
 
-    return {
-      x: layout.x + border.left(),
-      y: layout.y + border.top(),
-      width: Math.max(0, layout.width - border.left() - border.right()),
-      height: Math.max(0, layout.height - border.top() - border.bottom()),
-    };
+    this._paddingLayoutBounds
+      .setX(layout.x + border.left())
+      .setY(layout.y + border.top())
+      .setWidth(Math.max(0, layout.width - border.left() - border.right()))
+      .setHeight(Math.max(0, layout.height - border.top() - border.bottom()));
+
+    return this._paddingLayoutBounds;
+  }
+
+  /**
+   * Where this component may paint, or null when nothing limits it.
+   *
+   * Every ancestor whose overflow isn't "visible" keeps its content inside
+   * its padding box, so this is all of those boxes intersected. The
+   * component's own overflow doesn't count: it clips its children, not its
+   * own background and border. A width or height of 0 means nothing shows.
+   */
+  clipBounds(): LayoutBounds | null {
+    let clip: LayoutBounds | null = null;
+
+    for (let parent = this.parent(); parent; parent = parent.parent()) {
+      if (parent.overflow() === "visible") {
+        continue;
+      }
+      clip = intersectBounds(clip, parent.paddingLayout());
+    }
+
+    return clip;
   }
 
   // ---------------------------------------------------------------------------
@@ -399,7 +423,10 @@ export class DisplayComponent
    *   "Given these constraints, how large would I like to be?"
    */
   measure(constraints: MeasureConstraints): MeasuredSize {
-    if (!this.dirty() && sameConstraints(this._measuredWith, constraints)) {
+    if (
+      !this.dirty() &&
+      LayoutEngine.SameConstraints(this._measuredWith, constraints)
+    ) {
       return this._measuredSize;
     }
     this._measuredWith = { ...constraints };
@@ -455,10 +482,13 @@ export class DisplayComponent
     // nothing changed inside it and it stays where it was: its children and
     // its wrapped text are still right. Re-wrapping the text is the costly
     // part for a long document
-    if (!this.dirty() && sameBounds(this._arrangedTo, finalBounds)) {
+    if (
+      !this.dirty() &&
+      LayoutEngine.SameBounds(this._arrangedTo, finalBounds)
+    ) {
       return;
     }
-    this._arrangedTo = { ...finalBounds };
+    this._arrangedTo = finalBounds.clone()
 
     this.setLayout(finalBounds);
 
@@ -491,8 +521,9 @@ export class DisplayComponent
     const absoluteChildren = this.absoluteChildren();
 
     if (this.overflow() !== "hidden") {
-      bounds.x -= this.scrollLeft();
-      bounds.y -= this.scrollTop();
+      bounds
+        .setX(bounds.x - this.scrollLeft())
+        .setY(bounds.y - this.scrollTop());
     }
 
     if (this.direction() === "horizontal") {
@@ -843,25 +874,23 @@ export function parseSize(size: Size, available: number): number | null {
   return (available * percentage) / 100;
 }
 
-function sameConstraints(
-  a: MeasureConstraints | null,
-  b: MeasureConstraints,
-): boolean {
-  return (
-    a !== null &&
-    a.minWidth === b.minWidth &&
-    a.maxWidth === b.maxWidth &&
-    a.minHeight === b.minHeight &&
-    a.maxHeight === b.maxHeight
-  );
-}
+// the part both cover; null stands for "no limit", so it gives back the other
+function intersectBounds(
+  a: LayoutBounds | null,
+  b: LayoutBounds,
+): LayoutBounds {
+  if (a === null) {
+    return b;
+  }
 
-function sameBounds(a: LayoutBounds | null, b: LayoutBounds): boolean {
-  return (
-    a !== null &&
-    a.x === b.x &&
-    a.y === b.y &&
-    a.width === b.width &&
-    a.height === b.height
-  );
+  const x = Math.max(a.x, b.x);
+  const y = Math.max(a.y, b.y);
+  const right = Math.min(a.x + a.width, b.x + b.width);
+  const bottom = Math.min(a.y + a.height, b.y + b.height);
+
+  return LayoutBounds.Create()
+    .setX(x)
+    .setY(y)
+    .setWidth(Math.max(0, right - x))
+    .setHeight(Math.max(0, bottom - y));
 }

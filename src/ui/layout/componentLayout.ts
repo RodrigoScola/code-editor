@@ -1,6 +1,7 @@
 import { DisplayComponent } from "../components/displayComponent.js";
 import { OverflowTypes } from '../TextLayout/text.js';
-import { ContentAlign, LayoutBounds, LayoutStyle, OverflowType, WrapStyle } from './layoutStyle.js';
+import { LayoutBounds } from './LayoutBounds.js';
+import { ContentAlign,  LayoutStyle, OverflowType, WrapStyle } from './layoutStyle.js';
 
 export class ComponentLayoutFns {
   private readonly _layoutStyle: LayoutStyle;

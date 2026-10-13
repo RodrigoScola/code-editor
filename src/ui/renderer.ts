@@ -8,7 +8,7 @@ import { ComponentStyle } from "./ComponentStyles.js";
 import { TextLayout } from "./TextLayout/text.js";
 import { ViewPort } from "./windows/viewport.js";
 import { DisplayLike } from "./layout/layout.js";
-import { LayoutBounds } from './layout/layoutStyle.js';
+import { LayoutBounds } from "./layout/LayoutBounds.js";
 
 // where a finished frame goes: the terminal in the app, console.log in tests
 export type RenderOutput = (frame: string) => void;
@@ -34,7 +34,7 @@ export class Renderer {
   private _sent: SentCell[][] | null = null;
 
   layout() {
-    return this._canvas.layout()
+    return this._canvas.layout();
   }
   // the painted cells of the last frame
   canvas() {
@@ -140,25 +140,15 @@ export class Renderer {
       const component = componentLike.view();
       component.postPaint(canvas);
     }
+
+    defaultBlend.dispose();
   }
 
-  private borderBound: LayoutBounds = {
-    height: 0,
-    width: 0,
-    x: 0,
-    y: 0,
-  };
+  private borderBound: LayoutBounds = LayoutBounds.Create();
 
-  private resetBorderBounds() {
-    this.borderBound.height = 0;
-    this.borderBound.width = 0;
-    this.borderBound.x = 0;
-    this.borderBound.y = 0;
-    return this.borderBound;
-  }
   private paintBorder(componentLike: DisplayLike, canvas: Canvas) {
     const component = componentLike.view();
-    const bound: LayoutBounds = this.resetBorderBounds();
+    const bound: LayoutBounds = this.borderBound.reset();
     const border = component.border();
 
     const cl = component.paddingLayout();
@@ -166,10 +156,11 @@ export class Renderer {
 
     border.styles().setBackgroundColor(component.styles().backgroundColor());
     if (border.left() > 0) {
-      bound.x = cl.x - border.left();
-      bound.height = cl.height + border.top() + border.bottom();
-      bound.width = border.left();
-      bound.y = cl.y - border.top();
+      bound
+        .setX(cl.x - border.left())
+        .setHeight(cl.height + border.top() + border.bottom())
+        .setWidth(border.left())
+        .setY(cl.y - border.top());
 
       border.styles().setDisplay(border.borderStyle().left);
       canvas.fillRect(bound, border.styles());
@@ -177,10 +168,10 @@ export class Renderer {
     }
 
     if (border.right() > 0) {
-      bound.x = cl.x + cl.width;
-      bound.height = cl.height + border.top() + border.bottom();
-      bound.width = border.right();
-      bound.y = cl.y - border.top();
+      bound.setX(cl.x + cl.width);
+      bound.setHeight(cl.height + border.top() + border.bottom());
+      bound.setWidth(border.right());
+      bound.setY(cl.y - border.top());
       border.styles().setDisplay(border.borderStyle().right);
       canvas.fillRect(bound, border.styles());
       border.styles().setDisplay(out);
@@ -198,10 +189,11 @@ export class Renderer {
           border.borderStyle().top_right;
       }
 
-      bound.x = cl.x - border.left();
-      bound.height = border.top();
-      bound.width = width;
-      bound.y = cl.y - border.top();
+      bound
+        .setX(cl.x - border.left())
+        .setHeight(border.top())
+        .setWidth(width)
+        .setY(cl.y - border.top());
 
       canvas.fillRect(bound, border.styles());
       canvas.drawText(bound, text, border.styles());
@@ -218,11 +210,11 @@ export class Renderer {
           text.slice(1, -1) +
           border.borderStyle().bottom_right;
       }
-
-      bound.x = cl.x - border.left();
-      bound.width = width;
-      bound.y = cl.y + cl.height;
-      bound.height = border.bottom();
+      bound
+        .setX(cl.x - border.left())
+        .setWidth(width)
+        .setY(cl.y + cl.height)
+        .setHeight(border.bottom());
 
       canvas.fillRect(bound, border.styles());
       canvas.drawText(bound, text, border.styles());

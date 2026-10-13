@@ -1,8 +1,8 @@
 import { assert } from "../../assert.js";
-import { LayoutBounds } from "../layout/layoutStyle.js";
 import { TextBuffer } from "../buffer/Buffer.js";
 import { time } from "node:console";
 import { DisplayComponent } from "../components/displayComponent.js";
+import { LayoutBounds } from '../layout/LayoutBounds.js';
 
 export type OverflowTypes = "wrap" | "clip" | "visible";
 
@@ -320,12 +320,11 @@ export class TextLayout implements BufferLike {
       }
       maxW = Math.max(maxW, line.width());
     }
-    return {
-      height: this.lines().length,
-      width: maxW,
-      x: this.lines().at(0)?.x() || 0,
-      y: this.lines().at(0)?.y() || 0,
-    };
+
+  return  LayoutBounds.Create().setHeight(this.lines().length)
+      .setWidth(maxW)
+      .setX(this.lines().at(0)?.x() || 0)
+    .setY(this.lines().at(0)?.y() || 0)
   }
 
   getTextPosition(x: number, y: number): number {

@@ -47,8 +47,7 @@ editor.renderer.setOutput((frame) => {
 setup.terminal.hideCursor();
 
 const bounds = LayoutEngine.CreateBounds();
-bounds.height = process.stdout.rows;
-bounds.width = process.stdout.columns;
+bounds.setHeight(process.stdout.rows).setWidth(process.stdout.columns);
 editor.renderer.setLayout(bounds);
 
 setup.root(editor);

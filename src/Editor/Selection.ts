@@ -1,8 +1,8 @@
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
+import { LayoutBounds } from "../ui/layout/LayoutBounds.js";
 import { LayoutDimensions } from "../ui/layout/LayoutDimensions.js";
-import { LayoutBounds } from "../ui/layout/layoutStyle.js";
 
 export class EditorSelection {
   private _anchor: Point = { x: 0, y: 0 };
@@ -25,12 +25,13 @@ export class EditorSelection {
 
       if (to <= from) continue;
 
-      bounds.push({
-        x: from,
-        y,
-        width: to - from,
-        height: 1,
-      });
+      bounds.push(
+        LayoutBounds.Create()
+          .setX(from)
+          .setY(y)
+          .setWidth(to - from)
+          .setHeight(1),
+      );
     }
 
     return bounds;
@@ -93,12 +94,12 @@ export class EditorSelection {
 
       const endPosition = LayoutDimensions.ApplyRelative(to, y, layout, line);
 
-      bounds.push({
-        x: startPosition.x,
-        y: startPosition.y,
-        width: endPosition.x - startPosition.x,
-        height: 1,
-      });
+      bounds.push(
+        startPosition
+          .clone()
+          .setWidth(endPosition.x - startPosition.x)
+          .setHeight(1),
+      );
     }
 
     return bounds;

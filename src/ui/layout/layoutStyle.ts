@@ -1,3 +1,5 @@
+import { LayoutBounds } from './LayoutBounds.js';
+
 export interface Insets {
   top: number;
   right: number;
@@ -5,15 +7,11 @@ export interface Insets {
   left: number;
 }
 
-export interface LayoutBounds {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+
+
 
 export type PositionMode = "normal" | "absolute" | "fixed";
-export type OverflowType = "auto" | "scroll" | "clip" | "hidden";
+export type OverflowType = "auto" | "scroll" | "clip" | "hidden"  |  'visible'
 export type WrapStyle = "wrap" | "no-wrap" | "wrap-reverse";
 export type ContentAlign =
   | "start"
@@ -31,7 +29,7 @@ export class LayoutStyle {
   private _startY: Size = "auto";
   private _start: Size = "auto";
   private _wrap: WrapStyle = "no-wrap";
-  private _overflow: OverflowType = "hidden";
+  private _overflow: OverflowType = "visible";
 
   private _display: DisplayTypes = "flex";
 
@@ -41,12 +39,7 @@ export class LayoutStyle {
   private _alignContent: ContentAlign = "start";
   private _gap: number = 0;
 
-  private l: LayoutBounds = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-  };
+  private l: LayoutBounds = new  LayoutBounds();
 
   private _margin: Insets = {
     bottom: 0,

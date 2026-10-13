@@ -10,11 +10,10 @@ import {
 import { EditorContext } from "../Editor/Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
-import { ViewPort } from "../../ui/windows/viewport.js";
-import { LayoutBounds } from "../../ui/layout/layoutStyle.js";
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { UiInput } from "../../ui/components/UiInput.js";
 import { assert } from "../../assert.js";
+import { LayoutBounds } from "../../ui/layout/LayoutBounds.js";
 
 export class TreeInput extends UiInput {
   path: string;
@@ -295,6 +294,8 @@ export class FileTreeWindow extends UIScreen {
     const right = layout.x + layout.width;
     const text = node.buffer().at(0) ?? "";
 
+    const temp = layout.clone();
+
     const selection = node.cursor().selection;
     if (selection) {
       for (const bound of selection.bounds(node.buffer())) {
@@ -302,20 +303,23 @@ export class FileTreeWindow extends UIScreen {
         const width = Math.min(bound.width, right - from);
         if (width <= 0) continue;
 
-        const at = { x: from, y, width, height: 1 };
-        canvas.fillRect(at, selection.styles);
-        canvas.drawText(at, text.slice(bound.x, bound.x + width));
+        temp.setX(from).setY(y).setWidth(width).setHeight(1);
+
+        canvas.fillRect(temp, selection.styles);
+        canvas.drawText(temp, text.slice(bound.x, bound.x + width));
       }
     }
 
     const cursorX = x + node.cursor().column;
     if (cursorX >= layout.x && cursorX < right) {
       canvas.drawText(
-        { x: cursorX, y, width: 1, height: 1 },
+        temp.setX(cursorX).setY(y).setWidth(1).setHeight(1),
         text[node.cursor().column] ?? " ",
         node.cursor().style,
       );
     }
+
+    temp.dispose();
   }
 
   private paintChild(
@@ -345,13 +349,12 @@ export class FileTreeWindow extends UIScreen {
 
     // Only paint when the node is inside the visible area.
     if (screenY >= layout.y && screenY < viewportBottom) {
-      const bounds: LayoutBounds = {
-        x: screenX,
-        y: screenY,
-        width: layout.width - viewportPosition.x,
-        height: 1,
-      };
-
+      const bounds = layout
+        .clone()
+        .setX(screenX)
+        .setY(screenY)
+        .setWidth(layout.width - viewportPosition.x)
+        .setHeight(1);
       const icon = node.isDirectory
         ? node.folded
           ? ICONS.arrow.triangleRight
@@ -360,6 +363,8 @@ export class FileTreeWindow extends UIScreen {
       const label = icon + node.buffer().content();
 
       canvas.drawText(bounds, label, this.view().styles());
+
+      bounds.dispose();
 
       if (node.isFocused() && this.getNodeAt(this.cursor().line) === node) {
         this.editing = { node, x: screenX + icon.length, y: screenY };

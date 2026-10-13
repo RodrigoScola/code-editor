@@ -1,9 +1,9 @@
 import { assert } from "../../../assert.js";
 import { DisplayComponent } from "../../../ui/components/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
-import { LayoutBounds } from "../../../ui/layout/layoutStyle.js";
 import { UiComponent } from "../../../ui/components/UiComponent.js";
 import { FocusManager } from "../../../ui/windows/FocusManager.js";
+import { LayoutBounds } from '../../../ui/layout/LayoutBounds.js';
 
 export class WindowManager {
   private windows = new Map<number, UiComponent>();
@@ -129,9 +129,6 @@ export class WindowManager {
     this.add(newEditor);
   }
   replace() {}
-  private overlaps(a: LayoutBounds, b: LayoutBounds): boolean {
-    return a.y < b.y + b.height && a.y + a.height > b.y;
-  }
   find<T extends UiComponent>(type: new (...args: any[]) => T): T | null {
     for (const window of this.windows.values()) {
       if (window instanceof type) {

@@ -1,5 +1,4 @@
-import { UiComponent } from '../components/UiComponent.js';
-import { LayoutBounds } from "../layout/layoutStyle.js";
+import { UiComponent } from "../components/UiComponent.js";
 
 export interface Focusable {
   focus(): void;

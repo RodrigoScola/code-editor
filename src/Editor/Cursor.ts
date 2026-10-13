@@ -4,8 +4,8 @@ import colors from "../ui/colors.js";
 import { DisplayComponent } from "../ui/components/displayComponent.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { LayoutEngine } from "../ui/layout/layout.js";
+import { LayoutBounds } from "../ui/layout/LayoutBounds.js";
 import { LayoutDimensions } from "../ui/layout/LayoutDimensions.js";
-import { LayoutBounds } from "../ui/layout/layoutStyle.js";
 import { ViewPort } from "../ui/windows/viewport.js";
 import { EditorSelection } from "./Selection.js";
 
@@ -40,13 +40,13 @@ export class Cursor {
     this._view = vp;
     return this;
   }
+  private bounds = LayoutBounds.Create();
   layout(): LayoutBounds {
-    return {
-      height: this.height,
-      width: this.width,
-      x: this.column,
-      y: this.line,
-    };
+    return this.bounds
+      .setHeight(this.height)
+      .setWidth(this.width)
+      .setX(this.column)
+      .setY(this.line);
   }
 
   private outOfBounds(bounds: LayoutBounds) {
@@ -94,8 +94,7 @@ export class Cursor {
       layout,
     );
 
-    relative.height = this.height;
-    relative.width = this.width;
+    relative.setHeight(this.height).setWidth(this.width);
 
     const content = canvas.getRow(relative.y);
     assert(content, `invalid display row at ${relative.y}`);
@@ -110,6 +109,7 @@ export class Cursor {
     canvas.drawText(relative, final, this.style);
   }
 
+  private _selectionBounds: LayoutBounds = LayoutBounds.Create();
   paintSelection(canvas: Canvas) {
     const view = this.view();
     const buffer = this._buffer;
@@ -135,14 +135,10 @@ export class Cursor {
         cl,
         content,
       );
-      const nb = {
-        x: position.x,
-        y: position.y,
-        width: bound.width,
-        height: bound.height,
-      };
-      canvas.fillRect(nb, selection.styles);
-      canvas.drawText(nb, content);
+      this._selectionBounds.copy(bound);
+
+      canvas.fillRect(this._selectionBounds, selection.styles);
+      canvas.drawText(this._selectionBounds, content);
     }
   }
 

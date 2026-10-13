@@ -1,16 +1,12 @@
 import colors from "./colors.js";
 import { ComponentBorder } from "./display/border.js";
 import { ComponentStyle } from "./ComponentStyles.js";
-import { LayoutBounds } from "./layout/layoutStyle.js";
 import { Configuration } from "../config.js";
 import { TextLayout } from "./TextLayout/text.js";
 import { ViewPort } from "./windows/viewport.js";
+import { LayoutBounds } from "./layout/LayoutBounds.js";
+import { DisplayTile } from "./display/DisplayTile.js";
 
-export interface DisplayTile {
-  x: number;
-  y: number;
-  styles: ComponentStyle;
-}
 export interface ICanvas {
   lineTo(start: Point, end: Point, style: ComponentStyle | null): void;
   clear(): void;
@@ -36,12 +32,7 @@ const DEFAULT_STYLE: ComponentStyle = ComponentStyle.Create()
   .setDisplay(" ");
 
 export class Canvas implements ICanvas {
-  l: LayoutBounds = {
-    x: 0,
-    y: 0,
-    height: 0,
-    width: 0,
-  };
+  l: LayoutBounds = LayoutBounds.Create();
 
   private canvas: DisplayTile[][];
 
@@ -77,7 +68,7 @@ export class Canvas implements ICanvas {
     while (true) {
       const cell = this.getCell(x, y);
       if (cell) {
-        cell.styles = ComponentStyle.Blend(style, DEFAULT_STYLE);
+        cell.setStyles(ComponentStyle.Blend(style, DEFAULT_STYLE));
       }
 
       if (x === endX && y === endY) {
@@ -115,13 +106,19 @@ export class Canvas implements ICanvas {
   }
 
   private createTile(x: number, y: number): DisplayTile {
-    return {
-      x: x,
-      y: y,
-      styles: DEFAULT_STYLE,
-    };
+    return DisplayTile.Create().setX(x).setY(y).setStyles(DEFAULT_STYLE);
   }
   private resetCanvas() {
+    for (let i = 0; i < this.height(); i++) {
+      const row = this.getRow(i);
+
+      if (!row) continue;
+      for (const item of row) {
+        item.styles.dispose();
+        item.dispose();
+      }
+    }
+
     this.canvas = [];
     for (let i = 0; i < this.height(); i++) {
       this.canvas.push([]);
@@ -131,23 +128,13 @@ export class Canvas implements ICanvas {
     }
   }
   setHeight(nHeight: number) {
-    this.setLayout({
-      height: nHeight,
-      width: this.l.width,
-      x: this.l.x,
-      y: this.l.y,
-    });
+    this.l.setHeight(nHeight);
 
     this.clear();
   }
 
   setWidth(nWidth: number): Canvas {
-    this.setLayout({
-      height: this.l.height,
-      width: nWidth,
-      x: this.l.x,
-      y: this.l.y,
-    });
+    this.l.setWidth(nWidth);
 
     this.clear();
 
@@ -172,7 +159,7 @@ export class Canvas implements ICanvas {
 
     for (const row of this.canvas) {
       for (const cell of row) {
-        cell.styles = DEFAULT_STYLE;
+        cell.setStyles(DEFAULT_STYLE);
       }
     }
   }
@@ -195,7 +182,7 @@ export class Canvas implements ICanvas {
     console.log(colors.BACKGROUND_OFF);
   }
   setCell(x: number, y: number, style: ComponentStyle) {
-    this.canvas[y][x].styles = style;
+    this.canvas[y][x].setStyles(style);
   }
 
   fillRect(bounds: LayoutBounds, style: ComponentStyle | null) {
@@ -214,7 +201,7 @@ export class Canvas implements ICanvas {
         if (!cell) {
           continue;
         }
-        cell.styles = filled;
+        cell.setStyles(filled);
       }
     }
   }
@@ -227,6 +214,8 @@ export class Canvas implements ICanvas {
     if (cl.height <= 0) {
       return;
     }
+
+    const bounds = cl.clone();
 
     const firstLine = viewport?.firstLine || 0;
     const lastLine =
@@ -241,16 +230,12 @@ export class Canvas implements ICanvas {
       const screenY = cl.y + (lineNumber - firstLine);
 
       this.drawText(
-        {
-          height: cl.height,
-          width: cl.width,
-          x: cl.x + line.x(),
-          y: screenY,
-        },
+        bounds.setX(cl.x + line.x()).setY(screenY),
         line.content(),
         styles,
       );
     }
+    bounds.dispose();
   }
 
   drawText(bounds: LayoutBounds, text: string | TextLayout): void;
@@ -309,11 +294,13 @@ export class Canvas implements ICanvas {
           break;
         }
 
-        cell.styles = ComponentStyle.Blend(style ?? cell.styles, base).setDisplay(
-          line[i],
+
+        cell.setStyles(
+          ComponentStyle.Blend(style ?? cell.styles, base).setDisplay(line[i]),
         );
       }
     }
+    base.dispose();
   }
   getCells() {
     return this.canvas;

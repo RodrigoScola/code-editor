@@ -1,7 +1,7 @@
 import { compose } from "stream";
 import { DisplayComponent, parseSize } from "../components/displayComponent.js";
 import { LayoutDimensions } from "./LayoutDimensions.js";
-import { LayoutBounds } from "./layoutStyle.js";
+import { LayoutBounds } from "./LayoutBounds.js";
 
 export interface DisplayLike {
   view(): DisplayComponent;
@@ -21,12 +21,11 @@ export class LayoutEngine {
     x: number = 0,
     y: number = 0,
   ): LayoutBounds {
-    return {
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-    };
+    return LayoutBounds.Create()
+      .setWidth(width)
+      .setHeight(height)
+      .setX(x)
+      .setY(y);
   }
 
   static ArrangeAbsolute(child: DisplayLike, bounds: LayoutBounds) {
@@ -45,17 +44,20 @@ export class LayoutEngine {
     const y =
       (parseSize(child.view().startY(), bounds.height) ?? 0) + margin.top;
 
-    child.view().arrange({
-      x: bounds.x + x,
-      y: bounds.y + y,
-      width,
-      height,
-    });
+    const newBounds = bounds
+      .clone()
+      .setX(bounds.x + x)
+      .setY(bounds.y + y)
+      .setWidth(width)
+      .setHeight(height);
+
+    child.view().arrange(newBounds);
+    newBounds.dispose();
   }
 
   static ArrangeVertical(displayLike: DisplayLike, bounds: LayoutBounds) {
     const component = displayLike.view();
-    let remainingHeight = bounds.height;
+    let remainingHeight = bounds.height
 
     const normalChildren = component.view().normalChildren();
 
@@ -158,7 +160,7 @@ export class LayoutEngine {
     }
 
     const columnWidth = bounds.width / columns.length;
-    let x = bounds.x;
+    let x = bounds.x
 
     if (component.wrap() === "wrap-reverse") {
       columns.reverse();
@@ -170,7 +172,7 @@ export class LayoutEngine {
         0,
       );
 
-      let y = bounds.y;
+      let y = bounds.y
       let spacing = 0;
 
       if (component.alignContent() === "end") {
@@ -203,6 +205,8 @@ export class LayoutEngine {
       } else if (component.justifyContent() === "start") {
       }
 
+      const newBounds = bounds.clone();
+
       for (const item of column) {
         const { child, margin } = item;
         const width =
@@ -215,12 +219,14 @@ export class LayoutEngine {
           y += spacing;
         }
 
-        child.view().arrange({
-          x: x + margin.left,
-          y,
-          width,
-          height: item.height,
-        });
+        newBounds
+          .setX(x + margin.left)
+          .setY(y)
+          .setWidth(width)
+          .setHeight(item.height);
+
+        child.view().arrange(newBounds);
+        newBounds.dispose();
 
         if (
           component.alignContent() === "space-between" ||
@@ -231,6 +237,7 @@ export class LayoutEngine {
 
         y += item.height + margin.bottom + component.gap();
       }
+      newBounds.dispose();
 
       x += columnWidth;
     }
@@ -354,7 +361,7 @@ export class LayoutEngine {
     }
 
     for (const row of rows) {
-      let startX = bounds.x;
+      let startX = bounds.x
 
       const rowWidth = row.reduce(
         (total, item) =>
@@ -398,6 +405,8 @@ export class LayoutEngine {
         y += bounds.height - maxHeight;
       }
 
+      const temp = bounds.clone();
+
       for (let i = 0; i < row.length; i++) {
         const item = row[i];
         const child = item.child.view();
@@ -410,12 +419,13 @@ export class LayoutEngine {
           startX += spacing;
         }
 
-        child.arrange({
-          x: startX,
-          y: y + margin.top,
-          width: item.width,
-          height,
-        });
+        temp
+          .setX(startX)
+          .setY(y + margin.top)
+          .setWidth(item.width)
+          .setHeight(height);
+
+        child.arrange(temp);
 
         if (
           component.justifyContent() === "space-between" ||
@@ -427,6 +437,7 @@ export class LayoutEngine {
         startX += component.gap();
         startX += item.width + margin.right;
       }
+      temp.dispose();
 
       y += rowHeight;
     }
@@ -512,14 +523,16 @@ export class LayoutEngine {
     const layout = root.layout();
     const measured = root.measuredSize();
 
-    root.arrange(
-      bounds || {
-        x: layout.x,
-        y: layout.y,
-        width: layout.width || measured.width,
-        height: layout.height || measured.height,
-      },
-    );
+    const temp = bounds
+      ? bounds.clone()
+      : LayoutBounds.Create()
+          .setX(layout.x)
+          .setY(layout.y)
+          .setWidth(layout.width || measured.width)
+          .setHeight(layout.height || measured.height);
+
+    root.arrange(temp);
+    temp.dispose()
     this.invalidateParent(rootLike);
 
     return this;
@@ -539,14 +552,6 @@ export class LayoutEngine {
     return this.UNCONSTRAINED_LAYOUT;
   }
 
-  static Contains(cursor: LayoutBounds, bounds: LayoutBounds) {
-    return (
-      cursor.x >= bounds.x &&
-      cursor.x < bounds.x + bounds.width &&
-      cursor.y >= bounds.y &&
-      cursor.y < bounds.y + bounds.height
-    );
-  }
 
   static ClampSize(
     width: number,
@@ -563,5 +568,28 @@ export class LayoutEngine {
         Math.min(height, constraints.maxHeight),
       ),
     };
+  }
+
+  static SameConstraints(
+    a: MeasureConstraints | null,
+    b: MeasureConstraints,
+  ): boolean {
+    return (
+      a !== null &&
+      a.minWidth === b.minWidth &&
+      a.maxWidth === b.maxWidth &&
+      a.minHeight === b.minHeight &&
+      a.maxHeight === b.maxHeight
+    );
+  }
+
+  static SameBounds(a: LayoutBounds | null, b: LayoutBounds): boolean {
+    return (
+      a !== null &&
+      a.x === b.x &&
+      a.y === b.y &&
+      a.width === b.width &&
+      a.height === b.height
+    );
   }
 }

@@ -1,7 +1,12 @@
 import { assert } from "vitest";
 import colors from "./colors.js";
+import { ObjectPool } from '../ObjectPool.js';
 
 export class ComponentStyle {
+  private static Pool: ObjectPool<ComponentStyle> = new ObjectPool(
+    () => new ComponentStyle(),
+  );
+
   private bg: string = colors.BACKGROUND_OFF;
   private cl: string = colors.FOREGROUND_OFF;
   private bld: boolean = false;
@@ -118,7 +123,11 @@ export class ComponentStyle {
     return this.cl;
   }
   public static Create() {
-    return new ComponentStyle();
+    return this.Pool.get()
+  }
+
+  dispose() {
+    ComponentStyle.Pool.retrieve(this.reset())
   }
 
   blend(
