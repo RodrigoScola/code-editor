@@ -139,13 +139,20 @@ export class TextLayout implements BufferLike {
   private _unsubscribe: () => void = this.watch(this._buffer);
 
   private watch(buffer: TextBuffer) {
-    return buffer.onChange(() => this.parent()?.setDirty(true));
+    return buffer.onChange(() => this.changed());
+  }
+
+  // a new buffer or a new wrapping option changes the lines, so the view
+  // has to be laid out (and its text wrapped) again
+  private changed() {
+    this.parent()?.setDirty(true);
   }
 
   setBuffer(buffer: TextBuffer) {
     this._unsubscribe();
     this._buffer = buffer;
     this._unsubscribe = this.watch(buffer);
+    this.changed();
 
     const parentWidth = this.parent()?.contentLayout().width ?? 0;
 
@@ -348,6 +355,7 @@ export class TextLayout implements BufferLike {
   }
   setOverflow(val: OverflowTypes) {
     this.options().setOverflow(val);
+    this.changed();
     return this;
   }
   lineWidth(): number | undefined {
@@ -355,6 +363,7 @@ export class TextLayout implements BufferLike {
   }
   setLineWidth(val: number | undefined) {
     this.options().setLineWidth(val);
+    this.changed();
     return this;
   }
 
@@ -367,6 +376,7 @@ export class TextLayout implements BufferLike {
   }
   setAlign(t: TextAlign) {
     this.options().setAlign(t);
+    this.changed();
     return this;
   }
   justify() {
@@ -374,6 +384,7 @@ export class TextLayout implements BufferLike {
   }
   setJustify(val: boolean) {
     this.options().setJustify(val);
+    this.changed();
     return this;
   }
   height() {

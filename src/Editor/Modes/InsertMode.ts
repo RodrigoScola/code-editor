@@ -1,6 +1,6 @@
-import { InputParser } from '../../Input/inputParser.js';
-import { isTextComponent } from '../../utils.js';
-import { EditorContext } from '../Editor/Editor.js';
+import { InputParser } from "../../Input/inputParser.js";
+import { isTextComponent } from "../../utils.js";
+import { EditorContext } from "../Editor/Editor.js";
 
 export class InsertMode implements EditorMode {
   handleKey(key: KeyEvent, ctx: EditorContext) {

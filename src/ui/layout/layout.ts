@@ -486,8 +486,18 @@ export class LayoutEngine {
 
   static Measure(component: DisplayLike, constraints: MeasureConstraints) {
     component.view().measure(constraints);
+    this.invalidateParent(component);
 
     return this;
+  }
+
+  // Measure and Arrange are where layout starts. Starting it on a view
+  // inside a tree (laying one window out on its own) gives that view a
+  // size and place its parent didn't choose, so the parent has to lay it
+  // out again in the next full frame. Children laid out by their parent go
+  // through view().measure/arrange, not through here
+  private static invalidateParent(component: DisplayLike) {
+    component.view().parent()?.setDirty(true);
   }
   static Calculate(root: DisplayLike) {
     LayoutEngine.Measure(
@@ -510,6 +520,7 @@ export class LayoutEngine {
         height: layout.height || measured.height,
       },
     );
+    this.invalidateParent(rootLike);
 
     return this;
   }

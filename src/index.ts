@@ -115,7 +115,7 @@ process.stdout.on("finish", () => {
 
 setInterval(() => {
   editor.requestRepaint();
-}, 50);
+}, 5);
 
 function dispatchKey(parsedKey: KeyEvent) {
   editor.handleKey(parsedKey);

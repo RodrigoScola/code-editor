@@ -33,6 +33,12 @@ export class DisplayComponent
     width: 0,
   };
 
+  // what the last measure and arrange were given: a clean view reuses its
+  // results only for the same input, so a new screen size or a parent that
+  // moves it still lays it out again
+  private _measuredWith: MeasureConstraints | null = null;
+  private _arrangedTo: LayoutBounds | null = null;
+
   private _viewport: ViewPort = new ViewPort();
 
   private childs: DisplayComponent[] = [];
@@ -393,9 +399,10 @@ export class DisplayComponent
    *   "Given these constraints, how large would I like to be?"
    */
   measure(constraints: MeasureConstraints): MeasuredSize {
-    if (this.dirty() == false) {
+    if (!this.dirty() && sameConstraints(this._measuredWith, constraints)) {
       return this._measuredSize;
     }
+    this._measuredWith = { ...constraints };
 
     let styleConstraints = LayoutDimensions.applyStyleConstraints(
       this,
@@ -445,6 +452,14 @@ export class DisplayComponent
   arrange(bounds: LayoutBounds): void {
     const finalBounds = LayoutDimensions.resolveArrangedBounds(this, bounds);
 
+    // nothing changed inside it and it stays where it was: its children and
+    // its wrapped text are still right. Re-wrapping the text is the costly
+    // part for a long document
+    if (!this.dirty() && sameBounds(this._arrangedTo, finalBounds)) {
+      return;
+    }
+    this._arrangedTo = { ...finalBounds };
+
     this.setLayout(finalBounds);
 
     this.arrangeContent(this.contentLayout());
@@ -468,11 +483,11 @@ export class DisplayComponent
 
   /**
    * Arrange children according to this component's direction.
+   *
+   * arrange() already skips a component that is clean and didn't move, so
+   * this always runs: a component that moved has to move its children too.
    */
   protected arrangeContent(bounds: LayoutBounds): void {
-    if (!this.dirty()) {
-      return;
-    }
     const absoluteChildren = this.absoluteChildren();
 
     if (this.direction() === "horizontal") {
@@ -805,4 +820,27 @@ export function parseSize(size: Size, available: number): number | null {
   const percentage = Number.parseFloat(size);
 
   return (available * percentage) / 100;
+}
+
+function sameConstraints(
+  a: MeasureConstraints | null,
+  b: MeasureConstraints,
+): boolean {
+  return (
+    a !== null &&
+    a.minWidth === b.minWidth &&
+    a.maxWidth === b.maxWidth &&
+    a.minHeight === b.minHeight &&
+    a.maxHeight === b.maxHeight
+  );
+}
+
+function sameBounds(a: LayoutBounds | null, b: LayoutBounds): boolean {
+  return (
+    a !== null &&
+    a.x === b.x &&
+    a.y === b.y &&
+    a.width === b.width &&
+    a.height === b.height
+  );
 }

@@ -506,6 +506,8 @@ export class FileTreeWindow extends UIScreen {
     this.select(hasFile, EditorContext.instance!);
     console.log("finalized");
   }
+  moveCursorLeft(): void {}
+  moveCursorRight(): void {}
 
   deleteNodeAt(at: number, ctx: EditorContext): void {
     const node = this.getNodeAt(at);

@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
 import { layoutAndPaint, screen } from "../../../helpers/ui.js";
 
-// Layout is cached: measure() returns the old size and arrangeContent() bails
-// out unless the component is dirty. Any setter that changes layout therefore
+// Layout is cached: measure() returns the old size and arrange() skips the
+// component unless it is dirty (or given other constraints or bounds). Any
+// setter that changes layout therefore
 // has to mark the component dirty, or changing it after the first frame does
 // nothing. Each case lays out once, changes one property, lays out again.
 

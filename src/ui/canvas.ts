@@ -202,13 +202,19 @@ export class Canvas implements ICanvas {
     const height = Math.round(bounds.y + bounds.height);
     const width = Math.round(bounds.x + bounds.width);
 
+    // one style for the whole rectangle: cells are only ever given a new
+    // style, never changed in place, so they can share it (clear() shares
+    // DEFAULT_STYLE the same way). Blending per cell made a frame allocate
+    // thousands of styles
+    const filled = ComponentStyle.Blend(style, DEFAULT_STYLE);
+
     for (let y = Math.round(bounds.y); y < height; y++) {
       for (let x = Math.round(bounds.x); x < width; x++) {
         const cell = this.getCell(x, y);
         if (!cell) {
           continue;
         }
-        cell.styles = ComponentStyle.Blend(style, DEFAULT_STYLE);
+        cell.styles = filled;
       }
     }
   }
@@ -277,6 +283,9 @@ export class Canvas implements ICanvas {
 
     const tab_width = Configuration().tab_width;
 
+    // the same for every character; only the cell under it changes
+    const base = ComponentStyle.Blend(style, DEFAULT_STYLE);
+
     for (let lineOffset = 0; lineOffset < lines.length; lineOffset++) {
       const line = expandTabs(lines[lineOffset], tab_width);
       const y = Math.round(bounds.y + lineOffset);
@@ -300,10 +309,9 @@ export class Canvas implements ICanvas {
           break;
         }
 
-        cell.styles = ComponentStyle.Blend(
-          style ?? cell.styles,
-          ComponentStyle.Blend(style, DEFAULT_STYLE),
-        ).setDisplay(line[i]);
+        cell.styles = ComponentStyle.Blend(style ?? cell.styles, base).setDisplay(
+          line[i],
+        );
       }
     }
   }

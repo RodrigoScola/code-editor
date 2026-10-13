@@ -21,7 +21,6 @@ import { Configuration, EditorConfig, setConfiguration } from "../../config.js";
 import { CodeEditorGroup } from "../windows/Tab/TabWindow.js";
 import { FocusManager } from "../../ui/windows/FocusManager.js";
 import { UiComponent, UIScreen } from "../../ui/components/UiComponent.js";
-import { DisplayComponent } from "../../ui/components/displayComponent.js";
 import { stripAnsi } from "../../ui/renderer.js";
 import { CommandRegistry } from "../../Commands/CommandRegistry.js";
 import { parseKeys } from "../../Input/keyNotation.js";
@@ -431,17 +430,12 @@ export class EditorContext {
     return window;
   }
 
-  // renders a frame from scratch and returns it with its colors. Everything
-  // is marked dirty first: the engine caches layout, and a window may have
-  // been laid out on its own in between
+  // renders a frame and returns it with its colors. Layout is cached: only
+  // views that changed (dirty), got a new size to fit in, or were moved are
+  // laid out again, and laying a window out on its own marks its parent
+  // dirty (LayoutEngine.Measure/Arrange)
   private renderFrame(): string {
     const root = this.rootWindow;
-    const invalidate = (view: DisplayComponent) => {
-      view.setDirty(true);
-      view.children().forEach(invalidate);
-    };
-    invalidate(root.view());
-
     const lt = this.renderer.layout();
     LayoutEngine.Measure(
       root,
