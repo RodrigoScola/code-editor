@@ -8,7 +8,7 @@ import { Canvas } from "../../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { Renderer } from "../../../../src/ui/renderer.js";
 import colors from "../../../../src/ui/colors.js";
-import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
+import { UIScreen } from '../../../../src/ui/components/UIScreen.js';
 
 describe("tests the visual highlight of the selection", () => {
   it("keeps the cursor visible by scrolling the viewport", () => {
@@ -17,7 +17,6 @@ describe("tests the visual highlight of the selection", () => {
 
     const lt = LayoutEngine.CreateBounds(20);
     const cnv = new Canvas().setLayout(lt);
-
 
     editor
       .view()
@@ -29,7 +28,7 @@ describe("tests the visual highlight of the selection", () => {
     editor.moveCursorDown();
     editor.moveCursorDown();
 
-    const selection = () => editor.cursor().selection?.endSelection();
+    const selection = () => editor.cursor().selection?.end();
 
     assert(selection()!.y > 0, "selection y did not move");
 
@@ -48,6 +47,5 @@ describe("tests the visual highlight of the selection", () => {
 
     cnv.renderBoard();
   });
-  it.todo('selection is relative', () => {
-  })
+  it.todo("selection is relative", () => {});
 });

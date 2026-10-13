@@ -69,6 +69,11 @@ interface EditorFile {
 interface BufferLike {
   at(line: number): string | undefined;
   count(): number;
+  content(): string;
+  removeRange(start: number, end: number): string;
+  insertAt(start: number, content: string): number;
+  index(ind: number): { line: number; character: number };
+  offsetOf(line:number,column: number): number
 }
 
 interface ViewPorts {

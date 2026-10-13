@@ -1,5 +1,6 @@
 import colors from "../../ui/colors.js";
-import { UiComponent, UIScreen } from "../../ui/components/UiComponent.js";
+import { UIScreen } from "../../ui/components/UIScreen.js";
+import { UiComponent } from "../../ui/components/UiComponent.js";
 import { UiInput } from "../../ui/components/UiInput.js";
 import { EditorContext } from "../Editor/Editor.js";
 

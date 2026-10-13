@@ -1,6 +1,7 @@
 import { start } from "repl";
 import { assert } from "../../assert.js";
 import { EditorSelection } from "../../Editor/Selection.js";
+import { buffer } from "stream/consumers";
 
 export class TextBuffer implements BufferLike {
   private lines: string[] = [];
@@ -8,8 +9,11 @@ export class TextBuffer implements BufferLike {
 
   constructor(text?: string | undefined) {
     if (text) {
-      this.lines = text.split(/\r?\n/);
+      this.lines = this.format(text);
     }
+  }
+  private format(text: string) {
+    return text.split(/\r?\n/);
   }
   onChange(listener: () => void) {
     this.listeners.add(listener);
@@ -90,15 +94,32 @@ export class TextBuffer implements BufferLike {
     this.lines.push(content);
     this.changed();
   }
-  removeRange(start: Point, end: Point) {
-    if (start.y === end.y) {
-      this.lines[start.y] = this.lines[start.y].slice(0, start.x);
-      this.lines[start.y] = this.lines[start.y].slice(end.x);
+  removeRange(start: number, end: number): string;
+  removeRange(start: unknown, end: unknown): string {
+    if (typeof start === "number" && typeof end === "number") {
+      return this.removeIndex(start, end);
     }
+    return "";
+  }
 
-    // if (start.y !== end.y) {
-    //   this.lines[end.y] = this.lines[end.y].slice(0, end.x);
-    // }
+  private removeIndex(start: number, end: number): string {
+    const content = this.content();
+    const removed = content.slice(start, end);
+
+    this.lines = this.format(content.slice(0, start) + content.slice(end));
+
+    this.changed();
+    return removed;
+  }
+
+  insertAt(start: number, content: string) {
+    const cn = this.content();
+    const first = cn.slice(0, start);
+    const result = first + content + cn.slice(start);
+
+    this.lines = this.format(result);
+    this.changed();
+    return first.length;
   }
 
   insertLine(afterLine: number, content?: string) {
@@ -106,5 +127,38 @@ export class TextBuffer implements BufferLike {
     this.lines.splice(at, 0, content || "");
     this.changed();
     return at;
+  }
+  index(ind: number): { line: number; character: number } {
+    let line = 0;
+    let char = 0;
+
+    const content = this.content();
+
+    for (let i = 0; i < content.length; i++) {
+      const letter = content.at(i);
+      if (!letter || i == ind) {
+        break;
+      }
+      if (letter.includes("\n")) {
+        line++;
+        char = 0;
+      } else {
+        char++;
+      }
+    }
+
+    return {
+      line: line,
+      character: char,
+    };
+  }
+
+  offsetOf(line: number, column: number): number {
+    let offset = 0;
+    for (let i = 0; i < line; i++) {
+      offset += (this.at(i) ?? "").length + 1; // +1 for the "\n"
+    }
+    offset += Math.min(column, (this.at(line) ?? "").length);
+    return offset;
   }
 }

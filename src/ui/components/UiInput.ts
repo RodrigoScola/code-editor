@@ -3,7 +3,7 @@ import { TextBuffer } from "../buffer/Buffer.js";
 import { Canvas } from "../canvas.js";
 import { ComponentStyle } from "../ComponentStyles.js";
 import { TextLayout } from "../TextLayout/text.js";
-import { UiComponent, UIScreen } from "./UiComponent.js";
+import { UIScreen } from "./UIScreen.js";
 
 export class UiInput extends UIScreen {
   currentCommandLine: number = 0;

@@ -33,6 +33,9 @@ export class Cursor {
     this._buffer = buffer;
     return this;
   }
+  buffer() {
+    return this._buffer
+  }
   view() {
     return this._view;
   }
@@ -185,22 +188,18 @@ export class Cursor {
     }
   }
 
-  scrollTo(line: number, column: number) {
-    const lineOperation =
-      this.line > line ? () => this.moveUp() : () => this.moveDown();
-
-    let deltaLine = Math.abs(this.line - line);
-    let deltaWidth = Math.abs(this.column - column);
-
-    const widthOperation =
-      this.column > column ? () => this.moveLeft() : () => this.moveRight();
-
-    for (let i = 0; i < deltaLine; i++) {
-      lineOperation();
+  moveTo(line: number, column: number) {
+    const buffer = this._buffer;
+    if (!buffer) {
+      return;
     }
-    for (let i = 0; i < deltaWidth; i++) {
-      widthOperation();
-    }
+
+    this.line = Math.max(Math.min(line, buffer.count() - 1), 0);
+    const length = buffer.at(this.line)?.length ?? 0;
+    this.column = Math.max(Math.min(column, length), 0);
+    this.prefferedColumn = this.column;
+
+    if (this.selection) this.updateSelection();
   }
 
   moveUp() {

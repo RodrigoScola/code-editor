@@ -1,4 +1,4 @@
-import { UiComponent, UIScreen } from "../../ui/components/UiComponent.js";
+import { UIScreen } from "../../ui/components/UIScreen.js";
 import { EditorContext } from "../Editor/Editor.js";
 
 export class ErrorWindow extends UIScreen {

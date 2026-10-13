@@ -1,13 +1,8 @@
-import { start } from "repl";
-import { buffer } from "stream/consumers";
 import { TextBuffer } from "../buffer/Buffer.js";
 import { Canvas } from "../canvas.js";
 import { DisplayComponent } from "./displayComponent.js";
-import { ViewPort } from "../windows/viewport.js";
-import { Cursor } from "../../Editor/Cursor.js";
 import { EditorContext } from "../../Editor/Editor/Editor.js";
 import { assert } from "../../assert.js";
-import { LayoutDimensions } from "../layout/LayoutDimensions.js";
 import { Focusable } from "../windows/FocusManager.js";
 import { DisplayLike } from "../layout/layout.js";
 
@@ -194,97 +189,6 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
 
 export class UiPanel extends UiComponent {}
 
-export class UIScreen extends UiComponent {
-  private _cursorEnabled: boolean = true;
-  // buffer/view are attached in the constructor, once _view exists
-  private _cursor: Cursor = new Cursor();
-
-  constructor() {
-    super();
-    this._cursor.setBuffer(this.view().content()).setView(this.view());
-  }
-
-  // setText swaps the view's buffer, so the cursor has to follow it
-  setText(str?: TextBuffer | string | null | undefined) {
-    super.setText(str);
-    this._cursor.setBuffer(this.view().content());
-    return this;
-  }
-
-  cursorEnabled() {
-    return this._cursorEnabled;
-  }
-  setCursorEnabled(value: boolean) {
-    this._cursorEnabled = value;
-    return this;
-  }
-
-  cursor(): Cursor {
-    return this._cursor;
-  }
-
-  moveCursorDown() {
-    return this.cursor().moveDown();
-  }
-  moveCursorUp() {
-    return this.cursor().moveUp();
-  }
-  moveCursorLeft() {
-    return this.cursor().moveLeft();
-  }
-  moveCursorRight() {
-    return this.cursor().moveRight();
-  }
-  startSelection() {
-    return this.cursor().startSelection();
-  }
-  endSelection() {
-    return this.cursor().clearSelection();
-  }
-
-  
-
-  paint(canvas: Canvas): void {
-    // the background is already filled by the renderer with styles blended
-    // from the parent; refilling here with the raw styles would drop inherited
-    // colors (e.g. an unset background would become the terminal default)
-    if (this.cursorEnabled()) {
-      this.cursor().paintSelection(canvas);
-    }
-  }
-
-  onPostPaint(canvas: Canvas) {
-    if (this.cursorEnabled()) {
-      this._cursor.paint(canvas);
-    }
-  }
-  onPrePaint(): void {
-    this.cursor().ensureVisible(this.view().viewport());
-  }
-  onEnter(ctx: EditorContext): void {
-    const y = this.cursor().line;
-    const x = this.cursor().column;
-
-    const currentLine = this.buffer().at(y);
-
-    if (!currentLine) {
-      this.buffer().append();
-      this.cursor().moveDown();
-      return;
-    }
-
-    const currentLineContent = currentLine.slice(0, x);
-    const newLineContent = currentLine.slice(x);
-
-    this.buffer().update(y, currentLineContent).insertLine(y, newLineContent);
-
-    this.cursor().moveDown();
-    this.cursor().goToLineBeginning();
-  }
-  removeLine(at: number) {
-    this.buffer().removeLine(at);
-  }
-}
 
 export class EditorView extends DisplayComponent {
   private editor: UiComponent;

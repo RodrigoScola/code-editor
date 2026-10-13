@@ -2,11 +2,7 @@ import fs, { Dirent } from "fs";
 import path from "path";
 import colors from "../../ui/colors.js";
 import { Canvas } from "../../ui/canvas.js";
-import {
-  EditorView,
-  UiComponent,
-  UIScreen,
-} from "../../ui/components/UiComponent.js";
+import { UiComponent } from "../../ui/components/UiComponent.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { ComponentStyle } from "../../ui/ComponentStyles.js";
 import { ICONS } from "../../constants.js";
@@ -14,6 +10,7 @@ import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import { UiInput } from "../../ui/components/UiInput.js";
 import { assert } from "../../assert.js";
 import { LayoutBounds } from "../../ui/layout/LayoutBounds.js";
+import { UIScreen } from "../../ui/components/UIScreen.js";
 
 export class TreeInput extends UiInput {
   path: string;
@@ -182,6 +179,7 @@ export class FileTreeWindow extends UIScreen {
     this.syncBuffer();
     return this;
   }
+  
 
   // the view's buffer is a copy of the visible rows (for buffer() and
   // ctx.lines()), rebuilt whenever the rows can change
@@ -462,7 +460,7 @@ export class FileTreeWindow extends UIScreen {
     const ind = this.getIndex(node);
 
     if (ind !== -1) {
-      this.cursor().scrollTo(ind, this.cursor().column);
+      this.cursor().moveTo(ind, this.cursor().column);
     }
 
     try {

@@ -1,3 +1,4 @@
+import { TextBuffer } from "../ui/buffer/Buffer.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
@@ -12,10 +13,10 @@ export class EditorSelection {
     colors.ORANGE_BACKGROUND,
   );
 
-  bourds(buffer: BufferLike): LayoutBounds[] {
+  bounds(buffer: BufferLike): LayoutBounds[] {
     const bounds: LayoutBounds[] = [];
-    const start = this.startSelection();
-    const end = this.endSelection();
+    const start = this.start();
+    const end = this.end();
 
     for (let y = start.y; y <= end.y; y++) {
       const content = buffer.at(y) ?? "";
@@ -42,12 +43,12 @@ export class EditorSelection {
     this._head = head;
   }
 
-  startSelection() {
+  start() {
     return comparePoints(this.anchor(), this.head()) <= 0
       ? this.anchor()
       : this.head();
   }
-  endSelection(): Point {
+  end(): Point {
     return comparePoints(this.anchor(), this.head()) <= 0
       ? this.head()
       : this.anchor();
@@ -71,21 +72,86 @@ export class EditorSelection {
   }
 
   isEmpty(): boolean {
-    const start = this.startSelection();
-    const end = this.endSelection();
+    const start = this.start();
+    const end = this.end();
 
     return start.x == end.x && start.y == end.y;
   }
   contains(point: Point): boolean {
+    const start = this.start();
+    const end = this.end();
+
+    if (point.y < start.y || point.y > end.y) return false;
+    if (point.y === start.y && point.x < start.x) return false;
+    if (point.y === end.y && point.x >= end.x) return false;
+
+    return true;
+  }
+
+  isReversed(): boolean {
+    const start = this._anchor;
+    const end = this._head;
+
+    if (start.y > end.y) {
+      return true;
+    }
+
+    if (end.x < start.x) {
+      return true;
+    }
+
     return false;
   }
-  isReversed(): boolean {
-    return this.head().y < this.anchor().y && this.head().x < this.anchor().x;
-  }
   lines(): [number, number] {
-    const start = this.startSelection();
-    const end = this.endSelection();
+    const start = this.start();
+    const end = this.end();
     return [start.y, end.y];
+  }
+  text(buffer: BufferLike): string {
+    const start = this.start();
+    const end = this.end();
+
+    let content: string[] = [];
+    const maxIterations = Math.min(end.y, buffer.count());
+
+    for (let i = start.y; i <= maxIterations; i++) {
+      const line = buffer.at(i);
+      if (!line) {
+        break;
+      }
+
+      if (start.y === maxIterations) {
+        content.push(line.slice(start.x, end.x));
+        break;
+      }
+      if (start.y === i) {
+        // first line
+        content.push(line.slice(start.x));
+      } else if (i === maxIterations) {
+        // last line
+        content.push(line.slice(0, end.x));
+      } else {
+        // middle lines
+        content.push(line);
+      }
+    }
+    return content.join("\n");
+  }
+
+  bufferPosition(buffer: BufferLike): { start: number; end: number } {
+    const start = this.start();
+
+    let startInd = 0;
+
+    for (let i = 0; i < start.y; i++) {
+      let line = buffer.at(i) || "";
+      startInd += line.length;
+    }
+    startInd += (buffer.at(start.y) || "").slice(0, start.x).length;
+
+    const end = startInd + this.text(buffer).length;
+
+    return { start: startInd, end: end };
   }
 }
 

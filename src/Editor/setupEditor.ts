@@ -17,11 +17,7 @@ import { ListMenuWindow } from "./windows/ListMenuWindow.js";
 import { EditorRoot } from "./Editor/EditorRoot.js";
 import { isTextComponent } from "../utils.js";
 import { CodeEditorGroup, TabWindow } from "./windows/Tab/TabWindow.js";
-import {
-  UiComponent,
-  UiPanel,
-  UIScreen,
-} from "../ui/components/UiComponent.js";
+import { UiPanel } from "../ui/components/UiComponent.js";
 import { ErrorWindow } from "./windows/ErrorWindow.js";
 import { logger } from "../logging/log.js";
 import {
@@ -155,10 +151,10 @@ const visualModeCommands = {
       const cursor = editor.cursor();
       const buffer = editor.buffer();
 
-      const startPos = cursor.selection?.startSelection();
+      const startPos = cursor.selection?.start();
       assert(startPos, "if visual mode has to have start position");
 
-      const endPos = cursor.selection?.endSelection();
+      const endPos = cursor.selection?.end();
       assert(endPos, "if visual mode has to have end position");
 
       if (startPos.y === endPos.y) {
@@ -189,8 +185,8 @@ const visualModeCommands = {
         }
       }
 
-      cursor.line = cursor.selection?.startSelection().y ?? cursor.line;
-      cursor.column = cursor.selection?.startSelection().x ?? cursor.column;
+      cursor.line = cursor.selection?.start().y ?? cursor.line;
+      cursor.column = cursor.selection?.start().x ?? cursor.column;
 
       cursor.clearSelection();
 

@@ -2,7 +2,7 @@ import { assert } from "../../assert.js";
 import { TextBuffer } from "../buffer/Buffer.js";
 import { time } from "node:console";
 import { DisplayComponent } from "../components/displayComponent.js";
-import { LayoutBounds } from '../layout/LayoutBounds.js';
+import { LayoutBounds } from "../layout/LayoutBounds.js";
 
 export type OverflowTypes = "wrap" | "clip" | "visible";
 
@@ -111,6 +111,24 @@ export class TextLayout implements BufferLike {
   at(line: number): string | undefined {
     return this.lines().at(line)?.content();
   }
+
+  removeRange(start: number, end: number): string {
+    const removed = this.buffer().removeRange(start, end);
+    this.changed();
+    return removed;
+  }
+  insertAt(start: number, content: string) {
+const result =     this.buffer().insertAt(start, content);
+    this.changed();
+    return result
+  }
+  index(ind: number): { line: number; character: number; } {
+    return this.buffer().index(ind)
+  }
+  offsetOf(line: number, column: number): number {
+    return this.buffer().offsetOf(line, column)
+  }
+
   count(): number {
     return this.lines().length;
   }
@@ -163,12 +181,11 @@ export class TextLayout implements BufferLike {
 
     return this;
   }
-  private  maxLineLength(buffer:BufferLike) {
+  private maxLineLength(buffer: BufferLike) {
     let max = 0;
-    for (let i = 0;i < buffer.count();i++) {
-      const ln = buffer.at(i)
-      max = Math.max(ln?.length || 0,max)
-
+    for (let i = 0; i < buffer.count(); i++) {
+      const ln = buffer.at(i);
+      max = Math.max(ln?.length || 0, max);
     }
 
     return max;
@@ -321,10 +338,11 @@ export class TextLayout implements BufferLike {
       maxW = Math.max(maxW, line.width());
     }
 
-  return  LayoutBounds.Create().setHeight(this.lines().length)
+    return LayoutBounds.Create()
+      .setHeight(this.lines().length)
       .setWidth(maxW)
       .setX(this.lines().at(0)?.x() || 0)
-    .setY(this.lines().at(0)?.y() || 0)
+      .setY(this.lines().at(0)?.y() || 0);
   }
 
   getTextPosition(x: number, y: number): number {
@@ -398,6 +416,9 @@ export class TextLayout implements BufferLike {
   }
   height() {
     return this._lines.length;
+  }
+  content(): string {
+    return this.lines().join("\n");
   }
   width() {
     let maxW: number = 0;

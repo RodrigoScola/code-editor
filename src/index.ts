@@ -8,15 +8,11 @@ import { setupEditor as setup } from "./Editor/setupEditor.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
 import { GitEditorWindow } from "./Editor/windows/GitEditorWindow.js";
-import { ListMenuWindow } from "./Editor/windows/ListMenuWindow.js";
-import colors from "./ui/colors.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
-import { CodeEditorGroup, TabWindow } from "./Editor/windows/Tab/TabWindow.js";
+import { CodeEditorGroup } from "./Editor/windows/Tab/TabWindow.js";
 import { captureLogs, logger } from "./logging/log.js";
-import { ConsoleLogWindow } from "./Editor/windows/ConsoleLogWindow.js";
-import { ErrorWindow } from "./Editor/windows/ErrorWindow.js";
-import { UIScreen } from "./ui/components/UiComponent.js";
 import { WINDOW_NAMES } from "./constants.js";
+import { UIScreen } from "./ui/components/UIScreen.js";
 
 captureLogs((level, message) => logger.add(level, message));
 

@@ -1,9 +1,9 @@
 import { EditorContext } from "../Editor/Editor.js";
-import { UIScreen } from "../../ui/components/UiComponent.js";
 import path from "path";
 import cp from "child_process";
 import { GitEntry } from "../../tools/Git/gitEntry.js";
-import { gitStatus  } from "../../tools/Git/git.js";
+import { gitStatus } from "../../tools/Git/git.js";
+import { UIScreen } from "../../ui/components/UIScreen.js";
 
 export class GitEditorWindow extends UIScreen {
   private status: GitStatus | null = null;
@@ -44,7 +44,7 @@ export class GitEditorWindow extends UIScreen {
     }
   }
   onEvent(event: EditorEvents): void {
-    if (event.name === 'editorModeChange') {
+    if (event.name === "editorModeChange") {
     }
   }
   onEnter(ctx: EditorContext): void {

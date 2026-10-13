@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EditorSelection } from "../../../../src/Editor/Selection.js";
 import { TextBuffer } from "../../../../src/ui/buffer/Buffer.js";
-import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
+import { UIScreen } from "../../../../src/ui/components/UIScreen.js";
 
 // The selection itself, and editing a text view through it.
 //
@@ -40,8 +40,8 @@ describe("EditorSelection", () => {
   it("start and end are in document order either way", () => {
     const selection = new EditorSelection(p(0, 2), p(9, 1));
 
-    expect(selection.startSelection()).toEqual(p(9, 1));
-    expect(selection.endSelection()).toEqual(p(0, 2));
+    expect(selection.start()).toEqual(p(9, 1));
+    expect(selection.end()).toEqual(p(0, 2));
   });
 
   it("contains the points from its start up to, not including, its end", () => {
@@ -71,7 +71,11 @@ describe("EditorSelection", () => {
 });
 
 // a text view with a selection from anchor to head
-function screen(text: string, anchor: { x: number; y: number }, head: { x: number; y: number }) {
+function screen(
+  text: string,
+  anchor: { x: number; y: number },
+  head: { x: number; y: number },
+): UIScreen {
   const view = new UIScreen().setText(text);
   const cursor = view.cursor();
   cursor.line = head.y;
@@ -98,7 +102,15 @@ describe("deleteSelection", () => {
   it("removes the selected text", () => {
     const view = screen("abc def", p(3, 0), p(7, 0));
 
-    expect(view.deleteSelection()).eq(" def");
+    const del = view.deleteSelection();
+
+    console.log(del);
+
+    const cn = content(view);
+
+    console.log(cn);
+
+    expect(del).eq(" def");
     expect(content(view)).eq("abc");
   });
 
@@ -199,8 +211,8 @@ describe("selectAll", () => {
     view.selectAll();
 
     expect(view.selectedText()).eq("abc\nde");
-    expect(view.cursor().selection!.startSelection()).toEqual(p(0, 0));
-    expect(view.cursor().selection!.endSelection()).toEqual(p(2, 1));
+    expect(view.cursor().selection!.start()).toEqual(p(0, 0));
+    expect(view.cursor().selection!.end()).toEqual(p(2, 1));
   });
 
   it("then deleteSelection empties the view", () => {
@@ -210,5 +222,22 @@ describe("selectAll", () => {
     view.deleteSelection();
 
     expect(content(view)).eq("");
+  });
+});
+
+describe("buffer position in selection", () => {
+  it("returns 0 for start and 10 at end", () => {
+    const pos = new EditorSelection(p(0, 0), p(10, 0)).bufferPosition(
+      new TextBuffer("1234567890"),
+    );
+    expect(pos.start).eq(0);
+    expect(pos.end).eq(10);
+  });
+  it("returns at the correct index , even with line breaks", () => {
+    const pos = new EditorSelection(p(0, 0), p(1, 3)).bufferPosition(
+      new TextBuffer("123456789\n\n0"),
+    );
+    expect(pos.start).eq(0);
+    expect(pos.end).eq(9);
   });
 });

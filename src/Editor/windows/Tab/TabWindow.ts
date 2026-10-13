@@ -5,9 +5,10 @@ import colors from "../../../ui/colors.js";
 import { ComponentBorder } from "../../../ui/display/border.js";
 import { DisplayComponent } from "../../../ui/components/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
-import { UiComponent, UIScreen } from "../../../ui/components/UiComponent.js";
+import { UiComponent } from "../../../ui/components/UiComponent.js";
 import { WindowManager } from "../WindowManager/WindowManager.js";
 import { isCodeEditorWindow } from "../../../utils.js";
+import { UIScreen } from "../../../ui/components/UIScreen.js";
 
 export interface ETabWindow {}
 

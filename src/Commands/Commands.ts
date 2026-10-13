@@ -228,4 +228,3 @@ export class CommandMode implements EditorMode {
     }
   }
 }
-

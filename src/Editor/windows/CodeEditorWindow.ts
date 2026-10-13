@@ -9,11 +9,11 @@ import {
   EditorView,
   EWindow,
   UiComponent,
-  UIScreen,
 } from "../../ui/components/UiComponent.js";
 import { Canvas } from "../../ui/canvas.js";
 import { assert } from "../../assert.js";
 import { EditorContext } from "../Editor/Editor.js";
+import { UIScreen } from "../../ui/components/UIScreen.js";
 
 export class CodeEditorWindow extends UiComponent implements EWindow {
   document: Textdocument;
@@ -51,7 +51,7 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
   }
 
   defaultFocus(): UiComponent | null {
-    return this._editor
+    return this._editor;
   }
   setupLines() {
     let txt = "";
