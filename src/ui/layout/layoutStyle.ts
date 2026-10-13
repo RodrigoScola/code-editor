@@ -13,6 +13,7 @@ export interface LayoutBounds {
 }
 
 export type PositionMode = "normal" | "absolute" | "fixed";
+export type OverflowType = "auto" | "scroll" | "clip" | "hidden";
 export type WrapStyle = "wrap" | "no-wrap" | "wrap-reverse";
 export type ContentAlign =
   | "start"
@@ -21,7 +22,6 @@ export type ContentAlign =
   | "space-between"
   | "space-around"
   | "space-evenly";
-
 export type DisplayDirection = "vertical" | "horizontal";
 
 export class LayoutStyle {
@@ -31,6 +31,7 @@ export class LayoutStyle {
   private _startY: Size = "auto";
   private _start: Size = "auto";
   private _wrap: WrapStyle = "no-wrap";
+  private _overflow: OverflowType = "hidden";
 
   private _display: DisplayTypes = "flex";
 
@@ -60,6 +61,14 @@ export class LayoutStyle {
     left: 0,
     right: 0,
   };
+
+  overflow() {
+    return this._overflow;
+  }
+  setOverflow(type: OverflowType) {
+    this._overflow = type;
+    return this;
+  }
 
   private _position: PositionMode = "normal";
   private _direction: DisplayDirection = "vertical";

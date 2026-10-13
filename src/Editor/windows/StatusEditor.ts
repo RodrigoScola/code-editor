@@ -23,11 +23,13 @@ export class StatusWindow extends UiInput {
     if (this.editor.modeName === "command") {
       out += `command: ${this.buffer().at(this.currentCommandLine) || ""} `;
     } else {
+      const memory = process.memoryUsage();
       out += `mode: ${this.editor.modeName} -`;
-      out += `current memory ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB - `;
-      out += `total memory ${(process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2)}MB - `;
+      out += `current memory ${(memory.heapUsed / 1024 / 1024).toFixed(2)}MB - `;
+      out += `total memory ${(memory.heapTotal / 1024 / 1024).toFixed(2)}MB - `;
 
-      const status = this.editor.git();
+      // git() would make every frame wait for git to answer
+      const status = this.editor.lastGitStatus();
 
       if (status) {
         out += `branch: ${status.branch}`;

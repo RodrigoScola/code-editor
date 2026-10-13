@@ -405,6 +405,13 @@ function clearOutput() {
   process.stdout.write("\x1b[?1049l");
 }
 
+function hideCursor() {
+  process.stdout.write("\x1b[?25l");
+}
+function showCursor() {
+  process.stdout.write("\x1b[?25h");
+}
+
 export function enableKeyboardProtocol() {
   process.stdout.write("\x1b[>1u");
 }
@@ -435,6 +442,9 @@ async function handleResize(
 
   editor.rootWindow.setLayout(resizedLayout);
 
+  // the terminal moved its text around while resizing, so the next frame
+  // can't build on what it sent before
+  editor.renderer.invalidate();
   editor.requestRepaint();
 }
 function queryTerminalSize(
@@ -661,6 +671,8 @@ export const setupEditor = {
   root: setupWindows,
   terminal: {
     clearOutput,
+    hideCursor,
+    showCursor,
     disableMouseEvents,
     enableMouseEvents,
     enableKeyboardProtocol,

@@ -34,8 +34,17 @@ process.stdin.resume();
 
 const editor = new EditorContext();
 
-// draw every frame from the top left corner of the terminal
-editor.renderer.setOutput((frame) => process.stdout.write("\x1b[H" + frame));
+// frames move the cursor to the cells they draw; a frame that changed
+// nothing is "" and costs no write
+editor.renderer.setOutput((frame) => {
+  if (frame) {
+    process.stdout.write(frame);
+  }
+});
+
+// the editor paints its own cursor; the terminal's would sit wherever the
+// last frame stopped drawing
+setup.terminal.hideCursor();
 
 const bounds = LayoutEngine.CreateBounds();
 bounds.height = process.stdout.rows;
@@ -101,7 +110,7 @@ setup.commands.normalMode(editor);
 setup.commands.visualMode(editor);
 setup.commands.commandMode(editor);
 
-editor.focus(fileTree);
+editor.focus(textEditor);
 editor.requestRepaint();
 
 setup.terminal.errorsOnScreen(editor);
@@ -113,13 +122,21 @@ process.stdout.on("finish", () => {
   setup.terminal.disableMouseEvents();
 });
 
+// the frame loop, like requestAnimationFrame: every tick draws a frame only
+// if something asked for one (a key, a resize, git answering) or the layout
+// changed, so an editor that sits still does no work
 setInterval(() => {
-  editor.requestRepaint();
-}, 5);
+  // the terminal hasn't taken the last frame yet; queueing more frames
+  // behind it would only make the screen lag behind the keys
+  if (process.stdout.writableNeedDrain) {
+    return;
+  }
+  editor.renderIfNeeded();
+}, 10);
 
+// handleKey asks for a frame itself
 function dispatchKey(parsedKey: KeyEvent) {
   editor.handleKey(parsedKey);
-  editor.requestRepaint();
 }
 
 process.stdin.on("data", (chunk) => {
@@ -134,4 +151,5 @@ process.stdin.on("data", (chunk) => {
 process.on("exit", () => {
   setup.terminal.disableKeyboardProtocol();
   setup.terminal.disableMouseEvents();
+  setup.terminal.showCursor();
 });

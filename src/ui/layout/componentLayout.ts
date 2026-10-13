@@ -1,10 +1,6 @@
-import {
-  ContentAlign,
-  LayoutBounds,
-  LayoutStyle,
-  WrapStyle,
-} from "./layoutStyle.js";
 import { DisplayComponent } from "../components/displayComponent.js";
+import { OverflowTypes } from '../TextLayout/text.js';
+import { ContentAlign, LayoutBounds, LayoutStyle, OverflowType, WrapStyle } from './layoutStyle.js';
 
 export class ComponentLayoutFns {
   private readonly _layoutStyle: LayoutStyle;
@@ -102,6 +98,7 @@ export class ComponentLayoutFns {
   }
   setDisplay(dp: DisplayTypes) {
     this.layoutStyle().setDisplay(dp);
+    this.setDirty(true);
     return this;
   }
   wrap() {
@@ -109,6 +106,7 @@ export class ComponentLayoutFns {
   }
   setWrap(val: WrapStyle) {
     this.layoutStyle().setWrap(val);
+    this.setDirty(true);
     return this;
   }
   justifyContent() {
@@ -116,6 +114,7 @@ export class ComponentLayoutFns {
   }
   setJustifyContent(val: ContentAlign) {
     this._layoutStyle.setJustifyContent(val);
+    this.setDirty(true);
     return this;
   }
   alignContent() {
@@ -123,6 +122,7 @@ export class ComponentLayoutFns {
   }
   setAlignContent(val: ContentAlign) {
     this.layoutStyle().setAlignContent(val);
+    this.setDirty(true);
     return this;
   }
   gap() {
@@ -130,6 +130,7 @@ export class ComponentLayoutFns {
   }
   setGap(val: number) {
     this._layoutStyle.setGap(val);
+    this.setDirty(true);
     return this;
   }
 
@@ -184,21 +185,25 @@ export class ComponentLayoutFns {
   }
   setMarginLeft(n: number) {
     this.layoutStyle().margin().left = n;
+    this.setDirty(true);
     return this;
   }
 
   setMarginRight(n: number) {
     this.layoutStyle().margin().right = n;
+    this.setDirty(true);
     return this;
   }
 
   setMarginTop(n: number) {
     this.layoutStyle().margin().top = n;
+    this.setDirty(true);
     return this;
   }
 
   setMarginBottom(n: number) {
     this.layoutStyle().margin().bottom = n;
+    this.setDirty(true);
     return this;
   }
   padding(): Insets {
@@ -241,5 +246,12 @@ export class ComponentLayoutFns {
     this.setPaddingTop(val);
     this.setPaddingBottom(val);
     return this;
+  }
+  overflow() {
+    return this.layoutStyle().overflow()
+  }
+  setOverflow(type: OverflowType) {
+    this.layoutStyle().setOverflow(type)
+    return this
   }
 }

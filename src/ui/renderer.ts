@@ -5,17 +5,33 @@ import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
 import { DisplayComponent } from "./components/displayComponent.js";
 import { ComponentStyle } from "./ComponentStyles.js";
-import { LayoutBounds } from "./layout/layoutStyle.js";
 import { TextLayout } from "./TextLayout/text.js";
 import { ViewPort } from "./windows/viewport.js";
 import { DisplayLike } from "./layout/layout.js";
+import { LayoutBounds } from './layout/layoutStyle.js';
 
 // where a finished frame goes: the terminal in the app, console.log in tests
 export type RenderOutput = (frame: string) => void;
 
+// a cell as the terminal shows it, kept by value: the canvas gets new style
+// objects every frame, so comparing them by reference would always differ
+type SentCell = {
+  display: string;
+  background: string;
+  color: string;
+  attributes: number;
+};
+
+const RESET = "\x1b[0m";
+const HOME = "\x1b[H";
+
 export class Renderer {
   private _canvas: Canvas = new Canvas();
   private _output: RenderOutput = (frame) => console.log(frame);
+
+  // what the terminal shows: the last frame sent, row by row. null until
+  // the first frame and after invalidate(), so the next frame is a full one
+  private _sent: SentCell[][] | null = null;
 
   layout() {
     return this._canvas.layout()
@@ -229,83 +245,212 @@ export class Renderer {
 
   paintLine() {}
 
-  // builds the ansi string for the current canvas and sends it to the output
+  // the next frame sends every cell, e.g. after something else drew over
+  // the terminal
+  invalidate() {
+    this._sent = null;
+    return this;
+  }
+
+  // sends the output what changed on the canvas since the last frame and
+  // returns it. The first frame (and the first after invalidate() or a
+  // resize) is the whole screen; after that only the changed cells are sent,
+  // each run of them starting with a cursor move. Nothing changed, nothing
+  // is sent: the frame is "". Every frame leaves the terminal's style reset
   render(): string {
-    const canvas = this._canvas;
-    // each frame ends by resetting colors, so start from the reset state
-    this.style
-      .setBackgroundColor(colors.BACKGROUND_OFF)
-      .setColor(colors.FOREGROUND_OFF);
-    const rows: string[] = [];
-    // i know theres some optimization that we can do here
-    for (let i = canvas.startY(); i < canvas.startY() + canvas.height(); i++) {
-      let row = "";
-      for (let j = canvas.startX(); j < canvas.startX() + canvas.width(); j++) {
-        const tile = canvas.getCell(j, i);
+    const frame = this.needsFullFrame()
+      ? HOME + this.fullFrame()
+      : this.changedCells();
 
-        assert(tile, `invalid tile came out at x:${j}, y:${i}`);
-        assert(
-          tile.styles.display().length == 1,
-          "cannot display more things on one cell",
-        );
-        if (this.style.backgroundColor() !== tile.styles.backgroundColor()) {
-          this.style.setBackgroundColor(tile.styles.backgroundColor());
-          row += tile.styles.backgroundColor();
-        }
-
-        if (this.style.color() !== tile.styles.color()) {
-          this.style.setColor(tile.styles.color());
-          row += tile.styles.color();
-        }
-
-        if (this.style.isDim() !== tile.styles.isDim()) {
-          this.style.setDim(tile.styles.isDim());
-          row += tile.styles.isDim() ? "\x1b[2m" : "\x1b[22m";
-        }
-
-        if (this.style.isItalic() !== tile.styles.isItalic()) {
-          this.style.setItalic(tile.styles.isItalic());
-          row += tile.styles.isItalic() ? "\x1b[3m" : "\x1b[23m";
-        }
-
-        if (this.style.isUnderline() !== tile.styles.isUnderline()) {
-          this.style.setUnderline(tile.styles.isUnderline());
-          row += tile.styles.isUnderline() ? "\x1b[4m" : "\x1b[24m";
-        }
-
-        if (this.style.isStrikeThrough() !== tile.styles.isStrikeThrough()) {
-          this.style.setStrikeThrough(tile.styles.isStrikeThrough());
-          row += tile.styles.isStrikeThrough() ? "\x1b[9m" : "\x1b[29m";
-        }
-
-        if (this.style.isInverse() !== tile.styles.isInverse()) {
-          this.style.setInverse(tile.styles.isInverse());
-          row += tile.styles.isInverse() ? "\x1b[7m" : "\x1b[27m";
-        }
-
-        if (this.style.isBlink() !== tile.styles.isBlink()) {
-          this.style.setBlink(tile.styles.isBlink());
-          row += tile.styles.isBlink() ? "\x1b[5m" : "\x1b[25m";
-        }
-
-        if (this.style.isHidden() !== tile.styles.isHidden()) {
-          this.style.setHidden(tile.styles.isHidden());
-          row += tile.styles.isHidden() ? "\x1b[8m" : "\x1b[28m";
-        }
-
-        if (this.style.isBold() !== tile.styles.isBold()) {
-          this.style.setBold(tile.styles.isBold());
-          row += tile.styles.isBold() ? "\x1b[1m" : "\x1b[22m";
-        }
-        row += tile.styles.display();
-      }
-      rows.push(row);
-    }
-    const frame =
-      rows.join("\r\n") + colors.BACKGROUND_OFF + colors.FOREGROUND_OFF;
+    this.remember();
     this._output(frame);
     return frame;
   }
+
+  // the whole canvas as text with its colors, rows joined by "\r\n", without
+  // moving the cursor. Sends nothing: render() is what draws
+  fullFrame(): string {
+    this.style.reset();
+    const rows: string[] = [];
+
+    for (const cells of this._canvas.getCells()) {
+      let row = "";
+      for (const tile of cells) {
+        row += this.cellText(tile.styles);
+      }
+      rows.push(row);
+    }
+
+    return RESET + rows.join("\r\n") + this.resetStyle();
+  }
+
+  private needsFullFrame() {
+    const sent = this._sent;
+
+    return (
+      sent === null ||
+      sent.length !== this._canvas.height() ||
+      (sent[0]?.length ?? 0) !== this._canvas.width()
+    );
+  }
+
+  private changedCells(): string {
+    const sent = this._sent!;
+    const rows = this._canvas.getCells();
+    let frame = "";
+
+    for (let y = 0; y < rows.length; y++) {
+      const cells = rows[y];
+      let x = 0;
+
+      while (x < cells.length) {
+        if (sameCell(sent[y][x], cells[x].styles)) {
+          x++;
+          continue;
+        }
+
+        // ESC[row;colH counts from 1
+        frame += `\x1b[${y + 1};${x + 1}H`;
+
+        while (x < cells.length && !sameCell(sent[y][x], cells[x].styles)) {
+          frame += this.cellText(cells[x].styles);
+          x++;
+        }
+      }
+    }
+
+    return frame === "" ? "" : frame + this.resetStyle();
+  }
+
+  // copies the canvas into _sent, reusing its cells when the size is the same
+  private remember() {
+    const rows = this._canvas.getCells();
+
+    if (this.needsFullFrame()) {
+      this._sent = rows.map((cells) =>
+        cells.map(() => ({
+          display: "",
+          background: "",
+          color: "",
+          attributes: 0,
+        })),
+      );
+    }
+
+    const sent = this._sent!;
+    for (let y = 0; y < rows.length; y++) {
+      for (let x = 0; x < rows[y].length; x++) {
+        const style = rows[y][x].styles;
+        const cell = sent[y][x];
+
+        cell.display = style.display();
+        cell.background = style.backgroundColor();
+        cell.color = style.color();
+        cell.attributes = attributeBits(style);
+      }
+    }
+  }
+
+  private resetStyle() {
+    this.style.reset();
+    return RESET;
+  }
+
+  // the codes that switch the terminal from this.style to the cell's style,
+  // then the cell's character
+  private cellText(tile: ComponentStyle): string {
+    assert(
+      tile.display().length == 1,
+      "cannot display more things on one cell",
+    );
+    let text = "";
+
+    if (this.style.backgroundColor() !== tile.backgroundColor()) {
+      this.style.setBackgroundColor(tile.backgroundColor());
+      text += tile.backgroundColor();
+    }
+
+    if (this.style.color() !== tile.color()) {
+      this.style.setColor(tile.color());
+      text += tile.color();
+    }
+
+    // bold and dim share their "off" code (22), so turning one off turns
+    // both off; switch them together to put back the one that stays on
+    if (
+      this.style.isDim() !== tile.isDim() ||
+      this.style.isBold() !== tile.isBold()
+    ) {
+      if (
+        (this.style.isDim() && !tile.isDim()) ||
+        (this.style.isBold() && !tile.isBold())
+      ) {
+        text += "\x1b[22m";
+        this.style.setDim(false).setBold(false);
+      }
+      if (tile.isDim() && !this.style.isDim()) {
+        text += "\x1b[2m";
+      }
+      if (tile.isBold() && !this.style.isBold()) {
+        text += "\x1b[1m";
+      }
+      this.style.setDim(tile.isDim()).setBold(tile.isBold());
+    }
+
+    if (this.style.isItalic() !== tile.isItalic()) {
+      this.style.setItalic(tile.isItalic());
+      text += tile.isItalic() ? "\x1b[3m" : "\x1b[23m";
+    }
+
+    if (this.style.isUnderline() !== tile.isUnderline()) {
+      this.style.setUnderline(tile.isUnderline());
+      text += tile.isUnderline() ? "\x1b[4m" : "\x1b[24m";
+    }
+
+    if (this.style.isStrikeThrough() !== tile.isStrikeThrough()) {
+      this.style.setStrikeThrough(tile.isStrikeThrough());
+      text += tile.isStrikeThrough() ? "\x1b[9m" : "\x1b[29m";
+    }
+
+    if (this.style.isInverse() !== tile.isInverse()) {
+      this.style.setInverse(tile.isInverse());
+      text += tile.isInverse() ? "\x1b[7m" : "\x1b[27m";
+    }
+
+    if (this.style.isBlink() !== tile.isBlink()) {
+      this.style.setBlink(tile.isBlink());
+      text += tile.isBlink() ? "\x1b[5m" : "\x1b[25m";
+    }
+
+    if (this.style.isHidden() !== tile.isHidden()) {
+      this.style.setHidden(tile.isHidden());
+      text += tile.isHidden() ? "\x1b[8m" : "\x1b[28m";
+    }
+
+    return text + tile.display();
+  }
+}
+
+function sameCell(sent: SentCell, style: ComponentStyle) {
+  return (
+    sent.display === style.display() &&
+    sent.background === style.backgroundColor() &&
+    sent.color === style.color() &&
+    sent.attributes === attributeBits(style)
+  );
+}
+
+function attributeBits(style: ComponentStyle) {
+  return (
+    (style.isBold() ? 1 : 0) |
+    (style.isDim() ? 2 : 0) |
+    (style.isItalic() ? 4 : 0) |
+    (style.isUnderline() ? 8 : 0) |
+    (style.isStrikeThrough() ? 16 : 0) |
+    (style.isInverse() ? 32 : 0) |
+    (style.isBlink() ? 64 : 0) |
+    (style.isHidden() ? 128 : 0)
+  );
 }
 
 // a rendered frame without its colors and cursor codes

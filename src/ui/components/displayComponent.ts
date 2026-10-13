@@ -490,6 +490,11 @@ export class DisplayComponent
   protected arrangeContent(bounds: LayoutBounds): void {
     const absoluteChildren = this.absoluteChildren();
 
+    if (this.overflow() !== "hidden") {
+      bounds.x -= this.scrollLeft();
+      bounds.y -= this.scrollTop();
+    }
+
     if (this.direction() === "horizontal") {
       LayoutEngine.ArrangeHorizontal(this, bounds);
     } else {
@@ -521,8 +526,9 @@ export class DisplayComponent
       return textSize;
     }
 
+    // hidden children take no space, so they add nothing to the size either
     const flowChildren = children.filter(
-      (child) => child.positionMode() === "normal",
+      (child) => child.positionMode() === "normal" && child.visible(),
     );
 
     if (flowChildren.length === 0) {
@@ -678,8 +684,9 @@ export class DisplayComponent
     return this;
   }
 
+  // display "none" hides it like setVisible(false): no space, no paint
   visible(): boolean {
-    return this.vs;
+    return this.vs && this.display() !== "none";
   }
 
   // ---------------------------------------------------------------------------
@@ -800,6 +807,20 @@ export class DisplayComponent
     return lines;
   }
   view(): DisplayComponent {
+    return this;
+  }
+  scrollTop() {
+    return this.viewport().firstLine;
+  }
+  setScrollTop(amount: number) {
+    this.viewport().firstLine = amount;
+    return this;
+  }
+  scrollLeft() {
+    return this.viewport().firstColumn;
+  }
+  setScrollLeft(amount: number) {
+    this.viewport().firstColumn = amount;
     return this;
   }
 

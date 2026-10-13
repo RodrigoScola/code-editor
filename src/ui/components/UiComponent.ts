@@ -242,6 +242,8 @@ export class UIScreen extends UiComponent {
     return this.cursor().clearSelection();
   }
 
+  
+
   paint(canvas: Canvas): void {
     // the background is already filled by the renderer with styles blended
     // from the parent; refilling here with the raw styles would drop inherited
@@ -266,7 +268,7 @@ export class UIScreen extends UiComponent {
     const currentLine = this.buffer().at(y);
 
     if (!currentLine) {
-      this.buffer().newLine();
+      this.buffer().append();
       this.cursor().moveDown();
       return;
     }
@@ -274,9 +276,7 @@ export class UIScreen extends UiComponent {
     const currentLineContent = currentLine.slice(0, x);
     const newLineContent = currentLine.slice(x);
 
-    this.buffer()
-      .update(y, currentLineContent)
-      .newLineAt(y + 1, newLineContent);
+    this.buffer().update(y, currentLineContent).insertLine(y, newLineContent);
 
     this.cursor().moveDown();
     this.cursor().goToLineBeginning();

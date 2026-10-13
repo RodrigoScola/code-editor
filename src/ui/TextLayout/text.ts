@@ -158,10 +158,20 @@ export class TextLayout implements BufferLike {
 
     this._lines = this.processBuffer(
       this._buffer,
-      Math.max(parentWidth, buffer.maxLineLength()),
+      Math.max(parentWidth, this.maxLineLength(buffer)),
     );
 
     return this;
+  }
+  private  maxLineLength(buffer:BufferLike) {
+    let max = 0;
+    for (let i = 0;i < buffer.count();i++) {
+      const ln = buffer.at(i)
+      max = Math.max(ln?.length || 0,max)
+
+    }
+
+    return max;
   }
 
   private processString(

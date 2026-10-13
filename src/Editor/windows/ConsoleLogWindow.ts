@@ -75,7 +75,7 @@ export class ConsoleLogWindow extends UiPanel {
 
     this.logOutput
       .buffer()
-      .addLine(
+      .append(
         `${this.getLevelColor(entry.level)} ${entry.message} ${colors.FOREGROUND_OFF}`,
       );
     this.logOutput.cursor().moveDown();

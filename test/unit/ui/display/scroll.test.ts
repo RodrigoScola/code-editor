@@ -6,7 +6,9 @@ import {
   layoutAndPaint,
   rowText,
   screen,
+  show,
 } from "../../../helpers/ui.js";
+import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
 
 // Proposed API on DisplayComponent, for containers of components (the text
 // ViewPort keeps handling scrolling inside a single text):
@@ -28,17 +30,20 @@ import {
 function list(height: number, count: number) {
   const { canvas, root } = screen(20, 10);
 
-  const container = new DisplayComponent()
+  const container = new DisplayComponent();
+
+  container
     .setWidth(10)
     .setHeight(height)
-    .setOverflow("scroll");
+    .setOverflow("scroll")
+    .setBackgroundColor(colors.YELLOW_BACKGROUND);
 
   const items = Array.from({ length: count }, (_, i) =>
     new DisplayComponent().setHeight(1).setContent(`item ${i}`),
   );
 
-  container.addChildren(items);
-  root.addChildren(container);
+  container.view().addChildren(items);
+  root.addChildren(container.view());
 
   return { canvas, root, container, items };
 }
@@ -70,6 +75,7 @@ describe("scrolling a container", () => {
 
     container.setScrollTop(3);
     layoutAndPaint(root, canvas);
+    show(canvas);
 
     for (let y = 5; y < 10; y++) {
       expect(rowText(canvas, y).trim()).eq("");

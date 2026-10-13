@@ -1,4 +1,4 @@
-type EditorEvents = EditorModeEvent | SubmitCommandEvent;
+type EditorEvents = EditorModeEvent | SubmitCommandEvent | WorkspaceChangeEvent;
 type DisplayTypes = "flex" | "none";
 
 type DisplayDirection = "vertical" | "horizontal";
@@ -24,6 +24,10 @@ interface MeasuredSize {
 
 type SubmitCommandEvent = {
   name: "submitCommand";
+};
+type WorkspaceChangeEvent = {
+  name: "workspaceChangeEvent";
+  workspace: string;
 };
 
 type PositionMode = "normal" | "absolute" | "fixed";

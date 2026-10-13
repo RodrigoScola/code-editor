@@ -23,6 +23,7 @@ const entry = path.join(root, "dist", "index.js");
 const RESET_TERMINAL =
   "\x1b[<u" + // keyboard protocol off
   "\x1b[?1000l\x1b[?1002l\x1b[?1006l" + // mouse tracking off
+  "\x1b[?25h" + // cursor visible again
   "\x1b[0m"; // colors back to default
 const CLEAR_SCREEN = "\x1b[2J\x1b[H";
 

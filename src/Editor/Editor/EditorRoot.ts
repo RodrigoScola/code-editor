@@ -11,6 +11,17 @@ export class EditorRoot extends UiComponent {
     return this;
   }
 
+  sendEvent(e: EditorEvents) {
+    this.e(this, e);
+  }
+  private e(node: UiComponent, ev: EditorEvents) {
+    node.onEvent(ev);
+
+    for (const child of node.children()) {
+      this.e(child, ev);
+    }
+  }
+
   addWindow(editor: UiComponent) {
     this.addChildren(editor);
   }

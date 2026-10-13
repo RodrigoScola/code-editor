@@ -29,8 +29,11 @@ import { EditorSelection } from "../Selection.js";
 import { CURSOR, renderSelections, TextSelection } from "../textMarkers.js";
 import fs from "fs";
 import { resolve } from "path";
-import { gitStatus } from "../../tools/Git/git.js";
+import { gitStatus, gitStatusAsync } from "../../tools/Git/git.js";
 import { InsertMode } from "../Modes/InsertMode.js";
+
+// how old the status line's git status can get before it asks git again
+const GIT_STATUS_MAX_AGE_MS = 2000;
 
 export class EditorContext {
   focusManager: FocusManager = new FocusManager();
@@ -55,7 +58,12 @@ export class EditorContext {
   // search and git work inside it
   private workspaceRoot: string | null = null;
 
-  private renderPending: boolean = false;
+  // the git status the status line shows (see lastGitStatus)
+  private gitCache: GitStatus | null = null;
+  private gitCheckedAt = -Infinity;
+  private gitPending = false;
+
+  private repaintRequested: boolean = true;
   static Configuration(): EditorConfig {
     return Configuration();
   }
@@ -75,6 +83,9 @@ export class EditorContext {
       return;
     }
     this.currentMode.handleKey(key, this);
+    // a key can change what is drawn without changing the layout (moving
+    // the cursor), so it always asks for a frame
+    this.requestRepaint();
   }
   unfocus(window: UiComponent) {
     this.windowManager.deactivate(window);
@@ -96,6 +107,16 @@ export class EditorContext {
       `workspace has to be a folder, got: ${root}`,
     );
     this.workspaceRoot = root;
+
+    // the cached status belongs to the old folder
+    this.gitCache = null;
+    this.gitCheckedAt = -Infinity;
+
+    this.event({
+      name: "workspaceChangeEvent",
+      workspace: root,
+    });
+
     return this;
   }
 
@@ -103,6 +124,8 @@ export class EditorContext {
     return this.workspaceRoot;
   }
 
+  // runs git and waits for it: tens of milliseconds, never call it while
+  // painting (use lastGitStatus)
   git() {
     const workspace = this.workspaceRoot;
 
@@ -110,6 +133,35 @@ export class EditorContext {
       return null;
     }
     return gitStatus(workspace);
+  }
+
+  // the git status for painting: returns the last answer right away, and
+  // asks git again in the background when it is older than
+  // GIT_STATUS_MAX_AGE_MS. The new answer asks for a frame
+  lastGitStatus(): GitStatus | null {
+    const workspace = this.workspaceRoot;
+
+    if (!workspace) {
+      return null;
+    }
+
+    const stale = Date.now() - this.gitCheckedAt > GIT_STATUS_MAX_AGE_MS;
+    if (stale && !this.gitPending) {
+      this.gitPending = true;
+
+      gitStatusAsync(workspace).then((status) => {
+        this.gitPending = false;
+        // the workspace changed while git was running
+        if (workspace !== this.workspaceRoot) {
+          return;
+        }
+        this.gitCache = status;
+        this.gitCheckedAt = Date.now();
+        this.requestRepaint();
+      });
+    }
+
+    return this.gitCache;
   }
 
   fileExists(path: string): Boolean {
@@ -193,39 +245,50 @@ export class EditorContext {
       .activeWindow()
       ?.onEvent({ name: "editorModeChange", mode: m });
   }
+  // asks for a frame; the frame loop (index.ts) draws it on its next tick.
+  // Asking many times before the tick still draws one frame
   requestRepaint() {
-    if (this.renderPending) {
-      return;
-    }
-    this.renderPending = true;
-    setImmediate(() => {
-      this.renderPending = false;
-      this.repaint();
-    });
+    this.repaintRequested = true;
   }
 
-  private repaint() {
+  // what the frame loop calls on every tick, like requestAnimationFrame: it
+  // draws only when a frame was asked for or the layout changed (dirty), e.g.
+  // a log line added to a window. Returns whether it drew
+  renderIfNeeded(): boolean {
+    if (!this.repaintRequested && !this.rootWindow.view().dirty()) {
+      return false;
+    }
     this.render();
+    return true;
   }
+
+  // draws a frame now and sends the terminal what changed
   render() {
     assert(this.rootWindow, "cannot render anything without a root window");
+    // cleared before painting, so a paint hook can still ask for the next one
+    this.repaintRequested = false;
 
-    //memory("before measure");
-    LayoutEngine.Measure(this.rootWindow, this.rootWindow.layoutConstraints);
-    //memory("after measure");
+    this.paintFrame(this.rootWindow.layoutConstraints);
+    return this.renderer.render();
+  }
 
-    //memory("before arrange");
-    LayoutEngine.Arrange(this.rootWindow);
-    //memory("after arrange");
+  // lays out what changed and paints the canvas. A paint hook can change
+  // the layout (scrolling refills the line numbers); then the frame is laid
+  // out and painted once more, so it doesn't go out stale and the next tick
+  // doesn't draw it all over again. Only once more, so a hook that changes
+  // the layout on every paint can't hang the frame
+  private paintFrame(constraints: MeasureConstraints) {
+    const root = this.rootWindow;
 
-    //memory("before building");
-    this.renderer.build(this.rootWindow);
-    //memory("after building");
-    //memory("before render");
+    for (let pass = 0; pass < 2; pass++) {
+      LayoutEngine.Measure(root, constraints);
+      LayoutEngine.Arrange(root);
+      this.renderer.build(root);
 
-    const render = this.renderer.render();
-    //memory("after render");
-    return render;
+      if (!root.view().dirty()) {
+        return;
+      }
+    }
   }
   addWindow(window: UiComponent) {
     this.windowManager.add(window);
@@ -430,20 +493,14 @@ export class EditorContext {
     return window;
   }
 
-  // renders a frame and returns it with its colors. Layout is cached: only
-  // views that changed (dirty), got a new size to fit in, or were moved are
-  // laid out again, and laying a window out on its own marks its parent
-  // dirty (LayoutEngine.Measure/Arrange)
+  // paints a frame and returns the whole screen with its colors, without
+  // sending it anywhere. Layout is cached: only views that changed (dirty),
+  // got a new size to fit in, or were moved are laid out again, and laying a
+  // window out on its own marks its parent dirty (LayoutEngine.Measure/Arrange)
   private renderFrame(): string {
-    const root = this.rootWindow;
     const lt = this.renderer.layout();
-    LayoutEngine.Measure(
-      root,
-      LayoutEngine.CreateConstraints(lt.width, lt.height),
-    );
-    LayoutEngine.Arrange(root);
-    this.renderer.build(root);
-    return this.renderer.render();
+    this.paintFrame(LayoutEngine.CreateConstraints(lt.width, lt.height));
+    return this.renderer.fullFrame();
   }
 
   // renders a frame and returns its rows as plain text
@@ -501,6 +558,9 @@ export class EditorContext {
   // the painted cells of the last frame, for checking styles
   canvas(): Canvas {
     return this.renderer.canvas();
+  }
+  event(event: EditorEvents) {
+    return this.rootWindow.sendEvent(event);
   }
 
   // code windows in the layout and visible (one per split)

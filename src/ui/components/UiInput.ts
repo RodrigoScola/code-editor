@@ -22,12 +22,12 @@ export class UiInput extends UIScreen {
     this.view().setMaxHeight(1);
 
     if (value) {
-      this.buffer().addLine(value || "");
+      this.buffer().append(value || "");
       for (let i = 0; i < (value?.length || 0); i++) {
         this.cursor().moveRight();
       }
     } else {
-      this.buffer().addLine("");
+      this.buffer().append("");
     }
   }
 
@@ -76,7 +76,7 @@ export class UiInput extends UIScreen {
     if (event.name === "submitCommand") {
       this.currentCommandLine++;
       this.nextLine();
-      this.buffer().newLine();
+      this.buffer().append();
     }
   }
   onEnter(ctx: EditorContext): void {

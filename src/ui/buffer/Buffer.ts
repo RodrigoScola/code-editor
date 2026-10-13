@@ -39,7 +39,7 @@ export class TextBuffer implements BufferLike {
     }
     this.lines[lineNumber] = content;
     this.changed();
-    return this
+    return this;
   }
   removeLine(line: number) {
     const at = Math.max(0, Math.min(line, this.lines.length - 1));
@@ -61,10 +61,6 @@ export class TextBuffer implements BufferLike {
     }
 
     this.lines[line] = current.slice(0, column) + current.slice(column + 1);
-    this.changed();
-  }
-  public addLine(content: string) {
-    this.lines.push(content);
     this.changed();
   }
   public addCharacter(line: number, column: number, ch: string) {
@@ -90,12 +86,7 @@ export class TextBuffer implements BufferLike {
     this.lines[line] = current.slice(0, clamped) + ch + current.slice(clamped);
     this.changed();
   }
-  newLineAt(line: number, content: string = "") {
-    this.lines.splice(line, 0, content);
-
-    this.changed();
-  }
-  newLine(content: string = "") {
+  append(content: string = "") {
     this.lines.push(content);
     this.changed();
   }
@@ -110,17 +101,10 @@ export class TextBuffer implements BufferLike {
     // }
   }
 
-  insertLine(afterLine: number) {
+  insertLine(afterLine: number, content?: string) {
     const at = Math.max(0, Math.min(afterLine + 1, this.lines.length));
-    this.lines.splice(at, 0, "");
+    this.lines.splice(at, 0, content || "");
     this.changed();
     return at;
-  }
-  maxLineLength() {
-    let max = 0;
-    for (const line of this.lines) {
-      max = Math.max(line.length, max);
-    }
-    return max;
   }
 }

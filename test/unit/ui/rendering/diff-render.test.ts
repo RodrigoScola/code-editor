@@ -105,6 +105,37 @@ describe("diff rendering", () => {
 
     expect(stripAnsi(frame())).toContain("hello");
   });
+
+  // the frame is written as is, so it has to place itself
+  it("a full frame starts at the top left corner", () => {
+    const { frame } = setup();
+
+    // style resets may come first, but no character before the move
+    expect(frame()).toMatch(/^(\x1b\[[0-9;]*m)*\x1b\[H/);
+  });
+
+  it("sends cells whose text attribute changed", () => {
+    const { frame, label } = setup();
+
+    frame();
+    label.setBold(true);
+    const second = frame();
+
+    expect(second).toContain("\x1b[1m");
+    // the label fills its row, so its spaces turn bold too
+    expect(stripAnsi(second)).eq("hello     ");
+  });
+
+  // otherwise the shell, or whatever else writes to the terminal, would
+  // keep the last cell's colors
+  it("leaves the terminal's style reset after a frame", () => {
+    const { frame, box } = setup();
+
+    expect(frame().endsWith("\x1b[0m")).eq(true);
+
+    box.setBackgroundColor(colors.RED_BACKGROUND);
+    expect(frame().endsWith("\x1b[0m")).eq(true);
+  });
 });
 
 describe("painting allocations", () => {

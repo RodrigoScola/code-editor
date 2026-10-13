@@ -25,6 +25,26 @@ export function layoutAndPaint(root: DisplayLike, canvas: Canvas) {
   return canvas;
 }
 
+// prints the painted canvas with its colors inside a border, like ide.show():
+//   layoutAndPaint(root, canvas);
+//   show(canvas, "after scrolling");
+export function show(canvas: Canvas, label = "screen") {
+  const rows = Renderer.Create(canvas).fullFrame().split("\r\n");
+  const border = "─".repeat(canvas.width());
+
+  // straight to stdout: vitest's reporters can swallow console.log from
+  // tests that pass
+  process.stdout.write(
+    [
+      label,
+      `┌${border}┐`,
+      ...rows.map((row) => `│${row}\x1b[0m│`),
+      `└${border}┘`,
+    ].join("\n") + "\n",
+  );
+  return canvas;
+}
+
 export function cell(canvas: Canvas, x: number, y: number) {
   const found = canvas.getCell(x, y);
 

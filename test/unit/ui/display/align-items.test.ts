@@ -16,7 +16,7 @@ function row(alignItems: string, children: DisplayComponent[]) {
   const { canvas, root } = screen(20, 10);
   root
     .setDirection("horizontal")
-    
+
     .setAlignItems(alignItems)
     .addChildren(children);
   layoutAndPaint(root, canvas);

@@ -187,7 +187,14 @@ export class FileTreeWindow extends UIScreen {
   // the view's buffer is a copy of the visible rows (for buffer() and
   // ctx.lines()), rebuilt whenever the rows can change
   private syncBuffer() {
-    this.view().content().setBuffer(this.treeToBuffer());
+    const rows = this.treeToBuffer();
+
+    // this runs before every paint; a new buffer marks the layout dirty, so
+    // replacing it when nothing changed would lay out every frame
+    if (rows.content() === this.view().content().buffer().content()) {
+      return;
+    }
+    this.view().content().setBuffer(rows);
   }
 
   private formatNodes(
@@ -255,7 +262,7 @@ export class FileTreeWindow extends UIScreen {
     // an empty row (a new-file input) still takes a line, so rows match
     // the tree's line numbers
     for (let i = 0; i < totalChildren; i++) {
-      buffer.addLine(this.at(i) ?? "");
+      buffer.append(this.at(i) ?? "");
     }
     return buffer;
   }
@@ -465,11 +472,17 @@ export class FileTreeWindow extends UIScreen {
     } catch (err) {
       console.error(`prob context is not defined`);
     }
+    return node;
   }
-  createNewFileInput() {
+  private cursorNode() {
     const cursor = this.cursor();
     const currentNode = this.getNodeAt(cursor.line);
     assert(currentNode, `invalid node at ${cursor.line}`);
+
+    return currentNode;
+  }
+  createNewFileInput() {
+    const currentNode = this.cursorNode();
 
     let parent = currentNode.parent();
 
@@ -483,7 +496,7 @@ export class FileTreeWindow extends UIScreen {
     // its path is the folder the new file goes in (see TreeInput.onEnter)
     const input = new TreeInput(parent.path, "", false, false);
 
-    parent.addChildAt(input, cursor.line);
+    parent.addChildAt(input, this.cursor().line);
     this.syncBuffer();
     this.moveCursorDown();
 
@@ -503,11 +516,17 @@ export class FileTreeWindow extends UIScreen {
       parent.folded = false;
       parent = parent.parent();
     }
-    this.select(hasFile, EditorContext.instance!);
-    console.log("finalized");
+    return this.select(hasFile, EditorContext.instance!);
   }
   moveCursorLeft(): void {}
   moveCursorRight(): void {}
+  onEvent(event: EditorEvents): void {
+    super.onEvent(event);
+    if (event.name === "workspaceChangeEvent") {
+      this.root = new TreeInput(event.workspace, event.workspace, true, false);
+      this.refresh();
+    }
+  }
 
   deleteNodeAt(at: number, ctx: EditorContext): void {
     const node = this.getNodeAt(at);

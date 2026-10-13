@@ -3,7 +3,7 @@ import { UIScreen } from "../../ui/components/UiComponent.js";
 import path from "path";
 import cp from "child_process";
 import { GitEntry } from "../../tools/Git/gitEntry.js";
-import { gitStatus, parseStatus } from "../../tools/Git/git.js";
+import { gitStatus  } from "../../tools/Git/git.js";
 
 export class GitEditorWindow extends UIScreen {
   private status: GitStatus | null = null;
@@ -24,7 +24,7 @@ export class GitEditorWindow extends UIScreen {
   }
 
   display() {
-    this.buffer().addLine("Staged Files: ");
+    this.buffer().append("Staged Files: ");
     if (!this.status) {
       return;
     }
@@ -34,13 +34,17 @@ export class GitEditorWindow extends UIScreen {
     );
 
     for (const file of staged) {
-      this.buffer().addLine(` ${file.index} -> ${file.path}`);
+      this.buffer().append(` ${file.index} -> ${file.path}`);
     }
 
-    this.buffer().addLine("Unstaged Files:");
+    this.buffer().append("Unstaged Files:");
     const unstaged = this.status.files.filter((file) => file.isUnstaged());
     for (const file of unstaged) {
-      this.buffer().addLine(` ${file.worktree} -> ${file.path}`);
+      this.buffer().append(` ${file.worktree} -> ${file.path}`);
+    }
+  }
+  onEvent(event: EditorEvents): void {
+    if (event.name === 'editorModeChange') {
     }
   }
   onEnter(ctx: EditorContext): void {

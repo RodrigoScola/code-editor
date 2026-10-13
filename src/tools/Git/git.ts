@@ -29,6 +29,19 @@ export function gitStatus(root: string): GitStatus | null {
   return parseStatus(out, { nul: true });
 }
 
+// gitStatus without blocking: git takes tens of milliseconds to answer,
+// far longer than a frame. Resolves null outside of a git repository
+export function gitStatusAsync(root: string): Promise<GitStatus | null> {
+  return new Promise((resolve) => {
+    cp.execFile(
+      "git",
+      ["status", "--porcelain=v1", "--branch", "-z"],
+      { encoding: "utf-8", cwd: root },
+      (err, out) => resolve(err ? null : parseStatus(out, { nul: true })),
+    );
+  });
+}
+
 // "## main...origin/main [ahead 1, behind 2]",
 // " M src/a.ts",
 // "?? new.txt",
