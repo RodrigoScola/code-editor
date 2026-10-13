@@ -50,6 +50,11 @@ export class UiInput extends UIScreen {
       );
     }
   }
+  onPostPaint(canvas: Canvas): void {
+    if (this.cursor().hasSelection()) {
+      this.cursor().paintSelection(canvas);
+    }
+  }
 
   previousLine() {
     if (!this._multiline) {

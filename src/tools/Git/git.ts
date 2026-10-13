@@ -1,6 +1,6 @@
 import cp from "child_process";
 import fs from "fs";
-import { GitFile } from "./gitFile.js";
+import { GitEntry } from "./gitEntry.js";
 import assert from "assert";
 
 function connectRoot(root: string) {
@@ -26,7 +26,6 @@ export function gitStatus(root: string): GitStatus | null {
     cwd: root,
   });
 
-
   return parseStatus(out, { nul: true });
 }
 
@@ -36,7 +35,6 @@ export function gitStatus(root: string): GitStatus | null {
 // "A  added.ts",
 // " D gone.ts",
 // ' M "with space.txt"',
-
 
 function validEntry(line: string) {
   return line.includes("##");
@@ -173,7 +171,7 @@ export function parseStatus(
   }
 
   for (const line of lines) {
-    const file = new GitFile();
+    const file = new GitEntry();
 
     file.worktree = line.slice(1, 2);
     file.index = line.slice(0, 1);
@@ -208,7 +206,7 @@ function stripQuotes(line: string) {
   );
 }
 
-function previousFileName(file: GitFile, entry: string) {
+function previousFileName(file: GitEntry, entry: string) {
   if (file.copied() || file.renamed()) {
     const previous = entry.slice(0, entry.lastIndexOf("->")).trim();
 
@@ -218,13 +216,13 @@ function previousFileName(file: GitFile, entry: string) {
   return null;
 }
 
-function currentFileName(file: GitFile, entry: string) {
+function currentFileName(file: GitEntry, entry: string) {
   if (file.renamed() || file.copied()) {
     return entry.split("->").at(-1)!.trim();
   }
   return entry.trim();
 }
 
-export function isConflict(status: GitFile): boolean {
+export function isConflict(status: GitEntry): boolean {
   return status.conflict();
 }

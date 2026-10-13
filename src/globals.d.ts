@@ -94,7 +94,7 @@ interface WindowLike {
   buffer(): BufferLike;
 }
 
-type GitFileStatus =
+type GitEntryStatus =
   | "added"
   | "modified"
   | "deleted"
@@ -106,7 +106,6 @@ type GitFileStatus =
   | "untracked"
   | "ignored"
   | "broken pairing";
-
 
 type GitStatus = {
   branch: string | null;

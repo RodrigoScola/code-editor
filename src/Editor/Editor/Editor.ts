@@ -31,7 +31,7 @@ import { EditorSelection } from "../Selection.js";
 import { CURSOR, renderSelections, TextSelection } from "../textMarkers.js";
 import fs from "fs";
 import { resolve } from "path";
-import { gitStatus } from '../../tools/Git/git.js';
+import { gitStatus } from "../../tools/Git/git.js";
 
 export class EditorContext {
   focusManager: FocusManager = new FocusManager();
@@ -105,16 +105,16 @@ export class EditorContext {
   }
 
   git() {
-    const workspace = this.workspaceRoot
+    const workspace = this.workspaceRoot;
 
     if (!workspace) {
-      return null
+      return null;
     }
-    return gitStatus(workspace)
+    return gitStatus(workspace);
   }
 
   fileExists(path: string): Boolean {
-    return fs.existsSync(path)
+    return fs.existsSync(path);
   }
   newDirectory(path: string) {
     fs.mkdirSync(path, { recursive: true });
@@ -122,8 +122,8 @@ export class EditorContext {
   newFile(path: string) {
     fs.writeFileSync(path, "");
   }
-  renameFile(path: string, newPath:string) {
-    return fs.renameSync(path, newPath)
+  renameFile(path: string, newPath: string) {
+    return fs.renameSync(path, newPath);
   }
 
   removeDirectory(path: string) {

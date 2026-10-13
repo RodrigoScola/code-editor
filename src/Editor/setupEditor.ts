@@ -34,7 +34,6 @@ function setupGit(editor: EditorContext) {
   const codeGroup = editor.findWindow(CodeEditorGroup);
   assert(codeGroup, "text should be first");
 
-
   const gitEditor = new GitEditorWindow(editor.workspace());
 
   gitEditor

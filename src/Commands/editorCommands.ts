@@ -209,13 +209,21 @@ function renameCharacter(ctx: EditorContext) {
   const cursor = editor.cursor();
 
   if (isFileTreeWindow(editor)) {
-    const file = editor.getNodeAt(cursor.line);
-    assert(file, "invalid file on position " + cursor.line);
-    ctx.focus(file);
-    cursor.goToLineBeginning();
-    cursor.startSelection();
-    cursor.goToLineEnd();
-    cursor.selection?.setHead({ x: cursor.column + 1, y: cursor.line }); // end is exclusive
+    const input = editor.getNodeAt(cursor.line);
+    assert(input, "invalid file on position " + cursor.line);
+    ctx.focus(input);
+
+    assert(input.isFocused(), `input is not focused?`);
+
+    // select the whole name. Selections end before their last column, and
+    // goToLineEnd stops on the last character, so set the end by hand
+    const name = input.cursor();
+    name.goToLineBeginning();
+    name.startSelection();
+    name.column = name.prefferedColumn = input.buffer().at(0)?.length ?? 0;
+    name.updateSelection();
+
+    assert(name.hasSelection(), `cursor has to have a selection`);
 
     ctx.setMode("insert");
   }

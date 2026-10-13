@@ -280,6 +280,18 @@ Base and niche cases are in the same file for these.
 | Debug run control: run to cursor, jump to cursor, restart frame, step into target, step back, toolbar actions per state | ✗ | [debug/run-control](debug/run-control.test.ts) |
 | Jupyter notebooks, the document model: parse/save nbformat 4 losslessly, cell editing, stream outputs with `\r` (progress bars), output text | ✗ | [notebook/notebook](notebook/notebook.test.ts) |
 
+## 24. Pass 4: tools
+
+Tools outside VS Code's core (extensions or Vim built-ins) that an editor
+without a marketplace needs to have itself.
+
+| Feature | Here | Spec |
+|---|---|---|
+| Git from the editor: stage/unstage/discard the open file, commit, commit all (saving editors first), create and switch branches (status line, reloading open files, refusing with unsaved editors or git's errors), diff with HEAD, no repository | ◐ (status only) | [source-control/git-commands](source-control/git-commands.test.ts) |
+| Vim shell commands: `:!cmd`, `:r !cmd`, `:{range}!filter`, `!{motion}`, `:!!`, exit codes, working folder, one undo step | ✗ | [vim/shell-commands](vim/shell-commands.test.ts) |
+| TODO finder: tags, authors, whole words, scanning the workspace (.gitignore, excludes, binary files), next/previous todo | ✗ | [tools/todos](tools/todos.test.ts) |
+| EditorConfig: parsing, folder lookup with root, nearer files and later sections win, unset, globs, applied to indentation, line endings and save rules | ✗ | [files/editorconfig](files/editorconfig.test.ts) |
+
 Still left out after pass 3: running notebook cells (needs a kernel
 server), extensions and the marketplace, accessibility features for screen
 readers, and everything listed as left out at the top.

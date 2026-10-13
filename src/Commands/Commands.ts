@@ -241,6 +241,14 @@ export class InsertMode implements EditorMode {
     const cursor = editor.cursor();
     const buffer = editor.buffer();
 
+    if (cursor.hasSelection() && !InputParser.isArrow(key.token)) {
+      const selection = cursor.selection!;
+
+      buffer.removeRange(selection.startSelection(), selection.endSelection());
+
+      cursor.clearSelection();
+    }
+
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       if (key.token === "h" && key.ctrl) {
         cursor.column -= 1;

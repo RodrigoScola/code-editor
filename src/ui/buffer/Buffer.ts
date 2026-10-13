@@ -99,8 +99,16 @@ export class TextBuffer implements BufferLike {
     this.changed();
   }
   removeRange(start: Point, end: Point) {
+    if (start.y === end.y) {
+      this.lines[start.y] = this.lines[start.y].slice(0, start.x);
+      this.lines[start.y] = this.lines[start.y].slice(end.x);
+    }
+
+    // if (start.y !== end.y) {
+    //   this.lines[end.y] = this.lines[end.y].slice(0, end.x);
+    // }
   }
-  
+
   insertLine(afterLine: number) {
     const at = Math.max(0, Math.min(afterLine + 1, this.lines.length));
     this.lines.splice(at, 0, "");

@@ -2,7 +2,7 @@ import { EditorContext } from "../Editor/Editor.js";
 import { UIScreen } from "../../ui/components/UiComponent.js";
 import path from "path";
 import cp from "child_process";
-import { GitFile } from "../../tools/Git/gitFile.js";
+import { GitEntry } from "../../tools/Git/gitEntry.js";
 import { gitStatus, parseStatus } from "../../tools/Git/git.js";
 
 export class GitEditorWindow extends UIScreen {
@@ -29,7 +29,9 @@ export class GitEditorWindow extends UIScreen {
       return;
     }
 
-    const staged = this.status.files.filter((file: GitFile) => file.isStaged());
+    const staged = this.status.files.filter((file: GitEntry) =>
+      file.isStaged(),
+    );
 
     for (const file of staged) {
       this.buffer().addLine(` ${file.index} -> ${file.path}`);

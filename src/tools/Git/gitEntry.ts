@@ -24,7 +24,7 @@ function isValidStatusKey(key: string) {
   return valid_status_keys.includes(key);
 }
 
-function getFileStatusByKey(key: string): GitFileStatus | null {
+function getEntryStatusByKey(key: string): GitEntryStatus | null {
   switch (key) {
     case "A":
       return "added";
@@ -67,7 +67,7 @@ function getFileStatusByKey(key: string): GitFileStatus | null {
   }
 }
 
-export class GitFile {
+export class GitEntry {
   stagedStatus: string | null = null;
   worktree: string | null = null;
   path: string = "";
@@ -81,7 +81,7 @@ export class GitFile {
 
     this.index = entry[0];
     this.worktree = entry[1];
-    this.stagedStatus = getFileStatusByKey(this.index);
+    this.stagedStatus = getEntryStatusByKey(this.index);
 
     this.path = entry.slice(3);
   }
@@ -109,12 +109,12 @@ export class GitFile {
       this.worktree !== null && this.worktree !== " " && this.worktree !== "!"
     );
   }
-  private isStatus(status: GitFileStatus) {
-    if (this.worktree && getFileStatusByKey(this.worktree) === status) {
+  private isStatus(status: GitEntryStatus) {
+    if (this.worktree && getEntryStatusByKey(this.worktree) === status) {
       return true;
     }
 
-    if (this.index && getFileStatusByKey(this.index) === status) {
+    if (this.index && getEntryStatusByKey(this.index) === status) {
       return true;
     }
     return false;
