@@ -12,7 +12,7 @@ export class EditorSelection {
     colors.ORANGE_BACKGROUND,
   );
 
-  bounds(buffer: BufferLike): LayoutBounds[] {
+  bourds(buffer: BufferLike): LayoutBounds[] {
     const bounds: LayoutBounds[] = [];
     const start = this.startSelection();
     const end = this.endSelection();
@@ -69,40 +69,23 @@ export class EditorSelection {
   anchor() {
     return this._anchor;
   }
-  getSelectionBounds(
-    layout: LayoutBounds,
-    start: Point,
-    end: Point,
-    lines: string[],
-  ): LayoutBounds[] {
-    const bounds: LayoutBounds[] = [];
 
-    for (let y = start.y; y <= end.y; y++) {
-      const line = lines[y] ?? "";
+  isEmpty(): boolean {
+    const start = this.startSelection();
+    const end = this.endSelection();
 
-      const from = y === start.y ? start.x : 0;
-      const to = y === end.y ? end.x : line.length;
-
-      if (to <= from) continue;
-
-      const startPosition = LayoutDimensions.ApplyRelative(
-        from,
-        y,
-        layout,
-        line,
-      );
-
-      const endPosition = LayoutDimensions.ApplyRelative(to, y, layout, line);
-
-      bounds.push(
-        startPosition
-          .clone()
-          .setWidth(endPosition.x - startPosition.x)
-          .setHeight(1),
-      );
-    }
-
-    return bounds;
+    return start.x == end.x && start.y == end.y;
+  }
+  contains(point: Point): boolean {
+    return false;
+  }
+  isReversed(): boolean {
+    return this.head().y < this.anchor().y && this.head().x < this.anchor().x;
+  }
+  lines(): [number, number] {
+    const start = this.startSelection();
+    const end = this.endSelection();
+    return [start.y, end.y];
   }
 }
 

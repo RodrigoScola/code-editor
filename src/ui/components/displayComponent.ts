@@ -488,7 +488,7 @@ export class DisplayComponent
     ) {
       return;
     }
-    this._arrangedTo = finalBounds.clone()
+    this._arrangedTo = finalBounds.clone();
 
     this.setLayout(finalBounds);
 
@@ -853,6 +853,9 @@ export class DisplayComponent
   setScrollLeft(amount: number) {
     this.viewport().firstColumn = amount;
     return this;
+  }
+  scrollHeight() {
+    return 0;
   }
 
   // ---------------------------------------------------------------------------

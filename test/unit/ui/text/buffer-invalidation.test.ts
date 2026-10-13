@@ -18,7 +18,10 @@ describe("buffer edits invalidate layout", () => {
     const frame = () => {
       LayoutEngine.Measure(root, LayoutEngine.Unconstrained());
       LayoutEngine.Arrange(root);
-      return leaf.content().lines().map((line) => line.content());
+      return leaf
+        .content()
+        .lines()
+        .map((line) => line.content());
     };
 
     frame();
@@ -54,10 +57,13 @@ describe("default buffer edits invalidate layout", () => {
     const frame = () => {
       LayoutEngine.Measure(root, LayoutEngine.Unconstrained());
       LayoutEngine.Arrange(root);
-      return leaf.content().lines().map((line) => line.content());
+      return leaf
+        .content()
+        .lines()
+        .map((line) => line.content());
     };
 
-    leaf.content().buffer().addLine("this is the content");
+    leaf.content().buffer().append("this is the content");
     frame();
 
     leaf.content().buffer().addCharacter(0, 1, "X");

@@ -18,6 +18,7 @@ export class FocusManager {
     if (this._active === focusable) {
       return;
     }
+    this._active?.blur();
     this._active = focusable;
     this.active()?.focus();
   }

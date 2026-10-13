@@ -141,7 +141,35 @@ export class Canvas implements ICanvas {
     return this;
   }
 
+  // where painting may happen; cells outside it are left alone. null
+  // paints anywhere. The renderer sets it per component (clipBounds()) and
+  // clears it when the frame is done
+  private _clip: LayoutBounds | null = null;
+
+  clip() {
+    return this._clip;
+  }
+  setClip(bounds: LayoutBounds | null) {
+    this._clip = bounds;
+    return this;
+  }
+
+  private clipped(x: number, y: number) {
+    const clip = this._clip;
+    return (
+      clip !== null &&
+      (x < clip.x ||
+        y < clip.y ||
+        x >= clip.x + clip.width ||
+        y >= clip.y + clip.height)
+    );
+  }
+
+  // every paint goes through here, so outside the clip there is no cell
   getCell(x: number, y: number) {
+    if (this.clipped(x, y)) {
+      return;
+    }
     try {
       return this.canvas[y][x];
     } catch (err) {
@@ -182,6 +210,9 @@ export class Canvas implements ICanvas {
     console.log(colors.BACKGROUND_OFF);
   }
   setCell(x: number, y: number, style: ComponentStyle) {
+    if (this.clipped(x, y)) {
+      return;
+    }
     this.canvas[y][x].setStyles(style);
   }
 

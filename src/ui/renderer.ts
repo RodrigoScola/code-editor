@@ -116,6 +116,8 @@ export class Renderer {
     for (const componentLike of components) {
       const component = componentLike.view();
       assert(component.visible(), "component should not be visible");
+      // children of a component with overflow set stay inside it
+      canvas.setClip(component.clipBounds());
 
       defaultBlend.blend(component.styles(), component.parent()?.styles());
       canvas.fillRect(component.layout(), defaultBlend);
@@ -138,8 +140,10 @@ export class Renderer {
     }
     for (const componentLike of components) {
       const component = componentLike.view();
+      canvas.setClip(component.clipBounds());
       component.postPaint(canvas);
     }
+    canvas.setClip(null);
 
     defaultBlend.dispose();
   }

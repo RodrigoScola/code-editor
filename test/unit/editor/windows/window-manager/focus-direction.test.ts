@@ -64,8 +64,7 @@ describe("tests the window manager focus capabilities", () => {
     expect(manager.activeWindow()).toBe(output.topR);
   });
   it("can focus on the bottom window on focus down", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.width = layout.height = 20;
+    const layout = LayoutEngine.CreateBounds(20);
     const cnv = new Canvas().setLayout(layout);
     const manager = new WindowManager(new EditorRoot().setLayout(layout));
 

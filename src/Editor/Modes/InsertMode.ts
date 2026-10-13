@@ -14,15 +14,6 @@ export class InsertMode implements EditorMode {
     const cursor = editor.cursor();
     const buffer = editor.buffer();
 
-    if (cursor.hasSelection() && !InputParser.isArrow(key.token)) {
-      const selection = cursor.selection!;
-
-      buffer.removeRange(selection.startSelection(), selection.endSelection());
-
-      cursor.clearSelection();
-      cursor.goToLineEnd();
-    }
-
     if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
       if (key.token === "h" && key.ctrl) {
         cursor.column -= 1;
@@ -31,8 +22,9 @@ export class InsertMode implements EditorMode {
         return;
       }
       let valid = key.shift ? key.token.toUpperCase() : key.token;
-      buffer.addCharacter(cursor.line, cursor.column + 1, valid);
-      cursor.moveRight();
+      buffer.addCharacter(cursor.line, cursor.column, valid);
+      cursor.column += 1;
+      cursor.prefferedColumn = cursor.column;
     } else if (InputParser.isEscape(key.token)) {
       ctx.setMode("normal");
     } else if (InputParser.isBackspace(key.token)) {

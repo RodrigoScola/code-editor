@@ -17,8 +17,7 @@ import { LayoutDimensions } from "../../../../src/ui/layout/LayoutDimensions.js"
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
     const cnv = new Canvas();
-    const layout: LayoutBounds = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 2;
+    const layout: LayoutBounds = LayoutEngine.CreateBounds(2);
 
     cnv.setLayout(layout);
     const root = new DisplayComponent().setLayout(layout);
@@ -37,12 +36,11 @@ describe("Canvas", () => {
 
   it("applies relative positions using tab-expanded text", () => {
     const cnv = new Canvas();
-    const layout: LayoutBounds = LayoutEngine.CreateBounds();
-    layout.x = 2;
-    layout.y = 3;
-    layout.height = 1;
-    layout.width = 10;
-
+    const layout: LayoutBounds = LayoutEngine.CreateBounds()
+      .setX(2)
+      .setY(3)
+      .setHeight(1)
+      .setWidth(10);
     const bounds = LayoutDimensions.ApplyRelative(3, 1, layout, "a\tb");
 
     expect(bounds.x).toBe(7);
@@ -52,8 +50,7 @@ describe("Canvas", () => {
 
 describe("Renderer background colors", () => {
   it("should create a 4 x 4 and when called render it should display a string of a", () => {
-    const l = LayoutEngine.CreateBounds();
-    l.height = l.width = 4;
+    const l = LayoutEngine.CreateBounds(4);
 
     const cnv = new Canvas().setLayout(l);
 
@@ -80,8 +77,7 @@ describe("Renderer background colors", () => {
   });
 
   it("sets max render and both the top and bottom respect it", () => {
-    const l = LayoutEngine.CreateBounds();
-    l.width = l.height = 10;
+    const l = LayoutEngine.CreateBounds(10);
 
     const cnv = new Canvas().setLayout(l);
     const root = new DisplayComponent().setLayout(l);
@@ -131,9 +127,7 @@ describe("Renderer background colors", () => {
   });
 
   it("preserves the order and the height automatically", () => {
-    const l = LayoutEngine.CreateBounds();
-    l.height = 9;
-    l.width = 3;
+    const l = LayoutEngine.CreateBounds(3, 9);
 
     const cnv = new Canvas().setLayout(l);
     const root = new DisplayComponent()
@@ -173,8 +167,7 @@ describe("Renderer background colors", () => {
   });
 
   it("sets max render and both the top and bottom respect it", () => {
-    const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 10;
+    const layout = LayoutEngine.CreateBounds(10);
 
     const cnv = new Canvas().setLayout(layout);
 
@@ -218,8 +211,7 @@ describe("editorComponent", () => {
 
     const display = new UIScreen().setText(content);
 
-    const layout = LayoutEngine.CreateBounds();
-    layout.height = layout.width = 10;
+    const layout = LayoutEngine.CreateBounds(10);
 
     display.view().setTextOverflow("clip");
 
