@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { diffLines, gutterMarks } from "../../../src/Tools/diff.js";
+import { diffLines, gutterMarks } from "../../../src/tools/diff.js";
 import { vim } from "../harness.js";
 
-// Proposed module src/Tools/diff.ts: the marks next to changed lines
+// Proposed module src/tools/diff.ts: the marks next to changed lines
 // (VS Code's gutter, vim-gitgutter), comparing the buffer with the
 // committed version.
 //

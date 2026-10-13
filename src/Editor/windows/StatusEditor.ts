@@ -26,6 +26,16 @@ export class StatusWindow extends UiInput {
       out += `mode: ${this.editor.modeName} -`;
       out += `current memory ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB - `;
       out += `total memory ${(process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2)}MB - `;
+
+      const status = this.editor.git();
+
+      if (status) {
+        out += `branch: ${status.branch}`;
+        if (status.upstream) {
+          out += `upstream: ${status.upstream}`;
+        }
+        out += " - ";
+      }
     }
 
     canvas.drawText(cl, out, this.view().styles());

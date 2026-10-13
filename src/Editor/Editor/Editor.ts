@@ -30,6 +30,8 @@ import { WINDOW_NAMES } from "../../constants.js";
 import { EditorSelection } from "../Selection.js";
 import { CURSOR, renderSelections, TextSelection } from "../textMarkers.js";
 import fs from "fs";
+import { resolve } from "path";
+import { gitStatus } from '../../tools/Git/git.js';
 
 export class EditorContext {
   focusManager: FocusManager = new FocusManager();
@@ -49,6 +51,10 @@ export class EditorContext {
   commands: CommandRegistry = new CommandRegistry();
   private currentMode: EditorMode = this.normalMode;
   modeName: EditingModes = "normal";
+
+  // the project folder (null until one is set); the file finder, project
+  // search and git work inside it
+  private workspaceRoot: string | null = null;
 
   private renderPending: boolean = false;
   static Configuration(): EditorConfig {
@@ -81,6 +87,30 @@ export class EditorContext {
 
   focus(window: UiComponent) {
     this.windowManager.activate(window);
+  }
+
+  // sets the project folder; kept as an absolute path
+  setWorkspace(folder: string) {
+    const root = resolve(folder);
+    assert(
+      fs.existsSync(root) && fs.statSync(root).isDirectory(),
+      `workspace has to be a folder, got: ${root}`,
+    );
+    this.workspaceRoot = root;
+    return this;
+  }
+
+  workspace(): string | null {
+    return this.workspaceRoot;
+  }
+
+  git() {
+    const workspace = this.workspaceRoot
+
+    if (!workspace) {
+      return null
+    }
+    return gitStatus(workspace)
   }
 
   fileExists(path: string): Boolean {

@@ -98,6 +98,8 @@ export class TextBuffer implements BufferLike {
     this.lines.push(content);
     this.changed();
   }
+  removeRange(start: Point, end: Point) {
+  }
   
   insertLine(afterLine: number) {
     const at = Math.max(0, Math.min(afterLine + 1, this.lines.length));

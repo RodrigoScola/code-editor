@@ -18,6 +18,7 @@ describe("tests the visual highlight of the selection", () => {
     const lt = LayoutEngine.CreateBounds(20);
     const cnv = new Canvas().setLayout(lt);
 
+
     editor
       .view()
       .setLayout(lt)
@@ -47,4 +48,6 @@ describe("tests the visual highlight of the selection", () => {
 
     cnv.renderBoard();
   });
+  it.todo('selection is relative', () => {
+  })
 });

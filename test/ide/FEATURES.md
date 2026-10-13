@@ -278,7 +278,7 @@ Base and niche cases are in the same file for these.
 | Profiles: create, copy, share parts with Default, switch, per-folder profile, rename/delete rules, export/import | ✗ | [workbench/profiles](workbench/profiles.test.ts) |
 | Persistent terminal sessions: saving the screen as escape sequences (text, colors, cursor, scrollback limit, alternate screen), when to revive | ✗ | [terminal/persistence](terminal/persistence.test.ts) |
 | Debug run control: run to cursor, jump to cursor, restart frame, step into target, step back, toolbar actions per state | ✗ | [debug/run-control](debug/run-control.test.ts) |
-| Jupyter notebooks, the document model: parse/save nbformat 4 losslessly, cell editing, stream outputs with , output text | ✗ | [notebook/notebook](notebook/notebook.test.ts) |
+| Jupyter notebooks, the document model: parse/save nbformat 4 losslessly, cell editing, stream outputs with `\r` (progress bars), output text | ✗ | [notebook/notebook](notebook/notebook.test.ts) |
 
 Still left out after pass 3: running notebook cells (needs a kernel
 server), extensions and the marketplace, accessibility features for screen

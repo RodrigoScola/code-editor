@@ -47,6 +47,9 @@ editor.renderer.setLayout(bounds);
 
 setup.root(editor);
 
+// the folder the editor was started in is the project
+editor.setWorkspace(process.cwd());
+
 setup.windows.status(editor);
 
 const window = setup.windows.editor(editor);

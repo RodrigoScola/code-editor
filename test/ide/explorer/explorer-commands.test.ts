@@ -138,6 +138,11 @@ describe("revealing the active file", () => {
     ide.openAndFocus(join(root, "src/app/main.ts"));
 
     expect(selected(tree)).eq(before);
+
+    // revealing still works by hand, so the line above isn't only passing
+    // because nothing ever moves the tree
+    ide.executeCommand("explorer.revealActiveFile");
+    expect(selected(tree)).eq(join(root, "src/app/main.ts"));
   });
 
   it("revealing keeps focus in the editor", () => {

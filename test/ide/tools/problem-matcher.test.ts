@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { parseProblems } from "../../../src/Tools/problemMatcher.js";
-import { runTask } from "../../../src/Tools/tasks.js";
+import { parseProblems } from "../../../src/tools/problemMatcher.js";
+import { runTask } from "../../../src/tools/tasks.js";
 
 // Proposed modules:
 //
-// src/Tools/problemMatcher.ts (VS Code problem matchers, Vim errorformat):
+// src/tools/problemMatcher.ts (VS Code problem matchers, Vim errorformat):
 //   parseProblems(output, matcher) -> problems
 //     matcher: "tsc" | "gcc"
 //     problem: { path, line, column (0-based), severity, message, code? }
 //   Lines that aren't problems are ignored.
 //
-// src/Tools/tasks.ts (VS Code tasks, Vim :make):
+// src/tools/tasks.ts (VS Code tasks, Vim :make):
 //   runTask({ command, args?, cwd?, matcher? })
 //     -> Promise<{ exitCode, output, problems }>
 // The problems go into the diagnostics store and the quickfix list.

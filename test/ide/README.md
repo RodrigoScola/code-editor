@@ -60,8 +60,34 @@ ide.show();                      // print the screen to look at it
 | `openMemoryFile(path, content)` | opens a document that isn't on disk, in a new tab |
 | `openAndFocus(path)` | opens a file from disk and focuses it, like the file tree |
 | `addSidebar(window, width?)` | puts a window left of the editor group |
+| `setWorkspace(path)` / `workspace()` | the project folder (absolute; `null` until set) that the finder, search and git use |
 | `screen()`, `statusLine()`, `textRows()`, `textArea()`, `viewport()`, `canvas()`, `visibleCodeWindows()` | rendering a frame and reading it |
 | `show(label?)` | prints the frame with colors, the mode, the cursor and the marked text |
+
+Specs also call `EditorContext` methods that **don't exist yet**: they are
+part of the features you build, so they fail with "... is not a function"
+and show as type errors until then. The spec named here describes each one:
+
+| Not built yet | Described in |
+|---|---|
+| `clipboard` | [editor/clipboard](editor/clipboard.test.ts) |
+| `notify()`, `messages()` | [tools/notifications](tools/notifications.test.ts) |
+| `onQuit` | [workspace/files](workspace/files.test.ts) |
+| `recentFiles()` | [workspace/session](workspace/session.test.ts) |
+| `languages`, `hover()`, `references()` | [language/lsp-features](language/lsp-features.test.ts) |
+| `diagnostics` | [language/diagnostics](language/diagnostics.test.ts) |
+| `snippets` | [language/snippets](language/snippets.test.ts) |
+| `codeLenses()`, `codeLensLine()` | [language/code-lens](language/code-lens.test.ts) |
+| `hierarchy()` | [language/hierarchy](language/hierarchy.test.ts) |
+| `openExternal` | [language/colors-and-links](language/colors-and-links.test.ts) |
+| `diffEditor()` | [diff/diff-editor](diff/diff-editor.test.ts) |
+| `editors`, `editorGroups` | [workbench/tabs](workbench/tabs.test.ts), [workbench/editor-groups](workbench/editor-groups.test.ts) |
+| `quickOpen` | [workbench/quick-open](workbench/quick-open.test.ts) |
+| `statusBar` | [workbench/status-bar](workbench/status-bar.test.ts) |
+| `layout` | [workbench/layout](workbench/layout.test.ts) |
+| `openEditors()` | [explorer/open-editors](explorer/open-editors.test.ts) |
+| `backups`, `windowFocusChanged()` | [files/auto-save-backup](files/auto-save-backup.test.ts) |
+| `handleFileEvents()` | [files/watcher](files/watcher.test.ts) |
 
 - Marked text ([textMarkers.ts](../../src/Editor/textMarkers.ts)): `|` is a
   cursor. In normal mode it sits on the character after it; in insert mode
@@ -124,6 +150,7 @@ and it should keep passing.
 
 | Feature | Spec | Needs |
 |---|---|---|
+| Editing with a selection: delete it, type over it, select all, undo | [selection-editing](editor/selection-editing.test.ts) | `TextBuffer` range edits ([buffer-edits](../unit/ui/buffer/buffer-edits.test.ts)), `deleteSelection`/`replaceSelection` ([selection-model](../unit/editor/selection/selection-model.test.ts)) |
 | Status line: mode, file, `[+]`, line:col, type, pending keys | [status-line](editor/status-line.test.ts) | |
 | Line numbers, relative numbers | [line-numbers](editor/line-numbers.test.ts) | |
 | Soft wrap, `gj gk`, `:set nowrap/linebreak` | [soft-wrap](editor/soft-wrap.test.ts) | UI word wrap |
@@ -144,7 +171,7 @@ and it should keep passing.
 | Tabs: `gt gT {n}gt :bd`, `+` on modified tabs | [tabs](workspace/tabs.test.ts) | |
 | Splits: `<C-w>v s w q o > =` | [splits](workspace/splits.test.ts) | |
 | File explorer: sorting, collapsing, create, rename, delete, reveal | [file-explorer](workspace/file-explorer.test.ts) | per-window keys |
-| Fuzzy matching and the `<C-p>` file finder | [fuzzy-finder](workspace/fuzzy-finder.test.ts) | `src/Search/fuzzy.ts`, `ctx.setWorkspace` |
+| Fuzzy matching and the `<C-p>` file finder | [fuzzy-finder](workspace/fuzzy-finder.test.ts) | `src/Search/fuzzy.ts` |
 | Command palette registry | [command-palette](workspace/command-palette.test.ts) | `src/Commands/CommandRegistry.ts` |
 | Find and replace in files, `:grep`, quickfix | [project-search](workspace/project-search.test.ts) | `src/Search/projectSearch.ts` |
 | Session restore, recent files | [session](workspace/session.test.ts) | `src/Workspace/session.ts` |

@@ -111,8 +111,7 @@ function editorWindow(editor: EditorContext) {
   return window;
 }
 function setupFileTree(editor: EditorContext) {
-  const treeView = new FileTreeWindow(process.cwd())
-
+  const treeView = new FileTreeWindow(editor.workspace() ?? process.cwd())
     .setIgnoreDirs(["node_modules", ".git", "dist"])
     .setIgnoreFileExt([".js.map"])
     .refresh();

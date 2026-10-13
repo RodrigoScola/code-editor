@@ -93,3 +93,16 @@ interface WindowLike {
   viewport(): ViewPort;
   buffer(): BufferLike;
 }
+
+type GitFileStatus =
+  | "added"
+  | "modified"
+  | "deleted"
+  | "renamed"
+  | "copied"
+  | "type changed"
+  | "unmerged/conflict"
+  | "unknown"
+  | "untracked"
+  | "ignored"
+  | "broken pairing";
