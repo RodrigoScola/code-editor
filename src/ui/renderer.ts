@@ -155,51 +155,78 @@ export class Renderer {
     const layout = component.paddingLayout();
 
     const vertical = component.verticalScrollbar();
+    const horizontal = component.horizontalScrollbar();
+
     if (vertical) {
       const y = layout.y;
-      const x = layout.width + layout.x - 1;
+      let x = layout.width + layout.x - 1;
+      let width = vertical.width();
+      let height = layout.height;
+      let style = vertical.style();
+      const sty = style.clone();
 
-      const bd = layout.clone().setX(x).setY(y).setWidth(1);
-      canvas.fillRect(bd, vertical.style());
+      if (horizontal) {
+        height -= horizontal.height();
+      }
+
+      const bd = layout
+        .clone()
+        .setX(x)
+        .setY(y)
+        .setWidth(width)
+        .setHeight(height);
+
+      const trackColor = style.trackColor() || style.backgroundColor();
+
+      canvas.fillRect(bd, sty.setBackgroundColor(trackColor));
 
       const startAt = bd.y + vertical.offset();
       const endAt = startAt + vertical.size();
 
-      const textRow = bd.clone();
+      const thumbColor = style.thumbColor() || style.backgroundColor();
+      sty.setBackgroundColor(thumbColor);
       for (let i = startAt; i < endAt && vertical.style().thumb(); i++) {
-        canvas.drawText(
-          textRow.setY(i),
-          vertical.style().thumb()!,
-          vertical.style(),
-        );
+        canvas.drawText(bd.setY(i), vertical.style().thumb()!, sty);
       }
-      textRow.dispose();
     }
 
-    const horizontal = component.horizontalScrollbar();
     if (horizontal) {
       const y = layout.y + layout.height - 1;
       const x = layout.x;
       const style = horizontal.style();
+      let width = layout.width;
+      let height = horizontal.height();
 
-      const bd = layout.clone().setX(x).setY(y).setHeight(1);
+      if (vertical) {
+        width -= vertical.width();
+      }
 
-      canvas.fillRect(bd, style);
+      const bd = layout
+        .clone()
+        .setX(x)
+        .setY(y)
+        .setHeight(height)
+        .setWidth(width);
+
+      assert(style, `invalid  style for horizontal scroll`);
+
+      const trackColor = style.trackColor() || style.backgroundColor();
+      const sty = style.clone().setBackgroundColor(trackColor);
+
+      canvas.fillRect(bd, sty);
 
       const startAt = bd.x + horizontal.offset();
       const endAt = startAt + horizontal.size();
 
-      const textRow = bd.clone();
+      const thumbColor = style.thumbColor() || style.backgroundColor();
+
+      sty.setBackgroundColor(thumbColor);
 
       for (let i = startAt; i < endAt && style.thumb(); i++) {
-        canvas.drawText(
-          textRow.setX(i),
-          style.thumb()!,
-          style.setBackgroundColor(colors.YELLOW_BACKGROUND),
-        );
+        canvas.drawText(bd.setX(i), style.thumb()!, sty);
       }
-      textRow.dispose();
       bd.dispose();
+      sty.dispose();
     }
   }
 

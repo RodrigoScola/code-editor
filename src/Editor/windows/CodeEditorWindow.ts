@@ -88,8 +88,11 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
       .view()
       .setName("txt-" + document.file.path())
       .setPaddingLeft(2)
+      .setOverflow("scroll")
+      .setScrollBar(true)
       .styles()
       .setBackgroundColor(colors.BRIGHT_RED_BACKGROUND);
+
 
     return editor;
   }

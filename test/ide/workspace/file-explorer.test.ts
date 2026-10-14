@@ -142,7 +142,6 @@ describe("changing files", () => {
     ide.show();
 
     const out = existsSync(join(root, "docs"));
-    console.log(join(root, "docs"));
 
     expect(existsSync(join(root, "docs"))).eq(true);
   });

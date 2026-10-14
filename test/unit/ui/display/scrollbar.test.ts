@@ -65,7 +65,7 @@ function scrollbarColumn(
 }
 
 describe("drawing the vertical scrollbar", () => {
-  it.only("draws the thumb over the track", () => {
+  it("draws the thumb over the track", () => {
     const { canvas, root } = list(10, 20);
 
     layoutAndPaint(root, canvas);
@@ -98,7 +98,8 @@ describe("drawing the vertical scrollbar", () => {
 
     layoutAndPaint(root, canvas);
 
-    expect(container.verticalScrollbar()).toEqual({ offset: 0, size: 1 });
+    expect(container.verticalScrollbar()?.offset()).toEqual(0);
+    expect(container.verticalScrollbar()?.size()).toEqual(1);
     expect(scrollbarColumn(canvas, 9, 10)).eq("#.........");
   });
 
@@ -131,18 +132,6 @@ describe("drawing the vertical scrollbar", () => {
     expect(cell(canvas, 0, 0).display()).eq("i");
     expect(cell(canvas, 8, 0).display()).eq(" ");
     expect(cell(canvas, 9, 0).display()).eq(THUMB);
-  });
-
-  it("is drawn inside the border, not over it", () => {
-    const { canvas, root, container } = list(10, 20);
-    container.setBorderSize(1);
-
-    layoutAndPaint(root, canvas);
-
-    // border at column 9, the scrollbar is the column before it
-    expect(cell(canvas, 8, 1).display()).eq(THUMB);
-    expect(cell(canvas, 9, 1).display()).not.eq(THUMB);
-    expect(cell(canvas, 9, 1).display()).not.eq(TRACK);
   });
 
   it("is not drawn when everything fits", () => {
@@ -182,12 +171,14 @@ describe("drawing the vertical scrollbar", () => {
 describe("scrollbar style", () => {
   it("colors the thumb and the track", () => {
     const { canvas, root, container } = list(10, 20);
-    container.setScrollbarStyle({
-      thumbColor: colors.WHITE_BACKGROUND,
-      trackColor: colors.BLACK_BACKGROUND,
-    });
+    container.setScrollbarStyle(
+      ScrollBarStyle.Create()
+        .setThumbColor(colors.WHITE_BACKGROUND)
+        .setTrackColor(colors.BLACK_BACKGROUND),
+    );
 
     layoutAndPaint(root, canvas);
+    show(canvas);
 
     expect(cell(canvas, 9, 0).backgroundColor()).eq(colors.WHITE_BACKGROUND);
     expect(cell(canvas, 9, 9).backgroundColor()).eq(colors.BLACK_BACKGROUND);
@@ -195,7 +186,9 @@ describe("scrollbar style", () => {
 
   it("keeps the glyphs when only the colors are set", () => {
     const { canvas, root, container } = list(10, 20);
-    container.setScrollbarStyle({ thumbColor: colors.WHITE_BACKGROUND });
+    container.setScrollbarStyle(
+      ScrollBarStyle.Create().setThumbColor(colors.WHITE_BACKGROUND),
+    );
 
     layoutAndPaint(root, canvas);
 
@@ -228,7 +221,7 @@ describe("scrollbar style", () => {
 
   it("setScrollbar(false) hides it and gives the column back", () => {
     const { canvas, root, container, items } = list(10, 20);
-    container.setScrollbar(false);
+    container.setScrollBar(false);
 
     layoutAndPaint(root, canvas);
 
@@ -239,7 +232,7 @@ describe("scrollbar style", () => {
 
   it("stays hidden when overflow is set after setScrollbar(false)", () => {
     const { canvas, root, container, items } = list(10, 20);
-    container.setScrollbar(false).setOverflow("scroll");
+    container.setScrollBar(false).setOverflow("scroll");
 
     layoutAndPaint(root, canvas);
 
@@ -260,7 +253,7 @@ describe("scrollbar style", () => {
 
   it("still scrolls with the scrollbar hidden", () => {
     const { canvas, root, container, items } = list(10, 20);
-    container.setScrollbar(false).setScrollTop(5);
+    container.setScrollBar(false).setScrollTop(5);
 
     layoutAndPaint(root, canvas);
 
@@ -278,7 +271,9 @@ describe("horizontal scrollbar", () => {
       .setWidth(10)
       .setHeight(5)
       .setOverflow("scroll")
-      .setScrollbarStyle({ thumb: THUMB, track: TRACK });
+      .setScrollbarStyle(
+        ScrollBarStyle.Create().setThumb(THUMB).setTrack(TRACK),
+      );
     const row = new DisplayComponent().setWidth(20).setHeight(1);
     container.addChildren(row);
     root.addChildren(container);
@@ -299,7 +294,9 @@ describe("horizontal scrollbar", () => {
     layoutAndPaint(root, canvas);
 
     expect(container.contentLayout().height).eq(4);
-    expect(container.horizontalScrollbar()).toEqual({ offset: 0, size: 5 });
+
+    expect(container.horizontalScrollbar()?.offset()).toEqual(0);
+    expect(container.horizontalScrollbar()?.size()).toEqual(5);
     expect(bottomRow(canvas)).eq("#####.....");
   });
 

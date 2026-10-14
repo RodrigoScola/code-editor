@@ -1,5 +1,7 @@
+import colors from '../colors.js';
 import { DisplayComponent } from "../components/displayComponent.js";
 import { ScrollBar, ScrollBarStyle } from "../components/Scrollbar.js";
+import { ComponentStyle } from "../ComponentStyles.js";
 import { LayoutBounds } from "./LayoutBounds.js";
 import {
   ContentAlign,
@@ -12,11 +14,16 @@ import { Padding } from "./padding.js";
 export class ComponentLayoutFns {
   private readonly _layoutStyle: LayoutStyle;
 
+  private s: ComponentStyle;
 
   private _dirty: boolean = true;
 
   constructor() {
     this._layoutStyle = new LayoutStyle();
+
+    this.s = ComponentStyle.Create()
+      .setBackgroundColor(colors.BACKGROUND_OFF)
+      .setColor(colors.FOREGROUND_OFF);
   }
 
   private pr: DisplayComponent | null = null;
@@ -266,16 +273,117 @@ export class ComponentLayoutFns {
     this.setDirty(true);
     return this;
   }
-  setScrollBar(enabled: boolean) {
-    this._scrollBarEnabled = enabled;
-    this.setDirty(true);
+ 
+
+  styles(): ComponentStyle {
+    return this.s;
+  }
+
+  setStyles(sty: Partial<ComponentStyle>): this {
+    this.s = ComponentStyle.Create()
+      .setBackgroundColor(sty.backgroundColor?.() ?? this.s.backgroundColor())
+      .setColor(sty.color?.() ?? this.s.color())
+      .setBold(sty.isBold?.() ?? this.s.isBold())
+      .setDim(sty.isDim?.() ?? this.s.isDim())
+      .setItalic(sty.isItalic?.() ?? this.s.isItalic())
+      .setUnderline(sty.isUnderline?.() ?? this.s.isUnderline())
+      .setStrikeThrough(sty.isStrikeThrough?.() ?? this.s.isStrikeThrough())
+      .setInverse(sty.isInverse?.() ?? this.s.isInverse())
+      .setBlink(sty.isBlink?.() ?? this.s.isBlink())
+      .setHidden(sty.isHidden?.() ?? this.s.isHidden());
+
     return this;
   }
 
-  setScrollbarStyle(style: ScrollBarStyle) {
-    this._verticalScrollBar.setStyle(style);
-    this._horizontalScrollBar.setStyle(style);
-    this.setDirty(true);
+  // Inline style shortcuts — delegate to this.styles().
+  // The style fill char is exposed as displayChar() since display() is the
+  // layout display type.
+
+  displayChar(): string {
+    return this.s.display();
+  }
+  setDisplayChar(nval: string): this {
+    this.s.setDisplay(nval);
+    return this;
+  }
+
+  isBold(): boolean {
+    return this.s.isBold();
+  }
+  setBold(nval: boolean): this {
+    this.s.setBold(nval);
+    return this;
+  }
+
+  isHidden(): boolean {
+    return this.s.isHidden();
+  }
+  setHidden(nval: boolean): this {
+    this.s.setHidden(nval);
+    return this;
+  }
+
+  isBlink(): boolean {
+    return this.s.isBlink();
+  }
+  setBlink(nval: boolean): this {
+    this.s.setBlink(nval);
+    return this;
+  }
+
+  isInverse(): boolean {
+    return this.s.isInverse();
+  }
+  setInverse(nval: boolean): this {
+    this.s.setInverse(nval);
+    return this;
+  }
+
+  isStrikeThrough(): boolean {
+    return this.s.isStrikeThrough();
+  }
+  setStrikeThrough(nval: boolean): this {
+    this.s.setStrikeThrough(nval);
+    return this;
+  }
+
+  isUnderline(): boolean {
+    return this.s.isUnderline();
+  }
+  setUnderline(nval: boolean): this {
+    this.s.setUnderline(nval);
+    return this;
+  }
+
+  isItalic(): boolean {
+    return this.s.isItalic();
+  }
+  setItalic(nval: boolean): this {
+    this.s.setItalic(nval);
+    return this;
+  }
+
+  isDim(): boolean {
+    return this.s.isDim();
+  }
+  setDim(nval: boolean): this {
+    this.s.setDim(nval);
+    return this;
+  }
+
+  backgroundColor(): string {
+    return this.s.backgroundColor();
+  }
+  setBackgroundColor(newColor: string): this {
+    this.s.setBackgroundColor(newColor);
+    return this;
+  }
+
+  color(): string {
+    return this.s.color();
+  }
+  setColor(newColor: string): this {
+    this.s.setColor(newColor);
     return this;
   }
 }

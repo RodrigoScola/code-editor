@@ -124,6 +124,24 @@ export class ComponentStyle {
   public static Create() {
     return this.Pool.get();
   }
+  // a pooled copy: dispose() it when done
+  clone(): ComponentStyle {
+    const out = ComponentStyle.Create();
+
+    out.bg = this.bg;
+    out.cl = this.cl;
+    out.bld = this.bld;
+    out.dsp = this.dsp;
+    out.dm = this.dm;
+    out.itc = this.itc;
+    out.und = this.und;
+    out.stk = this.stk;
+    out.inv = this.inv;
+    out.blk = this.blk;
+    out.hdn = this.hdn;
+
+    return out;
+  }
 
   dispose() {
     ComponentStyle.Pool.retrieve(this.reset());
@@ -134,6 +152,7 @@ export class ComponentStyle {
     parent: ComponentStyle | null | undefined,
   ) {
     this.reset();
+
 
     const firstBackground = first?.backgroundColor() ?? colors.BACKGROUND_OFF;
 

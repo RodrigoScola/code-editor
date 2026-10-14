@@ -44,8 +44,6 @@ export class DisplayComponent
 
   private childs: DisplayComponent[] = [];
 
-  private s: ComponentStyle;
-
   private _border: ComponentBorder = new ComponentBorder();
 
   private paintHook: ((canvas: Canvas) => void) | null = null;
@@ -55,10 +53,6 @@ export class DisplayComponent
   constructor() {
     super();
     this.id = DisplayComponent.ID++;
-
-    this.s = ComponentStyle.Create()
-      .setBackgroundColor(colors.BACKGROUND_OFF)
-      .setColor(colors.FOREGROUND_OFF);
   }
 
   // ---------------------------------------------------------------------------
@@ -143,8 +137,10 @@ export class DisplayComponent
     const padding = this.padding();
     const border = this.border();
 
-    const verticalBar = this.verticalScrollbar() ? 1 : 0;
-    const horizontalBar = this.horizontalScrollbar() ? 1 : 0;
+    const bar = this.verticalScrollbar();
+    const verticalBar = bar ? bar.width() : 0;
+    const hbar = this.horizontalScrollbar();
+    const horizontalBar = hbar ? hbar.height() : 0;
 
     return this._layoutBounds
       .setX(layout.x + padding.left + border.left())
@@ -203,7 +199,18 @@ export class DisplayComponent
       if (parent.overflow() === "visible") {
         continue;
       }
-      clip = intersectBounds(clip, parent.paddingLayout());
+
+      const layout = parent.paddingLayout().clone();
+      const hbar = parent.horizontalScrollbar();
+      if (hbar) {
+        layout.setHeight(layout.height - hbar.height());
+      }
+      const vbar = parent.verticalScrollbar();
+      if (vbar) {
+        layout.setWidth(layout.width - vbar.height());
+      }
+
+      clip = intersectBounds(clip, layout);
     }
 
     return clip;
@@ -285,118 +292,20 @@ export class DisplayComponent
   // Styles
   // ---------------------------------------------------------------------------
 
-  styles(): ComponentStyle {
-    return this.s;
-  }
-
-  setStyles(sty: Partial<ComponentStyle>): this {
-    this.s = ComponentStyle.Create()
-      .setBackgroundColor(sty.backgroundColor?.() ?? this.s.backgroundColor())
-      .setColor(sty.color?.() ?? this.s.color())
-      .setBold(sty.isBold?.() ?? this.s.isBold())
-      .setDim(sty.isDim?.() ?? this.s.isDim())
-      .setItalic(sty.isItalic?.() ?? this.s.isItalic())
-      .setUnderline(sty.isUnderline?.() ?? this.s.isUnderline())
-      .setStrikeThrough(sty.isStrikeThrough?.() ?? this.s.isStrikeThrough())
-      .setInverse(sty.isInverse?.() ?? this.s.isInverse())
-      .setBlink(sty.isBlink?.() ?? this.s.isBlink())
-      .setHidden(sty.isHidden?.() ?? this.s.isHidden());
-
+  setScrollBar(enabled: boolean) {
+    this._scrollBarEnabled = enabled;
+    this.clearCache();
+    this.setDirty(true);
     return this;
   }
 
-  // Inline style shortcuts — delegate to this.styles().
-  // The style fill char is exposed as displayChar() since display() is the
-  // layout display type.
+  setScrollbarStyle(style: Partial<ScrollBarStyle>) {
+    this._verticalScrollBar.setStyle(style);
 
-  displayChar(): string {
-    return this.s.display();
-  }
-  setDisplayChar(nval: string): this {
-    this.s.setDisplay(nval);
+    this._horizontalScrollBar.setStyle(style);
+    this.setDirty(true);
     return this;
   }
-
-  isBold(): boolean {
-    return this.s.isBold();
-  }
-  setBold(nval: boolean): this {
-    this.s.setBold(nval);
-    return this;
-  }
-
-  isHidden(): boolean {
-    return this.s.isHidden();
-  }
-  setHidden(nval: boolean): this {
-    this.s.setHidden(nval);
-    return this;
-  }
-
-  isBlink(): boolean {
-    return this.s.isBlink();
-  }
-  setBlink(nval: boolean): this {
-    this.s.setBlink(nval);
-    return this;
-  }
-
-  isInverse(): boolean {
-    return this.s.isInverse();
-  }
-  setInverse(nval: boolean): this {
-    this.s.setInverse(nval);
-    return this;
-  }
-
-  isStrikeThrough(): boolean {
-    return this.s.isStrikeThrough();
-  }
-  setStrikeThrough(nval: boolean): this {
-    this.s.setStrikeThrough(nval);
-    return this;
-  }
-
-  isUnderline(): boolean {
-    return this.s.isUnderline();
-  }
-  setUnderline(nval: boolean): this {
-    this.s.setUnderline(nval);
-    return this;
-  }
-
-  isItalic(): boolean {
-    return this.s.isItalic();
-  }
-  setItalic(nval: boolean): this {
-    this.s.setItalic(nval);
-    return this;
-  }
-
-  isDim(): boolean {
-    return this.s.isDim();
-  }
-  setDim(nval: boolean): this {
-    this.s.setDim(nval);
-    return this;
-  }
-
-  backgroundColor(): string {
-    return this.s.backgroundColor();
-  }
-  setBackgroundColor(newColor: string): this {
-    this.s.setBackgroundColor(newColor);
-    return this;
-  }
-
-  color(): string {
-    return this.s.color();
-  }
-  setColor(newColor: string): this {
-    this.s.setColor(newColor);
-    return this;
-  }
-
   // ---------------------------------------------------------------------------
   // Painting
   // ---------------------------------------------------------------------------
@@ -517,6 +426,8 @@ export class DisplayComponent
     ) {
       return;
     }
+    this.clearCache();
+
     this._arrangedTo = finalBounds.clone();
 
     this.setLayout(finalBounds);
@@ -531,8 +442,18 @@ export class DisplayComponent
   }
 
   private arrangeScrollbar() {
+    let paddingHeight = this.paddingLayout().height;
+    let paddingWidth = this.paddingLayout().width;
+
+    if (this.horizontalScrollbar()) {
+      paddingHeight -= this.horizontalScrollbar()!.height();
+    }
+    if (this.verticalScrollbar()) {
+      paddingWidth -= this.verticalScrollbar()!.width();
+    }
+
     const verticalDimensions = ScrollBar.Thumb(
-      this.paddingLayout().height,
+      paddingHeight,
       this.visibleHeight(),
       this.scrollHeight(),
       this.scrollTop(),
@@ -543,7 +464,7 @@ export class DisplayComponent
       .setOffset(verticalDimensions.offset);
 
     const horizontalDimensions = ScrollBar.Thumb(
-      this.paddingLayout().width,
+      paddingWidth,
       this.visibleWidth(),
       this.scrollWidth(),
       this.scrollLeft(),
@@ -910,7 +831,7 @@ export class DisplayComponent
     return this;
   }
   scrollLeft() {
-    const max = Math.max(0, this.scrollWidth() - this.paddingLayout().width);
+    const max = Math.max(0, this.scrollWidth() - this.visibleWidth());
     return Math.min(Math.max(this._scrollLeft, 0), max);
   }
 
@@ -968,12 +889,23 @@ export class DisplayComponent
     return height;
   }
 
-  private visibleHeight() {
-    return this.paddingLayout().height;
+  visibleHeight() {
+    let out = this.paddingLayout().height;
+
+    if (this._cachedBars.horizontal) {
+      out -= this._cachedBars.horizontal.height();
+    }
+
+    return out;
   }
 
-  private visibleWidth() {
-    return this.paddingLayout().width;
+  visibleWidth() {
+    let out = this.paddingLayout().width;
+    if (this._cachedBars.vertical) {
+      out -= this._cachedBars.vertical!.width();
+    }
+
+    return out;
   }
 
   scrollIntoView(component: DisplayComponent) {
@@ -1002,22 +934,54 @@ export class DisplayComponent
   private _horizontalScrollBar = new ScrollBar();
   private _scrollBarEnabled: boolean = true;
 
-  verticalScrollbar() {
+  private _cachedBars = {
+    vertical: null,
+    horizontal: null,
+  } as { vertical: ScrollBar | null; horizontal: ScrollBar | null };
+
+  verticalScrollbar(): ScrollBar | null {
+    if (this._cachedBars.vertical) {
+      return this._cachedBars.vertical;
+    }
+
+    if (
+      !this._scrollBarEnabled ||
+      this.overflow() == "visible" ||
+      this.overflow() === "hidden"
+    ) {
+      return null;
+    }
+
     const totalHeight = this.scrollHeight();
 
     if (totalHeight > this.visibleHeight()) {
-      return this._verticalScrollBar;
+      this._cachedBars.vertical = this._verticalScrollBar;
+      return this._cachedBars.vertical;
     }
 
-    return null;
+    this._cachedBars.vertical = null;
+    return this._cachedBars.vertical;
   }
-  horizontalScrollbar() {
+  horizontalScrollbar(): ScrollBar | null {
+    if (this._cachedBars.horizontal) {
+      return this._cachedBars.horizontal;
+    }
+    this._cachedBars.horizontal = null;
+
+    if (this.overflow() == "visible" || this.overflow() === "hidden") {
+      return this._cachedBars.horizontal;
+    }
+
     const totalWidth = this.scrollWidth();
 
     if (totalWidth > this.visibleWidth()) {
-      return this._horizontalScrollBar;
+      this._cachedBars.horizontal = this._horizontalScrollBar;
     }
-    return null;
+    return this._cachedBars.horizontal;
+  }
+  private clearCache() {
+    this._cachedBars.horizontal = null;
+    this._cachedBars.vertical = null;
   }
 
   // Layout Style

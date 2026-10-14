@@ -104,11 +104,9 @@ describe("deleteSelection", () => {
 
     const del = view.deleteSelection();
 
-    console.log(del);
 
     const cn = content(view);
 
-    console.log(cn);
 
     expect(del).eq(" def");
     expect(content(view)).eq("abc");

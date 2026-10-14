@@ -208,7 +208,7 @@ describe("4. the bar takes its own space", () => {
 });
 
 describe("5. children are clipped out of the bar", () => {
-  it.only("does not let a too-wide grandchild paint over the vertical bar", () => {
+  it("does not let a too-wide grandchild paint over the vertical bar", () => {
     const { canvas, root, container } = list(10, 20);
     // the row is 9 wide so the container doesn't scroll sideways, but
     // what's inside it spills out to the right
@@ -232,11 +232,13 @@ describe("6. between the border and the padding", () => {
     root.addChildren(container);
 
     layoutAndPaint(root, canvas);
+    show(canvas);
 
-    // border on columns 0 and 9, the bar on column 8, content 1..7
-    expect(container.contentLayout().width).eq(7);
-    expect(column(canvas, 8, 1, 6)).toMatch(BAR);
-    expect(column(canvas, 9, 1, 6)).not.toMatch(/[#.]/);
+    // the border goes outside the 10x7 (content-box sizing): border on
+    // columns 0 and 11, rows 0 and 8; content on 1..9, the bar on 10
+    expect(container.contentLayout().width).eq(9);
+    expect(column(canvas, 10, 1, 8)).toMatch(BAR);
+    expect(column(canvas, 11, 1, 8)).not.toMatch(/[#.]/);
   });
 
   it("keeps the padding inside the bar", () => {
@@ -250,14 +252,15 @@ describe("6. between the border and the padding", () => {
 
     layoutAndPaint(root, canvas);
 
-    // 12 wide: padding 1, 9 of content, padding 1, the bar
+    // the padding goes outside the 12x10 (content-box sizing), so the box
+    // is 14x12: padding 1, 11 of content, padding 1, the bar on column 13
     expect(container.contentLayout().x).eq(1);
-    expect(container.contentLayout().width).eq(9);
+    expect(container.contentLayout().width).eq(11);
     expect(items[0].layout().x).eq(1);
     expect(items[0].layout().y).eq(1);
     // the bar runs the whole height, padding rows included
-    expect(column(canvas, 11, 0, 10)).toMatch(BAR);
-    expect(column(canvas, 10, 0, 10)).not.toMatch(/[#.]/);
+    expect(column(canvas, 13, 0, 12)).toMatch(BAR);
+    expect(column(canvas, 12, 0, 12)).not.toMatch(/[#.]/);
   });
 });
 
@@ -333,14 +336,18 @@ describe("8. both bars at once", () => {
     const { canvas, root, container } = list(5, 8, 20);
 
     layoutAndPaint(root, canvas);
+    show(canvas);
 
     expect(container.contentLayout().width).eq(9);
     expect(container.contentLayout().height).eq(4);
     // tracks of 4 rows and 9 columns:
     //   vertical   4 of 8 rows    -> round(4 * 4 / 8)  = 2
     //   horizontal 9 of 20 cols   -> round(9 * 9 / 20) = 4
-    expect(container.verticalScrollbar()).toEqual({ offset: 0, size: 2 });
-    expect(container.horizontalScrollbar()).toEqual({ offset: 0, size: 4 });
+    expect(container.verticalScrollbar()?.offset()).toEqual(0);
+    expect(container.verticalScrollbar()?.size()).toEqual(2);
+
+    expect(container.horizontalScrollbar()?.offset()).toEqual(0);
+    expect(container.horizontalScrollbar()?.size()).toEqual(4);
   });
 
   it("keeps scrolled content out of both bars and the corner", () => {
@@ -355,11 +362,13 @@ describe("8. both bars at once", () => {
 
     container.setScrollTop(2).setScrollLeft(3);
     layoutAndPaint(root, canvas);
+    show(canvas);
 
     expect(row(canvas, 0, 0, 9)).eq("x".repeat(9));
     expect(column(canvas, 9, 0, 4)).toMatch(BAR);
     expect(row(canvas, 4, 0, 9)).toMatch(BAR);
-    expect(cell(canvas, 9, 4).display()).not.toMatch(/[#.x]/);
+    const out = cell(canvas, 9, 4).display();
+    expect(out).not.toMatch(/[#.x]/);
   });
 
   it("scrolls far enough to show the last row above the horizontal bar", () => {

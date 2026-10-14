@@ -82,7 +82,6 @@ describe("textEditorCommands", () => {
     editorWindow.cursor().column = sentence.length - 1;
     textEditorCommands.textEditor.prevWordStart.run(ctx);
 
-    console.log(sentence[editorWindow.cursor().column], "this ");
 
     expect(editorWindow.cursor().column).eq(7);
   });
@@ -94,7 +93,6 @@ describe("textEditorCommands", () => {
     editorWindow.cursor().column = sentence.indexOf(".");
 
     textEditorCommands.textEditor.prevWordStart.run(ctx);
-    console.log(sentence[editorWindow.cursor().column], "this ");
 
     expect(editorWindow.cursor().column).eq(0);
   });

@@ -71,8 +71,6 @@ describe("tests the tab component", () => {
 
     render(root, canvas);
     const out = getRow(tab.displayContent.view(), canvas);
-    console.log(tab.displayContent.children()[0].name());
-    console.log(out);
     expect(getRow(tab.displayContent.view(), canvas)).includes("awesomesauce");
   });
 });

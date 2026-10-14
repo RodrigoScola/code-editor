@@ -236,6 +236,9 @@ export class Canvas implements ICanvas {
       }
     }
   }
+
+
+
   private paintContent(
     cl: LayoutBounds,
     text: TextLayout,
