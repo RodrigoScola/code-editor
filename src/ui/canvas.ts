@@ -322,9 +322,8 @@ export class Canvas implements ICanvas {
         const cell = this.getCell(x, y);
 
         if (!cell) {
-          break;
+          continue;
         }
-
 
         cell.setStyles(
           ComponentStyle.Blend(style ?? cell.styles, base).setDisplay(line[i]),

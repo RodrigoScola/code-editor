@@ -1,4 +1,5 @@
 import { LayoutBounds } from './LayoutBounds.js';
+import { Padding } from './padding.js';
 
 export interface Insets {
   top: number;
@@ -48,12 +49,7 @@ export class LayoutStyle {
     right: 0,
   };
 
-  private _padding: Insets = {
-    bottom: 0,
-    top: 0,
-    left: 0,
-    right: 0,
-  };
+  private _padding: Padding = Padding.Create()
 
   overflow() {
     return this._overflow;
@@ -111,11 +107,11 @@ export class LayoutStyle {
     return this;
   }
 
-  padding(): Insets {
+  padding(): Padding{
     return this._padding;
   }
 
-  setPadding(padding: Insets): this {
+  setPadding(padding: Padding): this {
     this._padding = padding;
     return this;
   }

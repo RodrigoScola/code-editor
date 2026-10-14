@@ -5,14 +5,10 @@ import { DisplayComponent } from "../../../../src/ui/components/displayComponent
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { assert } from "../../../../src/assert.js";
 import { Renderer } from "../../../../src/ui/renderer.js";
-import {
-  MemoryFile,
-  Textdocument,
-} from "../../../../src/Editor/Documents/TextDocument.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
-import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle.js";
-import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
 import { LayoutDimensions } from "../../../../src/ui/layout/LayoutDimensions.js";
+import { UIScreen } from "../../../../src/ui/components/UIScreen.js";
+import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {

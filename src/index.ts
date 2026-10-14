@@ -6,7 +6,7 @@ import { InputParser } from "./Input/inputParser.js";
 import { assert } from "./assert.js";
 import { setupEditor as setup } from "./Editor/setupEditor.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
-import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
+import { FileTreeWindow } from "./Editor/windows/FileTree/FileTreeWindow.js";
 import { GitEditorWindow } from "./Editor/windows/GitEditorWindow.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
 import { CodeEditorGroup } from "./Editor/windows/Tab/TabWindow.js";

@@ -8,7 +8,7 @@ import { DisplayComponent } from "../ui/components/displayComponent.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { Textdocument, DiskFile } from "./Documents/TextDocument.js";
 import { EditorContext } from "./Editor/Editor.js";
-import { FileTreeWindow } from "./windows/FileTreeWindow.js";
+import { FileTreeWindow } from "./windows/FileTree/FileTreeWindow.js";
 import { GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
 import { CodeEditorWindow } from "./windows/CodeEditorWindow.js";

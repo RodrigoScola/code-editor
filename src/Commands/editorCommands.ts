@@ -1,4 +1,3 @@
-import path from "path";
 import { EditorContext } from "../Editor/Editor/Editor.js";
 import type { EditorCommand } from "./Commands.js";
 import {
@@ -8,10 +7,6 @@ import {
 } from "../utils.js";
 import { log } from "../log.js";
 import { assert } from "../assert.js";
-import { isatty } from "node:tty";
-import { UiInput } from "../ui/components/UiInput.js";
-import { TreeInput } from "../Editor/windows/FileTreeWindow.js";
-import { dir } from "node:console";
 
 export const textEditorCommands = {
   textEditor: {

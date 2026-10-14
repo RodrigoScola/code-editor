@@ -130,6 +130,10 @@ export class Renderer {
 
       defaultBlend.blend(component.styles(), component.parent()?.styles());
 
+      this.paintScrollBar(component, canvas);
+
+      // canvas.fillRect(, style)
+
       canvas.drawText(
         component.contentLayout(),
         component.content(),
@@ -146,6 +150,57 @@ export class Renderer {
     canvas.setClip(null);
 
     defaultBlend.dispose();
+  }
+  private paintScrollBar(component: DisplayComponent, canvas: Canvas) {
+    const layout = component.paddingLayout();
+
+    const vertical = component.verticalScrollbar();
+    if (vertical) {
+      const y = layout.y;
+      const x = layout.width + layout.x - 1;
+
+      const bd = layout.clone().setX(x).setY(y).setWidth(1);
+      canvas.fillRect(bd, vertical.style());
+
+      const startAt = bd.y + vertical.offset();
+      const endAt = startAt + vertical.size();
+
+      const textRow = bd.clone();
+      for (let i = startAt; i < endAt && vertical.style().thumb(); i++) {
+        canvas.drawText(
+          textRow.setY(i),
+          vertical.style().thumb()!,
+          vertical.style(),
+        );
+      }
+      textRow.dispose();
+    }
+
+    const horizontal = component.horizontalScrollbar();
+    if (horizontal) {
+      const y = layout.y + layout.height - 1;
+      const x = layout.x;
+      const style = horizontal.style();
+
+      const bd = layout.clone().setX(x).setY(y).setHeight(1);
+
+      canvas.fillRect(bd, style);
+
+      const startAt = bd.x + horizontal.offset();
+      const endAt = startAt + horizontal.size();
+
+      const textRow = bd.clone();
+
+      for (let i = startAt; i < endAt && style.thumb(); i++) {
+        canvas.drawText(
+          textRow.setX(i),
+          style.thumb()!,
+          style.setBackgroundColor(colors.YELLOW_BACKGROUND),
+        );
+      }
+      textRow.dispose();
+      bd.dispose();
+    }
   }
 
   private borderBound: LayoutBounds = LayoutBounds.Create();

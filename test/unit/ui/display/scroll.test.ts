@@ -8,7 +8,6 @@ import {
   screen,
   show,
 } from "../../../helpers/ui.js";
-import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
 
 // Proposed API on DisplayComponent, for containers of components (the text
 // ViewPort keeps handling scrolling inside a single text):
@@ -64,6 +63,7 @@ describe("scrolling a container", () => {
 
     container.setScrollTop(3);
     layoutAndPaint(root, canvas);
+    show(canvas);
 
     expect(items[3].layout().y).eq(0);
     expect(rowText(canvas, 0)).toMatch(/^item 3/);
@@ -127,6 +127,7 @@ describe("scrolling a container", () => {
 
     container.setScrollLeft(10);
     layoutAndPaint(root, canvas);
+    show(canvas);
 
     expect(container.scrollWidth()).eq(30);
     expect(wide.layout().x).eq(-10);

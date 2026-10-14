@@ -1,10 +1,17 @@
 import { DisplayComponent } from "../components/displayComponent.js";
-import { OverflowTypes } from '../TextLayout/text.js';
-import { LayoutBounds } from './LayoutBounds.js';
-import { ContentAlign,  LayoutStyle, OverflowType, WrapStyle } from './layoutStyle.js';
+import { ScrollBar, ScrollBarStyle } from "../components/Scrollbar.js";
+import { LayoutBounds } from "./LayoutBounds.js";
+import {
+  ContentAlign,
+  LayoutStyle,
+  OverflowType,
+  WrapStyle,
+} from "./layoutStyle.js";
+import { Padding } from "./padding.js";
 
 export class ComponentLayoutFns {
   private readonly _layoutStyle: LayoutStyle;
+
 
   private _dirty: boolean = true;
 
@@ -207,52 +214,68 @@ export class ComponentLayoutFns {
     this.setDirty(true);
     return this;
   }
-  padding(): Insets {
+  padding(): Padding {
     return this.layoutStyle().padding();
   }
 
-  setPadding(padding: Insets): this {
+  setPadding(padding: Padding): this {
     this.layoutStyle().setPadding(padding);
     this.setDirty(true);
     return this;
   }
 
-  setPaddingLeft(val: number) {
-    this.padding().left = val;
+  setPaddingLeft(left: number) {
+    this.padding().setLeft(left);
     this.setDirty(true);
     return this;
   }
 
   setPaddingTop(val: number) {
-    this.padding().top = val;
+    this.padding().setTop(val);
     this.setDirty(true);
     return this;
   }
-  setPaddingBottom(val: number) {
-    this.padding().bottom = val;
+  setPaddingBottom(bottom: number) {
+    this.padding().setBottom(bottom);
     this.setDirty(true);
     return this;
   }
-  setPaddingRight(val: number) {
-    this.padding().right = val;
+  setPaddingRight(right: number) {
+    this.padding().setRight(right);
     this.setDirty(true);
     return this;
   }
   setPaddingHorizontal(val: number) {
     this.setPaddingLeft(val);
     this.setPaddingRight(val);
+    this.setDirty(true);
     return this;
   }
   setPaddingVertical(val: number) {
     this.setPaddingTop(val);
     this.setPaddingBottom(val);
+
+    this.setDirty(true);
     return this;
   }
   overflow() {
-    return this.layoutStyle().overflow()
+    return this.layoutStyle().overflow();
   }
   setOverflow(type: OverflowType) {
-    this.layoutStyle().setOverflow(type)
-    return this
+    this.layoutStyle().setOverflow(type);
+    this.setDirty(true);
+    return this;
+  }
+  setScrollBar(enabled: boolean) {
+    this._scrollBarEnabled = enabled;
+    this.setDirty(true);
+    return this;
+  }
+
+  setScrollbarStyle(style: ScrollBarStyle) {
+    this._verticalScrollBar.setStyle(style);
+    this._horizontalScrollBar.setStyle(style);
+    this.setDirty(true);
+    return this;
   }
 }

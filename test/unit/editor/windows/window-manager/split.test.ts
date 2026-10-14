@@ -15,7 +15,7 @@ import {
   UIScreen,
 } from "../../../../../src/ui/components/UiComponent.js";
 import { isTextComponent } from "../../../../../src/utils.js";
-import { FileTreeWindow } from "../../../../../src/Editor/windows/FileTreeWindow.js";
+import { FileTreeWindow } from "../../../../../src/Editor/windows/FileTree/FileTreeWindow.js";
 
 describe("tests the window manager split capabilities", () => {
   it("focus the correct window at the correct time", () => {
@@ -41,7 +41,9 @@ describe("tests the window manager split capabilities", () => {
     manager.split(manager.activeWindow()!, other, "vertical");
 
     LayoutEngine.Measure(manager.root, LayoutEngine.CreateConstraints(20));
-    Renderer.Create(new Canvas().setLayout({ x: 0, y: 0, height: 20, width: 20 })).build(manager.root);
+    Renderer.Create(
+      new Canvas().setLayout({ x: 0, y: 0, height: 20, width: 20 }),
+    ).build(manager.root);
 
     expect(manager.activeWindow()).toBe(tree);
     expect(manager.root.children().at(0)).toBe(editor);
@@ -59,10 +61,7 @@ describe("tests the window manager split capabilities", () => {
     const layout = LayoutEngine.CreateBounds(20);
     const constraints = LayoutEngine.CreateConstraints(layout.width);
 
-    manager.root
-      .setLayout(layout)
-      .addChildren(editor)
-      .addChildren(tree);
+    manager.root.setLayout(layout).addChildren(editor).addChildren(tree);
     manager.add(editor).add(tree);
     manager.activate(editor);
 

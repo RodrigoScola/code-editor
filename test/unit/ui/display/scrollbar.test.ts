@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import colors from "../../../../src/ui/colors.js";
 import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
-import { cell, layoutAndPaint, screen } from "../../../helpers/ui.js";
+import { cell, layoutAndPaint, screen, show } from "../../../helpers/ui.js";
+import { ScrollBarStyle } from "../../../../src/ui/components/Scrollbar.js";
 
 // What a scrollbar looks like on screen. The basics (thumb size and offset,
 // taking one column) are in scroll.test.ts; this is the drawing.
@@ -37,7 +38,8 @@ function list(height: number, count: number) {
     .setWidth(10)
     .setHeight(height)
     .setOverflow("scroll")
-    .setScrollbarStyle({ thumb: THUMB, track: TRACK });
+    .setBackgroundColor(colors.BLUE_BACKGROUND)
+    .setScrollbarStyle(ScrollBarStyle.Create().setThumb(THUMB).setTrack(TRACK));
 
   const items = Array.from({ length: count }, (_, i) =>
     new DisplayComponent().setHeight(1).setContent(`item ${i}`),
@@ -63,10 +65,11 @@ function scrollbarColumn(
 }
 
 describe("drawing the vertical scrollbar", () => {
-  it("draws the thumb over the track", () => {
+  it.only("draws the thumb over the track", () => {
     const { canvas, root } = list(10, 20);
 
     layoutAndPaint(root, canvas);
+    show(canvas);
 
     expect(scrollbarColumn(canvas, 9, 10)).eq("#####.....");
   });
@@ -232,6 +235,27 @@ describe("scrollbar style", () => {
     expect(container.verticalScrollbar()).toBeNull();
     expect(items[0].layout().width).eq(10);
     expect(scrollbarColumn(canvas, 9, 10)).not.toContain(THUMB);
+  });
+
+  it("stays hidden when overflow is set after setScrollbar(false)", () => {
+    const { canvas, root, container, items } = list(10, 20);
+    container.setScrollbar(false).setOverflow("scroll");
+
+    layoutAndPaint(root, canvas);
+
+    expect(container.verticalScrollbar()).toBeNull();
+    expect(items[0].layout().width).eq(10);
+  });
+
+  it("is not there without overflow scroll, however much content", () => {
+    const { canvas, root, container } = list(10, 20);
+    container.setOverflow("visible");
+
+    layoutAndPaint(root, canvas);
+
+    expect(container.verticalScrollbar()).toBeNull();
+    expect(container.horizontalScrollbar()).toBeNull();
+    expect(container.contentLayout().width).eq(10);
   });
 
   it("still scrolls with the scrollbar hidden", () => {

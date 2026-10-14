@@ -11,6 +11,7 @@ import { ViewPort } from "../windows/viewport.js";
 import { BorderStyles, ComponentBorder } from "../display/border.js";
 import { ComponentLayoutFns } from "../layout/componentLayout.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
+import { ScrollBar, ScrollBarStyle } from "./Scrollbar.js";
 
 export class DisplayComponent
   extends ComponentLayoutFns
@@ -142,6 +143,9 @@ export class DisplayComponent
     const padding = this.padding();
     const border = this.border();
 
+    const verticalBar = this.verticalScrollbar() ? 1 : 0;
+    const horizontalBar = this.horizontalScrollbar() ? 1 : 0;
+
     return this._layoutBounds
       .setX(layout.x + padding.left + border.left())
       .setY(layout.y + padding.top + border.top())
@@ -152,7 +156,8 @@ export class DisplayComponent
             padding.left -
             padding.right -
             border.left() -
-            border.right(),
+            border.right() -
+            verticalBar,
         ),
       )
       .setHeight(
@@ -162,7 +167,8 @@ export class DisplayComponent
             padding.top -
             padding.bottom -
             border.top() -
-            border.bottom(),
+            border.bottom() -
+            horizontalBar,
         ),
       );
   }
@@ -245,6 +251,18 @@ export class DisplayComponent
 
   getId(): number {
     return this.id;
+  }
+  findChildrenById(id: number): DisplayComponent | null {
+    if (this.id === id) {
+      return this;
+    }
+    for (const child of this.children()) {
+      const found = child.findChildrenById(id);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
   }
 
   findChildrenByName(nm: string): DisplayComponent | null {
@@ -436,33 +454,44 @@ export class DisplayComponent
       constraints,
     );
 
-    let width = parseSize(this.width(), styleConstraints.maxWidth);
-
-    let height = parseSize(this.height(), styleConstraints.maxHeight);
-
     const contentConstraints = this.contentConstraints(styleConstraints);
 
     const contentSize = this.measureContent(contentConstraints);
 
-    if (width === null) {
-      width =
-        contentSize.width + this.horizontalPadding() + this.horizontalBorder();
-    } else {
-      width += this.horizontalPadding() + this.horizontalBorder();
-    }
-
-    if (height === null) {
-      height =
-        contentSize.height + this.verticalPadding() + this.verticalBorder();
-    } else {
-      height += this.verticalPadding() + this.verticalBorder();
-    }
-
-    this._measuredSize = LayoutEngine.ClampSize(
-      width ?? 0,
-      height ?? 0,
+    // auto sizes fit the content, but stay inside the space given
+    const fitted = LayoutEngine.ClampSize(
+      contentSize.width + this.horizontalPadding() + this.horizontalBorder(),
+      contentSize.height + this.verticalPadding() + this.verticalBorder(),
       styleConstraints,
     );
+
+    // an explicit size is not shrunk to the space given: it overflows the
+    // parent, like CSS. Only its own maxWidth/maxHeight limit it, the same
+    // rule arrange uses, so measuredSize() matches the final layout
+    const width =
+      parseSize(this.width(), styleConstraints.maxWidth) === null
+        ? fitted.width
+        : Math.max(
+            styleConstraints.minWidth,
+            LayoutDimensions.requestedOuterWidth(
+              this,
+              styleConstraints.maxWidth,
+            )!,
+          );
+
+    const height =
+      parseSize(this.height(), styleConstraints.maxHeight) === null
+        ? fitted.height
+        : Math.max(
+            styleConstraints.minHeight,
+            LayoutDimensions.requestedOuterHeight(
+              this,
+              styleConstraints.maxHeight,
+            )!,
+          );
+
+    this._measuredSize.width = width;
+    this._measuredSize.height = height;
 
     return this._measuredSize;
   }
@@ -494,9 +523,34 @@ export class DisplayComponent
 
     this.arrangeContent(this.contentLayout());
 
+    this.arrangeScrollbar();
+
     this.content().measure(bounds);
 
     this.setDirty(false);
+  }
+
+  private arrangeScrollbar() {
+    const verticalDimensions = ScrollBar.Thumb(
+      this.paddingLayout().height,
+      this.visibleHeight(),
+      this.scrollHeight(),
+      this.scrollTop(),
+    );
+
+    this.verticalScrollbar()
+      ?.setSize(verticalDimensions.size)
+      .setOffset(verticalDimensions.offset);
+
+    const horizontalDimensions = ScrollBar.Thumb(
+      this.paddingLayout().width,
+      this.visibleWidth(),
+      this.scrollWidth(),
+      this.scrollLeft(),
+    );
+    this.horizontalScrollbar()
+      ?.setSize(horizontalDimensions.size)
+      .setOffset(horizontalDimensions.offset);
   }
 
   normalChildren() {
@@ -840,25 +894,132 @@ export class DisplayComponent
   view(): DisplayComponent {
     return this;
   }
+  private _scrollTop: number = 0;
+  private _scrollLeft: number = 0;
   scrollTop() {
-    return this.viewport().firstLine;
+    const max = Math.max(0, this.scrollHeight() - this.visibleHeight());
+    return Math.min(Math.max(this._scrollTop, 0), max);
   }
   setScrollTop(amount: number) {
-    this.viewport().firstLine = amount;
+    // the children move, so the next frame has to arrange them again
+    if (this._scrollTop !== amount) {
+      this.setDirty(true);
+    }
+    this._scrollTop = amount;
+
     return this;
   }
   scrollLeft() {
-    return this.viewport().firstColumn;
-  }
-  setScrollLeft(amount: number) {
-    this.viewport().firstColumn = amount;
-    return this;
-  }
-  scrollHeight() {
-    return 0;
+    const max = Math.max(0, this.scrollWidth() - this.paddingLayout().width);
+    return Math.min(Math.max(this._scrollLeft, 0), max);
   }
 
-  // ---------------------------------------------------------------------------
+  setScrollLeft(amount: number) {
+    if (this._scrollLeft !== amount) {
+      this.setDirty(true);
+    }
+    this._scrollLeft = amount;
+    return this;
+  }
+  scrollWidth() {
+    let width = this.padding().left + this.padding().right;
+    let childrenWidth = 0;
+    let maxWidth = 0;
+
+    for (const child of this.normalChildren()) {
+      const childWidth =
+        child.measuredSize().width + child.margin().left + child.margin().right;
+
+      maxWidth = Math.max(childWidth, maxWidth);
+      childrenWidth += childWidth;
+    }
+
+    if (this.direction() === "vertical") {
+      width += maxWidth;
+    } else {
+      width += childrenWidth;
+    }
+
+    return width;
+  }
+  scrollHeight() {
+    let height = this.padding().top + this.padding().bottom;
+    let childrenHeight = 0;
+    let maxHeight = 0;
+
+    // measured sizes, not layouts: arrange asks for this before it has
+    // placed the children
+    for (const child of this.normalChildren()) {
+      const childHeight =
+        child.measuredSize().height +
+        child.margin().top +
+        child.margin().bottom;
+
+      maxHeight = Math.max(maxHeight, childHeight);
+      childrenHeight += childHeight;
+    }
+
+    if (this.direction() === "vertical") {
+      height += childrenHeight;
+    } else {
+      height += maxHeight;
+    }
+
+    return height;
+  }
+
+  private visibleHeight() {
+    return this.paddingLayout().height;
+  }
+
+  private visibleWidth() {
+    return this.paddingLayout().width;
+  }
+
+  scrollIntoView(component: DisplayComponent) {
+    const child = this.findChildrenById(component.getId());
+    if (!child) {
+      console.error(`children not found `);
+      return null;
+    }
+
+    const childTop =
+      child.layout().y - this.contentLayout().y + this.scrollTop();
+
+    const childBottom = child.layout().height + childTop;
+
+    const windowTop = this.scrollTop();
+    const windowBottom = windowTop + this.visibleHeight();
+
+    if (childTop < windowTop) {
+      this.setScrollTop(childTop);
+    } else if (childBottom > windowBottom) {
+      this.setScrollTop(childBottom - windowBottom);
+    }
+  }
+
+  private _verticalScrollBar = new ScrollBar();
+  private _horizontalScrollBar = new ScrollBar();
+  private _scrollBarEnabled: boolean = true;
+
+  verticalScrollbar() {
+    const totalHeight = this.scrollHeight();
+
+    if (totalHeight > this.visibleHeight()) {
+      return this._verticalScrollBar;
+    }
+
+    return null;
+  }
+  horizontalScrollbar() {
+    const totalWidth = this.scrollWidth();
+
+    if (totalWidth > this.visibleWidth()) {
+      return this._horizontalScrollBar;
+    }
+    return null;
+  }
+
   // Layout Style
   // ---------------------------------------------------------------------------
 }

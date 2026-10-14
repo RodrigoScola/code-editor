@@ -57,7 +57,7 @@ export class LayoutEngine {
 
   static ArrangeVertical(displayLike: DisplayLike, bounds: LayoutBounds) {
     const component = displayLike.view();
-    let remainingHeight = bounds.height
+    let remainingHeight = bounds.height;
 
     const normalChildren = component.view().normalChildren();
 
@@ -160,7 +160,7 @@ export class LayoutEngine {
     }
 
     const columnWidth = bounds.width / columns.length;
-    let x = bounds.x
+    let x = bounds.x;
 
     if (component.wrap() === "wrap-reverse") {
       columns.reverse();
@@ -172,7 +172,7 @@ export class LayoutEngine {
         0,
       );
 
-      let y = bounds.y
+      let y = bounds.y;
       let spacing = 0;
 
       if (component.alignContent() === "end") {
@@ -226,7 +226,6 @@ export class LayoutEngine {
           .setHeight(item.height);
 
         child.view().arrange(newBounds);
-        newBounds.dispose();
 
         if (
           component.alignContent() === "space-between" ||
@@ -361,7 +360,7 @@ export class LayoutEngine {
     }
 
     for (const row of rows) {
-      let startX = bounds.x
+      let startX = bounds.x;
 
       const rowWidth = row.reduce(
         (total, item) =>
@@ -532,7 +531,7 @@ export class LayoutEngine {
           .setHeight(layout.height || measured.height);
 
     root.arrange(temp);
-    temp.dispose()
+    temp.dispose();
     this.invalidateParent(rootLike);
 
     return this;
@@ -551,7 +550,6 @@ export class LayoutEngine {
   static Unconstrained(): MeasureConstraints {
     return this.UNCONSTRAINED_LAYOUT;
   }
-
 
   static ClampSize(
     width: number,

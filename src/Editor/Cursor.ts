@@ -29,6 +29,7 @@ export class Cursor {
     return Boolean(this.selection);
   }
 
+
   setBuffer(buffer: BufferLike) {
     this._buffer = buffer;
     return this;

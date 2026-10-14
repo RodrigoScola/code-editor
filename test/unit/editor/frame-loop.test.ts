@@ -1,6 +1,6 @@
 import cp from "node:child_process";
 import { describe, expect, it, vi } from "vitest";
-import { FileTreeWindow } from "../../../src/Editor/windows/FileTreeWindow.js";
+import { FileTreeWindow } from "../../../src/Editor/windows/FileTree/FileTreeWindow.js";
 import { stripAnsi, vim, workspace } from "../../ide/harness.js";
 
 // The editor draws the way a browser does with requestAnimationFrame:

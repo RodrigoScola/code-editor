@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { FileTreeWindow } from "../../../src/Editor/windows/FileTreeWindow.js";
+import { FileTreeWindow } from "../../../src/Editor/windows/FileTree/FileTreeWindow.js";
 import { code, workspace } from "../harness.js";
 
 // Explorer commands that work on the active file (VS Code: copyFilePath,
@@ -50,7 +50,10 @@ describe("copying paths", () => {
 
   it("copyRelativePath copies the path inside the workspace", () => {
     const root = files();
-    const ide = opened("src/app/main.ts", root).setting("copy_relative_path_separator", "/");
+    const ide = opened("src/app/main.ts", root).setting(
+      "copy_relative_path_separator",
+      "/",
+    );
 
     ide.executeCommand("explorer.copyRelativePath");
 
@@ -59,7 +62,10 @@ describe("copying paths", () => {
 
   it("the separator can be a backslash", () => {
     const root = files();
-    const ide = opened("src/app/main.ts", root).setting("copy_relative_path_separator", "\\");
+    const ide = opened("src/app/main.ts", root).setting(
+      "copy_relative_path_separator",
+      "\\",
+    );
 
     ide.executeCommand("explorer.copyRelativePath");
 
@@ -68,7 +74,10 @@ describe("copying paths", () => {
 
   it('"auto" uses the platform\'s separator', () => {
     const root = files();
-    const ide = opened("src/app/main.ts", root).setting("copy_relative_path_separator", "auto");
+    const ide = opened("src/app/main.ts", root).setting(
+      "copy_relative_path_separator",
+      "auto",
+    );
 
     ide.executeCommand("explorer.copyRelativePath");
 
@@ -166,7 +175,10 @@ describe("comparing two files", () => {
     ide.executeCommand("explorer.compareWithSelected");
 
     // the selected file on the left (original), the active one on the right
-    expect(ide.diffEditor()).toMatchObject({ original: "main", modified: "util" });
+    expect(ide.diffEditor()).toMatchObject({
+      original: "main",
+      modified: "util",
+    });
   });
 
   it("compareWithSelected does nothing until a file was selected", () => {

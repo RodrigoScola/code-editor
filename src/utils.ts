@@ -1,7 +1,7 @@
 import { UiComponent } from "./ui/components/UiComponent.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
-import { FileTreeWindow } from "./Editor/windows/FileTreeWindow.js";
+import { FileTreeWindow } from "./Editor/windows/FileTree/FileTreeWindow.js";
 import { UIScreen } from "./ui/components/UIScreen.js";
 
 export function memory(label: string) {

@@ -1,7 +1,7 @@
 import { existsSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
-import { FileTreeWindow } from "../../../src/Editor/windows/FileTreeWindow.js";
+import { FileTreeWindow } from "../../../src/Editor/windows/FileTree/FileTreeWindow.js";
 import { Canvas } from "../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../src/ui/layout/layout.js";
 import { Renderer } from "../../../src/ui/renderer.js";
