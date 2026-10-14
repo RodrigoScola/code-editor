@@ -211,8 +211,8 @@ export class LayoutDimensions {
     component: DisplayComponent,
     bounds: LayoutBounds,
   ): LayoutBounds {
-    let width = bounds.width
-    let height = bounds.height
+    let width = bounds.width;
+    let height = bounds.height;
 
     const maxWidth = this.maxOuterWidth(component);
     if (maxWidth !== null) {
