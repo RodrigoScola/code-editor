@@ -10,33 +10,35 @@ import { code, exec } from "../harness.js";
 // own.
 
 describe("moving by character and line", () => {
-  it("cursorRight and cursorLeft", () => {
-    expect(exec("a|bc", "textEditor.cursorRight")).eq("ab|c");
-    expect(exec("a|bc", "textEditor.cursorLeft")).eq("|abc");
+  it("moveRight and moveLeft", () => {
+    expect(exec("a|bc", "textEditor.moveRight")).eq("ab|c");
+    expect(exec("a|bc", "textEditor.moveLeft")).eq("|abc");
   });
 
-  it("cursorLeft with a selection collapses it to its start", () => {
-    expect(exec("a«bc»d", "textEditor.cursorLeft")).eq("a|bcd");
+  it("moveLeft with a selection collapses it to its start", () => {
+    expect(exec("a«bc»d", "textEditor.moveLeft")).eq("a|bcd");
   });
 
-  it("cursorRight with a selection collapses it to its end", () => {
-    expect(exec("a«bc»d", "textEditor.cursorRight")).eq("abc|d");
+  it("moveRight with a selection collapses it to its end", () => {
+    expect(exec("a«bc»d", "textEditor.moveRight")).eq("abc|d");
   });
 
-  it("cursorRight at the end of a line goes to the next line", () => {
-    expect(exec("ab|\ncd", "textEditor.cursorRight")).eq("ab\n|cd");
+  it("moveRight at the end of a line goes to the next line", () => {
+    expect(exec("ab|\ncd", "textEditor.moveRight")).eq("ab\n|cd");
   });
 
-  it("cursorDown keeps the column it started from across a short line", () => {
-    expect(exec("abc|d\nx\nabcdef", "textEditor.cursorDown", "textEditor.cursorDown")).eq("abcd\nx\nabc|def");
+  it("moveDown keeps the column it started from across a short line", () => {
+    expect(
+      exec("abc|d\nx\nabcdef", "textEditor.moveDown", "textEditor.moveDown"),
+    ).eq("abcd\nx\nabc|def");
   });
 
   it("cursorDown on the last line goes to its end", () => {
-    expect(exec("a|bc", "textEditor.cursorDown")).eq("abc|");
+    expect(exec("a|bc", "textEditor.moveDown")).eq("abc|");
   });
 
-  it("cursorUp on the first line goes to its start", () => {
-    expect(exec("ab|c", "textEditor.cursorUp")).eq("|abc");
+  it("moveUp on the first line goes to its start", () => {
+    expect(exec("ab|c", "textEditor.moveUp")).eq("|abc");
   });
 });
 
@@ -46,7 +48,9 @@ describe("home and end", () => {
   });
 
   it("pressing it again goes to column 0", () => {
-    expect(exec("    ab|c", "textEditor.cursorHome", "textEditor.cursorHome")).eq("|    abc");
+    expect(
+      exec("    ab|c", "textEditor.cursorHome", "textEditor.cursorHome"),
+    ).eq("|    abc");
   });
 
   it("cursorEnd goes to the end of the line", () => {
@@ -62,7 +66,13 @@ describe("home and end", () => {
 describe("moving by word", () => {
   it("cursorWordEndRight goes to the end of the word", () => {
     expect(exec("|foo bar", "textEditor.cursorWordEndRight")).eq("foo| bar");
-    expect(exec("|foo bar", "textEditor.cursorWordEndRight", "textEditor.cursorWordEndRight")).eq("foo bar|");
+    expect(
+      exec(
+        "|foo bar",
+        "textEditor.cursorWordEndRight",
+        "textEditor.cursorWordEndRight",
+      ),
+    ).eq("foo bar|");
   });
 
   it("cursorWordStartRight goes to the start of the next word", () => {
@@ -71,11 +81,23 @@ describe("moving by word", () => {
 
   it("cursorWordLeft goes to the start of the word", () => {
     expect(exec("foo bar|", "textEditor.cursorWordLeft")).eq("foo |bar");
-    expect(exec("foo bar|", "textEditor.cursorWordLeft", "textEditor.cursorWordLeft")).eq("|foo bar");
+    expect(
+      exec(
+        "foo bar|",
+        "textEditor.cursorWordLeft",
+        "textEditor.cursorWordLeft",
+      ),
+    ).eq("|foo bar");
   });
 
   it("punctuation is a word of its own", () => {
-    expect(exec("|foo.bar", "textEditor.cursorWordEndRight", "textEditor.cursorWordEndRight")).eq("foo.|bar");
+    expect(
+      exec(
+        "|foo.bar",
+        "textEditor.cursorWordEndRight",
+        "textEditor.cursorWordEndRight",
+      ),
+    ).eq("foo.|bar");
   });
 });
 
@@ -127,6 +149,8 @@ describe("deleting", () => {
   });
 
   it("deleteLeft right after typing ( removes the ) that came with it", () => {
-    expect(code("|").type("(").executeCommand("textEditor.deleteLeft").state()).eq("|");
+    expect(
+      code("|").type("(").executeCommand("textEditor.deleteLeft").state(),
+    ).eq("|");
   });
 });

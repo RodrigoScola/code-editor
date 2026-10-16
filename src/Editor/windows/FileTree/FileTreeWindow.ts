@@ -332,13 +332,15 @@ export class FileTreeWindow extends UIScreen {
     return null;
   }
 
-  moveCursorDown(): void {
+  moveCursorDown() {
     const total = this.count();
     this.cursor().line = Math.min(total - 1, this.cursor().line + 1);
+    return this.cursor()
   }
 
-  moveCursorUp(): void {
+  moveCursorUp(){
     this.cursor().line = Math.max(0, this.cursor().line - 1);
+    return this.cursor()
   }
   onEnter(ctx: EditorContext): void {
     const node = this.getNodeAtIndex(this.root, this.cursor().line);
@@ -411,8 +413,11 @@ export class FileTreeWindow extends UIScreen {
     }
     return this.select(hasFile, EditorContext.instance!);
   }
-  moveCursorLeft(): void {}
-  moveCursorRight(): void {}
+  moveCursorLeft() {
+  }
+  moveCursorRight(): void {
+
+  }
   onEvent(event: EditorEvents): void {
     super.onEvent(event);
     if (event.name === "workspaceChangeEvent") {

@@ -45,10 +45,9 @@ export class LayoutDimensions {
 
     if (component.width() === "fit-content") {
       const measured = component.measuredSize();
+      const constraints = LayoutEngine.CreateConstraints(measured.width, 1);
 
       if (component.hasChildren()) {
-        const constraints = LayoutEngine.CreateConstraints(measured.width, 1);
-
         constraints.maxWidth = Math.max(measured.width, availableWidth);
         constraints.minWidth = Math.min(measured.width, availableWidth);
 

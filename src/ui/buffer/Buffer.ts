@@ -1,7 +1,4 @@
-import { start } from "repl";
 import { assert } from "../../assert.js";
-import { EditorSelection } from "../../Editor/Selection.js";
-import { buffer } from "stream/consumers";
 
 export class TextBuffer implements BufferLike {
   private lines: string[] = [];

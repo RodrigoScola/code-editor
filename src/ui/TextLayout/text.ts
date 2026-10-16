@@ -118,15 +118,15 @@ export class TextLayout implements BufferLike {
     return removed;
   }
   insertAt(start: number, content: string) {
-const result =     this.buffer().insertAt(start, content);
+    const result = this.buffer().insertAt(start, content);
     this.changed();
-    return result
+    return result;
   }
-  index(ind: number): { line: number; character: number; } {
-    return this.buffer().index(ind)
+  index(ind: number): { line: number; character: number } {
+    return this.buffer().index(ind);
   }
   offsetOf(line: number, column: number): number {
-    return this.buffer().offsetOf(line, column)
+    return this.buffer().offsetOf(line, column);
   }
 
   count(): number {
@@ -433,5 +433,10 @@ const result =     this.buffer().insertAt(start, content);
       maxW = Math.max(maxW, line.width());
     }
     return maxW;
+  }
+  update(line: number, content: string) {
+    this.buffer().update(line, content);
+    this.changed();
+    return this;
   }
 }

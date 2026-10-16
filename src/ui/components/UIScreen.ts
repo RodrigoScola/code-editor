@@ -36,16 +36,16 @@ export class UIScreen extends UiComponent {
   }
 
   moveCursorDown() {
-    return this.cursor().moveDown();
+    this.cursor().moveDown();
   }
   moveCursorUp() {
-    return this.cursor().moveUp();
+    this.cursor().moveUp();
   }
   moveCursorLeft() {
-    return this.cursor().moveLeft();
+    this.cursor().moveLeft();
   }
   moveCursorRight() {
-    return this.cursor().moveRight();
+    this.cursor().moveRight();
   }
   startSelection() {
     return this.cursor().startSelection();
@@ -187,5 +187,33 @@ export class UIScreen extends UiComponent {
     this.cursor().moveTo(after.line, after.character);
 
     return removed;
+  }
+  deleteLeft() {
+    const cursor = this.cursor();
+    const buffer = cursor.buffer() || this.buffer();
+
+    const line = buffer.at(cursor.line);
+    if (!line) {
+      return;
+    }
+
+    const cursorIndex = buffer.offsetOf(cursor.line, cursor.column);
+
+    if (this.hasSelection()) {
+      this.deleteSelection();
+      return;
+    }
+    buffer.removeRange(Math.max(cursorIndex - 1, 0), cursorIndex);
+    cursor.moveLeft();
+
+    if (cursor.column > 0) {
+      return;
+    }
+
+    const previousLine = buffer.at(cursor.line - 1);
+    if (!previousLine) return;
+    cursor.moveUp().goToLineEnd();
+    buffer.update(cursor.line, previousLine.concat(line));
+    buffer.removeRange(cursorIndex, cursorIndex + line.length);
   }
 }

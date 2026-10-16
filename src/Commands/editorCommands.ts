@@ -7,6 +7,7 @@ import {
 } from "../utils.js";
 import { log } from "../log.js";
 import { assert } from "../assert.js";
+import { start } from "repl";
 
 export const textEditorCommands = {
   textEditor: {
@@ -65,6 +66,12 @@ export const textEditorCommands = {
       title: "Text Editor: Delete Line",
       description: "Deletes the line the cursor is on (dd).",
       run: deleteLine,
+    },
+    deleteLeft: {
+      id: "textEditor.deleteLeft",
+      title: "Text Editor: Delete left of  cursor",
+      description: "deletes to the left",
+      run: deleteLeft,
     },
     insertAfter: {
       id: "textEditor.insertAfter",
@@ -183,6 +190,12 @@ function newLineEditorCommand(ctx: EditorContext) {
 }
 function setCommandMode(ctx: EditorContext) {
   ctx.setMode("command");
+}
+function deleteLeft(ctx: EditorContext) {
+  const editor = ctx.getFocusedComponent();
+  isTextComponent(editor);
+
+  editor.deleteLeft();
 }
 
 function deleteLine(ctx: EditorContext) {

@@ -69,6 +69,7 @@ interface EditorFile {
 interface BufferLike {
   at(line: number): string | undefined;
   count(): number;
+  update(line:number, content:string)
   content(): string;
   removeRange(start: number, end: number): string;
   insertAt(start: number, content: string): number;

@@ -29,13 +29,12 @@ export class Cursor {
     return Boolean(this.selection);
   }
 
-
   setBuffer(buffer: BufferLike) {
     this._buffer = buffer;
     return this;
   }
   buffer() {
-    return this._buffer
+    return this._buffer;
   }
   view() {
     return this._view;
@@ -168,7 +167,7 @@ export class Cursor {
   moveDown() {
     const buffer = this._buffer;
     if (!buffer) {
-      return;
+      return this;
     }
 
     this.line = Math.max(Math.min(this.line + 1, buffer.count() - 1), 0);
@@ -187,6 +186,7 @@ export class Cursor {
     if (this.selection) {
       this.updateSelection();
     }
+    return this;
   }
 
   moveTo(line: number, column: number) {
@@ -206,7 +206,7 @@ export class Cursor {
   moveUp() {
     const buffer = this._buffer;
     if (!buffer) {
-      return;
+      return this;
     }
 
     this.line = Math.max(this.line - 1, 0);
@@ -223,9 +223,11 @@ export class Cursor {
     this.column = Math.min(this.prefferedColumn, nextLinePos);
 
     if (this.selection) this.updateSelection();
+    return this;
   }
   moveLeft() {
     this.column = Math.max(this.column - 1, 0);
+    return this;
   }
   moveRight() {
     const buffer = this._buffer;
@@ -248,6 +250,7 @@ export class Cursor {
     this.prefferedColumn = this.column;
 
     if (this.selection) this.updateSelection();
+    return this;
   }
   reset() {
     this.line = 0;
@@ -266,6 +269,7 @@ export class Cursor {
 
     this.column = 0;
     this.prefferedColumn = 0;
+    return this;
   }
 
   goToLineEnd() {
@@ -278,5 +282,6 @@ export class Cursor {
     assert(currentLine !== undefined, `invalid current line: ${this.line}`);
 
     this.prefferedColumn = this.column = Math.max(currentLine.length - 1, 0);
+    return this;
   }
 }
