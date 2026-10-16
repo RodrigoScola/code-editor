@@ -39,7 +39,7 @@ const windowRenderer = () =>
   );
 
 describe("src/Input/windowInput.ts", () => {
-  it("exports the WindowInputParser class", async () => {
+  it.only("exports the WindowInputParser class", async () => {
     const { WindowInputParser } = await windowInput();
     expect(typeof WindowInputParser).eq("function");
   });

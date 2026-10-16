@@ -1,7 +1,7 @@
 import { text } from "stream/consumers";
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import colors from "../../ui/colors.js";
-import { DisplayComponent } from "../../ui/components/displayComponent.js";
+import { DisplayComponent } from "../../ui/display/displayComponent.js";
 import { ViewPort } from "../../ui/windows/viewport.js";
 import { Cursor } from "../Cursor.js";
 import { Textdocument } from "../Documents/TextDocument.js";
@@ -92,7 +92,6 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
       .setScrollBar(true)
       .styles()
       .setBackgroundColor(colors.BRIGHT_RED_BACKGROUND);
-
 
     return editor;
   }

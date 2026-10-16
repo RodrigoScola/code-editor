@@ -3,8 +3,8 @@ import { Canvas } from "../../../../src/ui/canvas.js";
 import colors from "../../../../src/ui/colors.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { Renderer } from "../../../../src/ui/renderer.js";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { ComponentBorder } from "../../../../src/ui/display/border.js";
 import { EditorRoot } from "../../../../src/Editor/Editor/EditorRoot.js";
 

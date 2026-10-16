@@ -1,4 +1,4 @@
-import { DisplayComponent } from "../../ui/components/displayComponent.js";
+import { DisplayComponent } from "../../ui/display/displayComponent.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
 import { UiComponent } from "../../ui/components/UiComponent.js";
 import { LayoutBounds } from "../../ui/layout/LayoutBounds.js";

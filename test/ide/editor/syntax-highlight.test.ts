@@ -132,7 +132,10 @@ describe("in the editor", () => {
     const ide = vim("const x = 1;", { path: "a.txt", width: 40, height: 10 });
     ide.screen();
     const { x, y } = ide.textArea();
-    const canvas = ide.canvas();
+
+    TerminalRenderer.isTerminalRenderer(ide.renderer);
+
+    const canvas = ide.renderer.canvas();
 
     expect(canvas.getCell(x, y)!.styles.color()).eq(
       canvas.getCell(x + 6, y)!.styles.color(),

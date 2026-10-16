@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { Canvas } from "../../../../src/ui/canvas.js";
-import { Renderer } from "../../../../src/ui/renderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
 import { UIScreen } from "../../../../src/ui/components/UiComponent.js";
 import { EditorContext } from "../../../../src/Editor/Editor/Editor.js";
 import { TextBuffer } from '../../../../src/ui/buffer/Buffer.js';

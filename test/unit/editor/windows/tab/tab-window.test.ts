@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { TabWindow } from "../../../../../src/Editor/windows/Tab/TabWindow.js";
 import { Canvas } from "../../../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
-import { Renderer } from "../../../../../src/ui/renderer.js";
+import { TerminalRenderer as Renderer } from "../../../../../src/ui/TerminalRenderer.js";
 import colors from "../../../../../src/ui/colors.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
 import {
@@ -10,7 +10,7 @@ import {
   Textdocument,
 } from "../../../../../src/Editor/Documents/TextDocument.js";
 import { CodeEditorWindow } from "../../../../../src/Editor/windows/CodeEditorWindow.js";
-import { DisplayComponent } from "../../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../../src/ui/display/displayComponent.js";
 
 const createEditor = (content: string) => {
   return new CodeEditorWindow(

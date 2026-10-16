@@ -1,5 +1,5 @@
 import { compose } from "stream";
-import { DisplayComponent, parseSize } from "../components/displayComponent.js";
+import { DisplayComponent, parseSize } from "../display/displayComponent.js";
 import { LayoutDimensions } from "./LayoutDimensions.js";
 import { LayoutBounds } from "./LayoutBounds.js";
 

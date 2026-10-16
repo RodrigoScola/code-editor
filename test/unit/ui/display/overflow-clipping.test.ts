@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import colors from "../../../../src/ui/colors.js";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { cell, layoutAndPaint, rowText, screen } from "../../../helpers/ui.js";
 
 // Proposed API: component.setOverflow("visible" | "hidden" | "scroll")

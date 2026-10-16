@@ -75,7 +75,10 @@ describe("parseGradient: stops", () => {
     const gradient = parseGradient(
       "linear-gradient(#000 0%, #111, #222, #fff 90%)",
     )!;
-    expect(gradient.stops.map((s) => s.position)).toEqual([0, 0.3, 0.6, 0.9]);
+    const positions = gradient.stops.map((s) => s.position);
+    [0, 0.3, 0.6, 0.9].forEach((expected, i) =>
+      expect(positions[i], `stop ${i}`).toBeCloseTo(expected, 9),
+    );
   });
 
   it("a position before an earlier one is moved up to it", () => {

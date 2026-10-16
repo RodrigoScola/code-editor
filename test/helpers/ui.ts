@@ -1,7 +1,7 @@
 import { Canvas } from "../../src/ui/canvas.js";
-import { DisplayComponent } from "../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../src/ui/display/displayComponent.js";
 import { DisplayLike, LayoutEngine } from "../../src/ui/layout/layout.js";
-import { Renderer } from "../../src/ui/renderer.js";
+import { TerminalRenderer as Renderer } from "../../src/ui/TerminalRenderer.js";
 
 // a root that fills a canvas of the given size, ready to take children
 export function screen(width: number, height: number = width) {
@@ -29,7 +29,7 @@ export function layoutAndPaint(root: DisplayLike, canvas: Canvas) {
 //   layoutAndPaint(root, canvas);
 //   show(canvas, "after scrolling");
 export function show(canvas: Canvas, label = "screen") {
-  const rows = Renderer.Create(canvas).fullFrame().split("\r\n");
+  const rows = Renderer.Create(canvas).frame().split("\r\n");
   const border = "─".repeat(canvas.width());
 
   // straight to stdout: vitest's reporters can swallow console.log from

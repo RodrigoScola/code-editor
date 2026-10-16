@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 
 // Level 1: the pieces exist. The checklist for the whole folder: new
 // modules for the math (pure functions, no components), and new style

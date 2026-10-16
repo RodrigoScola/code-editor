@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { layoutAndPaint, screen, screenText } from "../../../helpers/ui.js";
 
 // A component's text height depends on the width it gets: 20 characters in

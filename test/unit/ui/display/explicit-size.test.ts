@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { layoutAndPaint, rowText, screen } from "../../../helpers/ui.js";
 
 // An explicit width/height is not shrunk to the space the parent offers, like

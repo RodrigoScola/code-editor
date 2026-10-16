@@ -1,6 +1,6 @@
 import { TextBuffer } from "../buffer/Buffer.js";
 import { Canvas } from "../canvas.js";
-import { DisplayComponent } from "./displayComponent.js";
+import { DisplayComponent } from "../display/displayComponent.js";
 import { EditorContext } from "../../Editor/Editor/Editor.js";
 import { assert } from "../../assert.js";
 import { Focusable } from "../windows/FocusManager.js";
@@ -188,7 +188,6 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
 }
 
 export class UiPanel extends UiComponent {}
-
 
 export class EditorView extends DisplayComponent {
   private editor: UiComponent;

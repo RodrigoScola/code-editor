@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { LayoutEngine } from "../../../../src/ui/layout/layout";
 import { Canvas } from "../../../../src/ui/canvas";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import colors from "../../../../src/ui/colors";
-import { Renderer } from "../../../../src/ui/renderer";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
 import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle";
 
 const createRoot = (layout: LayoutBounds) => {

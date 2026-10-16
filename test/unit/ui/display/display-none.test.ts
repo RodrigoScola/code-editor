@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import colors from "../../../../src/ui/colors.js";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { cell, layoutAndPaint, screen } from "../../../helpers/ui.js";
 
 // setDisplay("none") is stored today but nothing reads it. A component with

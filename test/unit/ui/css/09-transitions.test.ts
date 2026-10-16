@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { backgrounds, box, paint, screen } from "./helpers.js";
 
 // Level 9: time. CSS transitions: when a property changes, the painted value

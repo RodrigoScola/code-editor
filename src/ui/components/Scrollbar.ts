@@ -1,4 +1,3 @@
-import colors from "../colors.js";
 import { ComponentStyle } from "../ComponentStyles.js";
 
 const THUMB = "#";

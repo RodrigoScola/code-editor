@@ -1,5 +1,5 @@
 import { Canvas } from "../../../../src/ui/canvas.js";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { DisplayLike, LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { TerminalRenderer } from "../../../../src/ui/TerminalRenderer.js";
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Canvas } from "../../../../../src/ui/canvas.js";
 import colors from "../../../../../src/ui/colors.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
-import { Renderer } from "../../../../../src/ui/renderer.js";
+import { TerminalRenderer as Renderer } from "../../../../../src/ui/TerminalRenderer.js";
 import {
   Textdocument,
   MemoryFile,

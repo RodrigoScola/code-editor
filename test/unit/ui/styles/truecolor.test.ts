@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import colors from "../../../../src/ui/colors.js";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
-import { Renderer } from "../../../../src/ui/renderer.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
 import { layoutAndPaint, screen } from "../../../helpers/ui.js";
 
 // Colors can be given as hex ("#rrggbb" or "#rgb", any case) and come out as

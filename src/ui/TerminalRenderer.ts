@@ -3,7 +3,7 @@ import { assert } from "../assert.js";
 import { POSITION_ORDER } from "../constants.js";
 import { Canvas } from "./canvas.js";
 import colors from "./colors.js";
-import { DisplayComponent } from "./components/displayComponent.js";
+import { DisplayComponent } from "./display/displayComponent.js";
 import { ComponentStyle } from "./ComponentStyles.js";
 import { TextLayout } from "./TextLayout/text.js";
 import { ViewPort } from "./windows/viewport.js";
@@ -34,6 +34,7 @@ export interface Renderer {
   frame(): string;
   isTerminalRenderer(): boolean;
   isWindowRenderer(): boolean;
+  invalidate(): void;
 }
 
 export class TerminalRenderer implements Renderer {

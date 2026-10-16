@@ -1,10 +1,10 @@
 import colors from "../../../../src/ui/colors.js";
 import { describe, it, expect } from "vitest";
 import { Canvas } from "../../../../src/ui/canvas.js";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { assert } from "../../../../src/assert.js";
-import { Renderer } from "../../../../src/ui/renderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutDimensions } from "../../../../src/ui/layout/LayoutDimensions.js";
 import { UIScreen } from "../../../../src/ui/components/UIScreen.js";

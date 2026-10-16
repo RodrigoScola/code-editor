@@ -3,7 +3,7 @@ import { assert } from "../../../assert.js";
 import { Canvas } from "../../../ui/canvas.js";
 import colors from "../../../ui/colors.js";
 import { ComponentBorder } from "../../../ui/display/border.js";
-import { DisplayComponent } from "../../../ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../ui/display/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
 import { UiComponent } from "../../../ui/components/UiComponent.js";
 import { WindowManager } from "../WindowManager/WindowManager.js";

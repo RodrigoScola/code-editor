@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { Renderer } from "../../../../src/ui/renderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
 import {
   cell,
   layoutAndPaint,

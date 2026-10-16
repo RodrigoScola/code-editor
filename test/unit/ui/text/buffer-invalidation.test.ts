@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { TextBuffer } from "../../../../src/ui/buffer/Buffer.js";
 

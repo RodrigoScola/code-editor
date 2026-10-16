@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { layoutAndPaint, screen } from "../../../helpers/ui.js";
 
 // scrollHeight() / scrollWidth() of a container: the size of everything it

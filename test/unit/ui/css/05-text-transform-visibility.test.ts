@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { backgrounds, box, chars, paint, screen } from "./helpers.js";
 
 // Level 5: two properties that change what's painted without new math.

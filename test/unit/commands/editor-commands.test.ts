@@ -4,7 +4,7 @@ import {
   Textdocument,
   MemoryFile,
 } from "../../../src/Editor/Documents/TextDocument.js";
-import { DisplayComponent } from "../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../src/ui/display/displayComponent.js";
 import { WINDOW_NAMES } from "../../../src/constants.js";
 import { textEditorCommands } from "../../../src/Commands/editorCommands.js";
 import { EditorRoot } from "../../../src/Editor/Editor/EditorRoot.js";

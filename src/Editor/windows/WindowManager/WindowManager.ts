@@ -1,9 +1,9 @@
 import { assert } from "../../../assert.js";
-import { DisplayComponent } from "../../../ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../ui/display/displayComponent.js";
 import { EditorRoot } from "../../Editor/EditorRoot.js";
 import { UiComponent } from "../../../ui/components/UiComponent.js";
 import { FocusManager } from "../../../ui/windows/FocusManager.js";
-import { LayoutBounds } from '../../../ui/layout/LayoutBounds.js';
+import { LayoutBounds } from "../../../ui/layout/LayoutBounds.js";
 
 export class WindowManager {
   private windows = new Map<number, UiComponent>();
@@ -54,7 +54,7 @@ export class WindowManager {
       this.deactivate(this.active);
     }
     this.active = window;
-      
+
     this.focusManager?.focus(window.defaultFocus());
 
     return this.active;

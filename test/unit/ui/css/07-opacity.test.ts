@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { backgrounds, box, chars, paint, screen } from "./helpers.js";
 
 // Level 7: see-through colors and opacity. A terminal cell has one color, so

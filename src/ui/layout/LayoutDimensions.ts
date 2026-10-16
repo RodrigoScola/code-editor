@@ -1,5 +1,5 @@
 import { Configuration } from "../../config.js";
-import { DisplayComponent, parseSize } from "../components/displayComponent.js";
+import { DisplayComponent, parseSize } from "../display/displayComponent.js";
 import { LayoutEngine } from "./layout.js";
 import { LayoutBounds } from "./LayoutBounds.js";
 

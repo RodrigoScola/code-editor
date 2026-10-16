@@ -4,7 +4,7 @@ import type { EditorCommand } from "../Commands/Commands.js";
 import { WINDOW_NAMES } from "../constants.js";
 import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
-import { DisplayComponent } from "../ui/components/displayComponent.js";
+import { DisplayComponent } from "../ui/display/displayComponent.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { Textdocument, DiskFile } from "./Documents/TextDocument.js";
 import { EditorContext } from "./Editor/Editor.js";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ICONS } from "../../../../src/constants.js";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { backgrounds, box, chars, paint, screen } from "./helpers.js";
 
 // Level 8: drawing outside the box without taking space.

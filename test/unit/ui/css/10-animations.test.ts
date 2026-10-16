@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Animation } from "../../../../src/ui/animation/Animation.js";
-import { DisplayComponent } from "../../../../src/ui/components/displayComponent.js";
+import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { backgrounds, box, paint, screen } from "./helpers.js";
 
 // Level 10: keyframe animations, like the browser's element.animate():

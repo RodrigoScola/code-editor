@@ -126,9 +126,9 @@ describe("insert mode", () => {
   });
 
   it("<BS> deletes the character before the cursor", () => {
-    expect(
-      press(vim("ab|"), ...typing("i"), BACKSPACE, ESC).lines(),
-    ).toEqual(["a"]);
+    expect(press(vim("ab|"), ...typing("i"), BACKSPACE, ESC).lines()).toEqual([
+      "a",
+    ]);
   });
 
   it("holding <BS> keeps deleting", () => {
@@ -159,9 +159,7 @@ describe("insert mode", () => {
   });
 
   it("normal-mode keys typed in insert mode are text", () => {
-    expect(press(vim("|"), ...typing("ijjdd"), ESC).lines()).toEqual([
-      "jjdd",
-    ]);
+    expect(press(vim("|"), ...typing("ijjdd"), ESC).lines()).toEqual(["jjdd"]);
   });
 });
 

@@ -6,7 +6,7 @@ import {
 
 import { Canvas } from "../../../../../src/ui/canvas.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
-import { Renderer } from "../../../../../src/ui/renderer.js";
+import { TerminalRenderer as Renderer } from "../../../../../src/ui/TerminalRenderer.js";
 import colors from "../../../../../src/ui/colors.js";
 import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
