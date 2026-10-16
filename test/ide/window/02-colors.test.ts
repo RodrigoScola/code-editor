@@ -7,13 +7,15 @@ import {
   DEFAULT_FOREGROUND,
 } from "../../../src/ui/Renderers/ansiColors.js";
 
-// Level 2: turning the editor's colors into pixels' colors. Styles hold ANSI
-// codes ("\x1b[44m", src/ui/colors.ts) because the terminal understands
-// them; a window needs a real color. ansiToCss(code) reads one SGR color code
-// and returns "#rrggbb" (lower case), or null for "the default color".
+// Level 2: turning a style's color into a pixel's color. Styles hold CSS
+// colors (the named ones in src/ui/colors.ts are "#rrggbb", see
+// test/unit/ui/styles/terminal-color.test.ts), which the window can use as
+// they are. Escape codes ("\x1b[44m") can still turn up, so ansiToCss(color)
+// reads those too. It returns "#rrggbb" (lower case), or null for "the
+// default color": "transparent", "initial", ESC[39m and ESC[49m.
 //
 // One function, no window, no editor. The palette is VS Code's dark
-// terminal theme.
+// terminal theme, the same one colors.ts uses.
 
 describe("the defaults", () => {
   it('the default background is "#1e1e1e"', () => {
@@ -25,11 +27,38 @@ describe("the defaults", () => {
   });
 
   it("39 (default foreground) is null", () => {
-    expect(ansiToCss(colors.FOREGROUND_OFF)).toBeNull();
+    expect(ansiToCss("\x1b[39m")).toBeNull();
   });
 
   it("49 (default background) is null", () => {
+    expect(ansiToCss("\x1b[49m")).toBeNull();
+  });
+
+  it('FOREGROUND_OFF ("initial") is null', () => {
+    expect(ansiToCss(colors.FOREGROUND_OFF)).toBeNull();
+  });
+
+  it('BACKGROUND_OFF ("transparent") is null', () => {
     expect(ansiToCss(colors.BACKGROUND_OFF)).toBeNull();
+  });
+});
+
+describe("CSS colors are used as they are", () => {
+  it("#rrggbb", () => {
+    expect(ansiToCss("#2472c8")).eq("#2472c8");
+  });
+
+  it("upper case comes back lower case", () => {
+    expect(ansiToCss("#2472C8")).eq("#2472c8");
+  });
+
+  it("#rgb comes back long", () => {
+    expect(ansiToCss("#f80")).eq("#ff8800");
+  });
+
+  it("a named color", () => {
+    expect(ansiToCss(colors.BLUE_BACKGROUND)).eq("#2472c8");
+    expect(ansiToCss(colors.ORANGE_FOREGROUND)).eq("#ff8700");
   });
 });
 
@@ -47,27 +76,21 @@ describe("the 16 basic colors", () => {
     expect(BASIC_COLORS).toEqual(PALETTE);
   });
 
-  const NAMES = ["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"];
+  const NAMES = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
 
-  it.each(NAMES.map((name, i) => [name, name, i]))(
-    "%s_FOREGROUND (3x) and %s_BACKGROUND (4x)",
-    (name, _same, i) => {
-      const table = colors as Record<string, string>;
-      expect(ansiToCss(table[`${name}_FOREGROUND`])).eq(PALETTE[i as number]);
-      expect(ansiToCss(table[`${name}_BACKGROUND`])).eq(PALETTE[i as number]);
+  it.each(NAMES.map((name, i) => [name, 30 + i, 40 + i, i]))(
+    "%s: ESC[%im and ESC[%im",
+    (_name, fg, bg, i) => {
+      expect(ansiToCss(`\x1b[${fg}m`)).eq(PALETTE[i as number]);
+      expect(ansiToCss(`\x1b[${bg}m`)).eq(PALETTE[i as number]);
     },
   );
 
-  it.each(NAMES.map((name, i) => [name, name, i]))(
-    "BRIGHT_%s_FOREGROUND (9x) and BRIGHT_%s_BACKGROUND (10x)",
-    (name, _same, i) => {
-      const table = colors as Record<string, string>;
-      expect(ansiToCss(table[`BRIGHT_${name}_FOREGROUND`])).eq(
-        PALETTE[(i as number) + 8],
-      );
-      expect(ansiToCss(table[`BRIGHT_${name}_BACKGROUND`])).eq(
-        PALETTE[(i as number) + 8],
-      );
+  it.each(NAMES.map((name, i) => [name, 90 + i, 100 + i, i]))(
+    "bright %s: ESC[%im and ESC[%im",
+    (_name, fg, bg, i) => {
+      expect(ansiToCss(`\x1b[${fg}m`)).eq(PALETTE[(i as number) + 8]);
+      expect(ansiToCss(`\x1b[${bg}m`)).eq(PALETTE[(i as number) + 8]);
     },
   );
 });
@@ -100,20 +123,20 @@ describe("the 256-color palette (38;5;n and 48;5;n)", () => {
     expect(ansiToCss(`\x1b[38;5;${n}m`)).eq(expected);
   });
 
+  // the 256-color codes colors.ts used to have, before it held CSS colors
   it.each([
-    ["ORANGE", "#ff8700"],
-    ["PINK", "#ff5faf"],
-    ["PURPLE", "#af87ff"],
-    ["LIME", "#87ff00"],
-    ["TEAL", "#5fd7d7"],
-    ["SKY_BLUE", "#87d7ff"],
-    ["GOLD", "#ffd700"],
-    ["GRAY", "#8a8a8a"],
-    ["DARK_GRAY", "#585858"],
-  ])("colors.%s_FOREGROUND / _BACKGROUND is %s", (name, expected) => {
-    const table = colors as Record<string, string>;
-    expect(ansiToCss(table[`${name}_FOREGROUND`])).eq(expected);
-    expect(ansiToCss(table[`${name}_BACKGROUND`])).eq(expected);
+    ["orange", 208, "#ff8700"],
+    ["pink", 205, "#ff5faf"],
+    ["purple", 141, "#af87ff"],
+    ["lime", 118, "#87ff00"],
+    ["teal", 80, "#5fd7d7"],
+    ["sky blue", 117, "#87d7ff"],
+    ["gold", 220, "#ffd700"],
+    ["gray", 245, "#8a8a8a"],
+    ["dark gray", 240, "#585858"],
+  ])("%s (%i) is %s", (_name, n, expected) => {
+    expect(ansiToCss(`\x1b[38;5;${n}m`)).eq(expected);
+    expect(ansiToCss(`\x1b[48;5;${n}m`)).eq(expected);
   });
 
   it("a number past 255 is null", () => {

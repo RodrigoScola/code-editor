@@ -110,6 +110,9 @@ export class ComponentStyle {
     return this.bg;
   }
   public setBackgroundColor(newColor: string) {
+
+
+
     this.bg = newColor;
     return this;
   }

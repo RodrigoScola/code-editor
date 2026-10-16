@@ -69,7 +69,8 @@ describe("diff rendering", () => {
     box.setBackgroundColor(colors.RED_BACKGROUND);
     const second = frame();
 
-    expect(second).toContain(colors.RED_BACKGROUND);
+    // RED_BACKGROUND is "#cd3131", sent as a 24-bit color
+    expect(second).toContain("\x1b[48;2;205;49;49m");
     expect(second).toContain("\x1b[2;1H");
     expect(stripAnsi(second)).not.toContain("hello");
   });

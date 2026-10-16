@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseArgs, parseVscodeUrl } from "../../../src/Cli/args.js";
+import { parseArgs, parseVscodeUrl } from "../../../src/tools/Cli/args.js";
 
 // The `code` command line (VS Code docs, "Command Line Interface"), local
 // options only. Proposed src/Cli/args.ts:

@@ -65,13 +65,14 @@ describe("hex colors", () => {
   });
 });
 
-describe("ANSI constants", () => {
-  it("still render as before", () => {
+// the named colors in colors.ts are CSS colors too (terminal-color.test.ts)
+describe("named colors", () => {
+  it("render as 24-bit colors", () => {
     const frame = render((c) =>
       c.setBackgroundColor(colors.BLUE_BACKGROUND).setColor(colors.RED_FOREGROUND),
     );
 
-    expect(frame).toContain(colors.BLUE_BACKGROUND);
-    expect(frame).toContain(colors.RED_FOREGROUND);
+    expect(frame).toContain("\x1b[48;2;36;114;200m");
+    expect(frame).toContain("\x1b[38;2;205;49;49m");
   });
 });

@@ -4,7 +4,8 @@ import {
   formatColor,
   mixColors,
   parseColor,
-} from "../../../../src/ui/styles/color.js";
+} from "../../../../src/ui/colors.js";
+import { ColorOptions } from "../../../../src/ui/colors/colorOptions.js";
 
 // Level 2: color math. Everything after this needs it: gradients mix
 // colors, opacity and shadows blend them. Pure functions, no components.
@@ -21,23 +22,30 @@ import {
 
 const rgba = (r: number, g: number, b: number, a = 1) => ({ r, g, b, a });
 
-describe("parseColor: hex", () => {
+const p = (color: ColorOptions | null) => ({
+  r: color?.red,
+  g: color?.green,
+  b: color?.blue,
+  a: color?.alpha,
+});
+
+describe.only("parseColor: hex", () => {
   it("#rrggbb", () => {
-    expect(parseColor("#ff8800")).toEqual(rgba(255, 136, 0));
+    expect(p(parseColor("#ff8800"))).toEqual(rgba(255, 136, 0));
   });
 
   it("#rgb doubles each digit", () => {
-    expect(parseColor("#f80")).toEqual(rgba(255, 136, 0));
+    expect(p(parseColor("#f80"))).toEqual(rgba(255, 136, 0));
   });
 
   it("upper case", () => {
-    expect(parseColor("#FF8800")).toEqual(rgba(255, 136, 0));
+    expect(p(parseColor("#FF8800"))).toEqual(rgba(255, 136, 0));
   });
 
   it("#rrggbbaa has alpha", () => {
     const color = parseColor("#ff880080")!;
 
-    expect(color).toMatchObject({ r: 255, g: 136, b: 0 });
+    expect(p(color)).toMatchObject({ r: 255, g: 136, b: 0 });
     expect(color.a).toBeCloseTo(128 / 255, 5);
   });
 
@@ -59,7 +67,9 @@ describe("parseColor: rgb() and rgba()", () => {
   });
 
   it("rgba(r, g, b, a)", () => {
-    expect(parseColor("rgba(255, 136, 0, 0.5)")).toEqual(rgba(255, 136, 0, 0.5));
+    expect(parseColor("rgba(255, 136, 0, 0.5)")).toEqual(
+      rgba(255, 136, 0, 0.5),
+    );
   });
 
   it("rgb(r g b / a%)", () => {

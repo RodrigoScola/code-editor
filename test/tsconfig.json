@@ -10,7 +10,13 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "rootDir": "..",
-    "noEmit": true
+    "noEmit": true,
+    // the specs run through vitest, which resolves imports like a bundler:
+    // "../src/ui/colors" and "../src/ui/colors.js" both work. src/ keeps
+    // NodeNext (the root tsconfig) because dist/ runs in plain node, where
+    // the .js is required
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
   },
   "include": ["../src", "."]
 }

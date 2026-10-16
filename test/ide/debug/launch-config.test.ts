@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dropdownEntries, parseLaunchConfig } from "../../../src/Debug/launchConfig.js";
+import { dropdownEntries, parseLaunchConfig } from "../../../src/tools/Debug/launchConfig.js";
 
 // launch.json. Proposed src/Debug/launchConfig.ts:
 //   parseLaunchConfig(jsonc, { platform, userLaunch? }) -> { configurations,

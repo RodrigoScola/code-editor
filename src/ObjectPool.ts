@@ -9,6 +9,7 @@ export class ObjectPool<T> {
 
   retrieve(obj: T) {
     this.pool.push(obj);
+    return this;
   }
   get(): T {
     if (this.pool.length == 0) {

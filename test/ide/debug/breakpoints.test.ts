@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { BreakpointStore } from "../../../src/Debug/breakpoints.js";
-import { formatLogMessage, shouldBreakOnHit } from "../../../src/Debug/breakpointConditions.js";
+import { BreakpointStore } from "../../../src/tools/Debug/breakpoints.js";
+import {
+  formatLogMessage,
+  shouldBreakOnHit,
+} from "../../../src/tools/Debug/breakpointConditions.js";
 
 // Breakpoint kinds beyond the basics in test/ide/tools/breakpoints.test.ts.
 // More on BreakpointStore (src/Debug/breakpoints.ts):
@@ -25,15 +28,23 @@ import { formatLogMessage, shouldBreakOnHit } from "../../../src/Debug/breakpoin
 
 describe("logpoints", () => {
   it("interpolates expressions in braces", async () => {
-    const values: Record<string, string> = { "user.id": "42", "items.length": "3" };
+    const values: Record<string, string> = {
+      "user.id": "42",
+      "items.length": "3",
+    };
 
     await expect(
-      formatLogMessage("User {user.id} has {items.length} items", async (e: string) => values[e]),
+      formatLogMessage(
+        "User {user.id} has {items.length} items",
+        async (e: string) => values[e],
+      ),
     ).resolves.eq("User 42 has 3 items");
   });
 
   it("keeps escaped braces", async () => {
-    await expect(formatLogMessage("set \\{a\\} = {a}", async () => "1")).resolves.eq("set {a} = 1");
+    await expect(
+      formatLogMessage("set \\{a\\} = {a}", async () => "1"),
+    ).resolves.eq("set {a} = 1");
   });
 
   it("a logpoint is sent as a log message", () => {
@@ -126,7 +137,9 @@ describe("function and exception breakpoints", () => {
     const store = new BreakpointStore();
     store.addFunctionBreakpoint("main", { condition: "argc > 1" });
 
-    expect(store.functionBreakpoints()).toEqual([{ name: "main", condition: "argc > 1" }]);
+    expect(store.functionBreakpoints()).toEqual([
+      { name: "main", condition: "argc > 1" },
+    ]);
   });
 
   it("exception filters start as the adapter says", () => {
@@ -156,7 +169,11 @@ describe("what the adapter says back", () => {
 
     expect(store.list("a.ts")).toEqual([
       expect.objectContaining({ line: 6, verified: true }),
-      expect.objectContaining({ line: 20, verified: false, message: "No code here" }),
+      expect.objectContaining({
+        line: 20,
+        verified: false,
+        message: "No code here",
+      }),
     ]);
   });
 });

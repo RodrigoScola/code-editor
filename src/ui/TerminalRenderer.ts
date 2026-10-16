@@ -10,6 +10,7 @@ import { ViewPort } from "./windows/viewport.js";
 import { DisplayLike } from "./layout/layout.js";
 import { LayoutBounds } from "./layout/LayoutBounds.js";
 import { StatusWindow } from "../Editor/windows/StatusEditor.js";
+import { totalmem } from "os";
 
 // where a finished frame goes: the terminal in the app, console.log in tests
 export type RenderOutput = (frame: string) => void;
@@ -454,15 +455,20 @@ export class TerminalRenderer implements Renderer {
       "cannot display more things on one cell",
     );
     let text = "";
+    const background = tile.backgroundColor();
+    const color = tile.color();
 
-    if (this.style.backgroundColor() !== tile.backgroundColor()) {
-      this.style.setBackgroundColor(tile.backgroundColor());
-      text += tile.backgroundColor();
+    if (this.style.backgroundColor() !== background) {
+      this.style.setBackgroundColor(background);
+      const color = colors.toTerminal(background, true);
+      text += color;
     }
 
-    if (this.style.color() !== tile.color()) {
-      this.style.setColor(tile.color());
-      text += tile.color();
+    if (this.style.color() !== color) {
+      this.style.setColor(color);
+
+      let fontColor = colors.toTerminal(color, false);
+      text += fontColor;
     }
 
     // bold and dim share their "off" code (22), so turning one off turns
