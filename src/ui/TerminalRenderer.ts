@@ -9,6 +9,7 @@ import { TextLayout } from "./TextLayout/text.js";
 import { ViewPort } from "./windows/viewport.js";
 import { DisplayLike } from "./layout/layout.js";
 import { LayoutBounds } from "./layout/LayoutBounds.js";
+import { StatusWindow } from "../Editor/windows/StatusEditor.js";
 
 // where a finished frame goes: the terminal in the app, console.log in tests
 export type RenderOutput = (frame: string) => void;
@@ -25,7 +26,17 @@ type SentCell = {
 const RESET = "\x1b[0m";
 const HOME = "\x1b[H";
 
-export class Renderer {
+export interface Renderer {
+  build(dp: DisplayLike): Renderer;
+  render(): void;
+  setLayout(layout: LayoutBounds): Renderer;
+  layout(): LayoutBounds;
+  frame(): string;
+  isTerminalRenderer(): boolean;
+  isWindowRenderer(): boolean;
+}
+
+export class TerminalRenderer implements Renderer {
   private _canvas: Canvas = new Canvas();
   private _output: RenderOutput = (frame) => console.log(frame);
 
@@ -57,7 +68,7 @@ export class Renderer {
   }
 
   static Create(canvas: Canvas) {
-    return new Renderer(canvas);
+    return new TerminalRenderer(canvas);
   }
   build(root: DisplayLike) {
     this._canvas.clear();
@@ -337,7 +348,7 @@ export class Renderer {
   // is sent: the frame is "". Every frame leaves the terminal's style reset
   render(): string {
     const frame = this.needsFullFrame()
-      ? HOME + this.fullFrame()
+      ? HOME + this.frame()
       : this.changedCells();
 
     this.remember();
@@ -347,7 +358,7 @@ export class Renderer {
 
   // the whole canvas as text with its colors, rows joined by "\r\n", without
   // moving the cursor. Sends nothing: render() is what draws
-  fullFrame(): string {
+  frame(): string {
     this.style.reset();
     const rows: string[] = [];
 
@@ -506,6 +517,21 @@ export class Renderer {
     }
 
     return text + tile.display();
+  }
+
+  static isTerminalRenderer(
+    t: Renderer | undefined | null,
+  ): asserts t is TerminalRenderer {
+    if (!(t instanceof TerminalRenderer)) {
+      throw new Error("Expected an Terminal renderer");
+    }
+  }
+
+  isTerminalRenderer(): boolean {
+    return true;
+  }
+  isWindowRenderer(): boolean {
+    return false;
   }
 }
 

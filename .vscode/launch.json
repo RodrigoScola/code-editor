@@ -12,6 +12,18 @@
       "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     },
     {
+      // the same, with the editor in its own window; the terminal only shows
+      // build errors
+      "name": "Hot Reload (window)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/dev.mjs",
+      "args": ["--window"],
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+    },
+    {
       "name": "Run in Integrated Terminal",
       "type": "node",
       "request": "launch",

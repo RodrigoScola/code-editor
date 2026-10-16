@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tokenizeLine } from "../../../src/Language/highlight.js";
 import { vim } from "../harness.js";
+import { TerminalRenderer } from "../../../src/ui/TerminalRenderer.js";
 
 // Proposed module src/Language/highlight.ts
 //
@@ -17,17 +18,25 @@ import { vim } from "../harness.js";
 // The editor colors each token type through the styled text ranges from
 // the UI specs (test/unit/ui/text/styled-ranges.test.ts).
 
-function typeAt(tokens: { start: number; end: number; type: string }[], column: number) {
-  return tokens.find((token) => token.start <= column && column < token.end)?.type;
+function typeAt(
+  tokens: { start: number; end: number; type: string }[],
+  column: number,
+) {
+  return tokens.find((token) => token.start <= column && column < token.end)
+    ?.type;
 }
 
-const ts = (line: string, state?: unknown) => tokenizeLine("typescript", line, state as never);
+const ts = (line: string, state?: unknown) =>
+  tokenizeLine("typescript", line, state as never);
 
 describe("tokenizing TypeScript", () => {
   it("finds keywords and numbers", () => {
     const { tokens } = ts("const x = 1;");
 
-    expect(tokens.find((t) => t.start === 0)).toMatchObject({ end: 5, type: "keyword" });
+    expect(tokens.find((t) => t.start === 0)).toMatchObject({
+      end: 5,
+      type: "keyword",
+    });
     expect(typeAt(tokens, 10)).eq("number");
   });
 
@@ -108,7 +117,10 @@ describe("in the editor", () => {
     const ide = vim("const x = 1;", { path: "a.ts", width: 40, height: 10 });
     ide.screen();
     const { x, y } = ide.textArea();
-    const canvas = ide.canvas();
+
+    TerminalRenderer.isTerminalRenderer(ide.renderer);
+
+    const canvas = ide.renderer.canvas();
 
     const keyword = canvas.getCell(x, y)!.styles.color();
     const name = canvas.getCell(x + 6, y)!.styles.color();

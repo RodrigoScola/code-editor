@@ -569,11 +569,10 @@ export class LayoutEngine {
   }
 
   static SameConstraints(
-    a: MeasureConstraints | null,
+    a: MeasureConstraints,
     b: MeasureConstraints,
   ): boolean {
     return (
-      a !== null &&
       a.minWidth === b.minWidth &&
       a.maxWidth === b.maxWidth &&
       a.minHeight === b.minHeight &&

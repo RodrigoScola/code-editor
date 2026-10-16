@@ -37,7 +37,12 @@ export class DisplayComponent
   // what the last measure and arrange were given: a clean view reuses its
   // results only for the same input, so a new screen size or a parent that
   // moves it still lays it out again
-  private _measuredWith: MeasureConstraints | null = null;
+  private _measuredWith: MeasureConstraints = {
+    maxHeight: -1,
+    maxWidth: -1,
+    minHeight: -1,
+    minWidth: -1,
+  };
   private _arrangedTo: LayoutBounds | null = null;
 
   private _viewport: ViewPort = new ViewPort();
@@ -356,7 +361,10 @@ export class DisplayComponent
     ) {
       return this._measuredSize;
     }
-    this._measuredWith = { ...constraints };
+    this._measuredWith.maxHeight = constraints.maxHeight;
+    this._measuredWith.maxWidth = constraints.maxWidth;
+    this._measuredWith.minWidth = constraints.minWidth;
+    this._measuredWith.minHeight = constraints.minHeight;
 
     let styleConstraints = LayoutDimensions.applyStyleConstraints(
       this,
@@ -982,6 +990,10 @@ export class DisplayComponent
   private clearCache() {
     this._cachedBars.horizontal = null;
     this._cachedBars.vertical = null;
+    this._measuredWith.maxHeight = -1;
+    this._measuredWith.maxWidth = -1;
+    this._measuredWith.minHeight = -1;
+    this._measuredWith.minWidth = -1;
   }
 
   // Layout Style

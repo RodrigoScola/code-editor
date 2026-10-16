@@ -13,6 +13,7 @@ import { CodeEditorGroup } from "./Editor/windows/Tab/TabWindow.js";
 import { captureLogs, logger } from "./logging/log.js";
 import { WINDOW_NAMES } from "./constants.js";
 import { UIScreen } from "./ui/components/UIScreen.js";
+import { TerminalRenderer } from "./ui/TerminalRenderer.js";
 
 captureLogs((level, message) => logger.add(level, message));
 
@@ -32,11 +33,13 @@ const editor = new EditorContext();
 
 // frames move the cursor to the cells they draw; a frame that changed
 // nothing is "" and costs no write
-editor.renderer.setOutput((frame) => {
-  if (frame) {
-    process.stdout.write(frame);
-  }
-});
+if (editor.renderer.isTerminalRenderer()) {
+  (editor.renderer as TerminalRenderer).setOutput((frame) => {
+    if (frame) {
+      process.stdout.write(frame);
+    }
+  });
+}
 
 // the editor paints its own cursor; the terminal's would sit wherever the
 // last frame stopped drawing

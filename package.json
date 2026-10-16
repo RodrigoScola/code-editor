@@ -5,8 +5,10 @@
   "scripts": {
     "build": "tsc",
     "dev": "node scripts/dev.mjs",
+    "dev:window": "node scripts/dev.mjs --window",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
+    "start:window": "node dist/index.js --window",
     "test": "vitest run",
     "bench": "vitest bench --run"
   },
@@ -15,6 +17,11 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
+    "@kmamal/sdl": "^0.11.13",
+    "@napi-rs/canvas": "^1.0.11",
     "@types/node": "^26.1.1"
+  },
+  "allowScripts": {
+    "@kmamal/sdl@0.11.13": true
   }
 }

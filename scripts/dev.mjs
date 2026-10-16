@@ -1,7 +1,11 @@
 // Hot reload: recompiles on save and restarts the editor.
 //
 //   npm run dev                   run it in a terminal
-//   "Hot Reload" launch config    same, with the debugger attached to every restart
+//   npm run dev:window            run it in a native window of its own; the
+//                                 terminal only shows build errors
+//   "Hot Reload" launch configs   same, with the debugger attached to every restart
+//
+// Arguments after the script (like --window) are passed on to the editor.
 //
 // The editor owns the terminal (raw mode, mouse tracking), so `tsc --watch`
 // can't print next to it. Instead this script drives the compiler itself and
@@ -17,6 +21,7 @@ import ts from "typescript";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const entry = path.join(root, "dist", "index.js");
+const appArgs = process.argv.slice(2);
 
 // undo the terminal modes the editor turns on (see setup.terminal in
 // setupEditor.ts), since a killed editor never gets to run its exit handler
@@ -34,7 +39,9 @@ let queue = Promise.resolve();
 
 function startApp() {
   process.stdout.write(CLEAR_SCREEN);
-  const child = spawn(process.execPath, [entry], { stdio: "inherit" });
+  const child = spawn(process.execPath, [entry, ...appArgs], {
+    stdio: "inherit",
+  });
   app = child;
 
   child.on("exit", (code, signal) => {

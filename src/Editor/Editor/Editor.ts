@@ -6,7 +6,7 @@ import {
 import { assert } from "../../assert.js";
 import { Canvas } from "../../ui/canvas.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
-import { Renderer } from "../../ui/renderer.js";
+import { Renderer, TerminalRenderer } from "../../ui/TerminalRenderer.js";
 import {
   DiskFile,
   MemoryFile,
@@ -20,7 +20,7 @@ import { Configuration, EditorConfig, setConfiguration } from "../../config.js";
 import { CodeEditorGroup } from "../windows/Tab/TabWindow.js";
 import { FocusManager } from "../../ui/windows/FocusManager.js";
 import { UiComponent } from "../../ui/components/UiComponent.js";
-import { stripAnsi } from "../../ui/renderer.js";
+import { stripAnsi } from "../../ui/TerminalRenderer.js";
 import { CommandRegistry } from "../../Commands/CommandRegistry.js";
 import { parseKeys } from "../../Input/keyNotation.js";
 import { WINDOW_NAMES } from "../../constants.js";
@@ -39,7 +39,7 @@ const GIT_STATUS_MAX_AGE_MS = 2000;
 export class EditorContext {
   focusManager: FocusManager = new FocusManager();
   static instance: EditorContext | null;
-  renderer: Renderer = new Renderer(new Canvas());
+  renderer: Renderer = new TerminalRenderer(new Canvas());
   rootWindow: EditorRoot = new EditorRoot();
   normalMode: NormalMode = new NormalMode();
   visualMode: VisualMode = new VisualMode();
@@ -501,7 +501,7 @@ export class EditorContext {
   private renderFrame(): string {
     const lt = this.renderer.layout();
     this.paintFrame(LayoutEngine.CreateConstraints(lt.width, lt.height));
-    return this.renderer.fullFrame();
+    return this.renderer.frame();
   }
 
   // renders a frame and returns its rows as plain text
@@ -556,10 +556,6 @@ export class EditorContext {
     return screen.slice(area.y, area.y + area.height);
   }
 
-  // the painted cells of the last frame, for checking styles
-  canvas(): Canvas {
-    return this.renderer.canvas();
-  }
   event(event: EditorEvents) {
     return this.rootWindow.sendEvent(event);
   }
