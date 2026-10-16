@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { StatusBar } from "../../../src/Workbench/statusBar.js";
-import { NotificationCenter } from "../../../src/Workbench/notifications.js";
-import { OutputService } from "../../../src/Workbench/output.js";
-import { ProblemsView } from "../../../src/Workbench/problems.js";
-import { DiagnosticsStore } from "../../../src/Lsp/diagnostics.js";
-import { tabLabels } from "../../../src/Workbench/editorLabels.js";
+import { StatusBar } from "../../../src/Editor/Workbench/statusBar.js";
+import { NotificationCenter } from "../../../src/Editor/Workbench/notifications.js";
+import { OutputService } from "../../../src/Editor/Workbench/output.js";
+import { ProblemsView } from "../../../src/Editor/Workbench/problems.js";
+import { DiagnosticsStore } from "../../../src/tools/Lsp/diagnostics.js";
+import { tabLabels } from "../../../src/Editor/Workbench/editorLabels.js";
 import { code } from "../harness.js";
 
 // Edge cases for the workbench (base specs: editor-groups, tabs, quick-open,

@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { Repository } from "../../../src/Scm/repository.js";
-import { revertRanges, stageRanges, unstageRanges } from "../../../src/Scm/stageRanges.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
+import { revertRanges, stageRanges, unstageRanges } from "../../../src/tools/Git/stageRanges.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // Staging parts of a file (Git: Stage Selected Ranges, the diff editor's

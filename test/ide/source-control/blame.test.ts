@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { fromNow, parseBlame, parseCoAuthors, renderBlame } from "../../../src/Scm/blame.js";
-import { Repository } from "../../../src/Scm/repository.js";
+import { fromNow, parseBlame, parseCoAuthors, renderBlame } from "../../../src/tools/Git/blame.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // Git blame (inline at the cursor line and in the status bar).

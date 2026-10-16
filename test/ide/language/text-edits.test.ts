@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TextBuffer } from "../../../src/ui/buffer/Buffer.js";
-import { applyTextEdits } from "../../../src/Lsp/textEdits.js";
+import { applyTextEdits } from "../../../src/tools/Lsp/textEdits.js";
 import { vim } from "../harness.js";
 
 // Proposed module src/Lsp/textEdits.ts. Rename, format, code actions and

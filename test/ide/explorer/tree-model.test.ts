@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTree, filterTree } from "../../../src/Explorer/treeModel.js";
+import { buildTree, filterTree } from "../../../src/Editor/Explorer/treeModel.js";
 
 // Proposed module src/Explorer/treeModel.ts: the Explorer tree computed
 // from a flat list of entries, with no file system access, so every rule

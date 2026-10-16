@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findConflicts, resolveAll, resolveConflict } from "../../../src/Scm/mergeConflicts.js";
+import { findConflicts, resolveAll, resolveConflict } from "../../../src/tools/Git/mergeConflicts.js";
 import { code } from "../harness.js";
 
 // Inline merge conflicts. Proposed src/Scm/mergeConflicts.ts:

@@ -17,3 +17,10 @@ export function Configuration(): EditorConfig {
 export function setConfiguration(config: EditorConfig) {
   current = config;
 }
+
+// each layer is the text of a JSON settings file (comments and trailing
+// commas allowed), later layers win; a broken layer, unknown keys and
+// values of the wrong type are reported in errors and skipped
+export function loadSettings(layers: string[]): { settings: EditorConfig; errors: string[] } {
+  throw new Error("not implemented");
+}

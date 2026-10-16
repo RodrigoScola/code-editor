@@ -4,7 +4,7 @@ import { Canvas } from "../../../../src/ui/canvas";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import colors from "../../../../src/ui/colors";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
-import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle";
+import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds";
 
 const createRoot = (layout: LayoutBounds) => {
   const cm = new DisplayComponent();

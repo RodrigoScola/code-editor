@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { breadcrumbs, outline, symbolAt } from "../../../src/Explorer/outline.js";
+import { breadcrumbs, outline, symbolAt } from "../../../src/Editor/Explorer/outline.js";
 
 // Proposed module src/Explorer/outline.ts: the Outline view and the
 // breadcrumbs bar, from document symbols (a provider or Markdown headings).

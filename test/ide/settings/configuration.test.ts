@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Configuration } from "../../../src/Settings/configuration.js";
+import { Configuration } from "../../../src/Editor/Settings/configuration.js";
 
 // Settings with VS Code's scopes. Proposed src/Settings/configuration.ts:
 //   new Configuration({ defaults, schema? })

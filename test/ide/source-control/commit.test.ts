@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CommitInputHistory, validateCommitMessage } from "../../../src/Scm/commitMessage.js";
-import { Repository } from "../../../src/Scm/repository.js";
+import { CommitInputHistory, validateCommitMessage } from "../../../src/tools/Git/commitMessage.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // Committing. Proposed src/Scm/commitMessage.ts:

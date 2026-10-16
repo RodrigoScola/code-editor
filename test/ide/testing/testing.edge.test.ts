@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { TestTree } from "../../../src/Testing/testModel.js";
-import { parseLcov, displayedPercent } from "../../../src/Testing/coverage.js";
-import { parseJUnit, parseTap } from "../../../src/Testing/reporters.js";
+import { TestTree } from "../../../src/tools/Testing/testModel.js";
+import { parseLcov, displayedPercent } from "../../../src/tools/Testing/coverage.js";
+import { parseJUnit, parseTap } from "../../../src/tools/Testing/reporters.js";
 
 // Edge cases for testing (base specs: test-explorer, coverage, reporters).
 

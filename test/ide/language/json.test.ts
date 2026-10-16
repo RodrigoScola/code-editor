@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { schemaFor, validateJson } from "../../../src/Language/json.js";
+import { schemaFor, validateJson } from "../../../src/Editor/Language/json.js";
 
 // Proposed module src/Language/json.ts (VS Code's JSON language features).
 //   schemaFor(path, text, settings) -> the schema URL for a file:

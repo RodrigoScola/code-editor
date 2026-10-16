@@ -5,7 +5,7 @@ import {
   FileOperations,
   incrementFileName,
   validateFileName,
-} from "../../../src/Explorer/fileOperations.js";
+} from "../../../src/Editor/Explorer/fileOperations.js";
 import { workspace } from "../harness.js";
 
 // Proposed module src/Explorer/fileOperations.ts: what the Explorer does to

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DebugSession } from "../../../src/Debug/session.js";
+import { DebugSession } from "../../../src/tools/Debug/session.js";
 
 // More ways to control a paused program (VS Code: Run to Cursor, Jump to
 // Cursor, Restart Frame, Step Into Target, step back). Extends the

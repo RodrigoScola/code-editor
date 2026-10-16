@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { codeActionKindContains } from "../../../src/Lsp/codeActions.js";
-import { decodeSemanticTokens } from "../../../src/Lsp/semanticTokens.js";
-import { renderInlayHints } from "../../../src/Lsp/inlayHints.js";
-import { activeSignatureParameter } from "../../../src/Lsp/signatureHelp.js";
+import { codeActionKindContains } from "../../../src/tools/Lsp/codeActions.js";
+import { decodeSemanticTokens } from "../../../src/tools/Lsp/semanticTokens.js";
+import { renderInlayHints } from "../../../src/tools/Lsp/inlayHints.js";
+import { activeSignatureParameter } from "../../../src/tools/Lsp/signatureHelp.js";
 import { code } from "../harness.js";
 
 // Language features that come from providers (a language server, or code

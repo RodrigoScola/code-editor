@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { replaceInFiles, searchFiles } from "../../../src/Search/projectSearch.js";
+import { replaceInFiles, searchFiles } from "../../../src/tools/Search/projectSearch.js";
 import { vim, workspace } from "../harness.js";
 
 // Proposed module src/Search/projectSearch.ts (VS Code's search panel,

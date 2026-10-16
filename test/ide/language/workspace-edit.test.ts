@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { applyWorkspaceEdit } from "../../../src/Lsp/workspaceEdit.js";
+import { applyWorkspaceEdit } from "../../../src/tools/Lsp/workspaceEdit.js";
 import { workspace } from "../harness.js";
 import { code } from "../harness.js";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { copyAsJson, parseSettingsUrl, searchSettings } from "../../../src/Settings/settingsSearch.js";
+import { copyAsJson, parseSettingsUrl, searchSettings } from "../../../src/Editor/Settings/settingsSearch.js";
 
 // The Settings editor's search box. Proposed src/Settings/settingsSearch.ts:
 //   searchSettings(settings, query, { modified: Set<id>, languages? })

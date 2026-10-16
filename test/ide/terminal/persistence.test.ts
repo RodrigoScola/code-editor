@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { VirtualTerminal } from "../../../src/Terminal/VirtualTerminal.js";
-import { serializeTerminal, shouldRevive } from "../../../src/Terminal/persistence.js";
+import { VirtualTerminal } from "../../../src/tools/Terminal/VirtualTerminal.js";
+import { serializeTerminal, shouldRevive } from "../../../src/tools/Terminal/persistence.js";
 
 // Terminals that survive a restart (VS Code:
 // terminal.integrated.enablePersistentSessions,

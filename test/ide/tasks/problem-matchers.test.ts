@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ProblemMatcher, builtInMatcher } from "../../../src/Tasks/problemMatcher.js";
+import { ProblemMatcher, builtInMatcher } from "../../../src/tools/Tasks/problemMatcher.js";
 
 // VS Code problem matchers in full (simple tsc/gcc parsing is specced in
 // test/ide/tools/problem-matcher.test.ts). Proposed

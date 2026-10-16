@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { iconGlyph, loadIconTheme } from "../../../src/Themes/iconTheme.js";
+import { iconGlyph, loadIconTheme } from "../../../src/Editor/Themes/iconTheme.js";
 
 // File icon themes (VS Code: workbench.iconTheme), for the file tree, tabs
 // and quick open. In a terminal the icons are font characters (a Nerd Font

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DebugSession } from "../../../src/Debug/session.js";
+import { DebugSession } from "../../../src/tools/Debug/session.js";
 
 // A debug session talking the Debug Adapter Protocol. Proposed
 // src/Debug/session.ts:

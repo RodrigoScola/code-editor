@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectLanguage } from "../../../src/Language/languages.js";
+import { detectLanguage } from "../../../src/Editor/Language/languages.js";
 import { code } from "../harness.js";
 
 // files.associations: the user maps file patterns to languages. Extends

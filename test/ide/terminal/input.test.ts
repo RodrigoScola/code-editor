@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { encodeKey, encodePaste, needsPasteWarning } from "../../../src/Terminal/input.js";
+import { encodeKey, encodePaste, needsPasteWarning } from "../../../src/tools/Terminal/input.js";
 
 // What the terminal sends to the shell for each key (xterm's encoding,
 // which is what VS Code's terminal uses). Proposed src/Terminal/input.ts:

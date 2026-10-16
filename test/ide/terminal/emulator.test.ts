@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VirtualTerminal } from "../../../src/Terminal/VirtualTerminal.js";
+import { VirtualTerminal } from "../../../src/tools/Terminal/VirtualTerminal.js";
 
 // More of the terminal emulator (the basics are in
 // test/ide/tools/terminal-emulator.test.ts). Same API, plus:

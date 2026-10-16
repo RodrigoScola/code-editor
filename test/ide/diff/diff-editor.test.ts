@@ -4,7 +4,7 @@ import {
   nextChange,
   revertChange,
   unchangedRegions,
-} from "../../../src/Diff/diff.js";
+} from "../../../src/tools/Diff/diff.js";
 import { code } from "../harness.js";
 
 // The diff editor's model. Proposed src/Diff/diff.ts:

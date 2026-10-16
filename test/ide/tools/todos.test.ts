@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { findTodos, scanTodos } from "../../../src/tools/todos.js";
+import { findTodos, scanTodos } from "../../../src/tools/Todos/todos.js";
 import { code, workspace } from "../harness.js";
 
 // Finding TODO comments (the "Todo Tree" / todo-comments tools).

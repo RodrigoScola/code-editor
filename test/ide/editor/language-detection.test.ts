@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectLanguage, languageConfig } from "../../../src/Language/languages.js";
+import { detectLanguage, languageConfig } from "../../../src/Editor/Language/languages.js";
 
 // Proposed module src/Language/languages.ts
 //

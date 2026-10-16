@@ -8,10 +8,8 @@ import {
   MemoryFile,
 } from "../../../../../src/Editor/Documents/TextDocument.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
-import {
-  UiComponent,
-  UIScreen,
-} from "../../../../../src/ui/components/UiComponent.js";
+import { UiComponent } from "../../../../../src/ui/components/UiComponent.js";
+import { UIScreen } from "../../../../../src/ui/components/UIScreen.js";
 import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
 
 const createTextWindow = (text: string) => new UIScreen().setText(text);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { decodeFile, detectEol, encodeFile } from "../../../src/Files/encoding.js";
-import { coalesceEvents } from "../../../src/Files/watcher.js";
+import { decodeFile, detectEol, encodeFile } from "../../../src/Editor/Files/encoding.js";
+import { coalesceEvents } from "../../../src/Editor/Files/watcher.js";
 import { code } from "../harness.js";
 
 // Edge cases for encodings, save actions and file events (base specs:

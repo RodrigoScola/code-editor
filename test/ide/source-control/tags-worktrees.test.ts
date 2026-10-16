@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { Repository } from "../../../src/Scm/repository.js";
-import { parseWorktreeList } from "../../../src/Scm/worktrees.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
+import { parseWorktreeList } from "../../../src/tools/Git/worktrees.js";
 import { workspace } from "../harness.js";
 import { hasGit, repository } from "./git-helpers.js";
 

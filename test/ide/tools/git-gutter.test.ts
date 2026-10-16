@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diffLines, gutterMarks } from "../../../src/tools/diff.js";
+import { diffLines, gutterMarks } from "../../../src/tools/Git/diff.js";
 import { vim } from "../harness.js";
 
 // Proposed module src/tools/diff.ts: the marks next to changed lines

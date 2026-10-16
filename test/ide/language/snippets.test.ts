@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSnippet } from "../../../src/Language/snippets.js";
+import { parseSnippet } from "../../../src/Editor/Language/snippets.js";
 import { vim } from "../harness.js";
 
 // Proposed module src/Language/snippets.ts, using the snippet syntax VS Code

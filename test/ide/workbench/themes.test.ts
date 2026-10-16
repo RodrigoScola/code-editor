@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ansiColor, loadColorTheme } from "../../../src/Themes/colorTheme.js";
+import { ansiColor, loadColorTheme } from "../../../src/Editor/Themes/colorTheme.js";
 
 // Color themes (VS Code: workbench.colorTheme, color theme JSON files,
 // workbench.colorCustomizations, editor.tokenColorCustomizations,

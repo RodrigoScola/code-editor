@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseProblems } from "../../../src/tools/problemMatcher.js";
-import { runTask } from "../../../src/tools/tasks.js";
+import { parseProblems } from "../../../src/tools/Tasks/problemMatcher.js";
+import { runTask } from "../../../src/tools/Tasks/tasks.js";
 
 // Proposed modules:
 //

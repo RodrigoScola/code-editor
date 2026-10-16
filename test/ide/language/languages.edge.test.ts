@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { fuzzyScore } from "../../../src/Language/suggest.js";
-import { parseSnippetFile, resolveSnippet } from "../../../src/Language/snippets.js";
-import { expandAbbreviation } from "../../../src/Language/emmet.js";
-import { slugify, validateLinks } from "../../../src/Language/markdown.js";
-import { codeActionKindContains } from "../../../src/Lsp/codeActions.js";
-import { decodeSemanticTokens } from "../../../src/Lsp/semanticTokens.js";
-import { validateJson } from "../../../src/Language/json.js";
+import { fuzzyScore } from "../../../src/Editor/Language/suggest.js";
+import { parseSnippetFile, resolveSnippet } from "../../../src/Editor/Language/snippets.js";
+import { expandAbbreviation } from "../../../src/Editor/Language/emmet.js";
+import { slugify, validateLinks } from "../../../src/Editor/Language/markdown.js";
+import { codeActionKindContains } from "../../../src/tools/Lsp/codeActions.js";
+import { decodeSemanticTokens } from "../../../src/tools/Lsp/semanticTokens.js";
+import { validateJson } from "../../../src/Editor/Language/json.js";
 import { code } from "../harness.js";
 
 // Edge cases for language features (base specs: suggest, snippets, emmet,

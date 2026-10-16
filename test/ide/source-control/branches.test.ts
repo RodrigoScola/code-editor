@@ -4,8 +4,8 @@ import {
   sanitizeBranchName,
   sortBranches,
   validateBranchName,
-} from "../../../src/Scm/branchNames.js";
-import { Repository } from "../../../src/Scm/repository.js";
+} from "../../../src/tools/Git/branchNames.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // Branches. Proposed src/Scm/branchNames.ts:

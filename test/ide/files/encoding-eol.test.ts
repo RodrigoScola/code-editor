@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeFile, detectEol, encodeFile } from "../../../src/Files/encoding.js";
+import { decodeFile, detectEol, encodeFile } from "../../../src/Editor/Files/encoding.js";
 
 // Proposed module src/Files/encoding.ts (files.encoding, files.eol, the
 // status bar's encoding and EOL pickers).

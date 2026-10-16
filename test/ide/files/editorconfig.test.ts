@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   editorConfigFor,
   parseEditorConfig,
-} from "../../../src/Files/editorconfig.js";
+} from "../../../src/Editor/Files/editorconfig.js";
 import { code, workspace } from "../harness.js";
 
 // EditorConfig (https://editorconfig.org): .editorconfig files set the

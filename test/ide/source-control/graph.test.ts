@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { graphRows, incomingOutgoing, parseLog } from "../../../src/Scm/log.js";
-import { Repository } from "../../../src/Scm/repository.js";
+import { graphRows, incomingOutgoing, parseLog } from "../../../src/tools/Git/log.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // The Source Control Graph. Proposed src/Scm/log.ts:

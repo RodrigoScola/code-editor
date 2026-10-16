@@ -6,7 +6,7 @@ import {
   labelFor,
   parseWorkspaceFile,
   scopeInclude,
-} from "../../../src/Workspace/workspace.js";
+} from "../../../src/Editor/Workspace/workspace.js";
 
 // Multi-root workspaces. Proposed src/Workspace/workspace.ts:
 //   parseWorkspaceFile(path, jsonc) -> { folders: [{ name, path }],

@@ -1,9 +1,10 @@
 import { assert } from "../../../../src/assert";
-import { Canvas, DisplayTile } from "../../../../src/ui/canvas";
+import { Canvas } from "../../../../src/ui/canvas";
+import { DisplayTile } from "../../../../src/ui/display/DisplayTile";
 import colors from "../../../../src/ui/colors";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout";
-import { LayoutBounds } from "../../../../src/ui/layout/layoutStyle";
+import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
 import { describe, expect, it } from "vitest";
 

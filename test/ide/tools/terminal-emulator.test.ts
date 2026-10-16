@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VirtualTerminal } from "../../../src/Terminal/VirtualTerminal.js";
+import { VirtualTerminal } from "../../../src/tools/Terminal/VirtualTerminal.js";
 
 // Proposed module src/Terminal/VirtualTerminal.ts: the screen model behind
 // an integrated terminal panel. A shell (through a pty) writes bytes, this

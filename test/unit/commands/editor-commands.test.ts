@@ -8,7 +8,7 @@ import { DisplayComponent } from "../../../src/ui/display/displayComponent.js";
 import { WINDOW_NAMES } from "../../../src/constants.js";
 import { textEditorCommands } from "../../../src/Commands/editorCommands.js";
 import { EditorRoot } from "../../../src/Editor/Editor/EditorRoot.js";
-import { UIScreen } from "../../../src/ui/components/UiComponent.js";
+import { UIScreen } from "../../../src/ui/components/UIScreen.js";
 
 describe("textEditorCommands", () => {
   it("moves to the start of the next word", () => {

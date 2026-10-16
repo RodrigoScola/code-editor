@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { modify, parseJsonc, validate } from "../../../src/Settings/jsonc.js";
+import { modify, parseJsonc, validate } from "../../../src/Editor/Settings/jsonc.js";
 
 // JSON with comments, as settings.json, tasks.json and friends are written.
 // Proposed src/Settings/jsonc.ts:

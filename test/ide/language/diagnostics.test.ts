@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { DiagnosticsStore } from "../../../src/Lsp/diagnostics.js";
+import { DiagnosticsStore } from "../../../src/tools/Lsp/diagnostics.js";
 import { vim } from "../harness.js";
 
 // Proposed module src/Lsp/diagnostics.ts: errors and warnings per file, from

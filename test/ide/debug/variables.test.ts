@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveVariables } from "../../../src/Workspace/variables.js";
+import { resolveVariables } from "../../../src/Editor/Workspace/variables.js";
 
 // Variable substitution in launch.json, tasks.json and some settings
 // (VS Code's Variables Reference). Proposed src/Workspace/variables.ts:

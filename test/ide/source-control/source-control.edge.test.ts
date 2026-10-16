@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { parseStatusV2 } from "../../../src/Scm/status.js";
-import { stageRanges } from "../../../src/Scm/stageRanges.js";
-import { validateCommitMessage } from "../../../src/Scm/commitMessage.js";
-import { validateBranchName } from "../../../src/Scm/branchNames.js";
-import { parseStashList } from "../../../src/Scm/stash.js";
-import { parseBlame, fromNow } from "../../../src/Scm/blame.js";
-import { findConflicts, resolveConflict } from "../../../src/Scm/mergeConflicts.js";
-import { MergeModel } from "../../../src/Scm/mergeEditor.js";
-import { graphRows } from "../../../src/Scm/log.js";
-import { Repository } from "../../../src/Scm/repository.js";
+import { parseStatusV2 } from "../../../src/tools/Git/status.js";
+import { stageRanges } from "../../../src/tools/Git/stageRanges.js";
+import { validateCommitMessage } from "../../../src/tools/Git/commitMessage.js";
+import { validateBranchName } from "../../../src/tools/Git/branchNames.js";
+import { parseStashList } from "../../../src/tools/Git/stash.js";
+import { parseBlame, fromNow } from "../../../src/tools/Git/blame.js";
+import { findConflicts, resolveConflict } from "../../../src/tools/Git/mergeConflicts.js";
+import { MergeModel } from "../../../src/tools/Git/mergeEditor.js";
+import { graphRows } from "../../../src/tools/Git/log.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // Edge cases for source control (base specs: status, staging, commit,

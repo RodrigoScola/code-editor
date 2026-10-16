@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DiagnosticsStore } from "../../../src/Lsp/diagnostics.js";
-import { ProblemsView } from "../../../src/Workbench/problems.js";
+import { DiagnosticsStore } from "../../../src/tools/Lsp/diagnostics.js";
+import { ProblemsView } from "../../../src/Editor/Workbench/problems.js";
 
 // Proposed module src/Workbench/problems.ts: the Problems panel
 // (Ctrl+Shift+M) over the diagnostics store from test/ide.

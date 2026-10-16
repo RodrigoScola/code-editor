@@ -6,10 +6,8 @@ import { TerminalRenderer as Renderer } from "../../../../../src/ui/TerminalRend
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
 import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
 import { DisplayComponent } from "../../../../../src/ui/display/displayComponent.js";
-import {
-  UIScreen,
-  UiComponent,
-} from "../../../../../src/ui/components/UiComponent.js";
+import { UiComponent } from "../../../../../src/ui/components/UiComponent.js";
+import { UIScreen } from "../../../../../src/ui/components/UIScreen.js";
 
 const createTextWindow = (text: string) => new UiComponent().setText(text);
 

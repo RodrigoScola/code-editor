@@ -1,8 +1,8 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { folderFor, parseWorkspaceFile } from "../../../src/Workspace/workspace.js";
-import { WorkspaceTrust } from "../../../src/Workspace/trust.js";
-import { parseArgs, parseVscodeUrl } from "../../../src/Cli/args.js";
+import { folderFor, parseWorkspaceFile } from "../../../src/Editor/Workspace/workspace.js";
+import { WorkspaceTrust } from "../../../src/Editor/Workspace/trust.js";
+import { parseArgs, parseVscodeUrl } from "../../../src/tools/Cli/args.js";
 
 // Edge cases for workspaces, trust and the command line (base specs:
 // multi-root, trust, args).

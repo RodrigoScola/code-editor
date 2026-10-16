@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WorkspaceTrust } from "../../../src/Workspace/trust.js";
+import { WorkspaceTrust } from "../../../src/Editor/Workspace/trust.js";
 
 // Workspace Trust (restricted mode), all local. Proposed
 // src/Workspace/trust.ts:

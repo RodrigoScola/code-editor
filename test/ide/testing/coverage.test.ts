@@ -5,7 +5,7 @@ import {
   lineState,
   nextUncovered,
   parseLcov,
-} from "../../../src/Testing/coverage.js";
+} from "../../../src/tools/Testing/coverage.js";
 
 // Test coverage. Proposed src/Testing/coverage.ts:
 //   parseLcov(text) -> [{ path, lines: Map<line, hits>, functions: [{ name,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { match, matchExpression } from "../../../src/Search/glob.js";
+import { match, matchExpression } from "../../../src/tools/Search/glob.js";
 
 // Proposed module src/Search/glob.ts: VS Code's glob syntax, used by
 // files.exclude, search.exclude, the search include/exclude boxes, file

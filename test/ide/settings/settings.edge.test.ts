@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { Configuration } from "../../../src/Settings/configuration.js";
-import { modify, parseJsonc } from "../../../src/Settings/jsonc.js";
-import { evaluateWhen } from "../../../src/Keybindings/whenClause.js";
-import { KeybindingResolver } from "../../../src/Keybindings/resolver.js";
+import { Configuration } from "../../../src/Editor/Settings/configuration.js";
+import { modify, parseJsonc } from "../../../src/Editor/Settings/jsonc.js";
+import { evaluateWhen } from "../../../src/Editor/Keybindings/whenClause.js";
+import { KeybindingResolver } from "../../../src/Editor/Keybindings/resolver.js";
 
 // Edge cases for settings and keybindings (base specs: configuration,
 // settings-search, jsonc, when-clause, resolver).

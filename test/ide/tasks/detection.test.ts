@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectNpmTasks, detectTypeScriptTasks } from "../../../src/Tasks/detect.js";
+import { detectNpmTasks, detectTypeScriptTasks } from "../../../src/tools/Tasks/detect.js";
 import { workspace } from "../harness.js";
 
 // Auto-detected tasks. Proposed src/Tasks/detect.ts:

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LocalHistory, mergeTimeline } from "../../../src/Workspace/localHistory.js";
+import { LocalHistory, mergeTimeline } from "../../../src/Editor/Workspace/localHistory.js";
 
 // Proposed module src/Workspace/localHistory.ts (Timeline > Local History).
 //   new LocalHistory({ maxEntries = 50, maxFileSize = 256 * 1024,

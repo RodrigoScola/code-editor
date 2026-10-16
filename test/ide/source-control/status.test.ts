@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { countBadge, decorationFor, groupResources, parseStatusV2 } from "../../../src/Scm/status.js";
-import { Repository } from "../../../src/Scm/repository.js";
+import { countBadge, decorationFor, groupResources, parseStatusV2 } from "../../../src/tools/Git/status.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // Proposed module src/Scm/status.ts: reading `git status --porcelain=v2

@@ -3,7 +3,7 @@ import {
   MessageReader,
   RpcConnection,
   encodeMessage,
-} from "../../../src/Lsp/jsonrpc.js";
+} from "../../../src/tools/Lsp/jsonrpc.js";
 
 // Proposed module src/Lsp/jsonrpc.ts: the wire format that language servers
 // (LSP) and debug adapters (DAP) speak over stdin/stdout. Each message is

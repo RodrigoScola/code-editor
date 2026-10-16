@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateWhen, parseWhen } from "../../../src/Keybindings/whenClause.js";
+import { evaluateWhen, parseWhen } from "../../../src/Editor/Keybindings/whenClause.js";
 
 // when clauses (keybindings, menus, views). Proposed
 // src/Keybindings/whenClause.ts:

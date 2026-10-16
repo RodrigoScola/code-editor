@@ -195,6 +195,18 @@ function terminalCacheSize() {
   return backgroundCache.size + foregroundCache.size;
 }
 
-export function blendColors() {}
-export function formatColor() {}
-export function mixColors() {}
+// top painted over under ("source over"), as "#rrggbb[aa]"
+export function blendColors(top: string, under: string): string {
+  throw new Error("not implemented");
+}
+
+// "#rrggbb", or "#rrggbbaa" when not opaque; channels rounded
+export function formatColor(color: { r: number; g: number; b: number; a: number }): string {
+  throw new Error("not implemented");
+}
+
+// the color t of the way from a to b, alpha premultiplied; throws for
+// something that isn't a CSS color
+export function mixColors(a: string, b: string, t: number): string {
+  throw new Error("not implemented");
+}

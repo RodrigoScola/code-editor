@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Profiles } from "../../../src/Workbench/profiles.js";
+import { Profiles } from "../../../src/Editor/Workbench/profiles.js";
 
 // Profiles (VS Code: Profiles editor, --profile on the command line): named
 // sets of settings, keybindings, snippets, tasks and UI state, switched as

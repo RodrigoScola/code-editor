@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeDiff, unchangedRegions } from "../../../src/Diff/diff.js";
+import { computeDiff, unchangedRegions } from "../../../src/tools/Diff/diff.js";
 
 // Edge cases for the diff editor (base spec: diff-editor.test.ts).
 

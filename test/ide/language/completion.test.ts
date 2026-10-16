@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CompletionSession } from "../../../src/Language/completion.js";
+import { CompletionSession } from "../../../src/Editor/Language/completion.js";
 import { vim } from "../harness.js";
 
 // Proposed module src/Language/completion.ts: the list behind the

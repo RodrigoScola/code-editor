@@ -1,7 +1,7 @@
 import { writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { coalesceEvents, filterEvents } from "../../../src/Files/watcher.js";
+import { coalesceEvents, filterEvents } from "../../../src/Editor/Files/watcher.js";
 import { workspace } from "../harness.js";
 import { code } from "../harness.js";
 

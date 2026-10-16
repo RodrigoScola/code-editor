@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestTree } from "../../../src/Testing/testModel.js";
+import { TestTree } from "../../../src/tools/Testing/testModel.js";
 
 // The Test Explorer's model. Proposed src/Testing/testModel.ts:
 //   tree.add({ id, label, parentId?, path?, range?: { start, end } lines,

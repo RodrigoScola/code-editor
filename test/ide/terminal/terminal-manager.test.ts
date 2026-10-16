@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { TerminalManager, findInTerminal, formatTitle } from "../../../src/Terminal/terminalManager.js";
-import { VirtualTerminal } from "../../../src/Terminal/VirtualTerminal.js";
+import { TerminalManager, findInTerminal, formatTitle } from "../../../src/tools/Terminal/terminalManager.js";
+import { VirtualTerminal } from "../../../src/tools/Terminal/VirtualTerminal.js";
 
 // Managing terminals (the TERMINAL panel). Proposed
 // src/Terminal/terminalManager.ts, with processes started through an

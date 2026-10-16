@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { OutputService } from "../../../src/Workbench/output.js";
+import { OutputService } from "../../../src/Editor/Workbench/output.js";
 
 // Proposed module src/Workbench/output.ts (the Output panel, Ctrl+Shift+U).
 //   service.channel(name) -> channel (the same one each time for a name)

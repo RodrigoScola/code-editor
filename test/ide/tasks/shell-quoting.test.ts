@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCommandLine, shellKind } from "../../../src/Tasks/shellQuoting.js";
+import { buildCommandLine, shellKind } from "../../../src/tools/Tasks/shellQuoting.js";
 
 // Building a shell task's command line (tasks docs: "Command and arguments
 // quoting"). Proposed src/Tasks/shellQuoting.ts:

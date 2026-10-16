@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultBuildTask, executionPlan, parseTasks, runTaskList } from "../../../src/Tasks/tasksConfig.js";
+import { defaultBuildTask, executionPlan, parseTasks, runTaskList } from "../../../src/tools/Tasks/tasksConfig.js";
 
 // tasks.json (version 2.0.0). Proposed src/Tasks/tasksConfig.ts:
 //   parseTasks(jsonc, { platform, userTasks? }) -> { tasks, errors }

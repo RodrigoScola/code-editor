@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { FileOperations, incrementFileName, validateFileName } from "../../../src/Explorer/fileOperations.js";
-import { buildTree } from "../../../src/Explorer/treeModel.js";
-import { LocalHistory } from "../../../src/Workspace/localHistory.js";
+import { FileOperations, incrementFileName, validateFileName } from "../../../src/Editor/Explorer/fileOperations.js";
+import { buildTree } from "../../../src/Editor/Explorer/treeModel.js";
+import { LocalHistory } from "../../../src/Editor/Workspace/localHistory.js";
 import { workspace } from "../harness.js";
 
 // Edge cases for the Explorer (base specs: file-operations, tree-model,

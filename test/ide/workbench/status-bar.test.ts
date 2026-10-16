@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { StatusBar, parseIcons } from "../../../src/Workbench/statusBar.js";
+import { StatusBar, parseIcons } from "../../../src/Editor/Workbench/statusBar.js";
 import { code } from "../harness.js";
 
 // Proposed module src/Workbench/statusBar.ts.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectLinks } from "../../../src/Terminal/links.js";
+import { detectLinks } from "../../../src/tools/Terminal/links.js";
 
 // Clickable links in terminal output (Ctrl+click). Proposed
 // src/Terminal/links.ts:

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { match, matchExpression } from "../../../src/Search/glob.js";
-import { searchFiles } from "../../../src/Search/projectSearch.js";
+import { match, matchExpression } from "../../../src/tools/Search/glob.js";
+import { searchFiles } from "../../../src/tools/Search/projectSearch.js";
 import { workspace } from "../harness.js";
 
 // Edge cases for globs and search (base specs: glob, search-view).

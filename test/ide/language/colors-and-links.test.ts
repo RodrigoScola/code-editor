@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { colorPresentations, findColors } from "../../../src/Language/colors.js";
-import { findLinks } from "../../../src/Language/links.js";
+import { colorPresentations, findColors } from "../../../src/Editor/Language/colors.js";
+import { findLinks } from "../../../src/Editor/Language/links.js";
 import { code } from "../harness.js";
 
 // Color decorators and links in the text, which VS Code finds in any file

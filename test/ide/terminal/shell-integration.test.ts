@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { VirtualTerminal } from "../../../src/Terminal/VirtualTerminal.js";
+import { VirtualTerminal } from "../../../src/tools/Terminal/VirtualTerminal.js";
 import {
   ShellIntegration,
   parseHistoryFile,
-} from "../../../src/Terminal/shellIntegration.js";
+} from "../../../src/tools/Terminal/shellIntegration.js";
 
 // Shell integration: the shell marks its prompt and commands with escape
 // sequences, and the terminal learns where each command starts and ends,

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { VirtualTerminal } from "../../../src/Terminal/VirtualTerminal.js";
-import { ShellIntegration } from "../../../src/Terminal/shellIntegration.js";
-import { detectLinks } from "../../../src/Terminal/links.js";
-import { encodeKey, encodePaste } from "../../../src/Terminal/input.js";
-import { formatTitle } from "../../../src/Terminal/terminalManager.js";
-import { escapePathForShell } from "../../../src/Terminal/profiles.js";
+import { VirtualTerminal } from "../../../src/tools/Terminal/VirtualTerminal.js";
+import { ShellIntegration } from "../../../src/tools/Terminal/shellIntegration.js";
+import { detectLinks } from "../../../src/tools/Terminal/links.js";
+import { encodeKey, encodePaste } from "../../../src/tools/Terminal/input.js";
+import { formatTitle } from "../../../src/tools/Terminal/terminalManager.js";
+import { escapePathForShell } from "../../../src/tools/Terminal/profiles.js";
 
 // Edge cases for the terminal (base specs: emulator, shell-integration,
 // links, input, terminal-manager, profiles).

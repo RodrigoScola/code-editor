@@ -6,7 +6,7 @@ import {
   slugify,
   updateLinksForMove,
   validateLinks,
-} from "../../../src/Language/markdown.js";
+} from "../../../src/Editor/Language/markdown.js";
 import { code } from "../harness.js";
 
 // Proposed module src/Language/markdown.ts (VS Code's built-in Markdown

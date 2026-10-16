@@ -4,7 +4,7 @@ import {
   keyLabel,
   normalizeKey,
   searchKeybindings,
-} from "../../../src/Keybindings/resolver.js";
+} from "../../../src/Editor/Keybindings/resolver.js";
 
 // keybindings.json and resolving key presses. Proposed
 // src/Keybindings/resolver.ts:

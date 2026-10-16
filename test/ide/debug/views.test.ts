@@ -6,7 +6,7 @@ import {
   WatchList,
   expressionAt,
   inlineValues,
-} from "../../../src/Debug/views.js";
+} from "../../../src/tools/Debug/views.js";
 
 // The Run and Debug views. Proposed src/Debug/views.ts:
 //   new CallStackView(frames, totalFrames)

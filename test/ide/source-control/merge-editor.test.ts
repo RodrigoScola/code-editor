@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MergeModel } from "../../../src/Scm/mergeEditor.js";
+import { MergeModel } from "../../../src/tools/Git/mergeEditor.js";
 
 // The 3-way merge editor (Open in Merge Editor). Proposed
 // src/Scm/mergeEditor.ts:

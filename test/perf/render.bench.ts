@@ -5,7 +5,7 @@ import { StatusWindow } from "../../src/Editor/windows/StatusEditor.js";
 import { FileTreeWindow } from "../../src/Editor/windows/FileTree/FileTreeWindow.js";
 import { CodeEditorGroup } from "../../src/Editor/windows/Tab/TabWindow.js";
 import { CodeEditorWindow } from "../../src/Editor/windows/CodeEditorWindow.js";
-import { UIScreen } from "../../src/ui/components/UiComponent.js";
+import { UIScreen } from "../../src/ui/components/UIScreen.js";
 import { LayoutEngine } from "../../src/ui/layout/layout.js";
 import { WINDOW_NAMES } from "../../src/constants.js";
 

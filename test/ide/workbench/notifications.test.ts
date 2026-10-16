@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NotificationCenter } from "../../../src/Workbench/notifications.js";
+import { NotificationCenter } from "../../../src/Editor/Workbench/notifications.js";
 
 // Proposed module src/Workbench/notifications.ts (the bell in the status
 // bar, toasts in the corner).

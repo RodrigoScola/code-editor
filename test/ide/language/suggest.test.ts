@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fuzzyScore, rankSuggestions } from "../../../src/Language/suggest.js";
+import { fuzzyScore, rankSuggestions } from "../../../src/Editor/Language/suggest.js";
 import { code } from "../harness.js";
 
 // Proposed module src/Language/suggest.ts: VS Code's suggest widget logic.

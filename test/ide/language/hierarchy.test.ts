@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { callHierarchy, typeHierarchy } from "../../../src/Lsp/hierarchy.js";
+import { callHierarchy, typeHierarchy } from "../../../src/tools/Lsp/hierarchy.js";
 import { code } from "../harness.js";
 
 // Call hierarchy (VS Code: references-view.showCallHierarchy, Shift+Alt+H)

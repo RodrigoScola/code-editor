@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TaskRunner } from "../../../src/Tasks/taskRunner.js";
+import { TaskRunner } from "../../../src/tools/Tasks/taskRunner.js";
 
 // Running tasks. Proposed src/Tasks/taskRunner.ts, with terminals faked:
 //   new TaskRunner({ createTerminal, diagnostics?, notify? })

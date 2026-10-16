@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Notebook, outputText } from "../../../src/Notebook/notebook.js";
+import { Notebook, outputText } from "../../../src/tools/Notebook/notebook.js";
 
 // Jupyter notebooks (.ipynb), the document model only. Running cells needs
 // a kernel (a Jupyter server), which is left out like other servers.

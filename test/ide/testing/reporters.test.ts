@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseJUnit, parseTap, parseVitestJson } from "../../../src/Testing/reporters.js";
+import { parseJUnit, parseTap, parseVitestJson } from "../../../src/tools/Testing/reporters.js";
 
 // Reading test results from tools that don't talk to the editor directly.
 // Proposed src/Testing/reporters.ts, each returning

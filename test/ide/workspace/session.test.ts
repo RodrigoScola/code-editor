@@ -1,7 +1,7 @@
 import { rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { restoreSession, saveSession } from "../../../src/Workspace/session.js";
+import { restoreSession, saveSession } from "../../../src/Editor/Workspace/session.js";
 import { vim, workspace } from "../harness.js";
 
 // Proposed module src/Workspace/session.ts: reopen what was open last time.

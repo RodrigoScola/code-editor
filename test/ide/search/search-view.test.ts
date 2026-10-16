@@ -6,7 +6,7 @@ import {
   replaceInFiles,
   searchFiles,
   serializeSearchEditor,
-} from "../../../src/Search/projectSearch.js";
+} from "../../../src/tools/Search/projectSearch.js";
 import { workspace } from "../harness.js";
 
 // The Search view (Ctrl+Shift+F) beyond the basics in test/ide:

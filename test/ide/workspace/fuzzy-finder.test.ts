@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { fuzzyFilter, fuzzyMatch } from "../../../src/Search/fuzzy.js";
+import { fuzzyFilter, fuzzyMatch } from "../../../src/tools/Search/fuzzy.js";
 import { vim, workspace } from "../harness.js";
 
 // Proposed module src/Search/fuzzy.ts, used by the file finder (<C-p>),

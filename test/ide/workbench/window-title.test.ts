@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_TITLE, windowTitle } from "../../../src/Workbench/windowTitle.js";
+import { DEFAULT_TITLE, windowTitle } from "../../../src/Editor/Workbench/windowTitle.js";
 
 // The terminal title (VS Code: window.title and window.titleSeparator).
 // In a terminal it is set with OSC 2 ("\x1b]2;<title>\x07").

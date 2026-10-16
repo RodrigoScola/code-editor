@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hunkAt, quickDiff } from "../../../src/Scm/quickDiff.js";
+import { hunkAt, quickDiff } from "../../../src/tools/Git/quickDiff.js";
 import { code } from "../harness.js";
 
 // Quick diff: the gutter bars that compare the editor with git

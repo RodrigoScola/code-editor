@@ -8,7 +8,7 @@ import {
   splitJoinTag,
   updateTag,
   wrapWithAbbreviation,
-} from "../../../src/Language/emmet.js";
+} from "../../../src/Editor/Language/emmet.js";
 import { code } from "../harness.js";
 
 // Proposed module src/Language/emmet.ts (VS Code's built-in Emmet).

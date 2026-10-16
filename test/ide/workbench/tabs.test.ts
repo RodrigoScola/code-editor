@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { customLabel, tabLabels } from "../../../src/Workbench/editorLabels.js";
+import { customLabel, tabLabels } from "../../../src/Editor/Workbench/editorLabels.js";
 import { code } from "../harness.js";
 
 // Tabs in an editor group.

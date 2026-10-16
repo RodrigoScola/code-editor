@@ -3,7 +3,7 @@ import {
   parseSnippetFile,
   resolveSnippet,
   snippetAppliesTo,
-} from "../../../src/Language/snippets.js";
+} from "../../../src/Editor/Language/snippets.js";
 import { code } from "../harness.js";
 
 // VS Code snippet syntax beyond the basics in test/ide/language/snippets:

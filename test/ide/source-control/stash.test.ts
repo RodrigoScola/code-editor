@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { Repository } from "../../../src/Scm/repository.js";
-import { parseStashList } from "../../../src/Scm/stash.js";
+import { Repository } from "../../../src/tools/Git/repository.js";
+import { parseStashList } from "../../../src/tools/Git/stash.js";
 import { hasGit, repository } from "./git-helpers.js";
 
 // Stashes. Proposed src/Scm/stash.ts:

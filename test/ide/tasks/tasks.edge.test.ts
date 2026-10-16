@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { executionPlan, parseTasks } from "../../../src/Tasks/tasksConfig.js";
-import { buildCommandLine } from "../../../src/Tasks/shellQuoting.js";
-import { ProblemMatcher } from "../../../src/Tasks/problemMatcher.js";
+import { executionPlan, parseTasks } from "../../../src/tools/Tasks/tasksConfig.js";
+import { buildCommandLine } from "../../../src/tools/Tasks/shellQuoting.js";
+import { ProblemMatcher } from "../../../src/tools/Tasks/problemMatcher.js";
 
 // Edge cases for tasks (base specs: tasks-config, shell-quoting,
 // problem-matchers, detection, runner).

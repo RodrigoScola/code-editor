@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BackupStore } from "../../../src/Files/backup.js";
+import { BackupStore } from "../../../src/Editor/Files/backup.js";
 import { workspace } from "../harness.js";
 import { code } from "../harness.js";
 

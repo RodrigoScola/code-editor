@@ -4,7 +4,7 @@ import {
   escapePathForShell,
   resolveLaunchConfig,
   resolveProfiles,
-} from "../../../src/Terminal/profiles.js";
+} from "../../../src/tools/Terminal/profiles.js";
 
 // Terminal profiles (terminal.integrated.profiles.<platform>). Proposed
 // src/Terminal/profiles.ts:

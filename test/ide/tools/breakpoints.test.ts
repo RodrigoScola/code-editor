@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BreakpointStore } from "../../../src/Debug/breakpoints.js";
+import { BreakpointStore } from "../../../src/tools/Debug/breakpoints.js";
 
 // Proposed module src/Debug/breakpoints.ts, the first piece of a debugger.
 // Talking to a debug adapter (DAP) uses the same framing as language
