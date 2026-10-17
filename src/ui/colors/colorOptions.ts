@@ -1,5 +1,6 @@
 import { ObjectPool } from "../../ObjectPool.js";
 
+
 export class ColorOptions {
   static Pool: ObjectPool<ColorOptions> = new ObjectPool(
     () => new ColorOptions(),
@@ -8,6 +9,15 @@ export class ColorOptions {
   private _green: number = 0;
   private _blue: number = 0;
   private _alpha: number = 1;
+
+  private _type: ColorOptionType = "rgb";
+  setType(type: ColorOptionType) {
+    this._type = type;
+    return this;
+  }
+  get type() {
+    return this._type;
+  }
 
   setRed(red: number) {
     this._red = red;
@@ -56,11 +66,7 @@ export class ColorOptions {
 
   // always sets alpha: a pooled object handed out again must not keep the
   // last one (and `if (a)` would skip a = 0)
-  static Create(r: number, g: number, b: number, a = 1) {
-    return ColorOptions.Pool.get()
-      .setRed(r)
-      .setGreen(g)
-      .setBlue(b)
-      .setAlpha(a);
+  static Create(r: number = 0, g: number = 0, b: number = 0, a = 1) {
+    return ColorOptions.Pool.get().setRed(r).setGreen(g).setBlue(b).setAlpha(a);
   }
 }

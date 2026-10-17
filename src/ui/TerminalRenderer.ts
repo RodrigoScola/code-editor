@@ -11,6 +11,7 @@ import { DisplayLike } from "./layout/layout.js";
 import { LayoutBounds } from "./layout/LayoutBounds.js";
 import { StatusWindow } from "../Editor/windows/StatusEditor.js";
 import { totalmem } from "os";
+import { AnsiParser } from "./colors/Parsers/AnsiParser.js";
 
 // where a finished frame goes: the terminal in the app, console.log in tests
 export type RenderOutput = (frame: string) => void;
@@ -460,14 +461,14 @@ export class TerminalRenderer implements Renderer {
 
     if (this.style.backgroundColor() !== background) {
       this.style.setBackgroundColor(background);
-      const color = colors.toTerminal(background, true);
+      const color = AnsiParser.toTerminal(background, true);
       text += color;
     }
 
     if (this.style.color() !== color) {
       this.style.setColor(color);
 
-      let fontColor = colors.toTerminal(color, false);
+      let fontColor = AnsiParser.toTerminal(color, false);
       text += fontColor;
     }
 

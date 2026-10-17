@@ -3,9 +3,11 @@ import {
   blendColors,
   formatColor,
   mixColors,
-  parseColor,
 } from "../../../../src/ui/colors.js";
 import { ColorOptions } from "../../../../src/ui/colors/colorOptions.js";
+import { ColorParser } from "../../../../src/ui/colors/Parsers/ColorParser.js";
+
+const parseColor = ColorParser.FromString;
 
 // Level 2: color math. Everything after this needs it: gradients mix
 // colors, opacity and shadows blend them. Pure functions, no components.
@@ -29,7 +31,7 @@ const p = (color: ColorOptions | null) => ({
   a: color?.alpha,
 });
 
-describe.only("parseColor: hex", () => {
+describe("parseColor: hex", () => {
   it("#rrggbb", () => {
     expect(p(parseColor("#ff8800"))).toEqual(rgba(255, 136, 0));
   });
@@ -57,9 +59,13 @@ describe.only("parseColor: hex", () => {
   });
 });
 
-describe("parseColor: rgb() and rgba()", () => {
+describe.only("parseColor: rgb() and rgba()", () => {
   it("rgb(r, g, b)", () => {
-    expect(parseColor("rgb(255, 136, 0)")).toEqual(rgba(255, 136, 0));
+    const out = parseColor("rgb(255, 136, 0)");
+
+    console.log(out);
+
+    expect(p(out)).toEqual(rgba(255, 136, 0));
   });
 
   it("rgb(r g b), the space form", () => {

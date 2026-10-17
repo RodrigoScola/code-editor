@@ -3,13 +3,15 @@ import colors from "../../../../src/ui/colors.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { TerminalRenderer } from "../../../../src/ui/TerminalRenderer.js";
 import { layoutAndPaint, screen } from "../../../helpers/ui.js";
+import { ColorParser } from "../../../../src/ui/colors/Parsers/ColorParser.js";
+import { AnsiParser } from "../../../../src/ui/colors/Parsers/AnsiParser.js";
 
-const isHex = colors.isHex;
-const parseHex = colors.parseHex;
-const toTerminal = colors.toTerminal;
+const isHex = ColorParser.ValidHex;
+const parseHex = ColorParser.ToHex;
+const toTerminal = AnsiParser.toTerminal;
 
 // Colors are CSS colors everywhere in the UI engine: the named colors in
-// colors.ts are "#rrggbb", and styles keep whatever they were given. Only the
+// colors.ts are "#rrggbb", and styles keep whatever they were given. the
 // terminal renderer turns them into escape codes, when it writes a cell
 // (TerminalRenderer.cellText); the window renderer can use them as they are.
 //
@@ -21,13 +23,16 @@ const toTerminal = colors.toTerminal;
 //                               terminal's own background shows
 //   colors.FOREGROUND_OFF       "initial": the terminal's own text color
 //
-//   colors.isHex(color)         the cheap check for the render loop: does it
+//   ColorParser.Valid(color)    the cheap check for the render loop: does it
 //                               start with "#"?
-//   colors.parseHex(color)      { r, g, b } for "#rrggbb" / "#rgb", any case,
-//                               or null for anything else. The strict check
+//   ColorParser.Parse(color)    { r, g, b, a } for any CSS color, including
+//                               "#rgba" and "#rrggbbaa", any case, or null
+//                               for anything else
 //   colors.toTerminal(color, layer)
 //                               layer is "background" or "foreground":
 //                               "#rrggbb"     -> ESC[48;2;r;g;bm / ESC[38;2;r;g;bm
+//                               rgb() rgba() hsl() hsla() and color names
+//                               ("red"), as parseColor reads them, the same
 //                               "transparent" -> ESC[49m (default background)
 //                               "initial"     -> ESC[39m (default foreground)
 //                               an escape code already ("\x1b[44m") comes
@@ -178,7 +183,7 @@ describe("4. parseHex: any case", () => {
   });
 });
 
-describe("5. parseHex: #rgb, each digit doubled", () => {
+describe("5. parseHex: short forms and alpha", () => {
   it("#f80 is #ff8800", () => {
     expect(channels("#f80")).toEqual({ red: 255, green: 136, blue: 0 });
   });
@@ -190,6 +195,19 @@ describe("5. parseHex: #rgb, each digit doubled", () => {
   it("upper case", () => {
     expect(channels("#FFF")).toEqual({ red: 255, green: 255, blue: 255 });
   });
+
+  // 4 and 8 digits aren't typos: the last digit (or pair) is the alpha
+  it("#ff00 is #rgba: yellow, fully see-through", () => {
+    const out = parseHex("#ff00")!;
+    expect([out.red, out.green, out.blue, out.alpha]).toEqual([255, 255, 0, 0]);
+    out.dispose();
+  });
+
+  it("#ff0000ff is #rrggbbaa: red, opaque", () => {
+    const out = parseHex("#ff0000ff")!;
+    expect([out.red, out.green, out.blue, out.alpha]).toEqual([255, 0, 0, 1]);
+    out.dispose();
+  });
 });
 
 describe("6. parseHex: anything else is null", () => {
@@ -197,14 +215,12 @@ describe("6. parseHex: anything else is null", () => {
     ["the empty string", ""],
     ["only #", "#"],
     ["no #", "ff0000"],
-    ["4 digits", "#ff00"],
+
     ["5 digits", "#ff000"],
     ["7 digits", "#ff00000"],
-    ["8 digits (alpha has no meaning in a terminal cell)", "#ff0000ff"],
     ["a letter past f", "#ggg"],
     ["a letter past f, long form", "#12345g"],
-    // the characters right next to the ranges, where an off-by-one in a
-    // character-code check would let them through
+
     ["a character between 9 and A", "#12:456"],
     ["a character between F and a", "#12G456"],
     ["the character before 0", "#12/456"],
@@ -324,7 +340,82 @@ describe("10. toTerminal: asking again", () => {
   });
 });
 
-describe("11. setting a color checks it right away", () => {
+// every other way CSS writes an opaque color ends up as the same 24-bit
+// code; parseColor (test/unit/ui/css/02-color.test.ts) does the reading
+describe("11. toTerminal: rgb(), hsl() and color names", () => {
+  it("rgb(0, 0, 0) is black, not left out", () => {
+    expect(toTerminal("rgb(0, 0, 0)", true)).eq("\x1b[48;2;0;0;0m");
+  });
+
+  it("rgb(r, g, b) as a foreground", () => {
+    expect(toTerminal("rgb(255, 136, 0)", false)).eq("\x1b[38;2;255;136;0m");
+  });
+
+  it("rgb(r g b), the space form", () => {
+    expect(toTerminal("rgb(255 136 0)", true)).eq("\x1b[48;2;255;136;0m");
+  });
+
+  it("rgba() with an alpha of 1", () => {
+    expect(toTerminal("rgba(1, 2, 3, 1)", true)).eq("\x1b[48;2;1;2;3m");
+  });
+
+  it("rgb(r g b / 100%), the slash form", () => {
+    expect(toTerminal("rgb(1 2 3 / 100%)", false)).eq("\x1b[38;2;1;2;3m");
+  });
+
+  it("percent channels are a share of 255, rounded", () => {
+    expect(toTerminal("rgb(100%, 0%, 50%)", true)).eq("\x1b[48;2;255;0;128m");
+  });
+
+  it("channels out of range are clamped", () => {
+    expect(toTerminal("rgb(300, -5, 0)", true)).eq("\x1b[48;2;255;0;0m");
+  });
+
+  it("spaces around the parts don't matter", () => {
+    expect(toTerminal("  rgb( 1 ,2,  3 )  ", true)).eq("\x1b[48;2;1;2;3m");
+  });
+
+  it("hsl(h, s%, l%)", () => {
+    expect(toTerminal("hsl(0, 100%, 50%)", true)).eq("\x1b[48;2;255;0;0m");
+  });
+
+  it("hsl(h s% l%), the space form", () => {
+    expect(toTerminal("hsl(120 100% 25%)", false)).eq("\x1b[38;2;0;128;0m");
+  });
+
+  it("hsla() with an alpha of 1", () => {
+    expect(toTerminal("hsla(240, 100%, 50%, 1)", true)).eq(
+      "\x1b[48;2;0;0;255m",
+    );
+  });
+
+  it("names in any case", () => {
+    expect(toTerminal("White", true)).eq("\x1b[48;2;255;255;255m");
+  });
+
+  it("every way of writing one color gives the same code", () => {
+    const codes = [
+      "#ff8800",
+      "#f80",
+      "#FF8800",
+      "rgb(255, 136, 0)",
+      "rgb(255 136 0)",
+      "rgba(255, 136, 0, 1)",
+      "hsl(32, 100%, 50%)",
+    ].map((color) => toTerminal(color, true));
+
+    expect(new Set(codes)).toEqual(new Set(["\x1b[48;2;255;136;0m"]));
+  });
+
+  it("the result has no CSS left in it", () => {
+    for (const color of ["rgb(1, 2, 3)", "hsl(0, 100%, 50%)", "red"]) {
+      const code = toTerminal(color, true);
+      expect(code, color).toMatch(/^\x1b\[48;2;\d+;\d+;\d+m$/);
+    }
+  });
+});
+
+describe("12. setting a color checks it right away", () => {
   it("a good hex is fine", () => {
     expect(() =>
       new DisplayComponent().setBackgroundColor("#ff0000").setColor("#f80"),
@@ -350,11 +441,27 @@ describe("11. setting a color checks it right away", () => {
     const component = new DisplayComponent().setColor(colors.GREEN_FOREGROUND);
     expect(component.color()).eq("#0dbc79");
   });
+
+  it("rgb(), hsl() and names are fine", () => {
+    expect(() =>
+      new DisplayComponent()
+        .setBackgroundColor("rgb(0, 0, 0)")
+        .setColor("hsl(120, 100%, 25%)")
+        .setBackgroundColor("red"),
+    ).not.toThrow();
+  });
+
+  it("an rgb() color is kept as it was given", () => {
+    const component = new DisplayComponent().setBackgroundColor(
+      "rgb(18, 52, 86)",
+    );
+    expect(component.backgroundColor()).eq("rgb(18, 52, 86)");
+  });
 });
 
 // the whole way: a component's colors through TerminalRenderer to the frame
 // the terminal gets
-describe("12. the terminal renderer sends escape codes, never CSS", () => {
+describe("13. the terminal renderer sends escape codes, never CSS", () => {
   function frame(style: (c: DisplayComponent) => void) {
     const { canvas, root } = screen(2, 1);
     root.setContent("x");
@@ -382,6 +489,28 @@ describe("12. the terminal renderer sends escape codes, never CSS", () => {
     expect(frame((c) => c.setBackgroundColor("#123456"))).toContain(
       "\x1b[48;2;18;52;86m",
     );
+  });
+
+  it("an rgb() background", () => {
+    const sent = frame((c) => c.setBackgroundColor("rgb(18, 52, 86)"));
+
+    expect(sent).toContain("\x1b[48;2;18;52;86m");
+    expect(sent).not.toContain("rgb(");
+  });
+
+  it("an hsl() text color", () => {
+    const sent = frame((c) => c.setColor("hsl(120, 100%, 25%)"));
+
+    expect(sent).toContain("\x1b[38;2;0;128;0m");
+    expect(sent).not.toContain("hsl(");
+  });
+
+  it("a color name", () => {
+    const sent = frame((c) => c.setBackgroundColor("orange").setColor("black"));
+
+    expect(sent).toContain("\x1b[48;2;255;165;0m");
+    expect(sent).toContain("\x1b[38;2;0;0;0m");
+    expect(sent).not.toContain("orange");
   });
 
   it("the same color for background and text gets one code of each", () => {

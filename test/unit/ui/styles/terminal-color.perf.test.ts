@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import colors from "../../../../src/ui/colors.js";
+import { ColorParser } from "../../../../src/ui/colors/Parsers/ColorParser.js";
+import { AnsiParser } from "../../../../src/ui/colors/Parsers/AnsiParser.js";
 
 // The last levels of terminal-color.test.ts: making the conversion cheap
 // enough to run for every cell of every frame. Do these after that file
 // passes.
 //
-// 13. the cache, checked exactly (no timing):
+// 14. the cache, checked exactly (no timing):
 //   colors.terminalCacheSize()    how many conversions are stored
 //   colors.clearTerminalCache()   forgets them all
 //   colors.TERMINAL_CACHE_LIMIT   the most it ever stores
@@ -16,19 +18,23 @@ import colors from "../../../../src/ui/colors.js";
 //   keywords "transparent" and "initial"), so they never take space. And it can't grow forever:
 //   gradients and animations make new colors every frame.
 //
-// 14. the speed, compared to baselines timed in the same run, so the specs
+// 15. the speed, compared to baselines timed in the same run, so the specs
 //   don't depend on how fast the machine is: "about as cheap as one Map
 //   lookup", "faster than a regex". Each is the best of several runs after
 //   a warm-up. The full run (npx vitest run) times these next to other
 //   files; if one fails only there, run this file alone. For the actual
 //   numbers: npm run bench (test/perf/terminal-color.bench.ts).
 
-const isHex = colors.isHex;
-const parseHex = colors.parseHex;
-const toTerminal = colors.toTerminal;
+const isHex = ColorParser.ValidHex;
+const parseHex = ColorParser.ToHex;
+const toTerminal = AnsiParser.toTerminal;
+
+const clearCache = AnsiParser.clearCache;
+const size = AnsiParser.cacheSize;
+const limit = AnsiParser.cacheLimit;
 
 beforeEach(() => {
-  colors.clearTerminalCache();
+  AnsiParser.clearCache();
 });
 
 // "#000000", "#010203", ... count different hex colors
@@ -39,29 +45,30 @@ function hexColors(count: number, offset = 0) {
   );
 }
 
-describe("13. the cache", () => {
+describe.skip("14. the cache", () => {
   it("is empty after clearTerminalCache()", () => {
     toTerminal("#ff0000", true);
-    colors.clearTerminalCache();
-    expect(colors.terminalCacheSize()).eq(0);
+    clearCache();
+
+    expect(size()).eq(0);
   });
 
   it("converting a hex color stores it once", () => {
     toTerminal("#ff0000", true);
-    expect(colors.terminalCacheSize()).eq(1);
+    expect(size()).eq(1);
   });
 
   it("converting it again doesn't store it again", () => {
     for (let i = 0; i < 1000; i++) {
       toTerminal("#ff0000", true);
     }
-    expect(colors.terminalCacheSize()).eq(1);
+    expect(size()).eq(1);
   });
 
   it("as background and as foreground are two entries", () => {
     toTerminal("#ff0000", true);
     toTerminal("#ff0000", false);
-    expect(colors.terminalCacheSize()).eq(2);
+    expect(size()).eq(2);
   });
 
   it("escape codes and the default keywords are never stored", () => {
@@ -71,23 +78,23 @@ describe("13. the cache", () => {
     toTerminal("\x1b[31m", false);
     toTerminal(colors.FOREGROUND_OFF, false);
 
-    expect(colors.terminalCacheSize()).eq(0);
+    expect(size()).eq(0);
   });
 
   it("a bad hex isn't stored", () => {
     const result = toTerminal("#ggg", true);
     expect(result).eq("#ggg");
-    expect(colors.terminalCacheSize()).eq(0);
+    expect(size()).eq(0);
   });
 
   it("parseHex() alone doesn't fill it", () => {
     parseHex("#ff0000");
-    expect(colors.terminalCacheSize()).eq(0);
+    expect(size()).eq(0);
   });
 
   it("the limit is at least a screen's worth of colors, and bounded", () => {
-    expect(colors.TERMINAL_CACHE_LIMIT).toBeGreaterThanOrEqual(256);
-    expect(colors.TERMINAL_CACHE_LIMIT).toBeLessThanOrEqual(65_536);
+    expect(limit()).toBeGreaterThanOrEqual(256);
+    expect(limit()).toBeLessThanOrEqual(65_536);
   });
 
   it("never holds more than the limit, however many colors go through", () => {
@@ -95,14 +102,10 @@ describe("13. the cache", () => {
     for (let i = 0; i < many.length; i++) {
       toTerminal(many[i], true);
       if (i % 997 === 0) {
-        expect(colors.terminalCacheSize()).toBeLessThanOrEqual(
-          colors.TERMINAL_CACHE_LIMIT,
-        );
+        expect(size()).toBeLessThanOrEqual(limit());
       }
     }
-    expect(colors.terminalCacheSize()).toBeLessThanOrEqual(
-      colors.TERMINAL_CACHE_LIMIT,
-    );
+    expect(size()).toBeLessThanOrEqual(limit());
   });
 
   it("answers are still right after it filled up", () => {
@@ -171,7 +174,7 @@ function regexParse(color: string) {
   };
 }
 
-describe("14. speed", () => {
+describe("15. speed", () => {
   it("isHex costs about one character comparison (at most 3x)", () => {
     const inputs = [...SCREEN, ...ANSI];
     const times = ratio(

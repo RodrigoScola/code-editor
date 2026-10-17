@@ -69,12 +69,12 @@ interface EditorFile {
 interface BufferLike {
   at(line: number): string | undefined;
   count(): number;
-  update(line:number, content:string)
+  update(line: number, content: string);
   content(): string;
   removeRange(start: number, end: number): string;
   insertAt(start: number, content: string): number;
   index(ind: number): { line: number; character: number };
-  offsetOf(line:number,column: number): number
+  offsetOf(line: number, column: number): number;
 }
 
 interface ViewPorts {
@@ -125,3 +125,5 @@ type GitStatus = {
   gone: boolean;
   files: GitFile[];
 };
+
+type ColorOptionType = "rgb" | "hsl" | "hex" | "ansi";

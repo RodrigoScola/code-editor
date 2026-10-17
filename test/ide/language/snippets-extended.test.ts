@@ -36,7 +36,8 @@ const context = {
   now: new Date(2024, 2, 5, 7, 8, 9, 10),
 };
 
-const resolve = (body: string, extra = {}) => resolveSnippet(body, { ...context, ...extra });
+const resolve = (body: string, extra = {}) =>
+  resolveSnippet(body, { ...context, ...extra });
 
 describe("file and editor variables", () => {
   it("TM_FILENAME and TM_FILENAME_BASE", () => {
@@ -55,12 +56,16 @@ describe("file and editor variables", () => {
   });
 
   it("TM_CURRENT_LINE and TM_CURRENT_WORD", () => {
-    expect(resolve("$TM_CURRENT_WORD in $TM_CURRENT_LINE")).eq("value in let value = 1");
+    expect(resolve("$TM_CURRENT_WORD in $TM_CURRENT_LINE")).eq(
+      "value in let value = 1",
+    );
   });
 
   it("TM_SELECTED_TEXT with a default for when nothing is selected", () => {
     expect(resolve("(${TM_SELECTED_TEXT:empty})")).eq("(empty)");
-    expect(resolve("(${TM_SELECTED_TEXT:empty})", { selectedText: "abc" })).eq("(abc)");
+    expect(resolve("(${TM_SELECTED_TEXT:empty})", { selectedText: "abc" })).eq(
+      "(abc)",
+    );
   });
 
   it("CLIPBOARD, WORKSPACE_NAME and WORKSPACE_FOLDER", () => {
@@ -72,23 +77,29 @@ describe("file and editor variables", () => {
 
 describe("date and time variables", () => {
   it("year, month and day", () => {
-    expect(resolve("$CURRENT_YEAR $CURRENT_YEAR_SHORT $CURRENT_MONTH $CURRENT_DATE")).eq(
-      "2024 24 03 05",
-    );
+    expect(
+      resolve("$CURRENT_YEAR $CURRENT_YEAR_SHORT $CURRENT_MONTH $CURRENT_DATE"),
+    ).eq("2024 24 03 05");
   });
 
   it("names of months and days", () => {
     expect(
-      resolve("$CURRENT_MONTH_NAME $CURRENT_MONTH_NAME_SHORT $CURRENT_DAY_NAME $CURRENT_DAY_NAME_SHORT"),
+      resolve(
+        "$CURRENT_MONTH_NAME $CURRENT_MONTH_NAME_SHORT $CURRENT_DAY_NAME $CURRENT_DAY_NAME_SHORT",
+      ),
     ).eq("March Mar Tuesday Tue");
   });
 
   it("hours, minutes and seconds, padded", () => {
-    expect(resolve("$CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND")).eq("07:08:09");
+    expect(resolve("$CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND")).eq(
+      "07:08:09",
+    );
   });
 
   it("seconds since the epoch", () => {
-    expect(resolve("$CURRENT_SECONDS_UNIX")).eq(String(Math.floor(context.now.getTime() / 1000)));
+    expect(resolve("$CURRENT_SECONDS_UNIX")).eq(
+      String(Math.floor(context.now.getTime() / 1000)),
+    );
   });
 });
 
@@ -102,13 +113,17 @@ describe("random variables", () => {
   });
 
   it("UUID is a version 4 UUID", () => {
-    expect(resolve("$UUID")).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(resolve("$UUID")).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
   });
 });
 
 describe("comment variables", () => {
   it("use the language's comment tokens", () => {
-    expect(resolve("$LINE_COMMENT $BLOCK_COMMENT_START $BLOCK_COMMENT_END")).eq("// /* */");
+    expect(resolve("$LINE_COMMENT $BLOCK_COMMENT_START $BLOCK_COMMENT_END")).eq(
+      "// /* */",
+    );
     expect(resolve("$LINE_COMMENT", { language: "python" })).eq("#");
   });
 });
@@ -131,24 +146,38 @@ describe("transforms", () => {
   it("format options change case", () => {
     expect(resolve("${TM_FILENAME_BASE/(.*)/${1:/upcase}/}")).eq("MAIN.TEST");
     expect(resolve("${TM_CURRENT_WORD/(.*)/${1:/capitalize}/}")).eq("Value");
-    expect(resolve("${TM_CURRENT_WORD/(.*)/${1:/downcase}/}", { currentWord: "VALUE" })).eq("value");
+    expect(
+      resolve("${TM_CURRENT_WORD/(.*)/${1:/downcase}/}", {
+        currentWord: "VALUE",
+      }),
+    ).eq("value");
   });
 
   it("camelcase, pascalcase, snakecase and kebabcase", () => {
     const word = { currentWord: "my-long_name" };
 
-    expect(resolve("${TM_CURRENT_WORD/(.*)/${1:/camelcase}/}", word)).eq("myLongName");
-    expect(resolve("${TM_CURRENT_WORD/(.*)/${1:/pascalcase}/}", word)).eq("MyLongName");
-    expect(resolve("${TM_CURRENT_WORD/(.*)/${1:/snakecase}/}", { currentWord: "myLongName" })).eq(
-      "my_long_name",
+    expect(resolve("${TM_CURRENT_WORD/(.*)/${1:/camelcase}/}", word)).eq(
+      "myLongName",
     );
-    expect(resolve("${TM_CURRENT_WORD/(.*)/${1:/kebabcase}/}", { currentWord: "myLongName" })).eq(
-      "my-long-name",
+    expect(resolve("${TM_CURRENT_WORD/(.*)/${1:/pascalcase}/}", word)).eq(
+      "MyLongName",
     );
+    expect(
+      resolve("${TM_CURRENT_WORD/(.*)/${1:/snakecase}/}", {
+        currentWord: "myLongName",
+      }),
+    ).eq("my_long_name");
+    expect(
+      resolve("${TM_CURRENT_WORD/(.*)/${1:/kebabcase}/}", {
+        currentWord: "myLongName",
+      }),
+    ).eq("my-long-name");
   });
 
   it("conditional inserts", () => {
-    expect(resolve("${TM_SELECTED_TEXT/(.+)/${1:+yes}/}", { selectedText: "x" })).eq("yes");
+    expect(
+      resolve("${TM_SELECTED_TEXT/(.+)/${1:+yes}/}", { selectedText: "x" }),
+    ).eq("yes");
     expect(resolve("${TM_CURRENT_WORD/(z)?.*/${1:?has z:no z}/}")).eq("no z");
     expect(resolve("${TM_CURRENT_WORD/(z)?.*/${1:-fallback}/}")).eq("fallback");
   });
@@ -188,7 +217,10 @@ describe("snippet files", () => {
   });
 
   it("splits the scope list", () => {
-    expect(parseSnippetFile(json)[1].scopes).toEqual(["javascript", "typescript"]);
+    expect(parseSnippetFile(json)[1].scopes).toEqual([
+      "javascript",
+      "typescript",
+    ]);
   });
 
   it("knows file templates", () => {
@@ -206,28 +238,41 @@ describe("snippet files", () => {
 
 describe("insertSnippet", () => {
   it("inserts a snippet given in the arguments", () => {
-    const ide = code("|").executeCommand("textEditor.insertSnippet", { snippet: "console.log($1)$0" });
+    const ide = code("|").executeCommand("textEditor.insertSnippet", {
+      snippet: "console.log($1)$0",
+    });
 
     expect(ide.state()).eq("console.log(|)");
   });
 
   it("wraps the selection when the snippet uses TM_SELECTED_TEXT", () => {
-    const ide = code("«abc»").executeCommand("textEditor.insertSnippet", { snippet: "($TM_SELECTED_TEXT)" });
+    const ide = code("«abc»").executeCommand("textEditor.insertSnippet", {
+      snippet: "($TM_SELECTED_TEXT)",
+    });
 
     expect(ide.lines()).toEqual(["(abc)"]);
   });
 
   it("numbers the cursors with CURSOR_NUMBER", () => {
-    const ide = code("a|\nb|").executeCommand("textEditor.insertSnippet", { snippet: "$CURSOR_NUMBER" });
+    const ide = code("a|\nb|").executeCommand("textEditor.insertSnippet", {
+      snippet: "$CURSOR_NUMBER",
+    });
 
     expect(ide.lines()).toEqual(["a1", "b2"]);
   });
 
   it("finds a registered snippet by language and name", () => {
     const ide = code("|", { path: "a.ts" });
-    ide.snippets.add("typescript", { name: "Log", prefix: "log", body: "console.log($1)" });
+    ide.snippets.add("typescript", {
+      name: "Log",
+      prefix: "log",
+      body: "console.log($1)",
+    });
 
-    ide.executeCommand("textEditor.insertSnippet", { langId: "typescript", name: "Log" });
+    ide.executeCommand("textEditor.insertSnippet", {
+      langId: "typescript",
+      name: "Log",
+    });
 
     expect(ide.state()).eq("console.log(|)");
   });
