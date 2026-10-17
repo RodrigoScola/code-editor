@@ -2,7 +2,7 @@
 // are the TerminalRenderer's. It only draws; listening to the window is
 // WindowEvents' job (src/Input/windowEvents.ts)
 import type { DisplayLike } from "../layout/layout.js";
-import type { LayoutBounds } from "../layout/LayoutBounds.js";
+import { LayoutBounds } from "../layout/LayoutBounds.js";
 import type { Renderer } from "../TerminalRenderer.js";
 
 // anything shaped like an SDL window
@@ -16,6 +16,7 @@ export interface PixelWindow {
 }
 
 export class WindowRenderer implements Renderer {
+  private  _layout:LayoutBounds =  LayoutBounds.Create()
   constructor(window: PixelWindow) {}
 
   // on a new SDL window, resizable

@@ -19,7 +19,6 @@ export type WindowInputEvent = WindowKeyDown | WindowTextInput;
 export class WindowInputParser {
   static FromKeyDown(input: WindowKeyDown): KeyEvent[] {
     const key = input.key || "";
-    console.log(input.ctrl, input.alt);
     if (
       input.ctrl == false &&
       input.alt === false &&
@@ -42,7 +41,6 @@ export class WindowInputParser {
   }
   static FromTextInput(input: WindowTextInput): KeyEvent[] {
     const keys = Array.from(input.text);
-    console.log(input);
 
     const event: KeyEvent[] = [];
 

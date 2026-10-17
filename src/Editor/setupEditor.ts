@@ -2,29 +2,24 @@ import assert from "node:assert";
 import { textEditorCommands } from "../Commands/editorCommands.js";
 import type { EditorCommand } from "../Commands/Commands.js";
 import { WINDOW_NAMES } from "../constants.js";
-import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
-import { DisplayComponent } from "../ui/display/displayComponent.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { Textdocument, DiskFile } from "./Documents/TextDocument.js";
-import { EditorContext } from "./Editor/Editor.js";
+import { EditorContext, EditorContext } from "./Editor/Editor.js";
 import { FileTreeWindow } from "./windows/FileTree/FileTreeWindow.js";
 import { GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
 import { CodeEditorWindow } from "./windows/CodeEditorWindow.js";
 import { LayoutEngine } from "../ui/layout/layout.js";
-import { ListMenuWindow } from "./windows/ListMenuWindow.js";
 import { EditorRoot } from "./Editor/EditorRoot.js";
 import { isTextComponent } from "../utils.js";
-import { CodeEditorGroup, TabWindow } from "./windows/Tab/TabWindow.js";
+import { CodeEditorGroup } from "./windows/Tab/TabWindow.js";
 import { UiPanel } from "../ui/components/UiComponent.js";
 import { ErrorWindow } from "./windows/ErrorWindow.js";
 import { logger } from "../logging/log.js";
-import {
-  ConsoleLogWindow,
-  TreeViewWindow,
-} from "./windows/ConsoleLogWindow.js";
+import { ConsoleLogWindow } from "./windows/ConsoleLogWindow.js";
 import { SecondarySidebar } from "./windows/SecondarySidebar.js";
+import { Renderer, TerminalRenderer } from "../ui/TerminalRenderer.js";
 
 function setupGit(editor: EditorContext) {
   const codeGroup = editor.findWindow(CodeEditorGroup);
@@ -645,6 +640,8 @@ function debugWindow(ctx: EditorContext) {
   logger.subscribe(debugWindow.attachListener);
 }
 
+function connectWindow() {}
+
 export const setupEditor = {
   root: setupWindows,
   terminal: {
@@ -663,6 +660,11 @@ export const setupEditor = {
     normalMode: setupNormalModeCommands,
     commandMode: setupCommandModes,
     visualMode: setupVisualModeCommands,
+  },
+  window: {
+    connect: (editor: EditorContext, renderer: Renderer) => {
+      editor.renderer = renderer;
+    },
   },
 
   windows: {

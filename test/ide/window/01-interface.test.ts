@@ -121,6 +121,6 @@ describe("src/Input/windowEvents.ts", () => {
 
 describe("src/Editor/setupEditor.ts", () => {
   it("has setupEditor.window.connect(editor, renderer), next to setupEditor.terminal", () => {
-    expect(typeof setupEditor.window?.connect).eq("function");
+    expect(typeof setupEditor.window.connect).eq("function");
   });
 });

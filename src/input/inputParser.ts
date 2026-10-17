@@ -110,6 +110,12 @@ export class InputParser {
     return token.length === 1 && /[a-zA-Z]/.test(token);
   }
 
+  // one punctuation or symbol character: ( # @ $ + ~ ...
+  // letters, digits, spaces and named tokens like "<CR>" are not symbols
+  static isSymbol(token: string): boolean {
+    return token.length === 1 && /[\p{P}\p{S}]/u.test(token);
+  }
+
   static FromString(chunk: string): InputEvent[] {
     switch (chunk) {
       case DEFAULT_TOKENS.RETURN:

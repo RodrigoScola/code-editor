@@ -14,7 +14,11 @@ export class InsertMode implements EditorMode {
     const cursor = editor.cursor();
     const buffer = editor.buffer();
 
-    if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
+    if (
+      InputParser.isSpace(key.token) ||
+      InputParser.isCharacter(key.token) ||
+      InputParser.isSymbol(key.token)
+    ) {
       if (key.token === "h" && key.ctrl) {
         cursor.column -= 1;
         cursor.prefferedColumn = cursor.column;
