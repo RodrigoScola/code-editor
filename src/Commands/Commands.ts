@@ -1,5 +1,5 @@
 import { assert } from "../assert.js";
-import { InputParser } from "../Input/inputParser.js";
+import { TerminalInputParser } from "../Input/TerminalInputParser.js";
 import { EditorContext } from "../Editor/Editor/Editor.js";
 import { isTextComponent, isStatusEditorWindow } from "../utils.js";
 import { StatusWindow } from "../Editor/windows/StatusEditor.js";
@@ -179,25 +179,28 @@ export class CommandMode implements EditorMode {
     const buffer = editor.buffer();
     const cursor = editor.cursor();
 
-    if (InputParser.isSpace(key.token) || InputParser.isCharacter(key.token)) {
+    if (
+      TerminalInputParser.isSpace(key.token) ||
+      TerminalInputParser.isCharacter(key.token)
+    ) {
       let valid = key.shift ? key.token.toUpperCase() : key.token;
       buffer.addCharacter(cursor.line, cursor.column, valid);
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;
-    } else if (InputParser.isEscape(key.token)) {
+    } else if (TerminalInputParser.isEscape(key.token)) {
       // entering command mode moved focus to the status window; give it back
       const previousWindow = ctx.windowManager.previousWindow();
       if (previousWindow) {
         ctx.focus(previousWindow);
       }
       ctx.setMode("normal");
-    } else if (InputParser.isBackspace(key.token)) {
+    } else if (TerminalInputParser.isBackspace(key.token)) {
       cursor.column -= 1;
       cursor.prefferedColumn = cursor.column;
       buffer.remove(cursor.line, cursor.column);
-    } else if (InputParser.isDelete(key.token)) {
+    } else if (TerminalInputParser.isDelete(key.token)) {
       buffer.remove(cursor.line, cursor.column);
-    } else if (InputParser.isEnter(key.token)) {
+    } else if (TerminalInputParser.isEnter(key.token)) {
       // todo: execute the command
 
       const previousWindow = ctx.windowManager.previousWindow();
@@ -213,15 +216,15 @@ export class CommandMode implements EditorMode {
       }
 
       ctx.setMode("normal");
-    } else if (InputParser.isArrowDown(key.token)) {
+    } else if (TerminalInputParser.isArrowDown(key.token)) {
       editor.nextLine();
-    } else if (InputParser.isArrowUp(key.token)) {
+    } else if (TerminalInputParser.isArrowUp(key.token)) {
       editor.previousLine();
-    } else if (InputParser.isArrowLeft(key.token)) {
+    } else if (TerminalInputParser.isArrowLeft(key.token)) {
       editor.moveCursorLeft();
-    } else if (InputParser.isArrowRight(key.token)) {
+    } else if (TerminalInputParser.isArrowRight(key.token)) {
       editor.moveCursorRight();
-    } else if (InputParser.isTab(key.token)) {
+    } else if (TerminalInputParser.isTab(key.token)) {
       buffer.addCharacter(cursor.line, cursor.column, "\t");
       cursor.column += 1;
       cursor.prefferedColumn = cursor.column;

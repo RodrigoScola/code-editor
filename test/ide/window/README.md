@@ -16,12 +16,12 @@ npm run build                            # before level 10, it runs dist/
 |---|---|---|
 | 1 | [01-interface](01-interface.test.ts) | Every file and method exists. The checklist. |
 | 2 | [02-colors](02-colors.test.ts) | `ansiToCss(code)`: ANSI color codes to `"#rrggbb"`. A pure function. |
-| 3 | [03-keys](03-keys.test.ts) | `WindowInputParser.parse(event)`: SDL key events to `KeyEvent`s. A pure function. |
+| 3 | [03-keys](03-keys.test.ts) | `WindowInputParser.Parse(event)`: SDL key events to `KeyEvent`s. A pure function. |
 | 4 | [04-modes](04-modes.test.ts) | Normal, insert and command mode driven by window events. Nothing new if 3 passes. |
-| 5 | [05-grid](05-grid.test.ts) | `WindowRenderer`: cell size, `gridSize()`, `layout()`/`setLayout()`. No drawing. |
+| 5 | [05-grid](05-grid.test.ts) | `WindowRenderer`: `layout()`/`setLayout()` in pixels, no cells. No drawing. |
 | 6 | [06-painting](06-painting.test.ts) | `render()`: cells to pixels with Canvas 2D, checked pixel by pixel. |
 | 7 | [07-text-frame](07-text-frame.test.ts) | `build(root)` and `frame()`: the rest of the `Renderer` interface. |
-| 8 | [08-window-events](08-window-events.test.ts) | `onInput`, `onResize`, `onClose`, `close()`. |
+| 8 | [08-window-events](08-window-events.test.ts) | `WindowEvents`: listens to the window (`onInput`, `onResize`, `onClose`). The renderer's `window()` and `close()`. |
 | 9 | [09-connect](09-connect.test.ts) | `setupEditor.window.connect(editor, renderer)`: the editor in a (fake) window, in-process. |
 | 10 | [10-app](10-app.test.ts) | `WindowRenderer.Open` (a real SDL window) and `node dist/index.js --window`. |
 
@@ -33,22 +33,26 @@ src/Input/windowInput.ts
                             shift; ctrl; alt; repeat: boolean }
   type WindowTextInput  = { type: "textInput"; text: string }
   type WindowInputEvent = WindowKeyDown | WindowTextInput
-  WindowInputParser.parse(event): KeyEvent[]
+  WindowInputParser.Parse(event): KeyEvent[]
+
+src/Input/windowEvents.ts
+  new WindowEvents(window)            listens to a PixelWindow (window.on)
+  onInput(f) onResize(f) onClose(f)   plain events, nothing SDL-shaped
 
 src/ui/Renderers/ansiColors.ts
   ansiToCss(code): string | null      "#rrggbb", null = default color
   DEFAULT_BACKGROUND, DEFAULT_FOREGROUND, BASIC_COLORS
 
 src/ui/Renderers/WindowRenderer.ts
-  new WindowRenderer(canvas, window)  window: a PixelWindow (SDL-shaped)
-  WindowRenderer.Open(canvas)         on a new SDL window
+  new WindowRenderer(window)          window: a PixelWindow (SDL-shaped)
+  WindowRenderer.Open()               on a new SDL window
+  pixels, no cells (cells are the TerminalRenderer's)
   Renderer:  build(root) render() setLayout(l) layout() frame()
              isTerminalRenderer() isWindowRenderer()
-  window:    canvas() cellWidth() cellHeight() gridSize()
-             onInput(f) onResize(f) onClose(f) close()
+  window:    window() close()
 
 src/Editor/setupEditor.ts
-  setupEditor.window.connect(editor, renderer)
+  setupEditor.window.connect(editor, renderer)   listens with a WindowEvents
 
 src/index.ts
   --window: the editor in WindowRenderer.Open(...), nothing on the terminal

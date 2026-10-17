@@ -51,7 +51,7 @@ const BACKSPACE = keyDown("backspace");
 // sends window events to the editor, as the window does once connected
 function press(ide: EditorContext, ...events: WindowInputEvent[]) {
   for (const event of events) {
-    for (const key of WindowInputParser.parse(event)) {
+    for (const key of WindowInputParser.Parse(event)) {
       ide.handleKey(key);
     }
   }

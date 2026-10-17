@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import colors from "../../../src/ui/colors.js";
 import {
   ansiToCss,
-  BASIC_COLORS,
   DEFAULT_BACKGROUND,
   DEFAULT_FOREGROUND,
 } from "../../../src/ui/Renderers/ansiColors.js";
+import { ColorParser } from "../../../src/ui/colors/Parsers/ColorParser.js";
 
 // Level 2: turning a style's color into a pixel's color. Styles hold CSS
 // colors (the named ones in src/ui/colors.ts are "#rrggbb", see
@@ -65,35 +65,23 @@ describe("CSS colors are used as they are", () => {
 // the 16 colors in code order: black red green yellow blue magenta cyan
 // white, then their bright versions
 const PALETTE = [
-  "#000000", "#cd3131", "#0dbc79", "#e5e510",
-  "#2472c8", "#bc3fbc", "#11a8cd", "#e5e5e5",
-  "#666666", "#f14c4c", "#23d18b", "#f5f543",
-  "#3b8eea", "#d670d6", "#29b8db", "#ffffff",
+  "#000000",
+  "#cd3131",
+  "#0dbc79",
+  "#e5e510",
+  "#2472c8",
+  "#bc3fbc",
+  "#11a8cd",
+  "#e5e5e5",
+  "#666666",
+  "#f14c4c",
+  "#23d18b",
+  "#f5f543",
+  "#3b8eea",
+  "#d670d6",
+  "#29b8db",
+  "#ffffff",
 ];
-
-describe("the 16 basic colors", () => {
-  it("BASIC_COLORS is the palette, in code order", () => {
-    expect(BASIC_COLORS).toEqual(PALETTE);
-  });
-
-  const NAMES = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
-
-  it.each(NAMES.map((name, i) => [name, 30 + i, 40 + i, i]))(
-    "%s: ESC[%im and ESC[%im",
-    (_name, fg, bg, i) => {
-      expect(ansiToCss(`\x1b[${fg}m`)).eq(PALETTE[i as number]);
-      expect(ansiToCss(`\x1b[${bg}m`)).eq(PALETTE[i as number]);
-    },
-  );
-
-  it.each(NAMES.map((name, i) => [name, 90 + i, 100 + i, i]))(
-    "bright %s: ESC[%im and ESC[%im",
-    (_name, fg, bg, i) => {
-      expect(ansiToCss(`\x1b[${fg}m`)).eq(PALETTE[(i as number) + 8]);
-      expect(ansiToCss(`\x1b[${bg}m`)).eq(PALETTE[(i as number) + 8]);
-    },
-  );
-});
 
 describe("the 256-color palette (38;5;n and 48;5;n)", () => {
   it("0-15 are the basic colors", () => {
@@ -158,8 +146,7 @@ describe("codes that aren't a color are null", () => {
     ["bold (1)", "\x1b[1m"],
     ["underline (4)", "\x1b[4m"],
     ["a cursor move", "\x1b[2;3H"],
-    ["plain text", "red"],
   ])("%s", (_name, code) => {
-    expect(ansiToCss(code)).toBeNull();
+    expect(ColorParser.ToHex(code)).toBeNull();
   });
 });

@@ -1,5 +1,3 @@
-import { DEFAULT_TOKENS, KeyEvent } from "./inputParser.js";
-
 // Turns Vim key notation into key events, so a sequence of keys can be
 // written as text:
 //
@@ -12,6 +10,8 @@ import { DEFAULT_TOKENS, KeyEvent } from "./inputParser.js";
 // <PageDown> <Space> <lt> (a literal "<"). <C-x> is Ctrl+x. <S-Right> is
 // Shift with a named key, the way the terminal parser reports Shift+arrows
 // (<S-Home>, <S-End>, <S-Up>, ...). Names are not case sensitive.
+
+import { DEFAULT_TOKENS } from "./InputParser.js";
 
 const NAMED: Record<string, string> = {
   esc: DEFAULT_TOKENS.ESCAPE,
@@ -26,8 +26,8 @@ const NAMED: Record<string, string> = {
   right: DEFAULT_TOKENS.RIGHT,
   home: DEFAULT_TOKENS.HOME,
   end: DEFAULT_TOKENS.END,
-  pageup: DEFAULT_TOKENS.PAGE_UP,
-  pagedown: DEFAULT_TOKENS.PAGE_DOWN,
+  pageup: DEFAULT_TOKENS.PAGEUP,
+  pagedown: DEFAULT_TOKENS.PAGEDOWN,
   space: DEFAULT_TOKENS.SPACE,
   lt: "<",
 };

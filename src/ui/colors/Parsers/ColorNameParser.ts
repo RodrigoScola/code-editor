@@ -8,7 +8,6 @@ import { ColorOptions } from "../colorOptions.js";
 export const COLOR_NAMES: Readonly<
   Record<string, readonly [number, number, number]>
 > = {
-  transparent: [0, 0, 0],
   aliceblue: [240, 248, 255],
   antiquewhite: [250, 235, 215],
   aqua: [0, 255, 255],

@@ -33,7 +33,7 @@ import {
 // Expected keys are written in Vim notation where it can say them:
 // parseKeys("<C-w>") is Ctrl+w. Pure function: no window, no editor.
 
-const parse = (event: WindowInputEvent) => WindowInputParser.parse(event);
+const parse = (event: WindowInputEvent) => WindowInputParser.Parse(event);
 
 function keyDown(
   key: string | null,

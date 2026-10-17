@@ -27,7 +27,7 @@ describe("align content tests", () => {
     build(root, canvas);
 
     expect(top.layout().y).eq(0);
-    expect(bottom.layout().y).eq(top.layout().height + middle.height());
+    expect(bottom.layout().y).eq(top.layout().height + middle.layout().height);
   });
   it("end", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);

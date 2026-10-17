@@ -1,9 +1,4 @@
 {
   "editor.autoClosingBrackets": "never",
   "editor.autoClosingOvertype": "always",
-  "editor.detectIndentation": false,
-  "editor.tabSize": 5,
-  "editor.insertSpaces": false,
-  "prettier.tabWidth": 5,
-  "prettier.useTabs": true
 }

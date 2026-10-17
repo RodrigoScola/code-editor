@@ -7,7 +7,7 @@ import { ColorParser } from "../../../../src/ui/colors/Parsers/ColorParser.js";
 import { AnsiParser } from "../../../../src/ui/colors/Parsers/AnsiParser.js";
 
 const isHex = ColorParser.ValidHex;
-const parseHex = ColorParser.ToHex;
+const parseHex = ColorParser.FromHexCode;
 const toTerminal = AnsiParser.toTerminal;
 
 // Colors are CSS colors everywhere in the UI engine: the named colors in

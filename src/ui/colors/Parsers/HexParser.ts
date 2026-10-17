@@ -64,6 +64,11 @@ export class HexParser {
 
     return -1;
   }
+  static ToHex(color: ColorOptions): string {
+    return `#${hex2(color.r)}${hex2(color.g)}${hex2(color.b)}`;
+  }
 }
 
+// 0-255 as two hex digits: 5 -> "05", 200 -> "c8"
+const hex2 = (n: number) => n.toString(16).padStart(2, "0");
 const hexDigit = HexParser.hexDigit;

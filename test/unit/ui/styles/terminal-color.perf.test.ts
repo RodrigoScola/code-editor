@@ -26,7 +26,7 @@ import { AnsiParser } from "../../../../src/ui/colors/Parsers/AnsiParser.js";
 //   numbers: npm run bench (test/perf/terminal-color.bench.ts).
 
 const isHex = ColorParser.ValidHex;
-const parseHex = ColorParser.ToHex;
+const parseHex = ColorParser.FromHexCode;
 const toTerminal = AnsiParser.toTerminal;
 
 const clearCache = AnsiParser.clearCache;

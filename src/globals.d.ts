@@ -127,3 +127,33 @@ type GitStatus = {
 };
 
 type ColorOptionType = "rgb" | "hsl" | "hex" | "ansi";
+
+type MouseInputKind = "mouse";
+type KeyboardInputKind = "keyboard";
+
+type InputEventKind = MouseInputKind | KeyboardInputKind;
+type MouseButtons = "left" | "middle" | "right" | null;
+type MouseAction =
+  | "press"
+  | "release"
+  | "drag"
+  | "move"
+  | "wheelUp"
+  | "wheelDown";
+
+interface MouseEvent {
+  kind: MouseInputKind;
+  action: MouseAction;
+  button: MouseButtons;
+  position: Point;
+  ctrl: boolean;
+  alt: boolean;
+  shift: boolean;
+}
+
+interface KeyEvent {
+  token: string;
+  ctrl: boolean;
+  alt: boolean;
+  shift: boolean;
+}

@@ -2,7 +2,7 @@ import process from "process";
 import readline from "node:readline";
 import { LayoutEngine } from "./ui/layout/layout.js";
 import { EditorContext } from "./Editor/Editor/Editor.js";
-import { InputParser } from "./Input/inputParser.js";
+import { TerminalInputParser } from "./Input/TerminalInputParser.js";
 import { assert } from "./assert.js";
 import { setupEditor as setup } from "./Editor/setupEditor.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
@@ -138,7 +138,7 @@ function dispatchKey(parsedKey: KeyEvent) {
 }
 
 process.stdin.on("data", (chunk) => {
-  for (const input of InputParser.parse(chunk)) {
+  for (const input of TerminalInputParser.parse(chunk)) {
     if (input.type === "keyboard") {
       dispatchKey(input.event);
     }

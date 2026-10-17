@@ -1,17 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
+import { WindowEvents, type PixelSize } from "../../../src/Input/windowEvents.js";
 import type { WindowInputEvent } from "../../../src/Input/windowInput.js";
-import { cellCanvas, FakeWindow } from "./helpers.js";
+import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
+import { FakeWindow } from "./helpers.js";
 
-// Level 8: what the user does to the window reaches the editor. The renderer
-// listens to its window (window.on(...)) and hands on plain events, so
-// nothing past it needs to know about SDL:
+// Level 8: what the user does to the window. The WindowRenderer only draws,
+// like the TerminalRenderer; listening is a WindowEvents' job. It's the
+// window's counterpart to what index.ts does for the terminal
+// (process.stdin's "data", process.stdout's "resize"): it attaches itself to
+// the window (window.on(...)) and hands on plain events, so nothing past it
+// needs to know about SDL.
 //
-//   onInput(listener)   keyDown and textInput, as WindowInputEvents
-//                       (the type WindowInputParser.parse takes)
-//   onResize(listener)  the new gridSize() when the window is resized
-//   onClose(listener)   the user closed the window
-//   close()             closes the window (window.destroy())
+//   src/Input/windowEvents.ts
+//     new WindowEvents(window)  listens to a PixelWindow (SDL-shaped)
+//     onInput(listener)         keyDown and textInput, as WindowInputEvents
+//                               (the type WindowInputParser.Parse takes)
+//     onResize(listener)        the window's new { pixelWidth, pixelHeight }
+//     onClose(listener)         the user closed the window
+//
+//   and on the WindowRenderer:
+//     window()                  the window it draws to, for a WindowEvents
+//     close()                   closes the window (window.destroy())
 //
 // SDL's events have more fields than the editor uses (scancode, super,
 // capslock, ...), and its types give the modifiers as numbers; the
@@ -19,10 +28,10 @@ import { cellCanvas, FakeWindow } from "./helpers.js";
 
 function setup() {
   const window = new FakeWindow(400, 200);
-  const renderer = new WindowRenderer(cellCanvas(4, 2), window);
+  const events = new WindowEvents(window);
   const inputs: WindowInputEvent[] = [];
-  renderer.onInput((event: WindowInputEvent) => inputs.push(event));
-  return { window, renderer, inputs };
+  events.onInput((event) => inputs.push(event));
+  return { window, events, inputs };
 }
 
 describe("onInput: keys", () => {
@@ -95,9 +104,9 @@ describe("onInput: keys", () => {
   });
 
   it("every onInput listener gets every event", () => {
-    const { window, renderer, inputs } = setup();
+    const { window, events, inputs } = setup();
     const second: WindowInputEvent[] = [];
-    renderer.onInput((event: WindowInputEvent) => second.push(event));
+    events.onInput((event) => second.push(event));
     window.textInput("a");
 
     expect(inputs).toHaveLength(1);
@@ -106,20 +115,20 @@ describe("onInput: keys", () => {
 });
 
 describe("onResize", () => {
-  it("gets the grid that fits the new size", () => {
-    const { window, renderer } = setup();
-    const sizes: unknown[] = [];
-    renderer.onResize((size: unknown) => sizes.push(size));
+  it("gets the window's new size in pixels", () => {
+    const { window, events } = setup();
+    const sizes: PixelSize[] = [];
+    events.onResize((size) => sizes.push(size));
 
-    window.resize(renderer.cellWidth() * 50, renderer.cellHeight() * 20);
+    window.resize(500, 300);
 
-    expect(sizes).toEqual([{ columns: 50, rows: 20 }]);
+    expect(sizes).toEqual([{ pixelWidth: 500, pixelHeight: 300 }]);
   });
 
   it("is told about every resize SDL reports (the editor decides what to skip)", () => {
-    const { window, renderer } = setup();
+    const { window, events } = setup();
     let count = 0;
-    renderer.onResize(() => count++);
+    events.onResize(() => count++);
 
     window.resize(500, 300);
     window.resize(500, 300);
@@ -127,45 +136,63 @@ describe("onResize", () => {
     expect(count).eq(2);
   });
 
-  it("doesn't draw by itself", () => {
-    const { window, renderer } = setup();
-    renderer.onResize(() => {});
+  it("a resize is not input", () => {
+    const { window, inputs } = setup();
     window.resize(500, 300);
 
-    expect(window.renders).toHaveLength(0);
+    expect(inputs).toEqual([]);
   });
 });
 
-describe("closing", () => {
-  it("onClose: the user closed the window", () => {
-    const { window, renderer } = setup();
+describe("onClose", () => {
+  it("the user closed the window", () => {
+    const { window, events } = setup();
     let closed = false;
-    renderer.onClose(() => (closed = true));
+    events.onClose(() => (closed = true));
 
     window.close();
 
     expect(closed).eq(true);
   });
 
+  it("closing is not input", () => {
+    const { window, inputs } = setup();
+    window.close();
+
+    expect(inputs).toEqual([]);
+  });
+});
+
+describe("the renderer's side", () => {
+  function renderer() {
+    const window = new FakeWindow(400, 200);
+    return { window, renderer: new WindowRenderer(window) };
+  }
+
+  it("window() is the window it draws to", () => {
+    const { window, renderer: r } = renderer();
+    expect(r.window()).toBe(window);
+  });
+
   it("close() destroys the window", () => {
-    const { window, renderer } = setup();
-    renderer.close();
+    const { window, renderer: r } = renderer();
+    r.close();
 
     expect(window.destroyed).eq(true);
   });
 
   it("render() after close() draws nothing", () => {
-    const { window, renderer } = setup();
-    renderer.close();
-    renderer.render();
+    const { window, renderer: r } = renderer();
+    r.close();
+    r.render();
 
     expect(window.renders).toHaveLength(0);
   });
 
   it("close() twice is fine", () => {
-    const { renderer } = setup();
-    renderer.close();
+    const { renderer: r } = renderer();
+    r.close();
 
-    expect(() => renderer.close()).not.toThrow();
+    expect(() => r.close()).not.toThrow();
   });
 });

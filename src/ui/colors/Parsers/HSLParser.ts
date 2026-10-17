@@ -8,8 +8,9 @@ export class HslParser {
       color.startsWith("hsl") && color.indexOf(`(`) > -1 && color.endsWith(")")
     );
   }
+
   static FromString(color: string): ColorOptions | null {
-    const [hue, saturation, lightness, alpha] = ColorParser.GetParts(color);
+    const [hue, saturation, lightness, alpha] = HslParser.GetParts(color);
     if (!hue || !saturation || !lightness) return null;
 
     // hue in degrees, wrapped to 0-360 ("120deg" works, parseFloat drops the unit)

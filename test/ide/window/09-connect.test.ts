@@ -10,13 +10,14 @@ import { cellCanvas, FakeWindow } from "./helpers.js";
 //
 //   setupEditor.window.connect(editor, renderer)
 //
-// after which:
+// It listens with a new WindowEvents(renderer.window()) (level 8), the way
+// index.ts listens to process.stdin for the terminal, and after it:
 //   - editor.renderer is the window renderer, so editor.render() and
 //     editor.renderIfNeeded() (the frame loop in index.ts) draw to the window
 //   - the editor's layout is the window's grid (renderer.gridSize())
 //   - keys typed in the window reach the editor (WindowInputParser, level 3)
-//   - resizing the window lays the editor out again, only when the grid
-//     changes
+//   - resizing the window lays the editor out again (renderer.gridSize() of
+//     the new size), only when the grid changes
 //   - nothing is written to the terminal (process.stdout), ever
 //
 // Everything below is a real editor (test/ide/harness.ts) and a FakeWindow.

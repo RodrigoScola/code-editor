@@ -22,13 +22,28 @@ export class ColorParser {
   static ValidHsl(color: string) {
     return HslParser.Valid(color);
   }
-  static ToHex(color: string) {
+  static FromHexCode(color: string) {
     return HexParser.FromString(color);
+  }
+  static ToHex(color: string): string | null;
+  static ToHex(color: ColorOptions | null): string | null;
+  static ToHex(color: ColorOptions | string | null): string | null {
+    if (!color) return null;
+
+    if (typeof color === "string") {
+      const cr = ColorParser.FromString(color);
+      return ColorParser.ToHex(cr);
+    }
+
+    return HexParser.ToHex(color);
+  }
+  static ToAnsi(color: ColorOptions, background: boolean) {
+    return AnsiParser.ToAnsi(color, background);
   }
   static ToRgb(color: string) {
     return RgbParser.FromString(color);
   }
-  static ToAnsi(color: string) {
+  static FromAnsi(color: string) {
     return AnsiParser.FromString(color);
   }
   static ToNamed(color: string) {

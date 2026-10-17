@@ -1,4 +1,4 @@
-import { InputParser } from "../../Input/inputParser.js";
+import { InputParser } from "../../Input/InputParser.js";
 import { isTextComponent } from "../../utils.js";
 import { EditorContext } from "../Editor/Editor.js";
 
