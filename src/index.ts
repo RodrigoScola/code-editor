@@ -13,7 +13,7 @@ import { CodeEditorGroup } from "./Editor/windows/Tab/TabWindow.js";
 import { captureLogs, logger } from "./logging/log.js";
 import { WINDOW_NAMES } from "./constants.js";
 import { UIScreen } from "./ui/components/UIScreen.js";
-import { TerminalRenderer } from "./ui/TerminalRenderer.js";
+import { TerminalRenderer } from "./ui/Renderers/TerminalRenderer.js";
 
 captureLogs((level, message) => logger.add(level, message));
 

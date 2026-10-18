@@ -42,8 +42,8 @@ describe("frame(): the canvas as text", () => {
       0,
       "ab",
       style()
-        .setBackgroundColor(colors.BLUE_BACKGROUND)
-        .setColor(colors.RED_FOREGROUND)
+        .setBackgroundColor(colors.BLUE)
+        .setColor(colors.RED)
         .setBold(true),
     );
 
@@ -104,7 +104,9 @@ describe("build(root): painting the editor's components", () => {
       for (let x = 0; x < expected.width; x++) {
         const a = terminalCells[y][x].styles;
         const b = windowCells[y][x].styles;
-        expect(b.backgroundColor(), `background at ${x},${y}`).eq(a.backgroundColor());
+        expect(b.backgroundColor(), `background at ${x},${y}`).eq(
+          a.backgroundColor(),
+        );
         expect(b.color(), `color at ${x},${y}`).eq(a.color());
         expect(b.isInverse(), `inverse at ${x},${y}`).eq(a.isInverse());
       }

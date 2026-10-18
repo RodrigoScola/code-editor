@@ -2,9 +2,9 @@ import { existsSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
 import { FileTreeWindow } from "../../../src/Editor/windows/FileTree/FileTreeWindow.js";
-import { Canvas } from "../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../src/ui/Canvas/TerminalCanvas.js";
 import { LayoutEngine } from "../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../src/ui/Renderers/TerminalRenderer.js";
 import { vim, workspace } from "../harness.js";
 import fs from "fs";
 
@@ -39,7 +39,7 @@ function explorer(root: string) {
 // the tree drawn on its own
 function rows(tree: FileTreeWindow) {
   const bounds = LayoutEngine.CreateBounds(40, 15);
-  const canvas = new Canvas().setLayout(bounds);
+  const canvas = new TerminalCanvas().setLayout(bounds);
   tree.view().setLayout(LayoutEngine.CreateBounds(40, 15));
   LayoutEngine.Measure(tree, LayoutEngine.CreateConstraints(40, 15));
   LayoutEngine.Arrange(tree);

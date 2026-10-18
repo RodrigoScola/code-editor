@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import colors from "../../../../src/ui/colors.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
-import { TerminalRenderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { layoutAndPaint, screen } from "../../../helpers/ui.js";
 import { ColorParser } from "../../../../src/ui/colors/Parsers/ColorParser.js";
 import { AnsiParser } from "../../../../src/ui/colors/Parsers/AnsiParser.js";
@@ -111,8 +111,8 @@ describe("2. isHex: the cheap check", () => {
   });
 
   it("the named palette colors are", () => {
-    expect(isHex(colors.BLUE_BACKGROUND)).eq(true);
-    expect(isHex(colors.ORANGE_FOREGROUND)).eq(true);
+    expect(isHex(colors.BLUE)).eq(true);
+    expect(isHex(colors.ORANGE)).eq(true);
   });
 
   it.each([
@@ -153,7 +153,7 @@ describe("3. parseHex: #rrggbb, lower case", () => {
   });
 
   it("a named color", () => {
-    expect(channels(colors.BLUE_BACKGROUND)).toEqual({
+    expect(channels(colors.BLUE)).toEqual({
       red: 36,
       green: 114,
       blue: 200,
@@ -287,19 +287,15 @@ describe("8. toTerminal: hex colors", () => {
 
 describe("9. toTerminal: the named colors", () => {
   it("BLUE_BACKGROUND as a background", () => {
-    expect(toTerminal(colors.BLUE_BACKGROUND, true)).eq(
-      "\x1b[48;2;36;114;200m",
-    );
+    expect(toTerminal(colors.BLUE, true)).eq("\x1b[48;2;36;114;200m");
   });
 
   it("RED_FOREGROUND as a foreground", () => {
-    expect(toTerminal(colors.RED_FOREGROUND, false)).eq("\x1b[38;2;205;49;49m");
+    expect(toTerminal(colors.RED, false)).eq("\x1b[38;2;205;49;49m");
   });
 
   it("a 256-palette name", () => {
-    expect(toTerminal(colors.ORANGE_BACKGROUND, true)).eq(
-      "\x1b[48;2;255;135;0m",
-    );
+    expect(toTerminal(colors.ORANGE, true)).eq("\x1b[48;2;255;135;0m");
   });
 
   it("every named color converts without throwing", () => {
@@ -425,8 +421,8 @@ describe("12. setting a color checks it right away", () => {
   it("the named colors are fine", () => {
     expect(() =>
       new DisplayComponent()
-        .setBackgroundColor(colors.BLUE_BACKGROUND)
-        .setColor(colors.RED_FOREGROUND)
+        .setBackgroundColor(colors.BLUE)
+        .setColor(colors.RED)
         .setBackgroundColor(colors.BACKGROUND_OFF)
         .setColor(colors.FOREGROUND_OFF),
     ).not.toThrow();
@@ -438,7 +434,7 @@ describe("12. setting a color checks it right away", () => {
   });
 
   it("a named color is kept as its CSS color", () => {
-    const component = new DisplayComponent().setColor(colors.GREEN_FOREGROUND);
+    const component = new DisplayComponent().setColor(colors.GREEN);
     expect(component.color()).eq("#0dbc79");
   });
 
@@ -472,14 +468,14 @@ describe("13. the terminal renderer sends escape codes, never CSS", () => {
   }
 
   it("a named background", () => {
-    const sent = frame((c) => c.setBackgroundColor(colors.BLUE_BACKGROUND));
+    const sent = frame((c) => c.setBackgroundColor(colors.BLUE));
 
     expect(sent).toContain("\x1b[48;2;36;114;200m");
     expect(sent).not.toContain("#2472c8");
   });
 
   it("a named text color", () => {
-    const sent = frame((c) => c.setColor(colors.RED_FOREGROUND));
+    const sent = frame((c) => c.setColor(colors.RED));
 
     expect(sent).toContain("\x1b[38;2;205;49;49m");
     expect(sent).not.toContain("#cd3131");
@@ -515,9 +511,7 @@ describe("13. the terminal renderer sends escape codes, never CSS", () => {
 
   it("the same color for background and text gets one code of each", () => {
     const sent = frame((c) =>
-      c
-        .setBackgroundColor(colors.WHITE_BACKGROUND)
-        .setColor(colors.WHITE_FOREGROUND),
+      c.setBackgroundColor(colors.WHITE).setColor(colors.WHITE),
     );
 
     expect(sent).toContain("\x1b[48;2;229;229;229m");
@@ -526,9 +520,7 @@ describe("13. the terminal renderer sends escape codes, never CSS", () => {
 
   it("no CSS reaches the terminal: no #, no keywords", () => {
     const sent = frame((c) =>
-      c
-        .setBackgroundColor(colors.GOLD_BACKGROUND)
-        .setColor(colors.FOREGROUND_OFF),
+      c.setBackgroundColor(colors.GOLD).setColor(colors.FOREGROUND_OFF),
     );
 
     expect(sent).not.toContain("#");
@@ -541,7 +533,7 @@ describe("13. the terminal renderer sends escape codes, never CSS", () => {
   });
 
   it("the plain text is still just the text", () => {
-    const sent = frame((c) => c.setBackgroundColor(colors.BLUE_BACKGROUND));
+    const sent = frame((c) => c.setBackgroundColor(colors.BLUE));
     expect(sent.replace(/\x1b\[[0-9;?<>]*[A-Za-z]/g, "")).eq("x ");
   });
 });

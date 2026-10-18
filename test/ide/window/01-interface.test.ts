@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { setupEditor } from "../../../src/Editor/setupEditor.js";
 import { WindowEvents } from "../../../src/Input/windowEvents.js";
 import { WindowInputParser } from "../../../src/Input/windowInput.js";
-import * as ansiColors from "../../../src/ui/Renderers/ansiColors.js";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
 import { FakeWindow } from "./helpers.js";
+import { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from '../../../src/ui/colors.js';
 
 // Level 1: the pieces exist and have the right shape. Nothing has to work
 // yet; every module and method the later levels use is listed here, so this
@@ -45,13 +45,9 @@ describe("src/Input/windowInput.ts", () => {
 });
 
 describe("src/ui/Renderers/ansiColors.ts", () => {
-  it("exports ansiToCss(code)", () => {
-    expect(typeof ansiColors.ansiToCss).eq("function");
-  });
-
   it('exports DEFAULT_BACKGROUND and DEFAULT_FOREGROUND as "#rrggbb"', () => {
-    expect(ansiColors.DEFAULT_BACKGROUND).toMatch(/^#[0-9a-f]{6}$/);
-    expect(ansiColors.DEFAULT_FOREGROUND).toMatch(/^#[0-9a-f]{6}$/);
+    expect(DEFAULT_BACKGROUND).toMatch(/^#[0-9a-f]{6}$/);
+    expect(DEFAULT_FOREGROUND).toMatch(/^#[0-9a-f]{6}$/);
   });
 });
 

@@ -15,17 +15,17 @@ import { cell, layoutAndPaint, rowText, screen } from "../../../helpers/ui.js";
 //     └── child 10x6 (red), bigger than its parent
 function overflowing() {
   const { canvas, root } = screen(20, 10);
-  root.setBackgroundColor(colors.YELLOW_BACKGROUND);
+  root.setBackgroundColor(colors.YELLOW);
 
   const parent = new DisplayComponent()
     .setWidth(5)
     .setHeight(3)
-    .setBackgroundColor(colors.BLUE_BACKGROUND);
+    .setBackgroundColor(colors.BLUE);
 
   const child = new DisplayComponent()
     .setWidth(10)
     .setHeight(6)
-    .setBackgroundColor(colors.RED_BACKGROUND);
+    .setBackgroundColor(colors.RED);
 
   parent.addChildren(child);
   root.addChildren(parent);
@@ -39,7 +39,7 @@ describe("overflow: visible (default)", () => {
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 7, 0).backgroundColor()).eq(colors.RED_BACKGROUND);
+    expect(cell(canvas, 7, 0).backgroundColor()).eq(colors.RED);
   });
 });
 
@@ -50,8 +50,8 @@ describe("overflow: hidden", () => {
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 4, 0).backgroundColor()).eq(colors.RED_BACKGROUND);
-    expect(cell(canvas, 5, 0).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(cell(canvas, 4, 0).backgroundColor()).eq(colors.RED);
+    expect(cell(canvas, 5, 0).backgroundColor()).eq(colors.YELLOW);
   });
 
   it("keeps the child inside the parent vertically", () => {
@@ -60,8 +60,8 @@ describe("overflow: hidden", () => {
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 0, 2).backgroundColor()).eq(colors.RED_BACKGROUND);
-    expect(cell(canvas, 0, 3).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(cell(canvas, 0, 2).backgroundColor()).eq(colors.RED);
+    expect(cell(canvas, 0, 3).backgroundColor()).eq(colors.YELLOW);
   });
 
   it("clips the child's text", () => {
@@ -81,14 +81,14 @@ describe("overflow: hidden", () => {
     const grandchild = new DisplayComponent()
       .setWidth(10)
       .setHeight(6)
-      .setBackgroundColor(colors.GREEN_BACKGROUND);
+      .setBackgroundColor(colors.GREEN);
     child.addChildren(grandchild);
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 4, 2).backgroundColor()).eq(colors.GREEN_BACKGROUND);
-    expect(cell(canvas, 8, 2).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
-    expect(cell(canvas, 4, 4).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(cell(canvas, 4, 2).backgroundColor()).eq(colors.GREEN);
+    expect(cell(canvas, 8, 2).backgroundColor()).eq(colors.YELLOW);
+    expect(cell(canvas, 4, 4).backgroundColor()).eq(colors.YELLOW);
   });
 
   it("clips absolutely positioned children", () => {
@@ -101,14 +101,14 @@ describe("overflow: hidden", () => {
       .setStartY(1)
       .setWidth(6)
       .setHeight(4)
-      .setBackgroundColor(colors.GREEN_BACKGROUND);
+      .setBackgroundColor(colors.GREEN);
     parent.addChildren(popup);
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 4, 1).backgroundColor()).eq(colors.GREEN_BACKGROUND);
-    expect(cell(canvas, 6, 1).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
-    expect(cell(canvas, 4, 3).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(cell(canvas, 4, 1).backgroundColor()).eq(colors.GREEN);
+    expect(cell(canvas, 6, 1).backgroundColor()).eq(colors.YELLOW);
+    expect(cell(canvas, 4, 3).backgroundColor()).eq(colors.YELLOW);
   });
 
   it("clips to the padding box, so children never cover the border", () => {
@@ -118,10 +118,10 @@ describe("overflow: hidden", () => {
     layoutAndPaint(root, canvas);
 
     // the parent is 5x3 on the outside: border at x 0 and 4, y 0 and 2
-    expect(cell(canvas, 1, 1).backgroundColor()).eq(colors.RED_BACKGROUND);
+    expect(cell(canvas, 1, 1).backgroundColor()).eq(colors.RED);
     expect(cell(canvas, 4, 1).display()).not.eq(" ");
     expect(cell(canvas, 2, 2).display()).not.eq(" ");
-    expect(cell(canvas, 5, 1).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(cell(canvas, 5, 1).backgroundColor()).eq(colors.YELLOW);
   });
 
   it("does not change the child's layout, only what gets painted", () => {

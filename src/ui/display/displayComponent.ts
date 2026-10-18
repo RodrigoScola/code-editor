@@ -1,7 +1,7 @@
 import { assert } from "../../assert.js";
 import { TextBuffer } from "../buffer/Buffer.js";
 
-import { Canvas } from "../canvas.js";
+import { ICanvas } from "../Canvas/TerminalCanvas.js";
 import { DisplayLike, LayoutEngine } from "../layout/layout.js";
 import { LayoutDimensions } from "../layout/LayoutDimensions.js";
 import { OverflowTypes, TextAlign, TextLayout } from "../TextLayout/text.js";
@@ -43,9 +43,9 @@ export class DisplayComponent
 
   private _border: ComponentBorder = new ComponentBorder();
 
-  private paintHook: ((canvas: Canvas) => void) | null = null;
-  private postPaintHook: ((canvas: Canvas) => void) | null = null;
-  private prePaintHook: ((canvas: Canvas) => void) | null = null;
+  private paintHook: ((canvas: ICanvas) => void) | null = null;
+  private postPaintHook: ((canvas: ICanvas) => void) | null = null;
+  private prePaintHook: ((canvas: ICanvas) => void) | null = null;
 
   constructor() {
     super();
@@ -229,29 +229,29 @@ export class DisplayComponent
   // Painting
   // ---------------------------------------------------------------------------
 
-  setPaintHook(paintHook: (canvas: Canvas) => void): this {
+  setPaintHook(paintHook: (canvas: ICanvas) => void): this {
     this.paintHook = paintHook;
     return this;
   }
 
-  paint(canvas: Canvas): void {
+  paint(canvas: ICanvas): void {
     this.paintHook?.(canvas);
   }
 
-  setPostPaintHook(paintHook: (canvas: Canvas) => void): this {
+  setPostPaintHook(paintHook: (canvas: ICanvas) => void): this {
     this.postPaintHook = paintHook;
     return this;
   }
-  postPaint(canvas: Canvas) {
+  postPaint(canvas: ICanvas) {
     this.postPaintHook?.(canvas);
   }
 
-  setPrePaintHook(paintHook: (canvas: Canvas) => void): this {
+  setPrePaintHook(paintHook: (canvas: ICanvas) => void): this {
     this.prePaintHook = paintHook;
     return this;
   }
 
-  onPrePaint(canvas: Canvas): void {
+  onPrePaint(canvas: ICanvas): void {
     this.prePaintHook?.(canvas);
   }
 

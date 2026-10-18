@@ -48,9 +48,7 @@ describe("WindowRenderer.Open: a real window", () => {
       0,
       0,
       "hello",
-      style()
-        .setBackgroundColor(colors.BLUE_BACKGROUND)
-        .setColor(colors.WHITE_FOREGROUND),
+      style().setBackgroundColor(colors.BLUE).setColor(colors.WHITE),
     );
     const renderer = WindowRenderer.Open(canvas);
     try {
@@ -89,7 +87,9 @@ describe("node dist/index.js --window", () => {
   const entry = join(root, "dist", "index.js");
 
   it("dist/ is built from the current source (npm run build)", () => {
-    expect(existsSync(entry), "dist/index.js is missing: npm run build").eq(true);
+    expect(existsSync(entry), "dist/index.js is missing: npm run build").eq(
+      true,
+    );
     expect(
       statSync(entry).mtimeMs,
       "dist/index.js is older than src/index.ts: npm run build",
@@ -99,40 +99,40 @@ describe("node dist/index.js --window", () => {
   // starts the editor, lets it run, then stops it. Returns what it printed
   // and whether it was still running when stopped
   function run(args: string[], ms: number) {
-    return new Promise<{ output: string; running: boolean; code: number | null }>(
-      (resolve) => {
-        const child = spawn(process.execPath, [entry, ...args], {
-          cwd: root,
-          stdio: ["ignore", "pipe", "pipe"],
-        });
-        let output = "";
-        child.stdout.on("data", (d) => (output += d));
-        child.stderr.on("data", (d) => (output += d));
+    return new Promise<{
+      output: string;
+      running: boolean;
+      code: number | null;
+    }>((resolve) => {
+      const child = spawn(process.execPath, [entry, ...args], {
+        cwd: root,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      let output = "";
+      child.stdout.on("data", (d) => (output += d));
+      child.stderr.on("data", (d) => (output += d));
 
-        let running = true;
-        child.on("exit", (code) => {
-          running = false;
-          resolve({ output, running: false, code });
-        });
-        setTimeout(() => {
-          if (running) {
-            child.removeAllListeners("exit");
-            child.kill();
-            resolve({ output, running: true, code: null });
-          }
-        }, ms);
-      },
-    );
+      let running = true;
+      child.on("exit", (code) => {
+        running = false;
+        resolve({ output, running: false, code });
+      });
+      setTimeout(() => {
+        if (running) {
+          child.removeAllListeners("exit");
+          child.kill();
+          resolve({ output, running: true, code: null });
+        }
+      }, ms);
+    });
   }
 
-  it(
-    "keeps running, and writes nothing to the terminal",
-    async () => {
-      const result = await run(["--window"], 3000);
+  it("keeps running, and writes nothing to the terminal", async () => {
+    const result = await run(["--window"], 3000);
 
-      expect(result.running, `it exited (${result.code}):\n${result.output}`).eq(true);
-      expect(JSON.stringify(result.output)).eq('""');
-    },
-    20_000,
-  );
+    expect(result.running, `it exited (${result.code}):\n${result.output}`).eq(
+      true,
+    );
+    expect(JSON.stringify(result.output)).eq('""');
+  }, 20_000);
 });

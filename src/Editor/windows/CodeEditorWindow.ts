@@ -1,4 +1,3 @@
-import { text } from "stream/consumers";
 import { TextBuffer } from "../../ui/buffer/Buffer.js";
 import colors from "../../ui/colors.js";
 import { DisplayComponent } from "../../ui/display/displayComponent.js";
@@ -10,9 +9,8 @@ import {
   EWindow,
   UiComponent,
 } from "../../ui/components/UiComponent.js";
-import { Canvas } from "../../ui/canvas.js";
+import { ICanvas } from "../../ui/Canvas/TerminalCanvas.js";
 import { assert } from "../../assert.js";
-import { EditorContext } from "../Editor/Editor.js";
 import { UIScreen } from "../../ui/components/UIScreen.js";
 
 export class CodeEditorWindow extends UiComponent implements EWindow {
@@ -37,7 +35,7 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
             .setHeight("100%")
             .setWidth(5)
             .setName("editor_lines")
-            .setBackgroundColor(colors.RED_BACKGROUND)
+            .setBackgroundColor(colors.RED)
             .setBold(true)
             .setTextAlign("center"),
         )
@@ -82,7 +80,7 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
 
     assert(cursor, `invalid cursor on editor ${this.name()}`);
 
-    cursor.style.setBackgroundColor(colors.WHITE_BACKGROUND);
+    cursor.style.setBackgroundColor(colors.WHITE);
 
     editor
       .view()
@@ -91,7 +89,7 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
       .setOverflow("scroll")
       .setScrollBar(true)
       .styles()
-      .setBackgroundColor(colors.BRIGHT_RED_BACKGROUND);
+      .setBackgroundColor(colors.BRIGHT_RED);
 
     return editor;
   }
@@ -113,7 +111,7 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
       .setBuffer(this.buffer())
       .setView(this.view().findChildrenByName("editor_content")!);
   }
-  onPostPaint(canvas: Canvas): void {
+  onPostPaint(canvas: ICanvas): void {
     this.cursor().paint(canvas);
   }
 

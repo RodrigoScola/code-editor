@@ -50,13 +50,13 @@ export class ConsoleLogWindow extends UiPanel {
     switch (level) {
       case "debug":
       case "log":
-        return colors.YELLOW_FOREGROUND;
+        return colors.YELLOW;
       case "info":
-        return colors.BLUE_FOREGROUND;
+        return colors.BLUE;
       case "error":
-        return colors.RED_BACKGROUND;
+        return colors.RED;
       case "warn":
-        return colors.ORANGE_FOREGROUND;
+        return colors.ORANGE;
 
       default:
         throw new Error("invalid color on log level: " + level);

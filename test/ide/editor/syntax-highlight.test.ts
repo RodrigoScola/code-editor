@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tokenizeLine } from "../../../src/Editor/Language/highlight.js";
 import { vim } from "../harness.js";
-import { TerminalRenderer } from "../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer } from "../../../src/ui/Renderers/TerminalRenderer.js";
 
 // Proposed module src/Language/highlight.ts
 //

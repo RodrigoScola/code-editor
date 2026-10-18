@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { LayoutEngine } from "../../../../src/ui/layout/layout";
-import { Canvas } from "../../../../src/ui/canvas";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import colors from "../../../../src/ui/colors";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds";
 
 const createRoot = (layout: LayoutBounds) => {
@@ -11,7 +11,7 @@ const createRoot = (layout: LayoutBounds) => {
 
   cm.setLayout(layout);
 
-  cm.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+  cm.styles().setBackgroundColor(colors.BRIGHT_BLACK);
 
   return cm;
 };
@@ -19,7 +19,7 @@ const createRoot = (layout: LayoutBounds) => {
 describe("align content tests", () => {
   it("start", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
     const root = createRoot(layout).setAlignContent("start");
 
     const { top, bottom, middle } = setup(root);
@@ -31,7 +31,7 @@ describe("align content tests", () => {
   });
   it("end", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = createRoot(layout).setAlignContent("end");
     const { top, bottom, middle } = setup(root);
@@ -42,7 +42,7 @@ describe("align content tests", () => {
   });
   it("center", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
     const root = createRoot(layout).setAlignContent("center");
 
     const { top, bottom, middle } = setup(root);
@@ -58,7 +58,7 @@ describe("align content tests", () => {
   });
   it("space-between", () => {
     const layout = LayoutEngine.CreateBounds(20, 21);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
     const root = createRoot(layout).setAlignContent("space-between");
 
     const { top, bottom, middle } = setup(root);
@@ -85,7 +85,7 @@ describe("align content tests", () => {
 
   it("space-evenly", () => {
     const layout = LayoutEngine.CreateBounds(20, 21);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = createRoot(layout).setAlignContent("space-evenly");
 
@@ -118,11 +118,11 @@ describe("align content tests", () => {
   });
   it("space-around", () => {
     const layout = LayoutEngine.CreateBounds(20, 23);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
     const root = new DisplayComponent()
       .setLayout(layout)
       .setAlignContent("space-around");
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    root.styles().setBackgroundColor(colors.BRIGHT_BLACK);
 
     const { top, middle, bottom } = setup(root);
 
@@ -151,7 +151,7 @@ describe("align content tests", () => {
 
   it("justify content end", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = createRoot(layout).setJustifyContent("end");
 
@@ -165,14 +165,14 @@ describe("align content tests", () => {
   });
   it("justify content center", () => {
     const layout = LayoutEngine.CreateBounds(20, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent().setLayout(layout);
 
     const parent = new DisplayComponent().setJustifyContent("center");
 
     root.addChildren(parent);
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    root.styles().setBackgroundColor(colors.BRIGHT_BLACK);
 
     const { bottom, top, middle } = setup(parent);
 
@@ -189,14 +189,14 @@ describe("align content tests", () => {
 describe("justify content start", () => {
   it("starts on original position", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
     const root = new DisplayComponent().setLayout(layout);
 
     const parent = new DisplayComponent();
 
     root.addChildren(parent);
 
-    root.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    root.styles().setBackgroundColor(colors.BRIGHT_BLACK);
 
     const { top, middle, bottom } = setup(parent);
 
@@ -208,7 +208,7 @@ describe("justify content start", () => {
   });
   it("is dynamic", () => {
     const layout = LayoutEngine.CreateBounds(20, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
     const root = new DisplayComponent().setLayout(layout);
 
     const parent = new DisplayComponent();
@@ -235,17 +235,17 @@ describe("justify content start", () => {
 
 function setup(root: DisplayComponent) {
   const top = new DisplayComponent().setWidth(3).setHeight(3);
-  top.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+  top.styles().setBackgroundColor(colors.BLUE);
   const middle = new DisplayComponent().setWidth(3).setHeight(3);
-  middle.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+  middle.styles().setBackgroundColor(colors.YELLOW);
   const bottom = new DisplayComponent().setWidth(3).setHeight(3);
-  bottom.styles().setBackgroundColor(colors.BRIGHT_MAGENTA_BACKGROUND);
+  bottom.styles().setBackgroundColor(colors.BRIGHT_MAGENTA);
 
   root.addChildren([top, middle, bottom]);
   return { top, middle, bottom };
 }
 
-function build(root: DisplayComponent, canvas: Canvas) {
+function build(root: DisplayComponent, canvas: TerminalCanvas) {
   LayoutEngine.Calculate(root);
   Renderer.Create(canvas).build(root);
 

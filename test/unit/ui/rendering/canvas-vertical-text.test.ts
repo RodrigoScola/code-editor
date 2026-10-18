@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import colors from "../../../../src/ui/colors.js";
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { Configuration } from "../../../../src/config.js";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds.js";
@@ -19,7 +19,7 @@ import { cell } from "../../../helpers/ui.js";
 //   they keep their own colors and only the glyph changes
 
 function canvas(width: number, height: number = width) {
-  return new Canvas().setLayout(LayoutBounds.Create(width, height));
+  return new TerminalCanvas().setLayout(LayoutBounds.Create(width, height));
 }
 
 // x, y, width, height
@@ -27,7 +27,7 @@ function bounds(x: number, y: number, width: number, height: number) {
   return LayoutBounds.Create(width, height, x, y);
 }
 
-function column(c: Canvas, x: number, from: number, to: number) {
+function column(c: TerminalCanvas, x: number, from: number, to: number) {
   let out = "";
   for (let y = from; y < to; y++) {
     out += cell(c, x, y).display();
@@ -35,7 +35,7 @@ function column(c: Canvas, x: number, from: number, to: number) {
   return out;
 }
 
-function row(c: Canvas, y: number, from: number, to: number) {
+function row(c: TerminalCanvas, y: number, from: number, to: number) {
   let out = "";
   for (let x = from; x < to; x++) {
     out += cell(c, x, y).display();
@@ -147,29 +147,29 @@ describe("drawVerticalText", () => {
     it("paints the cells with the style", () => {
       const c = canvas(5);
       const style = ComponentStyle.Create()
-        .setBackgroundColor(colors.BLUE_BACKGROUND)
-        .setColor(colors.WHITE_FOREGROUND);
+        .setBackgroundColor(colors.BLUE)
+        .setColor(colors.WHITE);
 
       c.drawVerticalText(bounds(0, 0, 1, 5), "ab", style);
 
-      expect(cell(c, 0, 0).backgroundColor()).eq(colors.BLUE_BACKGROUND);
-      expect(cell(c, 0, 1).color()).eq(colors.WHITE_FOREGROUND);
+      expect(cell(c, 0, 0).backgroundColor()).eq(colors.BLUE);
+      expect(cell(c, 0, 1).color()).eq(colors.WHITE);
       // only the cells with text
-      expect(cell(c, 0, 2).backgroundColor()).not.eq(colors.BLUE_BACKGROUND);
+      expect(cell(c, 0, 2).backgroundColor()).not.eq(colors.BLUE);
     });
 
     it("keeps the cell's colors without a style", () => {
       const c = canvas(5);
       c.fillRect(
         bounds(0, 0, 1, 5),
-        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+        ComponentStyle.Create().setBackgroundColor(colors.YELLOW),
       );
 
       c.drawVerticalText(bounds(0, 0, 1, 5), "ab");
 
       expect(cell(c, 0, 0).display()).eq("a");
-      expect(cell(c, 0, 0).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
-      expect(cell(c, 0, 1).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+      expect(cell(c, 0, 0).backgroundColor()).eq(colors.YELLOW);
+      expect(cell(c, 0, 1).backgroundColor()).eq(colors.YELLOW);
     });
 
     it("does not change the style passed in", () => {

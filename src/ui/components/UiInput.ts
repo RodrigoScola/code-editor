@@ -1,6 +1,6 @@
 import { EditorContext } from "../../Editor/Editor/Editor.js";
 import { TextBuffer } from "../buffer/Buffer.js";
-import { Canvas } from "../canvas.js";
+import { ICanvas } from "../Canvas/TerminalCanvas.js";
 import { ComponentStyle } from "../ComponentStyles.js";
 import { TextLayout } from "../TextLayout/text.js";
 import { UIScreen } from "./UIScreen.js";
@@ -39,7 +39,7 @@ export class UiInput extends UIScreen {
     return this;
   }
 
-  paint(canvas: Canvas): void {
+  paint(canvas: ICanvas): void {
     super.paint(canvas);
     const line = this.buffer().at(this.currentCommandLine);
     if (!line || line.trim().length == 0) {
@@ -50,7 +50,7 @@ export class UiInput extends UIScreen {
       );
     }
   }
-  onPostPaint(canvas: Canvas): void {
+  onPostPaint(canvas: ICanvas): void {
     if (this.cursor().hasSelection()) {
       this.cursor().paintSelection(canvas);
     }

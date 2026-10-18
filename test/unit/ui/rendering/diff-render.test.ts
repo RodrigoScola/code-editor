@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import colors from "../../../../src/ui/colors.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { layoutAndPaint, screen, stripAnsi } from "../../../helpers/ui.js";
 
 // The renderer keeps the last frame it sent. After the first frame, render()
@@ -19,7 +19,7 @@ function setup() {
   const label = new DisplayComponent().setHeight(1).setContent("hello");
   const box = new DisplayComponent()
     .setHeight(1)
-    .setBackgroundColor(colors.BLUE_BACKGROUND);
+    .setBackgroundColor(colors.BLUE);
   root.addChildren([label, box]);
 
   const frames: string[] = [];
@@ -66,7 +66,7 @@ describe("diff rendering", () => {
     const { frame, box } = setup();
 
     frame();
-    box.setBackgroundColor(colors.RED_BACKGROUND);
+    box.setBackgroundColor(colors.RED);
     const second = frame();
 
     // RED_BACKGROUND is "#cd3131", sent as a 24-bit color
@@ -134,7 +134,7 @@ describe("diff rendering", () => {
 
     expect(frame().endsWith("\x1b[0m")).eq(true);
 
-    box.setBackgroundColor(colors.RED_BACKGROUND);
+    box.setBackgroundColor(colors.RED);
     expect(frame().endsWith("\x1b[0m")).eq(true);
   });
 });
@@ -144,16 +144,19 @@ describe("painting allocations", () => {
   // object, not a fresh copy per cell per frame
   it("cells filled with the same style share one style object", () => {
     const { canvas, root } = screen(40, 10);
-    root.setBackgroundColor(colors.BLUE_BACKGROUND);
+    root.setBackgroundColor(colors.BLUE);
     root.addChildren(
-      new DisplayComponent()
-        .setHeight(5)
-        .setBackgroundColor(colors.RED_BACKGROUND),
+      new DisplayComponent().setHeight(5).setBackgroundColor(colors.RED),
     );
 
     layoutAndPaint(root, canvas);
 
-    const styles = new Set(canvas.getCells().flat().map((tile) => tile.styles));
+    const styles = new Set(
+      canvas
+        .getCells()
+        .flat()
+        .map((tile) => tile.styles),
+    );
 
     // one for the red half, one for the blue half (a couple spare)
     expect(styles.size).toBeLessThanOrEqual(4);

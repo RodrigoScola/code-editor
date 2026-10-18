@@ -1,17 +1,12 @@
-import { text } from "stream/consumers";
-import { assert } from "../assert.js";
-import { POSITION_ORDER } from "../constants.js";
-import { Canvas } from "./canvas.js";
-import colors from "./colors.js";
-import { DisplayComponent } from "./display/displayComponent.js";
-import { ComponentStyle } from "./ComponentStyles.js";
-import { TextLayout } from "./TextLayout/text.js";
-import { ViewPort } from "./windows/viewport.js";
-import { DisplayLike } from "./layout/layout.js";
-import { LayoutBounds } from "./layout/LayoutBounds.js";
-import { StatusWindow } from "../Editor/windows/StatusEditor.js";
-import { totalmem } from "os";
-import { AnsiParser } from "./colors/Parsers/AnsiParser.js";
+import { assert } from "../../assert.js";
+import { TerminalCanvas } from "../Canvas/TerminalCanvas.js";
+import colors from "../colors.js";
+import { DisplayComponent } from "../display/displayComponent.js";
+import { ComponentStyle } from "../ComponentStyles.js";
+import { DisplayLike } from "../layout/layout.js";
+import { LayoutBounds } from "../layout/LayoutBounds.js";
+import { AnsiParser } from "../colors/Parsers/AnsiParser.js";
+import { Rendering } from "./Renderer.js";
 
 // where a finished frame goes: the terminal in the app, console.log in tests
 export type RenderOutput = (frame: string) => void;
@@ -40,7 +35,7 @@ export interface Renderer {
 }
 
 export class TerminalRenderer implements Renderer {
-  private _canvas: Canvas = new Canvas();
+  private _canvas: TerminalCanvas = new TerminalCanvas();
   private _output: RenderOutput = (frame) => console.log(frame);
 
   // what the terminal shows: the last frame sent, row by row. null until
@@ -64,66 +59,30 @@ export class TerminalRenderer implements Renderer {
     return this;
   }
 
-  constructor(canvas: Canvas) {
+  constructor(canvas: TerminalCanvas) {
     if (canvas) {
       this._canvas = canvas;
     }
   }
 
-  static Create(canvas: Canvas) {
+  static Create(canvas: TerminalCanvas) {
     return new TerminalRenderer(canvas);
   }
   build(root: DisplayLike) {
     this._canvas.clear();
-    this.paint(root, this._canvas);
+    this.paint(root);
     return this;
-  }
-  getComponents(root: DisplayLike) {
-    const components: DisplayLike[] = [];
-
-    const visit = (comp: DisplayLike) => {
-      if (!comp.view().visible()) {
-        return;
-      }
-      components.push(comp);
-
-      for (const child of comp.view().children()) {
-        visit(child);
-      }
-    };
-
-    visit(root);
-
-    return components;
   }
 
   style: ComponentStyle = ComponentStyle.Create()
     .setBackgroundColor(colors.BACKGROUND_OFF)
     .setColor(colors.FOREGROUND_OFF);
 
-  sortComponents(components: DisplayLike[]) {
-    return components.sort((aLike, bLike) => {
-      const a = aLike.view();
-      const b = bLike.view();
-      if (this.isAncestor(a, b)) {
-        return -1;
-      }
+  private paint(root: DisplayLike) {
+    const components = Rendering.GetComponents(root);
+    const canvas = this._canvas;
 
-      if (this.isAncestor(b, a)) {
-        return 1;
-      }
-
-      return (
-        a.index() - b.index() ||
-        POSITION_ORDER[a.positionMode()] - POSITION_ORDER[b.positionMode()]
-      );
-    });
-  }
-
-  private paint(root: DisplayLike, canvas: Canvas) {
-    const components = this.getComponents(root);
-
-    this.sortComponents(components);
+    Rendering.SortComponents(components);
 
     let defaultBlend = ComponentStyle.Create();
 
@@ -137,23 +96,17 @@ export class TerminalRenderer implements Renderer {
       canvas.fillRect(component.layout(), defaultBlend);
       defaultBlend.reset();
 
-      this.paintBorder(component, canvas);
+      Rendering.Border(component, canvas);
 
       component.onPrePaint(canvas);
       component.paint(canvas);
 
       defaultBlend.blend(component.styles(), component.parent()?.styles());
 
-      this.paintScrollBar(component, canvas);
+      Rendering.ScrollBar(component, canvas);
 
-      // canvas.fillRect(, style)
+      Rendering.Content(component, canvas, defaultBlend);
 
-      canvas.drawText(
-        component.contentLayout(),
-        component.content(),
-        defaultBlend,
-        component.viewport(),
-      );
       defaultBlend.reset();
     }
     for (const componentLike of components) {
@@ -164,175 +117,6 @@ export class TerminalRenderer implements Renderer {
     canvas.setClip(null);
 
     defaultBlend.dispose();
-  }
-  private paintScrollBar(component: DisplayComponent, canvas: Canvas) {
-    const layout = component.paddingLayout();
-
-    const vertical = component.verticalScrollbar();
-    const horizontal = component.horizontalScrollbar();
-
-    if (vertical) {
-      const y = layout.y;
-      let x = layout.width + layout.x - 1;
-      let width = vertical.width();
-      let height = layout.height;
-      let style = vertical.style();
-      const sty = style.clone();
-
-      if (horizontal) {
-        height -= horizontal.height();
-      }
-
-      const bd = layout
-        .clone()
-        .setX(x)
-        .setY(y)
-        .setWidth(width)
-        .setHeight(height);
-
-      const trackColor = style.trackColor() || style.backgroundColor();
-
-      canvas.fillRect(bd, sty.setBackgroundColor(trackColor));
-
-      const startAt = bd.y + vertical.offset();
-      const endAt = startAt + vertical.size();
-
-      const thumbColor = style.thumbColor() || style.backgroundColor();
-      sty.setBackgroundColor(thumbColor);
-      for (let i = startAt; i < endAt && vertical.style().thumb(); i++) {
-        canvas.drawText(bd.setY(i), vertical.style().thumb()!, sty);
-      }
-    }
-
-    if (horizontal) {
-      const y = layout.y + layout.height - 1;
-      const x = layout.x;
-      const style = horizontal.style();
-      let width = layout.width;
-      let height = horizontal.height();
-
-      if (vertical) {
-        width -= vertical.width();
-      }
-
-      const bd = layout
-        .clone()
-        .setX(x)
-        .setY(y)
-        .setHeight(height)
-        .setWidth(width);
-
-      assert(style, `invalid  style for horizontal scroll`);
-
-      const trackColor = style.trackColor() || style.backgroundColor();
-      const sty = style.clone().setBackgroundColor(trackColor);
-
-      canvas.fillRect(bd, sty);
-
-      const startAt = bd.x + horizontal.offset();
-      const endAt = startAt + horizontal.size();
-
-      const thumbColor = style.thumbColor() || style.backgroundColor();
-
-      sty.setBackgroundColor(thumbColor);
-
-      for (let i = startAt; i < endAt && style.thumb(); i++) {
-        canvas.drawText(bd.setX(i), style.thumb()!, sty);
-      }
-      bd.dispose();
-      sty.dispose();
-    }
-  }
-
-  private borderBound: LayoutBounds = LayoutBounds.Create();
-
-  private paintBorder(componentLike: DisplayLike, canvas: Canvas) {
-    const component = componentLike.view();
-    const bound: LayoutBounds = this.borderBound.reset();
-    const border = component.border();
-
-    const cl = component.paddingLayout();
-    const out = border.styles().display();
-
-    border.styles().setBackgroundColor(component.styles().backgroundColor());
-    if (border.left() > 0) {
-      bound
-        .setX(cl.x - border.left())
-        .setHeight(cl.height + border.top() + border.bottom())
-        .setWidth(border.left())
-        .setY(cl.y - border.top());
-
-      border.styles().setDisplay(border.borderStyle().left);
-      canvas.fillRect(bound, border.styles());
-      border.styles().setDisplay(out);
-    }
-
-    if (border.right() > 0) {
-      bound.setX(cl.x + cl.width);
-      bound.setHeight(cl.height + border.top() + border.bottom());
-      bound.setWidth(border.right());
-      bound.setY(cl.y - border.top());
-      border.styles().setDisplay(border.borderStyle().right);
-      canvas.fillRect(bound, border.styles());
-      border.styles().setDisplay(out);
-    }
-
-    if (border.top() > 0) {
-      let width = cl.width + border.left() + border.right();
-
-      let text = border.borderStyle().top.repeat(width);
-
-      if (border.left() > 0 && border.right() > 0) {
-        text =
-          border.borderStyle().top_left +
-          text.slice(1, -1) +
-          border.borderStyle().top_right;
-      }
-
-      bound
-        .setX(cl.x - border.left())
-        .setHeight(border.top())
-        .setWidth(width)
-        .setY(cl.y - border.top());
-
-      canvas.fillRect(bound, border.styles());
-      canvas.drawText(bound, text, border.styles());
-    }
-
-    if (border.bottom() > 0) {
-      let width = cl.width + border.left() + border.right();
-
-      let text = border.borderStyle().bottom.repeat(width);
-
-      if (border.left() > 0 && border.right() > 0) {
-        text =
-          border.borderStyle().bottom_left +
-          text.slice(1, -1) +
-          border.borderStyle().bottom_right;
-      }
-      bound
-        .setX(cl.x - border.left())
-        .setWidth(width)
-        .setY(cl.y + cl.height)
-        .setHeight(border.bottom());
-
-      canvas.fillRect(bound, border.styles());
-      canvas.drawText(bound, text, border.styles());
-    }
-  }
-
-  private isAncestor(ancestor: DisplayLike, componentLike: DisplayLike) {
-    let parent = componentLike.view().parent();
-
-    while (parent) {
-      if (parent === ancestor) {
-        return true;
-      }
-
-      parent = parent.parent();
-    }
-
-    return false;
   }
 
   paintLine() {}

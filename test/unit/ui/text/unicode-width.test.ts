@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import {
   cell,
   layoutAndPaint,
@@ -91,10 +91,12 @@ describe("wrapping and clipping by display width", () => {
 
     layoutAndPaint(root, canvas);
 
-    expect(root.content().lines().map((line) => line.content())).toEqual([
-      "你好",
-      "世界",
-    ]);
+    expect(
+      root
+        .content()
+        .lines()
+        .map((line) => line.content()),
+    ).toEqual(["你好", "世界"]);
   });
 
   it("moves a wide character to the next line instead of splitting it", () => {
@@ -103,11 +105,12 @@ describe("wrapping and clipping by display width", () => {
 
     layoutAndPaint(root, canvas);
 
-    expect(root.content().lines().map((line) => line.content())).toEqual([
-      "a",
-      "你",
-      "b",
-    ]);
+    expect(
+      root
+        .content()
+        .lines()
+        .map((line) => line.content()),
+    ).toEqual(["a", "你", "b"]);
   });
 
   it("clips a wide character that does not fit completely", () => {

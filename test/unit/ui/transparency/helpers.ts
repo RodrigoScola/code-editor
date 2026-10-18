@@ -1,5 +1,5 @@
 import { describe } from "vitest";
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds.js";
 
@@ -15,7 +15,7 @@ export const later = describe.skip;
 
 // a canvas of columns x rows, every cell the default (nothing painted)
 export function cells(columns: number, rows = 1) {
-  return new Canvas(LayoutBounds.Create(columns, rows));
+  return new TerminalCanvas(LayoutBounds.Create(columns, rows));
 }
 
 export function style() {
@@ -24,7 +24,7 @@ export function style() {
 
 // fills cells with a style, like a component's background
 export function fill(
-  canvas: Canvas,
+  canvas: TerminalCanvas,
   column: number,
   row: number,
   width: number,
@@ -36,17 +36,21 @@ export function fill(
 
 // writes text at a cell with a style
 export function write(
-  canvas: Canvas,
+  canvas: TerminalCanvas,
   column: number,
   row: number,
   text: string,
   styles: ComponentStyle,
 ) {
-  canvas.drawText(LayoutBounds.Create(text.length, 1, column, row), text, styles);
+  canvas.drawText(
+    LayoutBounds.Create(text.length, 1, column, row),
+    text,
+    styles,
+  );
 }
 
 // what a cell holds after painting
-export function at(canvas: Canvas, column: number, row: number) {
+export function at(canvas: TerminalCanvas, column: number, row: number) {
   const cell = canvas.getCell(column, row);
   if (!cell) {
     throw new Error(`no cell at ${column},${row}`);
@@ -61,10 +65,13 @@ export function at(canvas: Canvas, column: number, row: number) {
 // The window renderer and its fake window, loaded only when a spec runs:
 // WindowRenderer doesn't exist until test/ide/window is built, and a static
 // import would break this file even while it's parked.
-export async function windowFor(canvas: Canvas, pixelWidth = 400, pixelHeight = 200) {
-  const { WindowRenderer } = await import(
-    "../../../../src/ui/Renderers/WindowRenderer.js"
-  );
+export async function windowFor(
+  canvas: TerminalCanvas,
+  pixelWidth = 400,
+  pixelHeight = 200,
+) {
+  const { WindowRenderer } =
+    await import("../../../../src/ui/Renderers/WindowRenderer.js");
   const { FakeWindow } = await import("../../../ide/window/helpers.js");
   const window = new FakeWindow(pixelWidth, pixelHeight);
   const renderer = new WindowRenderer(canvas, window);

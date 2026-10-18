@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import colors from "../../../../src/ui/colors.js";
 import { assert } from "../../../../src/assert.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
@@ -42,18 +42,18 @@ describe("LayoutEngine measurement", () => {
     const w = 10;
     const layout = LayoutEngine.CreateBounds(w, h);
 
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
 
     const first = new DisplayComponent();
 
-    first.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    first.styles().setBackgroundColor(colors.YELLOW);
 
     const root = new DisplayComponent()
       .setDirection("horizontal")
       .addChildren(first)
       .addChildren(new DisplayComponent());
 
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    root.styles().setBackgroundColor(colors.RED);
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(w));
     LayoutEngine.Arrange(root, layout);
@@ -76,17 +76,15 @@ describe("LayoutEngine measurement", () => {
 
     const root = new DisplayComponent().setLayout(layout);
 
-    root.styles()?.setBackgroundColor(colors.RED_BACKGROUND);
+    root.styles()?.setBackgroundColor(colors.RED);
 
     const parent = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
       .setPadding({ left: 3, right: 1, top: 1, bottom: 1 });
 
     const child = new DisplayComponent().setHeight("100%").setWidth("100%");
 
-    child.styles().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
+    child.styles().setBackgroundColor(colors.BRIGHT_BLUE);
 
     child.setPadding({ left: 1, right: 1, top: 1, bottom: 1 });
     child.setMargin({ left: 1, right: 1, top: 0, bottom: 0 });
@@ -97,7 +95,7 @@ describe("LayoutEngine measurement", () => {
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
 
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
     Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
@@ -188,14 +186,14 @@ describe("LayoutEngine measurement", () => {
 
   it("absolute and padding doesnt take up all of the screen", () => {
     const layout = LayoutEngine.CreateBounds(20);
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent().setLayout(layout);
 
     root
       .addChildren(
         new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+          ComponentStyle.Create().setBackgroundColor(colors.YELLOW),
         ),
       )
       .addChildren(
@@ -204,9 +202,7 @@ describe("LayoutEngine measurement", () => {
           .setIndex(2)
           .setLayout(layout)
           .setPadding({ bottom: 4, top: 4, left: 1, right: 1 })
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
-          ),
+          .setStyles(ComponentStyle.Create().setBackgroundColor(colors.RED)),
       )
       .setDirection("vertical");
     LayoutEngine.Measure(
@@ -228,35 +224,27 @@ describe("tests the invisible of component", () => {
 
     const right = new DisplayComponent()
       .setVisible(false)
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
-      );
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.RED));
 
     root
       .addChildren(
         new DisplayComponent()
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(
-              colors.YELLOW_BACKGROUND,
-            ),
-          )
+          .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
           .setWidth("100%")
           .setHeight("100%"),
       )
       .addChildren(right);
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
     Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
 
-    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
-      colors.YELLOW_BACKGROUND,
-    );
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(colors.YELLOW);
 
     expect(cnv.getCell(0, layout.height - 1)?.styles.backgroundColor()).eq(
-      colors.YELLOW_BACKGROUND,
+      colors.YELLOW,
     );
   });
   it("should keep the layout set on absolute", () => {
@@ -268,11 +256,7 @@ describe("tests the invisible of component", () => {
     root
       .addChildren(
         new DisplayComponent()
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(
-              colors.YELLOW_BACKGROUND,
-            ),
-          )
+          .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
           .setName("first"),
       )
       .addChildren(
@@ -284,26 +268,22 @@ describe("tests the invisible of component", () => {
           .setStartX(0)
           .setStartY(layout.height / 2)
           .setVisible(true)
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
-          ),
+          .setStyles(ComponentStyle.Create().setBackgroundColor(colors.RED)),
       );
     LayoutEngine.Measure(
       root,
       LayoutEngine.CreateConstraints(layout.width),
     ).Arrange(root);
 
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
     Renderer.Create(cnv).build(root);
 
     cnv.renderBoard();
 
-    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
-      colors.YELLOW_BACKGROUND,
-    );
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(colors.YELLOW);
 
     expect(cnv.getCell(0, layout.height - 1)?.styles.backgroundColor()).eq(
-      colors.RED_BACKGROUND,
+      colors.RED,
     );
   });
 });
@@ -313,12 +293,12 @@ describe("tests the margin", () => {
 
     const root = new DisplayComponent().setLayout(layout);
 
-    root.styles().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
+    root.styles().setBackgroundColor(colors.BRIGHT_BLUE);
 
     root
       .addChildren(
         new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
+          ComponentStyle.Create().setBackgroundColor(colors.YELLOW),
         ),
       )
       .addChildren(
@@ -329,13 +309,11 @@ describe("tests the margin", () => {
             top: 0,
             bottom: 0,
           })
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
-          ),
+          .setStyles(ComponentStyle.Create().setBackgroundColor(colors.RED)),
       )
       .setDirection("vertical");
 
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
 
     LayoutEngine.Measure(
       root,
@@ -346,17 +324,15 @@ describe("tests the margin", () => {
 
     cnv.renderBoard();
 
-    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
-      colors.YELLOW_BACKGROUND,
-    );
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(colors.YELLOW);
 
     expect(cnv.getCell(0, layout.height - 1)?.styles.backgroundColor()).eq(
-      colors.BRIGHT_BLUE_BACKGROUND,
+      colors.BRIGHT_BLUE,
     );
 
     cnv.renderBoard();
     expect(cnv.getCell(2, layout.height - 1)?.styles.backgroundColor()).eq(
-      colors.RED_BACKGROUND,
+      colors.RED,
     );
   });
 });
@@ -369,18 +345,14 @@ describe("tests the relative height and width", () => {
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal");
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const oneThird = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(
-          colors.BRIGHT_RED_BACKGROUND,
-        ),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_RED))
       .setWidth("30%");
 
     const rest = new DisplayComponent().setStyles(
-      ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND),
+      ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLUE),
     );
 
     root.addChildren(oneThird).addChildren(rest);
@@ -398,18 +370,14 @@ describe("tests the relative height and width", () => {
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("vertical");
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const oneThird = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(
-          colors.BRIGHT_RED_BACKGROUND,
-        ),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_RED))
       .setHeight("30%");
 
     const rest = new DisplayComponent().setStyles(
-      ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND),
+      ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLUE),
     );
 
     root.addChildren(oneThird).addChildren(rest);
@@ -422,18 +390,18 @@ describe("tests the relative height and width", () => {
 
   it("when gap is explicit, should be applied", () => {
     const layout = LayoutEngine.CreateBounds(20, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal")
       .setGap(2);
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
     const left = new DisplayComponent().setWidth(6).setHeight(6);
-    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    left.styles().setBackgroundColor(colors.RED);
 
     const right = new DisplayComponent().setWidth(6).setHeight(6);
-    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    right.styles().setBackgroundColor(colors.BLUE);
 
     root.addChildren(left);
     root.addChildren(right);

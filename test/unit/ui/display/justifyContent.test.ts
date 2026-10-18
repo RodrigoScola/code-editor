@@ -2,22 +2,22 @@ import { describe, expect, it } from "vitest";
 import { LayoutEngine } from "../../../../src/ui/layout/layout";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import colors from "../../../../src/ui/colors";
-import { Canvas } from "../../../../src/ui/canvas";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 
 describe("justify content tests", () => {
   it("puts the element on the center", () => {
     const layout = LayoutEngine.CreateBounds(30, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal")
       .setJustifyContent("center");
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
     const center = new DisplayComponent().setWidth(6).setHeight(6);
 
-    center.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    center.styles().setBackgroundColor(colors.RED);
 
     root.addChildren(center);
 
@@ -31,18 +31,18 @@ describe("justify content tests", () => {
   });
   it("more than one element on the center", () => {
     const layout = LayoutEngine.CreateBounds(30, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal")
       .setJustifyContent("center");
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
     const left = new DisplayComponent().setWidth(6).setHeight(6);
-    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    left.styles().setBackgroundColor(colors.RED);
 
     const right = new DisplayComponent().setWidth(6).setHeight(6);
-    right.styles().setBackgroundColor(colors.CYAN_BACKGROUND);
+    right.styles().setBackgroundColor(colors.CYAN);
 
     root.addChildren([left, right]);
 
@@ -59,7 +59,7 @@ describe("justify content tests", () => {
 
   it("starts at the end", () => {
     const layout = LayoutEngine.CreateBounds(30, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const parent = new DisplayComponent().setLayout(layout);
 
@@ -67,12 +67,12 @@ describe("justify content tests", () => {
       .setDirection("horizontal")
       .setJustifyContent("end");
 
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
     const left = new DisplayComponent().setWidth(6).setHeight(6);
-    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    left.styles().setBackgroundColor(colors.RED);
 
     const right = new DisplayComponent().setWidth(6).setHeight(6);
-    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    right.styles().setBackgroundColor(colors.BLUE);
 
     root.addChildren(left);
     root.addChildren(right);
@@ -90,23 +90,23 @@ describe("justify content tests", () => {
   });
   it("spaces evenly", () => {
     const layout = LayoutEngine.CreateBounds(30, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal")
       .setJustifyContent("space-evenly");
 
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
     const left = new DisplayComponent().setWidth(6).setHeight(6);
 
-    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    left.styles().setBackgroundColor(colors.RED);
 
     const middle = new DisplayComponent().setWidth(6).setHeight(6);
-    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN);
 
     const right = new DisplayComponent().setWidth(6).setHeight(6);
-    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    right.styles().setBackgroundColor(colors.BLUE);
 
     root.addChildren(left);
     root.addChildren(middle);
@@ -145,23 +145,23 @@ describe("justify content tests", () => {
   });
   it("spaces between", () => {
     const layout = LayoutEngine.CreateBounds(30, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal")
       .setJustifyContent("space-between");
 
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
     const left = new DisplayComponent().setWidth(6).setHeight(6);
 
-    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    left.styles().setBackgroundColor(colors.RED);
 
     const middle = new DisplayComponent().setWidth(6).setHeight(6);
-    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN);
 
     const right = new DisplayComponent().setWidth(6).setHeight(6);
-    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    right.styles().setBackgroundColor(colors.BLUE);
 
     root.addChildren(left);
     root.addChildren(middle);
@@ -195,23 +195,23 @@ describe("justify content tests", () => {
 
   it("spaces around", () => {
     const layout = LayoutEngine.CreateBounds(40, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal")
       .setJustifyContent("space-around");
 
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
     const left = new DisplayComponent().setWidth(6).setHeight(6);
 
-    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    left.styles().setBackgroundColor(colors.RED);
 
     const middle = new DisplayComponent().setWidth(6).setHeight(6);
-    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN);
 
     const right = new DisplayComponent().setWidth(6).setHeight(6);
-    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    right.styles().setBackgroundColor(colors.BLUE);
 
     root.addChildren([left, middle, right]);
 
@@ -238,7 +238,7 @@ describe("justify content tests", () => {
   });
   it("align content start", () => {
     const layout = LayoutEngine.CreateBounds(40, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
@@ -246,16 +246,16 @@ describe("justify content tests", () => {
       .setAlignContent("start")
       .setJustifyContent("center");
 
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
     const left = new DisplayComponent().setWidth(6).setHeight(6);
 
-    left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    left.styles().setBackgroundColor(colors.RED);
 
     const middle = new DisplayComponent().setWidth(6).setHeight(6);
-    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+    middle.styles().setBackgroundColor(colors.BRIGHT_CYAN);
 
     const right = new DisplayComponent().setWidth(6).setHeight(6);
-    right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    right.styles().setBackgroundColor(colors.BLUE);
 
     root.addChildren([left, middle, right]);
 
@@ -269,7 +269,7 @@ describe("justify content tests", () => {
 
   it("align content center", () => {
     const layout = LayoutEngine.CreateBounds(40, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
@@ -277,7 +277,7 @@ describe("justify content tests", () => {
       .setAlignContent("center")
       .setJustifyContent("center");
 
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
 
     const { left, middle, right } = setup();
 
@@ -293,7 +293,7 @@ describe("justify content tests", () => {
   });
   it("align content end", () => {
     const layout = LayoutEngine.CreateBounds(40, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
@@ -301,7 +301,7 @@ describe("justify content tests", () => {
       .setAlignContent("end")
       .setJustifyContent("center");
 
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
 
     const { left, middle, right } = setup();
 
@@ -313,7 +313,7 @@ describe("justify content tests", () => {
   });
 });
 
-function build(root: DisplayComponent, canvas: Canvas) {
+function build(root: DisplayComponent, canvas: TerminalCanvas) {
   LayoutEngine.Measure(
     root,
     LayoutEngine.CreateConstraints(root.layout().width),
@@ -326,14 +326,14 @@ function build(root: DisplayComponent, canvas: Canvas) {
 function setup() {
   const left = new DisplayComponent().setWidth(6).setHeight(6);
 
-  left.styles().setBackgroundColor(colors.RED_BACKGROUND);
+  left.styles().setBackgroundColor(colors.RED);
 
   const middle = new DisplayComponent().setWidth(6).setHeight(6);
-  middle.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+  middle.styles().setBackgroundColor(colors.BRIGHT_CYAN);
 
   const right = new DisplayComponent().setWidth(6).setHeight(6);
 
-  right.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+  right.styles().setBackgroundColor(colors.BLUE);
 
   return {
     left,

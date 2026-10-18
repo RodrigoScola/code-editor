@@ -26,6 +26,12 @@ export class RgbParser {
 
     return opts;
   }
+  // "rgb(36, 114, 200)"; with a see-through alpha "rgba(36, 114, 200, 0.5)",
+  // which FromString reads back
+  static ToRgb(color: ColorOptions): string {
+    const rgb = `${color.r}, ${color.g}, ${color.b}`;
+    return color.a < 1 ? `rgba(${rgb}, ${alpha3(color.a)})` : `rgb(${rgb})`;
+  }
   private static GetParts(code: string) {
     const inside = code.slice(code.indexOf("(") + 1, code.lastIndexOf(")"));
     const [channelText, alphaText] = inside.split("/");
@@ -38,3 +44,6 @@ export class RgbParser {
     return parts;
   }
 }
+
+// 0-1 with at most 3 decimals: 0.5 -> "0.5", 1/3 -> "0.333"
+const alpha3 = (a: number) => String(Number(a.toFixed(3)));

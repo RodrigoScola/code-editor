@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { TabWindow } from "../../../../../src/Editor/windows/Tab/TabWindow.js";
-import { Canvas } from "../../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../../src/ui/Canvas/TerminalCanvas.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../../src/ui/Renderers/TerminalRenderer.js";
 import colors from "../../../../../src/ui/colors.js";
 import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
 import {
@@ -18,7 +18,7 @@ const createEditor = (content: string) => {
   );
 };
 
-const getRow = (dp: DisplayComponent, canvas: Canvas) =>
+const getRow = (dp: DisplayComponent, canvas: TerminalCanvas) =>
   canvas
     .getRow(dp.contentLayout().y)
     ?.map((cm) => cm.styles.display())
@@ -28,7 +28,7 @@ const getRow = (dp: DisplayComponent, canvas: Canvas) =>
 describe("tests the tab component", () => {
   it("shows the tab", () => {
     const layout = LayoutEngine.CreateBounds(30, 30);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new EditorRoot().setLayout(layout);
 
@@ -37,7 +37,7 @@ describe("tests the tab component", () => {
     const editor = new CodeEditorWindow(
       new Textdocument(new MemoryFile("test", "this\nis\ncooo")),
     );
-    editor.view().styles().setBackgroundColor(colors.PINK_BACKGROUND);
+    editor.view().styles().setBackgroundColor(colors.PINK);
 
     root.addChildren(tab.view());
 
@@ -53,7 +53,7 @@ describe("tests the tab component", () => {
 
   it("switches to the right editor", () => {
     const layout = LayoutEngine.CreateBounds(30, 30);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new EditorRoot().setLayout(layout);
 
@@ -75,7 +75,7 @@ describe("tests the tab component", () => {
   });
 });
 
-function render(root: DisplayComponent, canvas: Canvas) {
+function render(root: DisplayComponent, canvas: TerminalCanvas) {
   const cnc = LayoutEngine.CreateConstraints(canvas.layout().width);
 
   LayoutEngine.Measure(root, cnc).Arrange(root);

@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import colors from "../../../../src/ui/colors.js";
 import { assert } from "../../../../src/assert.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
@@ -12,16 +12,12 @@ describe("tests normal position mode", () => {
     const { root, build, cnv } = setupTests(10, 10);
 
     const left = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.MAGENTA))
       .setWidth("50%")
       .setHeight("100%");
 
     const right = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
       .setWidth("50%")
       .setHeight("100%");
 
@@ -34,27 +30,19 @@ describe("tests normal position mode", () => {
     expect(left.contentLayout().width).eq(root.contentLayout().width / 2);
     expect(right.contentLayout().width).eq(root.contentLayout().width / 2);
 
-    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
-      colors.MAGENTA_BACKGROUND,
-    );
-    expect(cnv.getCell(6, 0)?.styles.backgroundColor()).eq(
-      colors.YELLOW_BACKGROUND,
-    );
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(colors.MAGENTA);
+    expect(cnv.getCell(6, 0)?.styles.backgroundColor()).eq(colors.YELLOW);
   });
   it("components side by side when one doesnt have width", () => {
     const { root, build, cnv } = setupTests(10, 10);
 
     const left = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.MAGENTA))
       .setWidth("50%")
       .setHeight("100%");
 
     const right = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
       .setHeight("100%");
 
     root.addChildren(left).addChildren(right).setDirection("horizontal");
@@ -66,12 +54,8 @@ describe("tests normal position mode", () => {
     expect(left.contentLayout().width).eq(root.contentLayout().width / 2);
     expect(right.contentLayout().width).eq(root.contentLayout().width / 2);
 
-    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
-      colors.MAGENTA_BACKGROUND,
-    );
-    expect(cnv.getCell(6, 0)?.styles.backgroundColor()).eq(
-      colors.YELLOW_BACKGROUND,
-    );
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(colors.MAGENTA);
+    expect(cnv.getCell(6, 0)?.styles.backgroundColor()).eq(colors.YELLOW);
   });
 });
 
@@ -82,9 +66,7 @@ describe("tests the absolute mode", () => {
     const child = new DisplayComponent()
       .setWidth("100%")
       .setHeight("100%")
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
-      );
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.RED));
     const parent = new DisplayComponent()
       .setPositionMode("absolute")
       .setWidth(10)
@@ -93,9 +75,7 @@ describe("tests the absolute mode", () => {
       .setStartX(2)
       .setStartY(2)
       .setPadding({ left: 2, right: 0, top: 0, bottom: 0 })
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
       .addChildren(child);
 
     root.addChildren(parent);
@@ -103,21 +83,15 @@ describe("tests the absolute mode", () => {
 
     expect(child.layout().x).toBe(4);
     expect(child.layout().y).toBe(2);
-    expect(cnv.getCell(2, 2)?.styles.backgroundColor()).toBe(
-      colors.YELLOW_BACKGROUND,
-    );
-    expect(cnv.getCell(4, 2)?.styles.backgroundColor()).toBe(
-      colors.RED_BACKGROUND,
-    );
+    expect(cnv.getCell(2, 2)?.styles.backgroundColor()).toBe(colors.YELLOW);
+    expect(cnv.getCell(4, 2)?.styles.backgroundColor()).toBe(colors.RED);
   });
 
   it("can place anywhere ", () => {
     const { root, build, cnv } = setupTests(10, 10);
 
     const abs = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
       .setName("absolute")
       .setPositionMode("absolute")
       .setName("abs")
@@ -129,7 +103,7 @@ describe("tests the absolute mode", () => {
     root
       .addChildren(
         new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA),
         ),
       )
       .addChildren(abs)
@@ -141,16 +115,10 @@ describe("tests the absolute mode", () => {
     build(root, cnv);
 
     cnv.renderBoard();
-    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
-      colors.MAGENTA_BACKGROUND,
-    );
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(colors.MAGENTA);
 
-    expect(cnv.getCell(6, 2)?.styles.backgroundColor()).eq(
-      colors.MAGENTA_BACKGROUND,
-    );
-    expect(cnv.getCell(6, 6)?.styles.backgroundColor()).eq(
-      colors.YELLOW_BACKGROUND,
-    );
+    expect(cnv.getCell(6, 2)?.styles.backgroundColor()).eq(colors.MAGENTA);
+    expect(cnv.getCell(6, 6)?.styles.backgroundColor()).eq(colors.YELLOW);
   });
   it("overlays the absoluted component on inverted order", () => {
     const { root, build, cnv } = setupTests(10, 10);
@@ -158,11 +126,7 @@ describe("tests the absolute mode", () => {
     root
       .addChildren(
         new DisplayComponent()
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(
-              colors.YELLOW_BACKGROUND,
-            ),
-          )
+          .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
           .setPositionMode("absolute")
           .setHeight(4)
           .setWidth(4)
@@ -172,7 +136,7 @@ describe("tests the absolute mode", () => {
 
       .addChildren(
         new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA),
         ),
       )
       .setDirection("horizontal");
@@ -180,16 +144,10 @@ describe("tests the absolute mode", () => {
     build(root, cnv);
 
     cnv.renderBoard();
-    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(
-      colors.MAGENTA_BACKGROUND,
-    );
+    expect(cnv.getCell(0, 0)?.styles.backgroundColor()).eq(colors.MAGENTA);
 
-    expect(cnv.getCell(6, 2)?.styles.backgroundColor()).eq(
-      colors.MAGENTA_BACKGROUND,
-    );
-    expect(cnv.getCell(6, 6)?.styles.backgroundColor()).eq(
-      colors.YELLOW_BACKGROUND,
-    );
+    expect(cnv.getCell(6, 2)?.styles.backgroundColor()).eq(colors.MAGENTA);
+    expect(cnv.getCell(6, 6)?.styles.backgroundColor()).eq(colors.YELLOW);
   });
   it("padding does not change an absolute component's outer position", () => {
     const { build, cnv, root } = setupTests(25, 25);
@@ -201,7 +159,7 @@ describe("tests the absolute mode", () => {
       .setStartX("20%")
       .setStartY("20%");
 
-    abs.styles().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
+    abs.styles().setBackgroundColor(colors.BRIGHT_BLUE);
 
     root.addChildAt(abs, 0);
     build(root, cnv);
@@ -227,7 +185,7 @@ describe("tests the absolute mode", () => {
 
     const child = new DisplayComponent().setHeight("90%").setWidth("90%");
 
-    child.styles().setBackgroundColor(colors.WHITE_BACKGROUND);
+    child.styles().setBackgroundColor(colors.WHITE);
     abs.addChildren(child);
 
     build(root, cnv);
@@ -264,15 +222,15 @@ function setupTests(height: number = 10, width: number = 10) {
 
   const root = new DisplayComponent().setLayout(layout);
 
-  root.styles().setBackgroundColor(colors.MAGENTA_BACKGROUND);
+  root.styles().setBackgroundColor(colors.MAGENTA);
 
-  const cnv = new Canvas().setLayout(layout);
+  const cnv = new TerminalCanvas().setLayout(layout);
 
   return {
     layout,
     root,
     cnv,
-    build: (root: DisplayComponent, canvas: Canvas) => {
+    build: (root: DisplayComponent, canvas: TerminalCanvas) => {
       LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
       LayoutEngine.Arrange(root);
 

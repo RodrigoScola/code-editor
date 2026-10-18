@@ -53,3 +53,7 @@ export function isCodeEditorWindow(
     throw new Error("Expected an EditorComponent");
   }
 }
+
+export function splitLines(str: string): string[] {
+  return str.split(/\r?\n/);
+}

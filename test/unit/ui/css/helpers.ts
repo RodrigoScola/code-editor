@@ -1,7 +1,7 @@
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { DisplayLike, LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 
 // Shared by the css specs. Colors are read back from what the terminal
 // renderer actually sends, so the specs don't depend on how a style stores
@@ -13,7 +13,9 @@ import { TerminalRenderer } from "../../../../src/ui/TerminalRenderer.js";
 
 // a root that fills a canvas of the given size, ready to take children
 export function screen(width: number, height = 1) {
-  const canvas = new Canvas().setLayout(LayoutEngine.CreateBounds(width, height));
+  const canvas = new TerminalCanvas().setLayout(
+    LayoutEngine.CreateBounds(width, height),
+  );
   const root = new DisplayComponent().setLayout(
     LayoutEngine.CreateBounds(width, height),
   );
@@ -30,7 +32,7 @@ export function box(width: number, height = 1, content?: string) {
 }
 
 // one full frame: measure, arrange, paint. Returns what was painted
-export function paint(root: DisplayLike, canvas: Canvas) {
+export function paint(root: DisplayLike, canvas: TerminalCanvas) {
   const { width, height } = canvas.layout();
   LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(width, height));
   LayoutEngine.Arrange(root);
@@ -45,7 +47,7 @@ export type PaintedCell = {
 };
 
 // every cell as the terminal would show it, [row][column]
-export function painted(canvas: Canvas): PaintedCell[][] {
+export function painted(canvas: TerminalCanvas): PaintedCell[][] {
   const frame = new TerminalRenderer(canvas).frame();
   const rows: PaintedCell[][] = [];
 

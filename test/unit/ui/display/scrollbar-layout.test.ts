@@ -47,7 +47,7 @@ function rows(count: number, rowWidth?: number) {
     const row = new DisplayComponent()
       .setHeight(1)
       .setContent(`row ${i}`)
-      .setBackgroundColor(colors.BLUE_BACKGROUND);
+      .setBackgroundColor(colors.BLUE);
     if (rowWidth !== undefined) {
       row.setWidth(rowWidth);
     }

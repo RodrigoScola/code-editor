@@ -1,13 +1,17 @@
-import colors from "./colors.js";
+import colors, { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from "./colors.js";
 import { ObjectPool } from "../ObjectPool.js";
+
+// a named font first: napi-rs canvas turns the generic "monospace" into a
+// proportional font
+const DEFAULT_FONT = "Consolas, monospace";
 
 export class ComponentStyle {
   private static Pool: ObjectPool<ComponentStyle> = new ObjectPool(
     () => new ComponentStyle(),
   );
 
-  private bg: string = colors.BACKGROUND_OFF;
-  private cl: string = colors.FOREGROUND_OFF;
+  private bg: string = DEFAULT_BACKGROUND;
+  private cl: string = DEFAULT_FOREGROUND;
   private bld: boolean = false;
   private dsp: string = " ";
 
@@ -18,6 +22,8 @@ export class ComponentStyle {
   private inv: boolean = false;
   private blk: boolean = false;
   private hdn: boolean = false;
+  private _fontSize: number = 16;
+  private _font: string = DEFAULT_FONT;
 
   reset() {
     this.bg = colors.BACKGROUND_OFF;
@@ -31,6 +37,21 @@ export class ComponentStyle {
     this.inv = false;
     this.blk = false;
     this.hdn = false;
+    return this;
+  }
+
+  public fontSize() {
+    return this._fontSize;
+  }
+  setFontSize(fontSize: number) {
+    this._fontSize = fontSize;
+    return this;
+  }
+  public font() {
+    return this._font;
+  }
+  setFont(font: string) {
+    this._font = font;
     return this;
   }
 
@@ -110,9 +131,6 @@ export class ComponentStyle {
     return this.bg;
   }
   public setBackgroundColor(newColor: string) {
-
-
-
     this.bg = newColor;
     return this;
   }
@@ -142,6 +160,8 @@ export class ComponentStyle {
     out.inv = this.inv;
     out.blk = this.blk;
     out.hdn = this.hdn;
+    out._fontSize = this._fontSize;
+    out._font = this._font;
 
     return out;
   }
@@ -155,7 +175,6 @@ export class ComponentStyle {
     parent: ComponentStyle | null | undefined,
   ) {
     this.reset();
-
 
     const firstBackground = first?.backgroundColor() ?? colors.BACKGROUND_OFF;
 
@@ -183,6 +202,7 @@ export class ComponentStyle {
       .setUnderline(
         (first?.isUnderline() ?? false) || (parent?.isUnderline() ?? false),
       )
+      .setFont(first?.font() ?? parent?.font() ?? DEFAULT_FONT)
       .setStrikeThrough(
         (first?.isStrikeThrough() ?? false) ||
           (parent?.isStrikeThrough() ?? false),
@@ -191,6 +211,7 @@ export class ComponentStyle {
         (first?.isInverse() ?? false) || (parent?.isInverse() ?? false),
       )
       .setBlink((first?.isBlink() ?? false) || (parent?.isBlink() ?? false))
+      .setFontSize((first?.fontSize() ?? 16) || (parent?.fontSize() ?? 16))
       .setHidden((first?.isHidden() ?? false) || (parent?.isHidden() ?? false));
 
     return this;

@@ -1,6 +1,6 @@
 import { type } from "os";
 import { assert } from "../../../assert.js";
-import { Canvas } from "../../../ui/canvas.js";
+import { ICanvas } from "../../../ui/Canvas/TerminalCanvas.js";
 import colors from "../../../ui/colors.js";
 import { ComponentBorder } from "../../../ui/display/border.js";
 import { DisplayComponent } from "../../../ui/display/displayComponent.js";
@@ -25,7 +25,7 @@ export class TabWindow extends UIScreen {
     this.titles
       .setHeight("fit-content")
       .setDirection("horizontal")
-      .setBackgroundColor(colors.PINK_BACKGROUND)
+      .setBackgroundColor(colors.PINK)
       .setBorderStyle("full")
       .setBorderBottom(1);
 
@@ -33,7 +33,7 @@ export class TabWindow extends UIScreen {
     this.displayContent
       .view()
       .setName("tab_editor_window")
-      .setBackgroundColor(colors.BLACK_BACKGROUND);
+      .setBackgroundColor(colors.BLACK);
     this.addChildren(this.displayContent);
   }
 
@@ -72,7 +72,7 @@ export class TabWindow extends UIScreen {
       .setName(title)
       .setContent(title);
 
-    component.styles().setBackgroundColor(colors.BRIGHT_RED_BACKGROUND);
+    component.styles().setBackgroundColor(colors.BRIGHT_RED);
 
     this.titles.addChildren(component);
 

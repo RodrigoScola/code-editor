@@ -1,5 +1,5 @@
 import { TextBuffer } from "../buffer/Buffer.js";
-import { Canvas } from "../canvas.js";
+import { ICanvas } from "../Canvas/TerminalCanvas.js";
 import { DisplayComponent } from "../display/displayComponent.js";
 import { EditorContext } from "../../Editor/Editor/Editor.js";
 import { assert } from "../../assert.js";
@@ -73,9 +73,9 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
     this.view().content().setBuffer(bffr);
     return this;
   }
-  onPostPaint(canvas: Canvas) {}
+  onPostPaint(canvas: ICanvas) {}
 
-  onPrePaint(canvas: Canvas) {
+  onPrePaint(canvas: ICanvas) {
     const cl = this._view.contentLayout();
     this._view.viewport().ensureVisible(cl.width, cl.height);
   }
@@ -182,7 +182,7 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
   parent(): UiComponent | null {
     return this._parent;
   }
-  paint(canvas: Canvas) {}
+  paint(canvas: ICanvas) {}
   onFocus() {}
   onBlur() {}
 }

@@ -4,7 +4,7 @@ import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { UiComponent } from "../../../../src/ui/components/UiComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { cell, layoutAndPaint, screen } from "../../../helpers/ui.js";
 
 // How a component's final style is worked out:
@@ -39,19 +39,17 @@ function threeLevels(style: (root: DisplayComponent) => void) {
 describe("inheritance goes through every ancestor", () => {
   it("background", () => {
     const { canvas } = threeLevels((root) =>
-      root.setBackgroundColor(colors.BLUE_BACKGROUND),
+      root.setBackgroundColor(colors.BLUE),
     );
 
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.BLUE_BACKGROUND);
-    expect(cell(canvas, 3, 0).backgroundColor()).eq(colors.BLUE_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.BLUE);
+    expect(cell(canvas, 3, 0).backgroundColor()).eq(colors.BLUE);
   });
 
   it("text color", () => {
-    const { canvas } = threeLevels((root) =>
-      root.setColor(colors.RED_FOREGROUND),
-    );
+    const { canvas } = threeLevels((root) => root.setColor(colors.RED));
 
-    expect(cell(canvas, 0, 0).color()).eq(colors.RED_FOREGROUND);
+    expect(cell(canvas, 0, 0).color()).eq(colors.RED);
   });
 
   it("bold", () => {
@@ -78,7 +76,9 @@ describe("a child can turn off what it inherits", () => {
   it("setUnderline(false) wins over an underlined parent", () => {
     const { canvas, root } = screen(4, 1);
     root.setUnderline(true);
-    root.addChildren(new DisplayComponent().setContent("x").setUnderline(false));
+    root.addChildren(
+      new DisplayComponent().setContent("x").setUnderline(false),
+    );
 
     layoutAndPaint(root, canvas);
 
@@ -101,11 +101,13 @@ describe("a child can turn off what it inherits", () => {
 describe("focus styles", () => {
   function focusable() {
     const component = new UiComponent();
-    const canvas = new Canvas().setLayout(LayoutEngine.CreateBounds(4, 1));
+    const canvas = new TerminalCanvas().setLayout(
+      LayoutEngine.CreateBounds(4, 1),
+    );
     component.view().setLayout(LayoutEngine.CreateBounds(4, 1));
-    component.view().setBackgroundColor(colors.BLUE_BACKGROUND);
+    component.view().setBackgroundColor(colors.BLUE);
     component.setFocusStyles(
-      ComponentStyle.Create().setBackgroundColor(colors.GREEN_BACKGROUND),
+      ComponentStyle.Create().setBackgroundColor(colors.GREEN),
     );
     return { component, canvas };
   }
@@ -115,7 +117,7 @@ describe("focus styles", () => {
 
     layoutAndPaint(component, canvas);
 
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.BLUE_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.BLUE);
   });
 
   it("are blended over the normal style while focused", () => {
@@ -124,7 +126,7 @@ describe("focus styles", () => {
     component.focus();
     layoutAndPaint(component, canvas);
 
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.GREEN_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.GREEN);
   });
 
   it("go away on blur", () => {
@@ -135,12 +137,12 @@ describe("focus styles", () => {
     component.blur();
     layoutAndPaint(component, canvas);
 
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.BLUE_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.BLUE);
   });
 });
 
 describe("classes and stylesheets", () => {
-  const warning = () => ComponentStyle.Create().setColor(colors.YELLOW_FOREGROUND);
+  const warning = () => ComponentStyle.Create().setColor(colors.YELLOW);
 
   it("a class picks up its style from an ancestor's stylesheet", () => {
     const { canvas, root } = screen(4, 1);
@@ -153,38 +155,36 @@ describe("classes and stylesheets", () => {
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 0, 0).color()).eq(colors.YELLOW_FOREGROUND);
+    expect(cell(canvas, 0, 0).color()).eq(colors.YELLOW);
   });
 
   it("styles set on the component win over its class", () => {
     const { canvas, root } = screen(4, 1);
     root.setStyleSheet({ warning: warning() });
-    const label = new DisplayComponent()
-      .setContent("x")
-      .setColor(colors.RED_FOREGROUND);
+    const label = new DisplayComponent().setContent("x").setColor(colors.RED);
     label.addClass("warning");
     root.addChildren(label);
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 0, 0).color()).eq(colors.RED_FOREGROUND);
+    expect(cell(canvas, 0, 0).color()).eq(colors.RED);
   });
 
   it("class styles win over inherited ones", () => {
     const { canvas, root } = screen(4, 1);
-    root.setColor(colors.RED_FOREGROUND).setStyleSheet({ warning: warning() });
+    root.setColor(colors.RED).setStyleSheet({ warning: warning() });
     const label = new DisplayComponent().setContent("x");
     label.addClass("warning");
     root.addChildren(label);
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 0, 0).color()).eq(colors.YELLOW_FOREGROUND);
+    expect(cell(canvas, 0, 0).color()).eq(colors.YELLOW);
   });
 
   it("removeClass goes back to the inherited style", () => {
     const { canvas, root } = screen(4, 1);
-    root.setColor(colors.RED_FOREGROUND).setStyleSheet({ warning: warning() });
+    root.setColor(colors.RED).setStyleSheet({ warning: warning() });
     const label = new DisplayComponent().setContent("x");
     label.addClass("warning");
     root.addChildren(label);
@@ -194,7 +194,7 @@ describe("classes and stylesheets", () => {
     layoutAndPaint(root, canvas);
 
     expect(label.hasClass("warning")).eq(false);
-    expect(cell(canvas, 0, 0).color()).eq(colors.RED_FOREGROUND);
+    expect(cell(canvas, 0, 0).color()).eq(colors.RED);
   });
 
   it("swapping the stylesheet restyles everything (themes)", () => {
@@ -204,15 +204,15 @@ describe("classes and stylesheets", () => {
     root.addChildren(label);
 
     root.setStyleSheet({
-      panel: ComponentStyle.Create().setBackgroundColor(colors.BLACK_BACKGROUND),
+      panel: ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_BLACK),
     });
     layoutAndPaint(root, canvas);
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.BLACK_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.BRIGHT_BLACK);
 
     root.setStyleSheet({
-      panel: ComponentStyle.Create().setBackgroundColor(colors.WHITE_BACKGROUND),
+      panel: ComponentStyle.Create().setBackgroundColor(colors.WHITE),
     });
     layoutAndPaint(root, canvas);
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.WHITE_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.WHITE);
   });
 });

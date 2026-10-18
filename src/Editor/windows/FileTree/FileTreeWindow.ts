@@ -1,7 +1,7 @@
 import fs, { Dirent } from "fs";
 import path from "path";
 import colors from "../../../ui/colors.js";
-import { Canvas } from "../../../ui/canvas.js";
+import { ICanvas } from "../../../ui/Canvas/TerminalCanvas.js";
 import { EditorContext } from "../../Editor/Editor.js";
 import { ComponentStyle } from "../../../ui/ComponentStyles.js";
 import { ICONS } from "../../../constants.js";
@@ -39,9 +39,9 @@ export class FileTreeWindow extends UIScreen {
     assert(typeof dir === "string", `expected string, got:${typeof dir}`);
 
     this.cursor().style = ComponentStyle.Create()
-      .setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND)
+      .setBackgroundColor(colors.BRIGHT_BLUE)
 
-      .setColor(colors.WHITE_FOREGROUND);
+      .setColor(colors.WHITE);
 
     this.root = new TreeInput(dir, dir, true, false);
 
@@ -154,7 +154,7 @@ export class FileTreeWindow extends UIScreen {
     return buffer;
   }
 
-  onPostPaint(canvas: Canvas): void {
+  onPostPaint(canvas: ICanvas): void {
     super.paint(canvas);
     canvas.fillRect(this.view().contentLayout(), this.view().styles());
     let total = 0 + this.view().contentLayout().y;
@@ -167,15 +167,13 @@ export class FileTreeWindow extends UIScreen {
     } else {
       this.cursor().paint(canvas);
     }
-    this.cursor().selection?.styles.setBackgroundColor(
-      colors.YELLOW_BACKGROUND,
-    );
+    this.cursor().selection?.styles.setBackgroundColor(colors.YELLOW);
     if (this.cursor().hasSelection()) {
       this.cursor().paintSelection(canvas);
     }
   }
   // the selection and text cursor of the node being edited, on its row
-  private paintEditing(canvas: Canvas) {
+  private paintEditing(canvas: ICanvas) {
     assert(this.editing, "no node is being edited");
     const { node, x, y } = this.editing;
     const layout = this.view().contentLayout();
@@ -214,7 +212,7 @@ export class FileTreeWindow extends UIScreen {
     node: TreeInput,
     y: number,
     indent: number,
-    canvas: Canvas,
+    canvas: ICanvas,
   ): number {
     const layout = this.view().contentLayout();
     const viewport = this.view().viewport();
@@ -335,12 +333,12 @@ export class FileTreeWindow extends UIScreen {
   moveCursorDown() {
     const total = this.count();
     this.cursor().line = Math.min(total - 1, this.cursor().line + 1);
-    return this.cursor()
+    return this.cursor();
   }
 
-  moveCursorUp(){
+  moveCursorUp() {
     this.cursor().line = Math.max(0, this.cursor().line - 1);
-    return this.cursor()
+    return this.cursor();
   }
   onEnter(ctx: EditorContext): void {
     const node = this.getNodeAtIndex(this.root, this.cursor().line);
@@ -413,11 +411,8 @@ export class FileTreeWindow extends UIScreen {
     }
     return this.select(hasFile, EditorContext.instance!);
   }
-  moveCursorLeft() {
-  }
-  moveCursorRight(): void {
-
-  }
+  moveCursorLeft() {}
+  moveCursorRight(): void {}
   onEvent(event: EditorEvents): void {
     super.onEvent(event);
     if (event.name === "workspaceChangeEvent") {

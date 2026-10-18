@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import colors from "../../../../src/ui/colors.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 
@@ -10,13 +10,11 @@ describe("tests the layout calculation on absolute", () => {
   it("doesnt need layout property if height and width is set", () => {
     const layout = LayoutEngine.CreateBounds(30);
 
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.BLUE))
       .setDirection("vertical");
 
     const oneThird = new DisplayComponent()
@@ -24,9 +22,7 @@ describe("tests the layout calculation on absolute", () => {
       .setWidth("30%")
       .setIndex(1)
       .setStyles(
-        ComponentStyle.Create().setBackgroundColor(
-          colors.BRIGHT_YELLOW_BACKGROUND,
-        ),
+        ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_YELLOW),
       )
       .setPositionMode("absolute");
 
@@ -47,11 +43,9 @@ describe("tests the layout calculation on absolute", () => {
 
     const root = new DisplayComponent()
       .setLayout(layout)
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.BLUE))
       .setDirection("vertical");
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const oneThird = new DisplayComponent()
       .setHeight("30%")
@@ -60,9 +54,7 @@ describe("tests the layout calculation on absolute", () => {
       .setStartY(3)
       .setIndex(1)
       .setStyles(
-        ComponentStyle.Create().setBackgroundColor(
-          colors.BRIGHT_YELLOW_BACKGROUND,
-        ),
+        ComponentStyle.Create().setBackgroundColor(colors.BRIGHT_YELLOW),
       )
       .setPositionMode("absolute");
 
@@ -88,11 +80,9 @@ describe("on the new layout sizing children", () => {
 
     const root = new DisplayComponent()
       .setLayout(layout)
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.BLUE))
       .setDirection("vertical");
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const parent = new DisplayComponent();
 
@@ -117,7 +107,7 @@ describe("on the new layout sizing children", () => {
 describe("wrap children", () => {
   it("when wraps horizontal, should start a new line", () => {
     const layout = LayoutEngine.CreateBounds(30, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
@@ -125,24 +115,24 @@ describe("wrap children", () => {
       .setName("wrap")
       .setDirection("horizontal");
 
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    root.styles().setBackgroundColor(colors.RED);
 
     const first = new DisplayComponent().setWidth(10);
-    first.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    first.styles().setBackgroundColor(colors.BRIGHT_BLACK);
 
     const second = new DisplayComponent().setWidth(10);
-    second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    second.styles().setBackgroundColor(colors.BLUE);
 
     const third = new DisplayComponent().setName("third");
 
     const children = new DisplayComponent().setWidth(10).setName("child");
-    children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
+    children.styles().setBackgroundColor(colors.DARK_GRAY);
     third.addChildren(children);
 
-    third.styles().setBackgroundColor(colors.BRIGHT_GREEN_BACKGROUND);
+    third.styles().setBackgroundColor(colors.BRIGHT_GREEN);
 
     const fourth = new DisplayComponent().setWidth(10);
-    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW);
     fourth.setName("fourth");
 
     root.addChildren([first, second, third, fourth]);
@@ -162,30 +152,30 @@ describe("wrap children", () => {
   });
   it("when wraps reverse horizontal, fourth should be first", () => {
     const layout = LayoutEngine.CreateBounds(30, 20);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setWrap("wrap-reverse")
       .setDirection("horizontal");
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    root.styles().setBackgroundColor(colors.RED);
 
     const first = new DisplayComponent().setWidth(10);
-    first.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    first.styles().setBackgroundColor(colors.BRIGHT_BLACK);
 
     const second = new DisplayComponent().setWidth(10);
-    second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    second.styles().setBackgroundColor(colors.BLUE);
 
     const third = new DisplayComponent().setName("third");
 
     const children = new DisplayComponent().setWidth(10).setName("child");
-    children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
+    children.styles().setBackgroundColor(colors.DARK_GRAY);
     third.addChildren(children);
 
-    third.styles().setBackgroundColor(colors.BRIGHT_GREEN_BACKGROUND);
+    third.styles().setBackgroundColor(colors.BRIGHT_GREEN);
 
     const fourth = new DisplayComponent().setWidth(10);
-    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW);
 
     root.addChildren(first);
     root.addChildren(second);
@@ -202,31 +192,31 @@ describe("wrap children", () => {
   });
   it("when wraps vertical, should start a new line", () => {
     const layout = LayoutEngine.CreateBounds(20, 40);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setWrap("wrap")
       .setGap(1);
 
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    root.styles().setBackgroundColor(colors.RED);
 
     const first = new DisplayComponent().setHeight(10);
-    first.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    first.styles().setBackgroundColor(colors.BRIGHT_BLACK);
 
     const second = new DisplayComponent().setHeight(10);
-    second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    second.styles().setBackgroundColor(colors.BLUE);
 
     const third = new DisplayComponent().setName("third").setHeight(10);
 
     const children = new DisplayComponent().setHeight(10).setName("child");
-    children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
+    children.styles().setBackgroundColor(colors.DARK_GRAY);
     third.addChildren(children);
 
-    third.styles().setBackgroundColor(colors.BRIGHT_GREEN_BACKGROUND);
+    third.styles().setBackgroundColor(colors.BRIGHT_GREEN);
 
     const fourth = new DisplayComponent().setHeight(10);
-    fourth.styles().setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+    fourth.styles().setBackgroundColor(colors.BRIGHT_CYAN);
 
     root.addChildren([first, second, third, fourth]);
 
@@ -242,29 +232,29 @@ describe("wrap children", () => {
   });
   it("when wraps reverse vertical, fourth should be first", () => {
     const layout = LayoutEngine.CreateBounds(30, 30);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setWrap("wrap-reverse");
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    root.styles().setBackgroundColor(colors.RED);
 
     const first = new DisplayComponent().setHeight(10);
-    first.styles().setBackgroundColor(colors.BLACK_BACKGROUND);
+    first.styles().setBackgroundColor(colors.BRIGHT_BLACK);
 
     const second = new DisplayComponent().setHeight(10);
-    second.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    second.styles().setBackgroundColor(colors.BLUE);
 
     const third = new DisplayComponent().setName("third");
 
     const children = new DisplayComponent().setHeight(10).setName("child");
-    children.styles().setBackgroundColor(colors.DARK_GRAY_BACKGROUND);
+    children.styles().setBackgroundColor(colors.DARK_GRAY);
     third.addChildren(children);
 
-    third.styles().setBackgroundColor(colors.BRIGHT_GREEN_BACKGROUND);
+    third.styles().setBackgroundColor(colors.BRIGHT_GREEN);
 
     const fourth = new DisplayComponent().setHeight(10);
-    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+    fourth.styles().setBackgroundColor(colors.BRIGHT_YELLOW);
 
     root.addChildren([first, second, third, fourth]);
 
@@ -276,7 +266,7 @@ describe("wrap children", () => {
   });
   it("reduces the width of the component if width is fit-content (text)", () => {
     const layout = LayoutEngine.CreateBounds(30, 30);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const phrase = "this is the contnet";
 
@@ -286,7 +276,7 @@ describe("wrap children", () => {
       .setWidth("fit-content")
       .setContent(phrase);
 
-    parent.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    parent.styles().setBackgroundColor(colors.RED);
 
     root.addChildren(parent);
 
@@ -301,7 +291,7 @@ describe("wrap children", () => {
   });
   it("reduces the height of the component if width is fit-content (text)", () => {
     const layout = LayoutEngine.CreateBounds(30, 30);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const phrase = "this is the \n contnet";
 
@@ -311,7 +301,7 @@ describe("wrap children", () => {
       .setHeight("fit-content")
       .setContent(phrase);
 
-    parent.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    parent.styles().setBackgroundColor(colors.RED);
 
     root.addChildren(parent);
 
@@ -326,7 +316,7 @@ describe("wrap children", () => {
   });
   it("reduces the dimensions of the component if width and height is fit-content (text)", () => {
     const layout = LayoutEngine.CreateBounds(30, 30);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const phrase = "this is the \n contnet";
 
@@ -337,7 +327,7 @@ describe("wrap children", () => {
       .setWidth("fit-content")
       .setContent(phrase);
 
-    parent.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    parent.styles().setBackgroundColor(colors.RED);
 
     root.addChildren(parent);
 
@@ -354,7 +344,7 @@ describe("wrap children", () => {
 
   it("reduces the dimensions of component if width is fit content (children)", () => {
     const layout = LayoutEngine.CreateBounds(30, 30);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent().setLayout(layout);
     const phrase = "this-is\ncontent";
@@ -362,7 +352,7 @@ describe("wrap children", () => {
       .setHeight("fit-content")
       .setWidth("fit-content");
 
-    parent.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    parent.styles().setBackgroundColor(colors.RED);
 
     const child = new DisplayComponent().setHeight(10).setWidth(10);
 

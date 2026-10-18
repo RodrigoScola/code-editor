@@ -1,10 +1,10 @@
 import colors from "../../../../src/ui/colors.js";
 import { describe, it, expect } from "vitest";
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { assert } from "../../../../src/assert.js";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutDimensions } from "../../../../src/ui/layout/LayoutDimensions.js";
 import { UIScreen } from "../../../../src/ui/components/UIScreen.js";
@@ -12,7 +12,7 @@ import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds.js";
 
 describe("Canvas", () => {
   it("should create a canvas 2x2 and return a string with 4 length because doesnt have anything on it", () => {
-    const cnv = new Canvas();
+    const cnv = new TerminalCanvas();
     const layout: LayoutBounds = LayoutEngine.CreateBounds(2);
 
     cnv.setLayout(layout);
@@ -31,7 +31,7 @@ describe("Canvas", () => {
   });
 
   it("applies relative positions using tab-expanded text", () => {
-    const cnv = new Canvas();
+    const cnv = new TerminalCanvas();
     const layout: LayoutBounds = LayoutEngine.CreateBounds()
       .setX(2)
       .setY(3)
@@ -48,18 +48,16 @@ describe("Renderer background colors", () => {
   it("should create a 4 x 4 and when called render it should display a string of a", () => {
     const l = LayoutEngine.CreateBounds(4);
 
-    const cnv = new Canvas().setLayout(l);
+    const cnv = new TerminalCanvas().setLayout(l);
 
     const elem = new DisplayComponent()
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.BLUE))
       .setHeight(2)
       .setWidth(2);
 
     const root = new DisplayComponent().setLayout(l).addChildren(elem);
 
-    root.styles().setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.styles().setBackgroundColor(colors.YELLOW);
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(l.width));
     LayoutEngine.Arrange(root);
@@ -69,25 +67,23 @@ describe("Renderer background colors", () => {
 
     const nmap = cnv.getCells();
 
-    expect(nmap[1][1].styles.backgroundColor()).toBe(colors.BLUE_BACKGROUND);
+    expect(nmap[1][1].styles.backgroundColor()).toBe(colors.BLUE);
   });
 
   it("sets max render and both the top and bottom respect it", () => {
     const l = LayoutEngine.CreateBounds(10);
 
-    const cnv = new Canvas().setLayout(l);
+    const cnv = new TerminalCanvas().setLayout(l);
     const root = new DisplayComponent().setLayout(l);
 
-    root.styles().setBackgroundColor(colors.BRIGHT_BLUE_BACKGROUND);
+    root.styles().setBackgroundColor(colors.BRIGHT_BLUE);
 
     root.addChildren([
       new DisplayComponent().setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+        ComponentStyle.Create().setBackgroundColor(colors.MAGENTA),
       ),
       new DisplayComponent()
-        .setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.YELLOW_BACKGROUND),
-        )
+        .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
         .setMaxHeight(1),
     ]);
 
@@ -109,42 +105,38 @@ describe("Renderer background colors", () => {
     expect(
       firstCell.styles.backgroundColor(),
       "has the same color as the out",
-    ).toBe(colors.MAGENTA_BACKGROUND);
+    ).toBe(colors.MAGENTA);
 
     expect(
       oneLineCell.styles.backgroundColor(),
       "has the same color as the oneline",
-    ).toBe(colors.YELLOW_BACKGROUND);
+    ).toBe(colors.YELLOW);
 
     expect(
       magentaCell.styles.backgroundColor(),
       "has the same color as the out",
-    ).toBe(colors.MAGENTA_BACKGROUND);
+    ).toBe(colors.MAGENTA);
   });
 
   it("preserves the order and the height automatically", () => {
     const l = LayoutEngine.CreateBounds(3, 9);
 
-    const cnv = new Canvas().setLayout(l);
+    const cnv = new TerminalCanvas().setLayout(l);
     const root = new DisplayComponent()
       .setLayout(cnv.layout())
       .addChildren(
         new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA),
         ),
       )
       .addChildren(
         new DisplayComponent()
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(
-              colors.YELLOW_BACKGROUND,
-            ),
-          )
+          .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
           .setMaxHeight(1),
       )
       .addChildren(
         new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA),
         ),
       );
 
@@ -154,7 +146,7 @@ describe("Renderer background colors", () => {
     const map = cnv.getCells();
     cnv.renderBoard();
 
-    expect(map[4][0].styles.backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(map[4][0].styles.backgroundColor()).eq(colors.YELLOW);
     // expect(map[3][0].styles.backgroundColor()).eq(colors.MAGENTA_BACKGROUND);
     // expect(map[5][0].styles.backgroundColor()).eq(colors.MAGENTA_BACKGROUND);
     // expect(map[l.height - 1][0].styles.backgroundColor()).eq(
@@ -165,21 +157,17 @@ describe("Renderer background colors", () => {
   it("sets max render and both the top and bottom respect it", () => {
     const layout = LayoutEngine.CreateBounds(10);
 
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal")
       .addChildren([
         new DisplayComponent().setStyles(
-          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
+          ComponentStyle.Create().setBackgroundColor(colors.MAGENTA),
         ),
         new DisplayComponent()
-          .setStyles(
-            ComponentStyle.Create().setBackgroundColor(
-              colors.YELLOW_BACKGROUND,
-            ),
-          )
+          .setStyles(ComponentStyle.Create().setBackgroundColor(colors.YELLOW))
           .setMaxWidth(1),
       ]);
 
@@ -193,11 +181,11 @@ describe("Renderer background colors", () => {
     expect(
       built[0][w - 1].styles.backgroundColor(),
       "has the same color as the oneline",
-    ).toBe(colors.YELLOW_BACKGROUND);
+    ).toBe(colors.YELLOW);
     expect(
       built[0][w - 2].styles.backgroundColor(),
       "has the same color as the out",
-    ).toBe(colors.MAGENTA_BACKGROUND);
+    ).toBe(colors.MAGENTA);
   });
 });
 
@@ -211,9 +199,9 @@ describe("editorComponent", () => {
 
     display.view().setTextOverflow("clip");
 
-    display.view().styles().setBackgroundColor(colors.WHITE_BACKGROUND);
+    display.view().styles().setBackgroundColor(colors.WHITE);
 
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
 
     display.view().viewport().visibleLines = 10;
     display.view().viewport().visibleColumns = 10;
@@ -265,11 +253,11 @@ describe("editorComponent", () => {
 
     const root = new DisplayComponent().setLayout(layout);
 
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    root.styles().setBackgroundColor(colors.RED);
 
     const parent = new DisplayComponent();
 
-    parent.styles().setBackgroundColor(colors.SKY_BLUE_BACKGROUND);
+    parent.styles().setBackgroundColor(colors.SKY_BLUE);
 
     const child = new DisplayComponent()
       .setHeight(3)
@@ -278,11 +266,11 @@ describe("editorComponent", () => {
       .setStartX(3)
       .setPositionMode("absolute");
 
-    child.styles().setBackgroundColor(colors.GREEN_BACKGROUND);
+    child.styles().setBackgroundColor(colors.GREEN);
 
     root.addChildren(parent.addChildren(child));
 
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     LayoutEngine.Measure(root, constraints);
     LayoutEngine.Arrange(root);
@@ -302,14 +290,11 @@ describe("editorComponent", () => {
   });
   it("lines to and from", () => {
     const layout = LayoutEngine.CreateBounds(30);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
-    const yellow = ComponentStyle.Create().setBackgroundColor(
-      colors.YELLOW_BACKGROUND,
-    );
+    const yellow = ComponentStyle.Create().setBackgroundColor(colors.YELLOW);
     const isYellow = (x: number, y: number) =>
-      canvas.getCell(x, y)!.styles.backgroundColor() ===
-      colors.YELLOW_BACKGROUND;
+      canvas.getCell(x, y)!.styles.backgroundColor() === colors.YELLOW;
 
     // diagonal: only the diagonal is painted, not the whole square
     canvas.lineTo({ x: 0, y: 0 }, { x: 29, y: 29 }, yellow);

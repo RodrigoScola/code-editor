@@ -19,8 +19,8 @@ export class ListMenuWindow extends UIScreen {
     this._input
       .view()
       .setHeight(1)
-      .setBackgroundColor(colors.BLACK_BACKGROUND)
-      .setColor(colors.WHITE_FOREGROUND);
+      .setBackgroundColor(colors.BLUE)
+      .setColor(colors.WHITE);
 
     this.view()
       .addChildren(this.listDisplay.view())

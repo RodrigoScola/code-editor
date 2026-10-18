@@ -11,7 +11,7 @@ import { WINDOW_NAMES } from "../../src/constants.js";
 import { parseSelections } from "../../src/Editor/textMarkers.js";
 
 export { parseKeys } from "../../src/Input/keyNotation.js";
-export { stripAnsi } from "../../src/ui/TerminalRenderer.js";
+export { stripAnsi } from "../../src/ui/Renderers/TerminalRenderer.js";
 export {
   ACTIVE,
   ANCHOR,

@@ -1,4 +1,5 @@
 import { assert } from "../../assert.js";
+import { splitLines } from '../../utils.js';
 
 export class TextBuffer implements BufferLike {
   private lines: string[] = [];
@@ -10,7 +11,7 @@ export class TextBuffer implements BufferLike {
     }
   }
   private format(text: string) {
-    return text.split(/\r?\n/);
+    return splitLines(text)
   }
   onChange(listener: () => void) {
     this.listeners.add(listener);

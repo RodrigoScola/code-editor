@@ -19,7 +19,9 @@ describe("styled ranges", () => {
   it("styles only the cells inside the range", () => {
     const { canvas, root } = screen(11, 1);
     root.setContent("hello world");
-    root.content().setStyleRanges([{ line: 0, start: 6, end: 11, style: bold() }]);
+    root
+      .content()
+      .setStyleRanges([{ line: 0, start: 6, end: 11, style: bold() }]);
 
     layoutAndPaint(root, canvas);
 
@@ -34,30 +36,32 @@ describe("styled ranges", () => {
   it("keeps the component's style for whatever the range doesn't set", () => {
     const { canvas, root } = screen(11, 1);
     root
-      .setBackgroundColor(colors.BLUE_BACKGROUND)
-      .setColor(colors.WHITE_FOREGROUND)
+      .setBackgroundColor(colors.BLUE)
+      .setColor(colors.WHITE)
       .setContent("hello world");
     root.content().setStyleRanges([
       {
         line: 0,
         start: 6,
         end: 11,
-        style: ComponentStyle.Create().setColor(colors.RED_FOREGROUND),
+        style: ComponentStyle.Create().setColor(colors.RED),
       },
     ]);
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 6, 0).color()).eq(colors.RED_FOREGROUND);
-    expect(cell(canvas, 6, 0).backgroundColor()).eq(colors.BLUE_BACKGROUND);
-    expect(cell(canvas, 0, 0).color()).eq(colors.WHITE_FOREGROUND);
+    expect(cell(canvas, 6, 0).color()).eq(colors.RED);
+    expect(cell(canvas, 6, 0).backgroundColor()).eq(colors.BLUE);
+    expect(cell(canvas, 0, 0).color()).eq(colors.WHITE);
   });
 
   it("follows the text when it wraps", () => {
     const { canvas, root } = screen(5, 2);
     root.setContent("aaaaabbbbb");
     // columns 3..6 -> last two cells of row 0, first two of row 1
-    root.content().setStyleRanges([{ line: 0, start: 3, end: 7, style: bold() }]);
+    root
+      .content()
+      .setStyleRanges([{ line: 0, start: 3, end: 7, style: bold() }]);
 
     layoutAndPaint(root, canvas);
 
@@ -72,7 +76,9 @@ describe("styled ranges", () => {
   it("applies to the right buffer line", () => {
     const { canvas, root } = screen(5, 3);
     root.setContent("aaa\nbbb\nccc");
-    root.content().setStyleRanges([{ line: 1, start: 0, end: 3, style: bold() }]);
+    root
+      .content()
+      .setStyleRanges([{ line: 1, start: 0, end: 3, style: bold() }]);
 
     layoutAndPaint(root, canvas);
 
@@ -84,7 +90,9 @@ describe("styled ranges", () => {
   it("follows the text when it is aligned", () => {
     const { canvas, root } = screen(6, 1);
     root.setContent("ab").setTextAlign("right").setLineWidth(6);
-    root.content().setStyleRanges([{ line: 0, start: 0, end: 1, style: bold() }]);
+    root
+      .content()
+      .setStyleRanges([{ line: 0, start: 0, end: 1, style: bold() }]);
 
     layoutAndPaint(root, canvas);
 
@@ -96,7 +104,9 @@ describe("styled ranges", () => {
   it("follows the text when the viewport is scrolled", () => {
     const { canvas, root } = screen(5, 2);
     root.setContent("aaa\nbbb\nccc\nddd");
-    root.content().setStyleRanges([{ line: 3, start: 0, end: 3, style: bold() }]);
+    root
+      .content()
+      .setStyleRanges([{ line: 3, start: 0, end: 3, style: bold() }]);
     root.viewport().firstLine = 2;
 
     layoutAndPaint(root, canvas);

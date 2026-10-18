@@ -1,11 +1,11 @@
 import { assert } from "../../../../src/assert";
-import { Canvas } from "../../../../src/ui/canvas";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas";
 import { DisplayTile } from "../../../../src/ui/display/DisplayTile";
 import colors from "../../../../src/ui/colors";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { describe, expect, it } from "vitest";
 
 const rowText = (row: DisplayTile[]) => {
@@ -15,7 +15,7 @@ const rowText = (row: DisplayTile[]) => {
     .trim();
 };
 
-const txt = (canvas: Canvas) => {
+const txt = (canvas: TerminalCanvas) => {
   return canvas
     .getCells()
     .map((row) =>
@@ -31,7 +31,7 @@ describe("text clips", () => {
   it("displays correctly", () => {
     const { canvas, root } = setup(LayoutEngine.CreateBounds(10, 1));
 
-    root.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    root.styles().setBackgroundColor(colors.BLUE);
 
     root.content().setOverflow("clip");
     build(root, canvas);
@@ -56,7 +56,7 @@ describe("text clips", () => {
 describe("text layout test", () => {
   it("shows the correct text", () => {
     const txt = "this is cool";
-    const canvas = new Canvas().setLayout(
+    const canvas = new TerminalCanvas().setLayout(
       LayoutEngine.CreateBounds(txt.length, 1),
     );
     const root = new DisplayComponent();
@@ -70,7 +70,7 @@ describe("text layout test", () => {
 
   it("clips when max width", () => {
     const str = "this is cool";
-    const canvas = new Canvas().setLayout(
+    const canvas = new TerminalCanvas().setLayout(
       LayoutEngine.CreateBounds(str.length, 1),
     );
     const dp = new DisplayComponent();
@@ -86,7 +86,7 @@ describe("text layout test", () => {
   });
   it("overflows the container when not clip or wrap", () => {
     const str = "this is cool";
-    const canvas = new Canvas().setLayout(
+    const canvas = new TerminalCanvas().setLayout(
       LayoutEngine.CreateBounds(str.length, 1),
     );
     const dp = new DisplayComponent();
@@ -95,7 +95,7 @@ describe("text layout test", () => {
       .setLineWidth(3)
       .setOverflow("visible")
       .setText(str);
-    dp.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    dp.styles().setBackgroundColor(colors.BLUE);
 
     build(dp, canvas);
     const size = root.layout();
@@ -157,7 +157,7 @@ describe("text align right", () => {
     const layout = LayoutEngine.CreateBounds(15, 4);
     const { root, canvas } = setup(layout);
 
-    root.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    root.styles().setBackgroundColor(colors.BLUE);
 
     root.setMaxWidth(layout.width);
     root.content().setLineWidth(layout.width);
@@ -258,10 +258,10 @@ describe("text align center", () => {
 describe("display component integration", () => {
   it("shows text", () => {
     const layout = LayoutEngine.CreateBounds(10, 3);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent().setLayout(layout);
-    root.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    root.styles().setBackgroundColor(colors.BLUE);
 
     root.setContent("this is great");
 
@@ -271,12 +271,12 @@ describe("display component integration", () => {
   });
   it("respects max height", () => {
     const layout = LayoutEngine.CreateBounds(10, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent().setLayout(layout);
     const parent = new DisplayComponent();
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
-    parent.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    root.styles().setBackgroundColor(colors.RED);
+    parent.styles().setBackgroundColor(colors.BLUE);
 
     parent.setContent("thisis\ngreat\nmi\nright");
 
@@ -290,12 +290,12 @@ describe("display component integration", () => {
   });
   it("respects max width ", () => {
     const layout = LayoutEngine.CreateBounds(20, 10);
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     const root = new DisplayComponent().setLayout(layout);
     const parent = new DisplayComponent();
-    root.styles().setBackgroundColor(colors.RED_BACKGROUND);
-    parent.styles().setBackgroundColor(colors.BLUE_BACKGROUND);
+    root.styles().setBackgroundColor(colors.RED);
+    parent.styles().setBackgroundColor(colors.BLUE);
     parent.setTextOverflow("clip");
     parent.setMaxWidth(10);
 
@@ -311,7 +311,7 @@ describe("display component integration", () => {
   });
 });
 
-function display(root: DisplayComponent, canvas: Canvas) {
+function display(root: DisplayComponent, canvas: TerminalCanvas) {
   LayoutEngine.Measure(
     root,
     LayoutEngine.CreateConstraints(canvas.layout().width),
@@ -324,7 +324,7 @@ function display(root: DisplayComponent, canvas: Canvas) {
 
 function setup(layout: LayoutBounds) {
   const str = "this is cool";
-  const canvas = new Canvas().setLayout(layout);
+  const canvas = new TerminalCanvas().setLayout(layout);
 
   const root = new DisplayComponent().setLayout(layout);
 
@@ -337,7 +337,7 @@ function setup(layout: LayoutBounds) {
   };
 }
 
-function build(root: DisplayComponent, canvas: Canvas) {
+function build(root: DisplayComponent, canvas: TerminalCanvas) {
   LayoutEngine.Measure(
     root,
     LayoutEngine.CreateConstraints(canvas.layout().width),

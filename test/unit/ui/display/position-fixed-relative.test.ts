@@ -23,7 +23,7 @@ describe("position: fixed", () => {
     const { canvas, root } = screen(20, 10);
     const spacer = new DisplayComponent()
       .setHeight(5)
-      .setBackgroundColor(colors.RED_BACKGROUND);
+      .setBackgroundColor(colors.RED);
     const container = new DisplayComponent()
       .setWidth(6)
       .setHeight(5)
@@ -63,12 +63,12 @@ describe("position: fixed", () => {
     const fixed = new DisplayComponent()
       .setWidth(3)
       .setHeight(2)
-      .setBackgroundColor(colors.GREEN_BACKGROUND);
+      .setBackgroundColor(colors.GREEN);
 
     const { canvas } = nested(fixed);
 
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.GREEN_BACKGROUND);
-    expect(cell(canvas, 3, 0).backgroundColor()).eq(colors.RED_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.GREEN);
+    expect(cell(canvas, 3, 0).backgroundColor()).eq(colors.RED);
   });
 
   it("takes no space from its siblings", () => {

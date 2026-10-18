@@ -35,7 +35,7 @@ function list(height: number, count: number) {
     .setWidth(10)
     .setHeight(height)
     .setOverflow("scroll")
-    .setBackgroundColor(colors.YELLOW_BACKGROUND);
+    .setBackgroundColor(colors.YELLOW);
 
   const items = Array.from({ length: count }, (_, i) =>
     new DisplayComponent().setHeight(1).setContent(`item ${i}`),
@@ -205,7 +205,7 @@ describe("vertical scrollbar", () => {
 
   it("paints the thumb in the last column", () => {
     const { canvas, root, container } = list(10, 20);
-    container.setBackgroundColor(colors.BLUE_BACKGROUND);
+    container.setBackgroundColor(colors.BLUE);
 
     layoutAndPaint(root, canvas);
 

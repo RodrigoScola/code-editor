@@ -7,10 +7,14 @@ import colors from "../../src/ui/colors.js";
 
 const SCREEN = Array.from(
   { length: 32 },
-  (_, i) => "#" + ((i * 0x0a1b2c + 0x102030) & 0xffffff).toString(16).padStart(6, "0"),
+  (_, i) =>
+    "#" + ((i * 0x0a1b2c + 0x102030) & 0xffffff).toString(16).padStart(6, "0"),
 );
-const ANSI = [colors.BLUE_BACKGROUND, colors.RED_BACKGROUND, colors.BACKGROUND_OFF];
-const FRAME = Array.from({ length: 200 * 50 }, (_, i) => SCREEN[i % SCREEN.length]);
+const ANSI = [colors.BLUE, colors.RED, colors.BACKGROUND_OFF];
+const FRAME = Array.from(
+  { length: 200 * 50 },
+  (_, i) => SCREEN[i % SCREEN.length],
+);
 
 let sink = 0;
 
@@ -24,17 +28,20 @@ describe("one call", () => {
   });
 
   bench("toTerminal, ANSI code", () => {
-    for (const color of ANSI) sink += colors.toTerminal(color, "background").length;
+    for (const color of ANSI)
+      sink += colors.toTerminal(color, "background").length;
   });
 
   bench("toTerminal, hex seen before", () => {
-    for (const color of SCREEN) sink += colors.toTerminal(color, "background").length;
+    for (const color of SCREEN)
+      sink += colors.toTerminal(color, "background").length;
   });
 
   bench(
     "toTerminal, hex never seen (cache cleared)",
     () => {
-      for (const color of SCREEN) sink += colors.toTerminal(color, "background").length;
+      for (const color of SCREEN)
+        sink += colors.toTerminal(color, "background").length;
     },
     { setup: () => colors.clearTerminalCache() },
   );

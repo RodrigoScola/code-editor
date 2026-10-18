@@ -1,4 +1,4 @@
-import { Canvas } from "../../ui/canvas.js";
+import { ICanvas } from "../../ui/Canvas/TerminalCanvas.js";
 import colors from "../../ui/colors.js";
 import { EditorContext } from "../Editor/Editor.js";
 import { LayoutDimensions } from "../../ui/layout/LayoutDimensions.js";
@@ -14,7 +14,7 @@ export class StatusWindow extends UiInput {
     this.editor = editor;
   }
 
-  paint(canvas: Canvas): void {
+  paint(canvas: ICanvas): void {
     const cl = this.view().contentLayout();
     canvas.fillRect(cl, this.view().styles());
 
@@ -57,8 +57,8 @@ export class StatusWindow extends UiInput {
 
     if (event.name === "editorModeChange") {
       if (event.mode === "command") {
-        this.cursor().style.setBackgroundColor(colors.RED_BACKGROUND);
-        this.cursor().style.setColor(colors.WHITE_FOREGROUND);
+        this.cursor().style.setBackgroundColor(colors.RED);
+        this.cursor().style.setColor(colors.WHITE);
 
         this.currentCommandLine = Math.max(this.buffer().count() - 1, 0);
         this.moveCursorDown();

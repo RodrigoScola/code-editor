@@ -1,12 +1,12 @@
-import { Canvas } from "../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../src/ui/Canvas/TerminalCanvas.js";
 import { DisplayComponent } from "../../src/ui/display/displayComponent.js";
 import { DisplayLike, LayoutEngine } from "../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../src/ui/Renderers/TerminalRenderer.js";
 
 // a root that fills a canvas of the given size, ready to take children
 export function screen(width: number, height: number = width) {
   const bounds = LayoutEngine.CreateBounds(width, height);
-  const canvas = new Canvas().setLayout(bounds);
+  const canvas = new TerminalCanvas().setLayout(bounds);
   const root = new DisplayComponent().setLayout(
     LayoutEngine.CreateBounds(width, height),
   );
@@ -15,7 +15,7 @@ export function screen(width: number, height: number = width) {
 }
 
 // one full frame: measure, arrange, paint
-export function layoutAndPaint(root: DisplayLike, canvas: Canvas) {
+export function layoutAndPaint(root: DisplayLike, canvas: TerminalCanvas) {
   const { width, height } = canvas.layout();
 
   LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(width, height));
@@ -28,7 +28,7 @@ export function layoutAndPaint(root: DisplayLike, canvas: Canvas) {
 // prints the painted canvas with its colors inside a border, like ide.show():
 //   layoutAndPaint(root, canvas);
 //   show(canvas, "after scrolling");
-export function show(canvas: Canvas, label = "screen") {
+export function show(canvas: TerminalCanvas, label = "screen") {
   const rows = Renderer.Create(canvas).frame().split("\r\n");
   const border = "─".repeat(canvas.width());
 
@@ -45,7 +45,7 @@ export function show(canvas: Canvas, label = "screen") {
   return canvas;
 }
 
-export function cell(canvas: Canvas, x: number, y: number) {
+export function cell(canvas: TerminalCanvas, x: number, y: number) {
   const found = canvas.getCell(x, y);
 
   if (!found) {
@@ -55,7 +55,7 @@ export function cell(canvas: Canvas, x: number, y: number) {
 }
 
 // the characters on one row, without trimming
-export function rowText(canvas: Canvas, y: number) {
+export function rowText(canvas: TerminalCanvas, y: number) {
   return canvas
     .getRow(y)!
     .map((tile) => tile.styles.display())
@@ -63,7 +63,7 @@ export function rowText(canvas: Canvas, y: number) {
 }
 
 // every row, right-trimmed, joined by newlines
-export function screenText(canvas: Canvas) {
+export function screenText(canvas: TerminalCanvas) {
   return canvas
     .getCells()
     .map((row) =>

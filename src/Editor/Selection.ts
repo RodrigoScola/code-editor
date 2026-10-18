@@ -1,16 +1,13 @@
-import { TextBuffer } from "../ui/buffer/Buffer.js";
-import { Canvas } from "../ui/canvas.js";
 import colors from "../ui/colors.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { LayoutBounds } from "../ui/layout/LayoutBounds.js";
-import { LayoutDimensions } from "../ui/layout/LayoutDimensions.js";
 
 export class EditorSelection {
   private _anchor: Point = { x: 0, y: 0 };
   private _head: Point = { x: 0, y: 0 };
 
   styles: ComponentStyle = ComponentStyle.Create().setBackgroundColor(
-    colors.ORANGE_BACKGROUND,
+    colors.ORANGE,
   );
 
   bounds(buffer: BufferLike): LayoutBounds[] {

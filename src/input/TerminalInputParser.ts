@@ -1,5 +1,4 @@
-import { DEFAULT_TOKENS, InputParser } from './InputParser.js';
-
+import { DEFAULT_TOKENS, InputParser } from "./InputParser.js";
 
 export type InputEvent =
   | {
@@ -10,9 +9,6 @@ export type InputEvent =
       type: KeyboardInputKind;
       event: KeyEvent;
     };
-
-
-
 
 export abstract class TerminalInputParser {
   static parse(chunk: Buffer | string): InputEvent[] {
@@ -26,7 +22,7 @@ export abstract class TerminalInputParser {
      * terminal token, handle that token directly.
      */
     if (typeof chunk === "string") {
-      return InputParser.FromString(chunk)
+      return InputParser.FromString(chunk);
     }
 
     /*
@@ -262,8 +258,8 @@ export abstract class TerminalInputParser {
         "4": DEFAULT_TOKENS.END,
         "8": DEFAULT_TOKENS.END,
         "3": DEFAULT_TOKENS.DELETE,
-        "5": DEFAULT_TOKENS.PAGE_UP,
-        "6": DEFAULT_TOKENS.PAGE_DOWN,
+        "5": DEFAULT_TOKENS.PAGEUP,
+        "6": DEFAULT_TOKENS.PAGEDOWN,
       };
       const token = tildeKeys[first];
 

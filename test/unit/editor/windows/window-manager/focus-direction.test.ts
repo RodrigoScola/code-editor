@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { Canvas } from "../../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../../src/ui/Canvas/TerminalCanvas.js";
 import colors from "../../../../../src/ui/colors.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../../src/ui/Renderers/TerminalRenderer.js";
 import {
   Textdocument,
   MemoryFile,
@@ -16,14 +16,14 @@ const createTextWindow = (text: string) => new UIScreen().setText(text);
 
 const createCubes = (manager: WindowManager) => {
   const topL = createTextWindow("top left");
-  topL.view().styles()?.setBackgroundColor(colors.BRIGHT_YELLOW_BACKGROUND);
+  topL.view().styles()?.setBackgroundColor(colors.BRIGHT_YELLOW);
   const topR = createTextWindow("top right");
-  topR.view().styles()?.setBackgroundColor(colors.MAGENTA_BACKGROUND);
+  topR.view().styles()?.setBackgroundColor(colors.MAGENTA);
 
   const bottomL = createTextWindow("bottom left");
-  bottomL.view().styles()?.setBackgroundColor(colors.WHITE_BACKGROUND);
+  bottomL.view().styles()?.setBackgroundColor(colors.WHITE);
   const bottomR = createTextWindow("bottom right");
-  bottomR.view().styles()?.setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+  bottomR.view().styles()?.setBackgroundColor(colors.BRIGHT_CYAN);
 
   manager.add(topL).add(topR).add(bottomL).add(bottomR);
   const topRow = new UiComponent().addChildren(topL).addChildren(topR);
@@ -44,7 +44,7 @@ const createCubes = (manager: WindowManager) => {
 describe("tests the window manager focus capabilities", () => {
   it("can focus on the left window on focus right", () => {
     const layout = LayoutEngine.CreateBounds(20);
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
     const manager = new WindowManager(new EditorRoot().setLayout(layout));
 
     const output = createCubes(manager);
@@ -63,7 +63,7 @@ describe("tests the window manager focus capabilities", () => {
   });
   it("can focus on the bottom window on focus down", () => {
     const layout = LayoutEngine.CreateBounds(20);
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
     const manager = new WindowManager(new EditorRoot().setLayout(layout));
 
     const output = createCubes(manager);
@@ -82,7 +82,7 @@ describe("tests the window manager focus capabilities", () => {
   });
   it("can focus on the bottom and right window on focus down", () => {
     const layout = LayoutEngine.CreateBounds(20);
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
     const manager = new WindowManager(new EditorRoot().setLayout(layout));
 
     const output = createCubes(manager);

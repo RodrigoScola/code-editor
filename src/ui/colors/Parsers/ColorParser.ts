@@ -40,8 +40,19 @@ export class ColorParser {
   static ToAnsi(color: ColorOptions, background: boolean) {
     return AnsiParser.ToAnsi(color, background);
   }
-  static ToRgb(color: string) {
+  static ToRgbColor(color: string) {
     return RgbParser.FromString(color);
+  }
+  static ToRgb(color: ColorOptions | null): string | null;
+  static ToRgb(color: string | ColorOptions | null): string | null {
+    if (!color) return null;
+
+    if (typeof color === "string") {
+      const cr = ColorParser.FromString(color);
+      return ColorParser.ToRgb(cr);
+    }
+
+    return RgbParser.ToRgb(color);
   }
   static FromAnsi(color: string) {
     return AnsiParser.FromString(color);

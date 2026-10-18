@@ -23,7 +23,11 @@ const kinds: Record<string, "file" | "folder"> = {
   "/p/lib": "folder",
   "C:\\p\\a.ts": "file",
 };
-const options = { cwd: "/p", platform: "linux", kindOf: (path: string) => kinds[path] };
+const options = {
+  cwd: "/p",
+  platform: "linux",
+  kindOf: (path: string) => kinds[path],
+};
 const parse = (...argv: string[]) => parseArgs(argv, options);
 
 describe("files and folders", () => {
@@ -35,7 +39,9 @@ describe("files and folders", () => {
   });
 
   it("a file that doesn't exist is created", () => {
-    expect(parse("new.ts").files).toEqual([{ path: "/p/new.ts", create: true }]);
+    expect(parse("new.ts").files).toEqual([
+      { path: "/p/new.ts", create: true },
+    ]);
   });
 
   it("several folders", () => {
@@ -53,15 +59,22 @@ describe("files and folders", () => {
 
 describe("--goto", () => {
   it("file:line:column", () => {
-    expect(parse("-g", "a.ts:10:5").files).toEqual([{ path: "/p/a.ts", line: 10, column: 5 }]);
+    expect(parse("-g", "a.ts:10:5").files).toEqual([
+      { path: "/p/a.ts", line: 10, column: 5 },
+    ]);
   });
 
   it("file:line", () => {
-    expect(parse("--goto", "a.ts:10").files).toEqual([{ path: "/p/a.ts", line: 10 }]);
+    expect(parse("--goto", "a.ts:10").files).toEqual([
+      { path: "/p/a.ts", line: 10 },
+    ]);
   });
 
   it("keeps a Windows drive letter", () => {
-    const result = parseArgs(["-g", "C:\\p\\a.ts:3:2"], { ...options, platform: "win32" });
+    const result = parseArgs(["-g", "C:\\p\\a.ts:3:2"], {
+      ...options,
+      platform: "win32",
+    });
 
     expect(result.files).toEqual([{ path: "C:\\p\\a.ts", line: 3, column: 2 }]);
   });
@@ -92,21 +105,33 @@ describe("diff and merge", () => {
 
 describe("window options", () => {
   it("-n, -r and -w", () => {
-    expect(parse("-n", "-w")).toMatchObject({ newWindow: true, wait: true, reuseWindow: false });
+    expect(parse("-n", "-w")).toMatchObject({
+      newWindow: true,
+      wait: true,
+      reuseWindow: false,
+    });
     expect(parse("-r").reuseWindow).eq(true);
   });
 
   it("-a and --remove change the workspace's folders", () => {
-    expect(parse("-a", "src", "--remove", "lib")).toMatchObject({ add: ["/p/src"], remove: ["/p/lib"] });
+    expect(parse("-a", "src", "--remove", "lib")).toMatchObject({
+      add: ["/p/src"],
+      remove: ["/p/lib"],
+    });
   });
 
   it("--locale and --profile take a value", () => {
-    expect(parse("--locale", "pt-br", "--profile", "Work")).toMatchObject({ locale: "pt-br", profile: "Work" });
+    expect(parse("--locale", "pt-br", "--profile", "Work")).toMatchObject({
+      locale: "pt-br",
+      profile: "Work",
+    });
     expect(parse("--locale=es").locale).eq("es");
   });
 
   it("unknown options are warnings, not errors", () => {
-    expect(parse("--frobnicate", "a.ts").warnings.join("\n")).toContain("frobnicate");
+    expect(parse("--frobnicate", "a.ts").warnings.join("\n")).toContain(
+      "frobnicate",
+    );
   });
 });
 
@@ -121,14 +146,22 @@ describe("parseVscodeUrl", () => {
   });
 
   it("opens a file without a position", () => {
-    expect(parseVscodeUrl("vscode://file/home/me/a.ts")).toEqual({ kind: "file", path: "/home/me/a.ts" });
+    expect(parseVscodeUrl("vscode://file/home/me/a.ts")).toEqual({
+      kind: "file",
+      path: "/home/me/a.ts",
+    });
   });
 
   it("opens a setting", () => {
-    expect(parseVscodeUrl("vscode://settings/editor.tabSize")).toEqual({ kind: "settings", id: "editor.tabSize" });
+    expect(parseVscodeUrl("vscode://settings/editor.tabSize")).toEqual({
+      kind: "settings",
+      id: "editor.tabSize",
+    });
   });
 
   it("decodes escaped characters", () => {
-    expect(parseVscodeUrl("vscode://file/home/me/my%20file.ts").path).eq("/home/me/my file.ts");
+    expect(parseVscodeUrl("vscode://file/home/me/my%20file.ts").path).eq(
+      "/home/me/my file.ts",
+    );
   });
 });

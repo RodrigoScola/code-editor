@@ -1,8 +1,15 @@
 import { expect, it } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer } from "../../../../src/ui/TerminalRenderer.js";
-import { backgroundCodes, cells, fill, later, style, write } from "./helpers.js";
+import { TerminalRenderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
+import {
+  backgroundCodes,
+  cells,
+  fill,
+  later,
+  style,
+  write,
+} from "./helpers.js";
 
 // Level 3: what the terminal gets. Parked: see helpers.ts.
 //
@@ -28,14 +35,28 @@ later("3. the terminal gets opaque colors only", () => {
   it("a blended cell is sent as its 24-bit color", () => {
     const canvas = cells(1);
     fill(canvas, 0, 0, 1, 1, style().setBackgroundColor("#000000"));
-    fill(canvas, 0, 0, 1, 1, style().setBackgroundColor("rgba(255, 255, 255, 0.5)"));
+    fill(
+      canvas,
+      0,
+      0,
+      1,
+      1,
+      style().setBackgroundColor("rgba(255, 255, 255, 0.5)"),
+    );
 
     expect(frame(canvas)).toContain("\x1b[48;2;128;128;128m");
   });
 
   it("no CSS, no alpha reaches the terminal", () => {
     const canvas = cells(2);
-    fill(canvas, 0, 0, 1, 1, style().setBackgroundColor("rgba(255, 255, 255, 0.5)"));
+    fill(
+      canvas,
+      0,
+      0,
+      1,
+      1,
+      style().setBackgroundColor("rgba(255, 255, 255, 0.5)"),
+    );
     write(canvas, 1, 0, "x", style().setColor("rgba(255, 0, 0, 0.25)"));
     const sent = frame(canvas);
 
@@ -60,19 +81,35 @@ later("3. the terminal gets opaque colors only", () => {
 later("3. see-through over the terminal's own background", () => {
   it("is blended with the assumed background, #1e1e1e by default", () => {
     const canvas = cells(1);
-    fill(canvas, 0, 0, 1, 1, style().setBackgroundColor("rgba(255, 255, 255, 0.5)"));
+    fill(
+      canvas,
+      0,
+      0,
+      1,
+      1,
+      style().setBackgroundColor("rgba(255, 255, 255, 0.5)"),
+    );
 
     // 30 + (255 - 30) * 128/255 = 142.9 -> 143
     expect(frame(canvas)).toContain("\x1b[48;2;143;143;143m");
   });
 
   it("assumedBackground() is #1e1e1e by default", () => {
-    expect((new TerminalRenderer(cells(1)) as any).assumedBackground()).eq("#1e1e1e");
+    expect((new TerminalRenderer(cells(1)) as any).assumedBackground()).eq(
+      "#1e1e1e",
+    );
   });
 
   it("setAssumedBackground() changes what it blends with", () => {
     const canvas = cells(1);
-    fill(canvas, 0, 0, 1, 1, style().setBackgroundColor("rgba(255, 255, 255, 0.5)"));
+    fill(
+      canvas,
+      0,
+      0,
+      1,
+      1,
+      style().setBackgroundColor("rgba(255, 255, 255, 0.5)"),
+    );
     const renderer = new TerminalRenderer(canvas) as any;
     renderer.setAssumedBackground("#000000");
 
@@ -93,7 +130,14 @@ later("3. see-through over the terminal's own background", () => {
 
   it("the canvas keeps the alpha: only what is sent is blended", () => {
     const canvas = cells(1);
-    fill(canvas, 0, 0, 1, 1, style().setBackgroundColor("rgba(255, 255, 255, 0.5)"));
+    fill(
+      canvas,
+      0,
+      0,
+      1,
+      1,
+      style().setBackgroundColor("rgba(255, 255, 255, 0.5)"),
+    );
     frame(canvas);
 
     expect(canvas.getCell(0, 0)!.styles.backgroundColor()).eq("#ffffff80");

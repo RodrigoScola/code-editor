@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { cells, later, windowFor } from "./helpers.js";
 
 // Level 5: a real use, through layout, in both renderers. Parked: see
@@ -53,7 +53,11 @@ function dialogScene() {
 
 const at = (canvas: ReturnType<typeof cells>, x: number, y: number) => {
   const s = canvas.getCell(x, y)!.styles;
-  return { char: s.display(), background: s.backgroundColor(), color: s.color() };
+  return {
+    char: s.display(),
+    background: s.backgroundColor(),
+    color: s.color(),
+  };
 };
 
 later("5. a dialog over a dimmed screen", () => {
@@ -109,7 +113,10 @@ later("5. a dialog over a dimmed screen", () => {
 
     for (let y = 0; y < 3; y++) {
       for (let x = 0; x < 6; x++) {
-        const corner = frame.pixel(x * renderer.cellWidth(), y * renderer.cellHeight());
+        const corner = frame.pixel(
+          x * renderer.cellWidth(),
+          y * renderer.cellHeight(),
+        );
         expect(corner, `${x},${y}`).eq(at(canvas, x, y).background);
       }
     }

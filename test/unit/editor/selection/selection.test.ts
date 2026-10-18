@@ -4,11 +4,11 @@ import {
   MemoryFile,
 } from "../../../../src/Editor/Documents/TextDocument.js";
 
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import colors from "../../../../src/ui/colors.js";
-import { UIScreen } from '../../../../src/ui/components/UIScreen.js';
+import { UIScreen } from "../../../../src/ui/components/UIScreen.js";
 
 describe("tests the visual highlight of the selection", () => {
   it("keeps the cursor visible by scrolling the viewport", () => {
@@ -16,13 +16,9 @@ describe("tests the visual highlight of the selection", () => {
     const editor = new UIScreen().setText(content);
 
     const lt = LayoutEngine.CreateBounds(20);
-    const cnv = new Canvas().setLayout(lt);
+    const cnv = new TerminalCanvas().setLayout(lt);
 
-    editor
-      .view()
-      .setLayout(lt)
-      .styles()
-      .setBackgroundColor(colors.BRIGHT_CYAN_BACKGROUND);
+    editor.view().setLayout(lt).styles().setBackgroundColor(colors.BRIGHT_CYAN);
 
     editor.startSelection();
     editor.moveCursorDown();

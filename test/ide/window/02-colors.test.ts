@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import colors from "../../../src/ui/colors.js";
-import {
-  ansiToCss,
+import colors, {
   DEFAULT_BACKGROUND,
   DEFAULT_FOREGROUND,
-} from "../../../src/ui/Renderers/ansiColors.js";
+} from "../../../src/ui/colors.js";
 import { ColorParser } from "../../../src/ui/colors/Parsers/ColorParser.js";
+
+const ansiToCss = ColorParser.ToHex;
 
 // Level 2: turning a style's color into a pixel's color. Styles hold CSS
 // colors (the named ones in src/ui/colors.ts are "#rrggbb", see
@@ -57,8 +57,8 @@ describe("CSS colors are used as they are", () => {
   });
 
   it("a named color", () => {
-    expect(ansiToCss(colors.BLUE_BACKGROUND)).eq("#2472c8");
-    expect(ansiToCss(colors.ORANGE_FOREGROUND)).eq("#ff8700");
+    expect(ansiToCss(colors.BLUE)).eq("#2472c8");
+    expect(ansiToCss(colors.ORANGE)).eq("#ff8700");
   });
 });
 

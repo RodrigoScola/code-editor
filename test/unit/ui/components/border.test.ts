@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Canvas } from "../../../../src/ui/canvas.js";
+import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import colors from "../../../../src/ui/colors.js";
 import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
-import { TerminalRenderer as Renderer } from "../../../../src/ui/TerminalRenderer.js";
+import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { ComponentBorder } from "../../../../src/ui/display/border.js";
 import { EditorRoot } from "../../../../src/Editor/Editor/EditorRoot.js";
@@ -14,31 +14,29 @@ describe("tests the component border", () => {
     layout.height = layout.width = 20;
 
     const border = new ComponentBorder().setParameter(1);
-    border.styles().setColor(colors.BLACK_FOREGROUND);
+    border.styles().setColor(colors.BRIGHT_BLACK);
 
     const root = new DisplayComponent()
       .setLayout(layout)
       .setDirection("horizontal");
 
     const left = new DisplayComponent().setStyles(
-      ComponentStyle.Create().setBackgroundColor(colors.RED_BACKGROUND),
+      ComponentStyle.Create().setBackgroundColor(colors.RED),
     );
 
     const right = new DisplayComponent().setStyles(
-      ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
+      ComponentStyle.Create().setBackgroundColor(colors.BLUE),
     );
     right.border().setLeft(1).setRight(1);
     root.addChildren(left);
     root.addChildren(right);
 
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(layout.width));
     LayoutEngine.Arrange(root);
     Renderer.Create(canvas).build(root);
-    expect(canvas.getCell(9, 0)?.styles.backgroundColor()).eq(
-      colors.RED_BACKGROUND,
-    );
+    expect(canvas.getCell(9, 0)?.styles.backgroundColor()).eq(colors.RED);
 
     // expect(canvas.getCell(10, 0)?.styles.backgroundColor()).eq(
     //   colors.BLUE_BACKGROUND,
@@ -51,17 +49,15 @@ describe("tests the component border", () => {
     layout.height = layout.width = 10;
 
     const border = new ComponentBorder().setParameter(1);
-    border.styles().setColor(colors.BLACK_FOREGROUND);
+    border.styles().setColor(colors.BRIGHT_BLACK);
 
     const root = new DisplayComponent()
       .setLayout(layout)
-      .setStyles(
-        ComponentStyle.Create().setBackgroundColor(colors.BLUE_BACKGROUND),
-      )
+      .setStyles(ComponentStyle.Create().setBackgroundColor(colors.BLUE))
       .setDirection("vertical")
       .setBorder(border);
 
-    const canvas = new Canvas().setLayout(layout);
+    const canvas = new TerminalCanvas().setLayout(layout);
 
     LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(10)).Arrange(
       root,
@@ -74,12 +70,12 @@ describe("tests the component border", () => {
     const layout = LayoutEngine.CreateBounds(10);
     const constraints = LayoutEngine.CreateConstraints(10);
 
-    const cnv = new Canvas().setLayout(layout);
+    const cnv = new TerminalCanvas().setLayout(layout);
 
     const root = new EditorRoot().setLayout(layout);
 
     const heavy = new DisplayComponent();
-    heavy.styles().setBackgroundColor(colors.RED_BACKGROUND);
+    heavy.styles().setBackgroundColor(colors.RED);
 
     heavy.border().setParameter(1).setBorderSyle("round");
 

@@ -24,23 +24,23 @@ describe("display: none", () => {
 
   it("is not painted", () => {
     const { canvas, root } = screen(20, 10);
-    root.setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.setBackgroundColor(colors.YELLOW);
     const hidden = new DisplayComponent()
       .setPositionMode("absolute")
       .setWidth(4)
       .setHeight(2)
-      .setBackgroundColor(colors.RED_BACKGROUND)
+      .setBackgroundColor(colors.RED)
       .setDisplay("none");
     root.addChildren(hidden);
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.YELLOW);
   });
 
   it("hides everything inside it", () => {
     const { canvas, root } = screen(20, 10);
-    root.setBackgroundColor(colors.YELLOW_BACKGROUND);
+    root.setBackgroundColor(colors.YELLOW);
     const hidden = new DisplayComponent()
       .setPositionMode("absolute")
       .setWidth(4)
@@ -50,14 +50,14 @@ describe("display: none", () => {
       .setPositionMode("absolute")
       .setWidth(2)
       .setHeight(1)
-      .setBackgroundColor(colors.RED_BACKGROUND)
+      .setBackgroundColor(colors.RED)
       .setContent("x");
     hidden.addChildren(inside);
     root.addChildren(hidden);
 
     layoutAndPaint(root, canvas);
 
-    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.YELLOW_BACKGROUND);
+    expect(cell(canvas, 0, 0).backgroundColor()).eq(colors.YELLOW);
     expect(cell(canvas, 0, 0).display()).eq(" ");
   });
 

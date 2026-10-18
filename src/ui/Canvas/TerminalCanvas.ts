@@ -1,29 +1,30 @@
-import colors from "./colors.js";
-import { ComponentBorder } from "./display/border.js";
-import { ComponentStyle } from "./ComponentStyles.js";
-import { Configuration } from "../config.js";
-import { TextLayout } from "./TextLayout/text.js";
-import { ViewPort } from "./windows/viewport.js";
-import { LayoutBounds } from "./layout/LayoutBounds.js";
-import { DisplayTile } from "./display/DisplayTile.js";
+import colors from "../colors.js";
+import { ComponentStyle } from "../ComponentStyles.js";
+import { Configuration } from "../../config.js";
+import { TextLayout } from "../TextLayout/text.js";
+import { ViewPort } from "../windows/viewport.js";
+import { LayoutBounds } from "../layout/LayoutBounds.js";
+import { DisplayTile } from "../display/DisplayTile.js";
 
 export interface ICanvas {
-  lineTo(start: Point, end: Point, style: ComponentStyle | null): void;
+  lineTo(start: Point, end: Point, style: ComponentStyle | null): ICanvas;
   clear(): void;
-  fillRect(bounds: LayoutBounds, style: ComponentStyle | null): void;
-  drawText(bounds: LayoutBounds, text: string | TextLayout): void;
+  fillRect(bounds: LayoutBounds, style: ComponentStyle | null): ICanvas;
+  drawText(bounds: LayoutBounds, text: string | TextLayout): ICanvas;
   drawText(
     bounds: LayoutBounds,
     text: string | TextLayout,
     style: ComponentStyle | null | undefined,
     viewport?: ViewPort,
-  ): void;
+  ): ICanvas;
   drawText(
     bounds: LayoutBounds,
     text: string | TextLayout,
     style?: ComponentStyle | null,
     viewport?: ViewPort,
-  ): void;
+  ): ICanvas;
+  drawColumn(at: number, width: number, style: ComponentStyle): ICanvas;
+  drawLine(at: number, width: number, style: ComponentStyle): ICanvas;
 }
 
 const DEFAULT_STYLE: ComponentStyle = ComponentStyle.Create()
@@ -31,7 +32,7 @@ const DEFAULT_STYLE: ComponentStyle = ComponentStyle.Create()
   .setColor(colors.FOREGROUND_OFF)
   .setDisplay(" ");
 
-export class Canvas implements ICanvas {
+export class TerminalCanvas implements ICanvas {
   l: LayoutBounds = LayoutBounds.Create();
 
   private canvas: DisplayTile[][];
@@ -51,9 +52,33 @@ export class Canvas implements ICanvas {
       this.setLayout(layout);
     }
   }
+  drawColumn(at: number, width: number, style: ComponentStyle): this {
+    let startAt = at - Math.round(width / 2);
+    for (let i = 0; i < width; i++) {
+      this.lineTo(
+        { x: startAt + i, y: 0 },
+        { x: startAt + i, y: this.layout().height },
+        style,
+      );
+    }
+    return this;
+  }
+  drawLine(at: number, width: number, style: ComponentStyle): this {
+    let startAt = at - Math.round(width / 2);
+    for (let i = 0; i < width; i++) {
+      this.lineTo(
+        { x: 0, y: startAt + i },
+        { x: this.layout().width, y: startAt + i },
+        style,
+      );
+    }
+
+    return this;
+  }
+
   // bresenham: walks one cell at a time from start to end (both included),
   // in any direction, stepping on the minor axis when the error builds up
-  lineTo(start: Point, end: Point, style: ComponentStyle | null): void {
+  lineTo(start: Point, end: Point, style: ComponentStyle | null): this {
     let x = Math.floor(start.x);
     let y = Math.floor(start.y);
     const endX = Math.floor(end.x);
@@ -85,6 +110,7 @@ export class Canvas implements ICanvas {
         y += stepY;
       }
     }
+    return this;
   }
 
   width(): number {
@@ -133,7 +159,7 @@ export class Canvas implements ICanvas {
     this.clear();
   }
 
-  setWidth(nWidth: number): Canvas {
+  setWidth(nWidth: number): TerminalCanvas {
     this.l.setWidth(nWidth);
 
     this.clear();
@@ -235,9 +261,8 @@ export class Canvas implements ICanvas {
         cell.setStyles(filled);
       }
     }
+    return this;
   }
-
-
 
   private paintContent(
     cl: LayoutBounds,
@@ -270,32 +295,33 @@ export class Canvas implements ICanvas {
       );
     }
     bounds.dispose();
+    return this;
   }
 
-  drawText(bounds: LayoutBounds, text: string | TextLayout): void;
+  drawText(bounds: LayoutBounds, text: string | TextLayout): this;
 
   drawText(
     bounds: LayoutBounds,
     text: string | TextLayout,
     style: ComponentStyle | null | undefined,
     viewport?: ViewPort,
-  ): void;
+  ): this;
 
   drawText(
     bounds: LayoutBounds,
     text: string | TextLayout,
     style?: ComponentStyle | null,
     viewport?: ViewPort,
-  ): void {
+  ): this {
     // a TextLayout is already split into positioned lines, so it goes through
     // the viewport-aware path and each visible line comes back here as a string
     if (text instanceof TextLayout) {
       this.paintContent(bounds, text, style, viewport);
-      return;
+      return this;
     }
 
     if (!text) {
-      return;
+      return this;
     }
 
     const lines = text.split("\n");
@@ -334,6 +360,7 @@ export class Canvas implements ICanvas {
       }
     }
     base.dispose();
+    return this;
   }
   getCells() {
     return this.canvas;
@@ -342,7 +369,7 @@ export class Canvas implements ICanvas {
 // a tab is one buffer character but expands to multiple screen cells, so
 // rendering and cursor placement need the expanded text / a column mapping
 // rather than drawing the raw line 1:1
-function expandTabs(line: string, tabWidth: number): string {
+export function expandTabs(line: string, tabWidth: number): string {
   let out = "";
   for (const ch of line) {
     if (ch === "\t") {

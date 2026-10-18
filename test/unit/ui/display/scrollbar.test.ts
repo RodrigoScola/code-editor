@@ -38,7 +38,7 @@ function list(height: number, count: number) {
     .setWidth(10)
     .setHeight(height)
     .setOverflow("scroll")
-    .setBackgroundColor(colors.BLUE_BACKGROUND)
+    .setBackgroundColor(colors.BLUE)
     .setScrollbarStyle(ScrollBarStyle.Create().setThumb(THUMB).setTrack(TRACK));
 
   const items = Array.from({ length: count }, (_, i) =>
@@ -173,21 +173,21 @@ describe("scrollbar style", () => {
     const { canvas, root, container } = list(10, 20);
     container.setScrollbarStyle(
       ScrollBarStyle.Create()
-        .setThumbColor(colors.WHITE_BACKGROUND)
-        .setTrackColor(colors.BLACK_BACKGROUND),
+        .setThumbColor(colors.WHITE)
+        .setTrackColor(colors.BRIGHT_BLACK),
     );
 
     layoutAndPaint(root, canvas);
     show(canvas);
 
-    expect(cell(canvas, 9, 0).backgroundColor()).eq(colors.WHITE_BACKGROUND);
-    expect(cell(canvas, 9, 9).backgroundColor()).eq(colors.BLACK_BACKGROUND);
+    expect(cell(canvas, 9, 0).backgroundColor()).eq(colors.WHITE);
+    expect(cell(canvas, 9, 9).backgroundColor()).eq(colors.BRIGHT_BLACK);
   });
 
   it("keeps the glyphs when only the colors are set", () => {
     const { canvas, root, container } = list(10, 20);
     container.setScrollbarStyle(
-      ScrollBarStyle.Create().setThumbColor(colors.WHITE_BACKGROUND),
+      ScrollBarStyle.Create().setThumbColor(colors.WHITE),
     );
 
     layoutAndPaint(root, canvas);

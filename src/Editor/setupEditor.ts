@@ -5,7 +5,7 @@ import { WINDOW_NAMES } from "../constants.js";
 import colors from "../ui/colors.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
 import { Textdocument, DiskFile } from "./Documents/TextDocument.js";
-import { EditorContext, EditorContext } from "./Editor/Editor.js";
+import { EditorContext } from "./Editor/Editor.js";
 import { FileTreeWindow } from "./windows/FileTree/FileTreeWindow.js";
 import { GitEditorWindow } from "./windows/GitEditorWindow.js";
 import { StatusWindow } from "./windows/StatusEditor.js";
@@ -19,7 +19,10 @@ import { ErrorWindow } from "./windows/ErrorWindow.js";
 import { logger } from "../logging/log.js";
 import { ConsoleLogWindow } from "./windows/ConsoleLogWindow.js";
 import { SecondarySidebar } from "./windows/SecondarySidebar.js";
-import { Renderer, TerminalRenderer } from "../ui/TerminalRenderer.js";
+import {
+  Renderer,
+  TerminalRenderer,
+} from "../ui/Renderers/TerminalRenderer.js";
 
 function setupGit(editor: EditorContext) {
   const codeGroup = editor.findWindow(CodeEditorGroup);
@@ -30,7 +33,7 @@ function setupGit(editor: EditorContext) {
   gitEditor
     .view()
     .setName(WINDOW_NAMES.GIT_WINDOW)
-    .setBackgroundColor(colors.BLUE_BACKGROUND);
+    .setBackgroundColor(colors.BLUE);
 
   editor.windowManager.split(codeGroup, gitEditor, "vertical");
 }
@@ -46,7 +49,7 @@ function setupSecondarySideBar(editor: EditorContext) {
 
   editor.addWindow(screen);
 
-  screen.view().setVisible(false).setBackgroundColor(colors.CYAN_BACKGROUND);
+  screen.view().setVisible(false).setBackgroundColor(colors.CYAN);
   assert(
     primary,
     `primary window not found. need to setup before calling this function`,
@@ -71,8 +74,8 @@ function statusWindow(editor: EditorContext) {
     .view()
     .setStyles(
       ComponentStyle.Create()
-        .setBackgroundColor(colors.YELLOW_BACKGROUND)
-        .setColor(colors.WHITE_FOREGROUND),
+        .setBackgroundColor(colors.YELLOW)
+        .setColor(colors.WHITE),
     )
     .setName(WINDOW_NAMES.STATUS_WINDOW);
 
@@ -100,9 +103,7 @@ function setupFileTree(editor: EditorContext) {
   treeView
     .view()
     .setMaxWidth(30)
-    .setStyles(
-      ComponentStyle.Create().setBackgroundColor(colors.MAGENTA_BACKGROUND),
-    )
+    .setStyles(ComponentStyle.Create().setBackgroundColor(colors.MAGENTA))
     .setName(WINDOW_NAMES.TREE_WINDOW);
 
   editor.addWindow(treeView);

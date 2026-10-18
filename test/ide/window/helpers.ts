@@ -1,4 +1,11 @@
-import { Canvas } from "../../../src/ui/canvas.js";
+import { createCanvas } from "@napi-rs/canvas";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  type ICanvas,
+  TerminalCanvas,
+} from "../../../src/ui/Canvas/TerminalCanvas.js";
 import { ComponentStyle } from "../../../src/ui/ComponentStyles.js";
 import { LayoutBounds } from "../../../src/ui/layout/LayoutBounds.js";
 
@@ -70,7 +77,12 @@ export class FakeWindow {
 
   keyDown(
     key: string | null,
-    modifiers: { shift?: boolean; ctrl?: boolean; alt?: boolean; repeat?: boolean } = {},
+    modifiers: {
+      shift?: boolean;
+      ctrl?: boolean;
+      alt?: boolean;
+      repeat?: boolean;
+    } = {},
   ) {
     this.emit("keyDown", {
       scancode: 4,
@@ -129,8 +141,20 @@ export class FakeWindow {
 
 // the key a US keyboard presses (with Shift) for a symbol
 const SHIFTED: Record<string, string> = {
-  ":": ";", "(": "9", ")": "0", $: "4", _: "-", "<": ",", ">": ".",
-  "?": "/", "!": "1", "{": "[", "}": "]", "+": "=", '"': "'", "*": "8",
+  ":": ";",
+  "(": "9",
+  ")": "0",
+  $: "4",
+  _: "-",
+  "<": ",",
+  ">": ".",
+  "?": "/",
+  "!": "1",
+  "{": "[",
+  "}": "]",
+  "+": "=",
+  '"': "'",
+  "*": "8",
 };
 
 // SDL's virtual key for the key that types ch, and whether Shift is down
@@ -177,7 +201,92 @@ export class Frame {
   colors(x: number, y: number, width: number, height: number): Set<string> {
     return new Set(this.pixels(x, y, width, height));
   }
+
+  // ---- looking at it ----
+
+  // prints the frame in the terminal, in color, like ide.show():
+  //   frame.show("after inverse");
+  //   frame.show("the cursor", { x: 0, y: 0, width: 40, height: 30 });
+  // One character is two pixels stacked (▀: its color is the top pixel, its
+  // background the bottom one). A frame wider than maxColumns is shrunk, each
+  // character then averaging a block of pixels; pass a region to see it 1:1.
+  show(label = "frame", region?: Region, maxColumns = 160) {
+    const r = region ?? { x: 0, y: 0, width: this.width, height: this.height };
+    const scale = Math.max(1, Math.ceil(r.width / maxColumns));
+    const columns = Math.ceil(r.width / scale);
+    const lines: string[] = [];
+
+    for (let y = r.y; y < r.y + r.height; y += scale * 2) {
+      let line = "";
+      // a color is only sent when it changes, or a frame is megabytes
+      let lastTop = "";
+      let lastBottom = "";
+      for (let x = r.x; x < r.x + r.width; x += scale) {
+        const top = this.average(x, y, scale, r)!.join(";");
+        const bottom = (this.average(x, y + scale, scale, r) ?? [0, 0, 0]).join(";");
+        if (top !== lastTop) line += `\x1b[38;2;${top}m`;
+        if (bottom !== lastBottom) line += `\x1b[48;2;${bottom}m`;
+        line += "▀";
+        lastTop = top;
+        lastBottom = bottom;
+      }
+      lines.push(`│${line}\x1b[0m│`);
+    }
+
+    const size = `${r.width} x ${r.height} px at ${r.x}, ${r.y}`;
+    const zoom = scale > 1 ? `, 1 char = ${scale} x ${scale * 2} px` : "";
+    const border = "─".repeat(columns);
+
+    // straight to stdout: vitest's reporters can swallow console.log from
+    // tests that pass
+    process.stdout.write(
+      [`${label} (${size}${zoom})`, `┌${border}┐`, ...lines, `└${border}┘`].join(
+        "\n",
+      ) + "\n",
+    );
+    return this;
+  }
+
+  // writes the frame as a PNG, every pixel zoom x zoom big so it is easy to
+  // look at, and prints where (open it in VS Code):
+  //   frame.save("inverse-cursor");
+  save(name = "frame", zoom = 4) {
+    const canvas = createCanvas(this.width * zoom, this.height * zoom);
+    const ctx = canvas.getContext("2d");
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        ctx.fillStyle = this.pixel(x, y);
+        ctx.fillRect(x * zoom, y * zoom, zoom, zoom);
+      }
+    }
+
+    const dir = join(tmpdir(), "editor-frames");
+    mkdirSync(dir, { recursive: true });
+    const file = join(dir, `${name}.png`);
+    writeFileSync(file, canvas.toBuffer("image/png"));
+    process.stdout.write(`${name}: ${file}\n`);
+    return file;
+  }
+
+  // the average color of a size x size block, cut to the region; undefined
+  // if the block is outside it
+  private average(x: number, y: number, size: number, region: Region) {
+    const sum = [0, 0, 0];
+    let count = 0;
+    for (let py = y; py < Math.min(y + size, region.y + region.height); py++) {
+      for (let px = x; px < Math.min(x + size, region.x + region.width); px++) {
+        const [r, g, b] = this.rgba(px, py);
+        sum[0] += r;
+        sum[1] += g;
+        sum[2] += b;
+        count++;
+      }
+    }
+    return count === 0 ? undefined : sum.map((c) => Math.round(c / count));
+  }
 }
+
+type Region = { x: number; y: number; width: number; height: number };
 
 export function hex(r: number, g: number, b: number) {
   return "#" + [r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("");
@@ -205,12 +314,12 @@ export function brightness(color: string) {
 
 // a cell canvas of columns x rows, every cell blank (default colors, " ")
 export function cellCanvas(columns: number, rows: number) {
-  return new Canvas(LayoutBounds.Create(columns, rows));
+  return new TerminalCanvas(LayoutBounds.Create(columns, rows));
 }
 
 // paints text at a cell with a style; style() builds one
 export function paint(
-  canvas: Canvas,
+  canvas: ICanvas,
   column: number,
   row: number,
   text: string,

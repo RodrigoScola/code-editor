@@ -3,7 +3,7 @@ import { Cursor } from "../../Editor/Cursor.js";
 import { EditorContext } from "../../Editor/Editor/Editor.js";
 import { EditorSelection } from "../../Editor/Selection.js";
 import { TextBuffer } from "../buffer/Buffer.js";
-import { Canvas } from "../canvas.js";
+import { ICanvas } from "../Canvas/TerminalCanvas.js";
 import { UiComponent } from "./UiComponent.js";
 
 export class UIScreen extends UiComponent {
@@ -54,7 +54,7 @@ export class UIScreen extends UiComponent {
     return this.cursor().clearSelection();
   }
 
-  paint(canvas: Canvas): void {
+  paint(canvas: ICanvas): void {
     // the background is already filled by the renderer with styles blended
     // from the parent; refilling here with the raw styles would drop inherited
     // colors (e.g. an unset background would become the terminal default)
@@ -63,7 +63,7 @@ export class UIScreen extends UiComponent {
     }
   }
 
-  onPostPaint(canvas: Canvas) {
+  onPostPaint(canvas: ICanvas) {
     if (this.cursorEnabled()) {
       this._cursor.paint(canvas);
     }

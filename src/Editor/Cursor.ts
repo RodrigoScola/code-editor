@@ -1,5 +1,5 @@
 import { assert } from "../assert.js";
-import { Canvas } from "../ui/canvas.js";
+import { ICanvas } from "../ui/Canvas/TerminalCanvas.js";
 import colors from "../ui/colors.js";
 import { DisplayComponent } from "../ui/display/displayComponent.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
@@ -8,6 +8,7 @@ import { LayoutBounds } from "../ui/layout/LayoutBounds.js";
 import { LayoutDimensions } from "../ui/layout/LayoutDimensions.js";
 import { ViewPort } from "../ui/windows/viewport.js";
 import { EditorSelection } from "./Selection.js";
+import { Canvas } from "@napi-rs/canvas";
 
 export class Cursor {
   prefferedColumn: number = 0;
@@ -18,8 +19,8 @@ export class Cursor {
   line: number = 0;
   column: number = 0;
   style: ComponentStyle = ComponentStyle.Create()
-    .setBackgroundColor(colors.RED_BACKGROUND)
-    .setColor(colors.BRIGHT_WHITE_FOREGROUND);
+    .setBackgroundColor(colors.RED)
+    .setColor(colors.BRIGHT_WHITE);
 
   selection: EditorSelection | null = null;
   private _buffer?: BufferLike;
@@ -81,7 +82,7 @@ export class Cursor {
   clearSelection() {
     this.selection = null;
   }
-  paint(canvas: Canvas) {
+  paint(canvas: ICanvas) {
     if (!this._view) {
       return;
     }
@@ -99,21 +100,19 @@ export class Cursor {
 
     relative.setHeight(this.height).setWidth(this.width);
 
-    const content = canvas.getRow(relative.y);
+    const content = this.buffer()?.at(this.line);
     assert(content, `invalid display row at ${relative.y}`);
-
-    const str = content.map((tile) => tile.styles.display());
 
     let final = "";
     for (let i = relative.x; i < relative.x + relative.width; i++) {
-      final += str[i];
+      final += content[i];
     }
 
     canvas.drawText(relative, final, this.style);
   }
 
   private _selectionBounds: LayoutBounds = LayoutBounds.Create();
-  paintSelection(canvas: Canvas) {
+  paintSelection(canvas: ICanvas) {
     const view = this.view();
     const buffer = this._buffer;
     if (!view || !buffer) {
