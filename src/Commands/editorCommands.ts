@@ -5,12 +5,18 @@ import {
   isFileTreeWindow,
   isTextComponent,
 } from "../utils.js";
-import { log } from "../log.js";
 import { assert } from "../assert.js";
-import { start } from "repl";
+import { movementCommands } from "./editor/commands/movement.js";
+import { CursorMovement } from "../ui/components/UiScreen/CursorMovement.js";
 
 export const textEditorCommands = {
   textEditor: {
+    deleteRight: {
+      id: "textEditor.deleteRight",
+      title: "Text Editor: Delete Right",
+      description: "delete right of the cursor",
+      run: deleteRight,
+    },
     saveFile: {
       id: "textEditor.saveFile",
       title: "Text Editor: Save File",
@@ -21,25 +27,57 @@ export const textEditorCommands = {
       id: "textEditor.moveDown",
       title: "Text Editor: Move Cursor Down",
       description: "Moves the cursor one line down, keeping its column (j).",
-      run: moveDownEditorCommand,
+      run: movementCommands.down,
     },
     moveUp: {
       id: "textEditor.moveUp",
       title: "Text Editor: Move Cursor Up",
       description: "Moves the cursor one line up, keeping its column (k).",
-      run: moveUpEditorCommand,
+      run: movementCommands.up,
     },
     moveLeft: {
       id: "textEditor.moveLeft",
       title: "Text Editor: Move Cursor Left",
       description: "Moves the cursor one character left (h).",
-      run: moveLeftEditorCommand,
+      run: movementCommands.left,
     },
     moveRight: {
       id: "textEditor.moveRight",
       title: "Text Editor: Move Cursor Right",
-      description: "Moves the cursor one character right (l).",
-      run: moveRightEditorCommand,
+      description: "Moves the cursor one character right (r).",
+      run: movementCommands.right,
+    },
+
+    moveRightSelect: {
+      id: "textEditor.moveRightSelect",
+      title: "Text Editor: Start Selection and move Cursor Right",
+      description:
+        "Moves the cursor one character right (r) and starts a selection",
+      run: movementCommands.rightSelect,
+    },
+
+    moveLeftSelect: {
+      id: "textEditor.moveLeftSelect",
+      title: "Text Editor: Start Selection and move Cursor left",
+      description:
+        "Moves the cursor one character left (l) and starts a selection",
+      run: movementCommands.leftSelect,
+    },
+
+    moveUpSelect: {
+      id: "textEditor.moveUpSelect",
+      title: "Text Editor: Start Selection and move Cursor up",
+      description:
+        "Moves the cursor one character up (u) and starts a selection",
+      run: movementCommands.upSelect,
+    },
+
+    moveDownSelect: {
+      id: "textEditor.moveDowntSelect",
+      title: "Text Editor: Start Selection and move Cursor down",
+      description:
+        "Moves the cursor one character down  (d) and starts a selection",
+      run: movementCommands.downSelect,
     },
     insertMode: {
       id: "textEditor.insertMode",
@@ -90,32 +128,69 @@ export const textEditorCommands = {
       id: "textEditor.nextWordStart",
       title: "Text Editor: Next Word",
       description: "Jumps forward to the start of the next word (w).",
-      run: nextWordStart,
+      run: movementCommands.nextWordStart,
     },
     nextCompleteWordStart: {
       id: "textEditor.nextCompleteWordStart",
       title: "Text Editor: Next WORD",
       description:
         "Jumps forward to the start of the next word, where words are split only by spaces (W).",
-      run: nextCompleteWordStart,
+      run: movementCommands.nextCompleteWordStart,
     },
-    goToEndLine: {
-      id: "textEditor.goToEndLine",
+
+    nextWordStartSelect: {
+      id: "textEditor.nextWordStartSelect",
+      title: "Text Editor: Next Word",
+      description:
+        "start selection Jumps forward to the start of the next word (w).",
+      run: movementCommands.nextWordStart,
+    },
+    nextCompleteWordStartSelect: {
+      id: "textEditor.nextCompleteWordStartSelect",
+      title: "Text Editor: Next WORD",
+      description:
+        "Jumps forward to the start of the next word, where words are split only by spaces (W).",
+      run: movementCommands.nextCompleteWordStartSelect,
+    },
+    cursorEnd: {
+      id: "textEditor.cursorEnd",
       title: "Text Editor: Go to End of Line",
       description: "Moves the cursor to the last character of the line ($).",
-      run: goToEndLine,
+      run: movementCommands.endline,
     },
-    goToBeginLine: {
-      id: "textEditor.goToBeginLine",
+
+    cursorHome: {
+      id: "textEditor.cursorHome",
       title: "Text Editor: Go to Start of Line",
       description: "Moves the cursor to the first column of the line (0).",
-      run: goToBeginLine,
+      run: movementCommands.cursorHome,
+    },
+
+    cursorEndSelect: {
+      id: "textEditor.cursorEndSelect",
+      title: "Text Editor: Start Selection and Go to End of Line",
+      description:
+        "Moves the cursor to the last character of the line ($). with selection",
+      run: movementCommands.endlineSelect,
+    },
+    cursorHomeSelect: {
+      id: "textEditor.cursorHomeSelect",
+      title: "Text Editor: starts selection and Go to Start of Line",
+      description: "Moves the cursor to the first column of the line (0).",
+      run: movementCommands.cursorHomeSelect,
     },
     prevWordStart: {
       id: "textEditor.prevWordStart",
       title: "Text Editor: Previous Word",
       description: "Jumps back to the start of the word before the cursor (b).",
-      run: prevWordStart,
+      run: movementCommands.prevWordStart,
+    },
+
+    prevWordStartSelect: {
+      id: "textEditor.prevWordStartSelect",
+      title: "Text Editor: Previous Word",
+      description: "Jumps back to the start of the word before the cursor (b).",
+      run: movementCommands.prevWordStartSelect,
     },
     goToDocumentStart: {
       id: "textEditor.goToDocumentStart",
@@ -131,46 +206,6 @@ export const textEditorCommands = {
     },
   },
 } satisfies Record<string, Record<string, EditorCommand>>;
-
-function moveDownEditorCommand(ctx: EditorContext) {
-  const editor = ctx.getFocusedComponent();
-  if (!editor) {
-    log("invalid active window");
-    return;
-  }
-  isTextComponent(editor);
-  editor.moveCursorDown();
-}
-
-function moveUpEditorCommand(ctx: EditorContext) {
-  const editor = ctx.getFocusedComponent();
-  if (!editor) {
-    log("invalid active window");
-    return;
-  }
-  isTextComponent(editor);
-  editor.moveCursorUp();
-}
-
-function moveLeftEditorCommand(ctx: EditorContext) {
-  const editor = ctx.getFocusedComponent();
-  if (!editor) {
-    log("invalid active window");
-    return;
-  }
-  isTextComponent(editor);
-  editor.moveCursorLeft();
-}
-
-function moveRightEditorCommand(ctx: EditorContext) {
-  const editor = ctx.getFocusedComponent();
-  if (!editor) {
-    log("invalid active window");
-    return;
-  }
-  isTextComponent(editor);
-  editor.moveCursorRight();
-}
 
 function editorInsertMode(ctx: EditorContext) {
   ctx.setMode("insert");
@@ -190,6 +225,12 @@ function newLineEditorCommand(ctx: EditorContext) {
 }
 function setCommandMode(ctx: EditorContext) {
   ctx.setMode("command");
+}
+function deleteRight(ctx: EditorContext) {
+  const editor = ctx.getFocusedComponent();
+  isTextComponent(editor);
+
+  editor.deleteRight();
 }
 function deleteLeft(ctx: EditorContext) {
   const editor = ctx.getFocusedComponent();
@@ -271,224 +312,6 @@ function saveFileCommand(ctx: EditorContext) {
   activeEditor.save();
 }
 
-function nextWordStart(ctx: EditorContext) {
-  const activeEditor = ctx.getFocusedComponent();
-
-  if (!activeEditor) return;
-  isTextComponent(activeEditor);
-
-  const buffer = activeEditor.buffer();
-  const cursor = activeEditor.cursor();
-
-  const currentLine = buffer.at(cursor.line);
-  assert(
-    currentLine !== undefined,
-    "invalid line to go to the next word command",
-  );
-
-  let nextColumn = cursor.column;
-
-  if (nextColumn >= currentLine.length) {
-    const nextLine = buffer.at(cursor.line + 1);
-    if (nextLine !== undefined) {
-      cursor.line += 1;
-      cursor.column = 0;
-      cursor.prefferedColumn = 0;
-      return;
-    }
-
-    cursor.column = Math.max(0, currentLine.length - 1);
-    cursor.prefferedColumn = cursor.column;
-    return;
-  }
-
-  const initialChar = currentLine[nextColumn];
-  if (isWhitespace(initialChar)) {
-    while (
-      nextColumn < currentLine.length &&
-      isWhitespace(currentLine[nextColumn])
-    ) {
-      nextColumn += 1;
-    }
-  } else if (isWordChar(currentLine[nextColumn])) {
-    while (
-      nextColumn < currentLine.length &&
-      isWordChar(currentLine[nextColumn])
-    ) {
-      nextColumn += 1;
-    }
-
-    while (
-      nextColumn < currentLine.length &&
-      isWhitespace(currentLine[nextColumn])
-    ) {
-      nextColumn += 1;
-    }
-  } else {
-    while (
-      nextColumn < currentLine.length &&
-      !isWordChar(currentLine[nextColumn]) &&
-      !isWhitespace(currentLine[nextColumn])
-    ) {
-      nextColumn += 1;
-    }
-
-    while (
-      nextColumn < currentLine.length &&
-      isWhitespace(currentLine[nextColumn])
-    ) {
-      nextColumn += 1;
-    }
-  }
-
-  if (nextColumn >= currentLine.length) {
-    const nextLine = buffer.at(cursor.line + 1);
-    if (nextLine !== undefined) {
-      cursor.line += 1;
-      cursor.column = 0;
-      cursor.prefferedColumn = 0;
-      return;
-    }
-  }
-
-  cursor.column = Math.max(
-    0,
-    Math.min(nextColumn, Math.max(currentLine.length - 1, 0)),
-  );
-  cursor.prefferedColumn = cursor.column;
-}
-function nextCompleteWordStart(ctx: EditorContext) {
-  const activeEditor = ctx.getFocusedComponent();
-  isTextComponent(activeEditor);
-
-  const buffer = activeEditor.buffer();
-  const cursor = activeEditor.cursor();
-
-  const currentLine = buffer.at(cursor.line);
-  assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
-
-  let nextColumn = cursor.column;
-
-  if (nextColumn >= currentLine.length) {
-    cursor.column = Math.max(0, currentLine.length - 1);
-    cursor.prefferedColumn = cursor.column;
-    return;
-  }
-
-  if (/\s/.test(currentLine[nextColumn])) {
-    while (
-      nextColumn < currentLine.length &&
-      /\s/.test(currentLine[nextColumn])
-    ) {
-      nextColumn += 1;
-    }
-  } else {
-    while (
-      nextColumn < currentLine.length &&
-      !/\s/.test(currentLine[nextColumn])
-    ) {
-      nextColumn += 1;
-    }
-
-    while (
-      nextColumn < currentLine.length &&
-      /\s/.test(currentLine[nextColumn])
-    ) {
-      nextColumn += 1;
-    }
-  }
-
-  cursor.column = Math.max(
-    0,
-    Math.min(nextColumn, Math.max(currentLine.length - 1, 0)),
-  );
-  cursor.prefferedColumn = cursor.column;
-}
-
-function isWhitespace(char: string | undefined) {
-  return /\s/.test(char ?? "");
-}
-
-function isWordChar(char: string | undefined) {
-  return /\w/.test(char ?? "");
-}
-
-function goToEndLine(ctx: EditorContext) {
-  const activeEditor = ctx.getFocusedComponent();
-  isTextComponent(activeEditor);
-
-  activeEditor.cursor().goToLineEnd();
-}
-function goToBeginLine(ctx: EditorContext) {
-  const activeEditor = ctx.getFocusedComponent();
-  isTextComponent(activeEditor);
-  activeEditor.cursor().goToLineBeginning();
-}
-
-function prevWordStart(ctx: EditorContext) {
-  const activeEditor = ctx.getFocusedComponent();
-  isTextComponent(activeEditor);
-
-  const buffer = activeEditor.buffer();
-  const cursor = activeEditor.cursor();
-
-  const currentLine = buffer.at(cursor.line);
-
-  assert(
-    currentLine !== undefined,
-    "invalid line to go to the previous word command",
-  );
-
-  let column = cursor.column;
-
-  // Move left at least once.
-  if (column > 0) {
-    column--;
-  } else {
-    // At the beginning of the line: go to previous line.
-    const prevLine = buffer.at(cursor.line - 1);
-
-    if (prevLine !== undefined) {
-      cursor.line--;
-      cursor.column = Math.max(0, prevLine.length - 1);
-      cursor.prefferedColumn = cursor.column;
-    }
-
-    return;
-  }
-
-  // Skip whitespace.
-  while (column > 0 && isWhitespace(currentLine[column])) {
-    column--;
-  }
-
-  // If we're inside a word, move to its beginning.
-  if (isWordChar(currentLine[column])) {
-    while (column > 0 && isWordChar(currentLine[column - 1])) {
-      column--;
-    }
-  } else {
-    // We're on punctuation.
-    // Move across punctuation until we reach whitespace,
-    // then find the beginning of the previous word.
-    while (column > 0 && !isWhitespace(currentLine[column - 1])) {
-      column--;
-    }
-
-    while (column > 0 && isWhitespace(currentLine[column - 1])) {
-      column--;
-    }
-
-    if (isWordChar(currentLine[column])) {
-      while (column > 0 && isWordChar(currentLine[column - 1])) {
-        column--;
-      }
-    }
-  }
-
-  cursor.column = column;
-  cursor.prefferedColumn = column;
-}
 function goToDocumentStart(ctx: EditorContext) {
   const activeEditor = ctx.getFocusedComponent();
   if (!activeEditor) return;

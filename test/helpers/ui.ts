@@ -32,8 +32,6 @@ export function show(canvas: TerminalCanvas, label = "screen") {
   const rows = Renderer.Create(canvas).frame().split("\r\n");
   const border = "─".repeat(canvas.width());
 
-  // straight to stdout: vitest's reporters can swallow console.log from
-  // tests that pass
   process.stdout.write(
     [
       label,

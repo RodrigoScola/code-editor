@@ -34,18 +34,39 @@ export class UIScreen extends UiComponent {
   cursor(): Cursor {
     return this._cursor;
   }
+  moveNextWord() {
+    return this.cursor().nextWord();
+  }
+  movePreviousWord() {
+    this.cursor().previousWordStart();
+  }
+  moveNextCompleteWord() {
+    this.cursor().nextCompleteWordStart();
+  }
 
   moveCursorDown() {
     this.cursor().moveDown();
+    return this;
   }
   moveCursorUp() {
     this.cursor().moveUp();
+    return this;
   }
   moveCursorLeft() {
     this.cursor().moveLeft();
+    return this;
   }
   moveCursorRight() {
     this.cursor().moveRight();
+    return this;
+  }
+  moveCursorHome() {
+    this.cursor().home();
+    return this;
+  }
+  moveCursorEnd() {
+    this.cursor().end();
+    return this;
   }
   startSelection() {
     return this.cursor().startSelection();
@@ -188,32 +209,52 @@ export class UIScreen extends UiComponent {
 
     return removed;
   }
-  deleteLeft() {
-    const cursor = this.cursor();
-    const buffer = cursor.buffer() || this.buffer();
-
-    const line = buffer.at(cursor.line);
-    if (!line) {
+  deleteRight() {
+    if (this.hasSelection()) {
+      this.deleteSelection();
       return;
     }
 
+    const cursor = this.cursor();
+    const buffer = cursor.buffer() || this.buffer();
+
     const cursorIndex = buffer.offsetOf(cursor.line, cursor.column);
+
+    if (!cursor.atLineEnd()) {
+      buffer.removeRange(cursorIndex, cursorIndex + 1);
+      return;
+    }
+
+    if (cursor.atEnd()) {
+      return;
+    }
+
+    buffer.removeRange(cursorIndex, cursorIndex + 1);
+  }
+  deleteLeft() {
+    const cursor = this.cursor();
+    const buffer = cursor.buffer() || this.buffer();
 
     if (this.hasSelection()) {
       this.deleteSelection();
       return;
     }
-    buffer.removeRange(Math.max(cursorIndex - 1, 0), cursorIndex);
-    cursor.moveLeft();
 
-    if (cursor.column > 0) {
+    const cursorIndex = buffer.offsetOf(cursor.line, cursor.column);
+
+    if (!cursor.atLineStart()) {
+      buffer.removeRange(cursorIndex - 1, cursorIndex);
+      cursor.moveLeft();
       return;
     }
 
-    const previousLine = buffer.at(cursor.line - 1);
-    if (!previousLine) return;
-    cursor.moveUp().goToLineEnd();
-    buffer.update(cursor.line, previousLine.concat(line));
-    buffer.removeRange(cursorIndex, cursorIndex + line.length);
+    if (cursor.line === 0) {
+      return;
+    }
+
+    // removing the "\n" joins the lines, so measure the previous line first
+    const previousLength = buffer.at(cursor.line - 1)?.length ?? 0;
+    buffer.removeRange(cursorIndex - 1, cursorIndex);
+    cursor.moveTo(cursor.line - 1, previousLength);
   }
 }

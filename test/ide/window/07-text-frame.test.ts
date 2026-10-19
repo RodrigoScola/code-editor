@@ -1,45 +1,57 @@
 import { describe, expect, it } from "vitest";
-import colors from "../../../src/ui/colors.js";
-import { LayoutBounds } from "../../../src/ui/layout/LayoutBounds.js";
+// WindowRenderer before the UI modules: importing displayComponent first runs
+// into a circular import (UiComponent / UIScreen)
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
+import colors from "../../../src/ui/colors.js";
+import { DisplayComponent } from "../../../src/ui/display/displayComponent.js";
+import { LayoutBounds } from "../../../src/ui/layout/LayoutBounds.js";
+import { LayoutEngine } from "../../../src/ui/layout/layout.js";
 import { vim } from "../harness.js";
-import { cellCanvas, FakeWindow, paint, style } from "./helpers.js";
+import { FakeWindow, style } from "./helpers.js";
 
 // Level 7: the rest of the Renderer interface, which TerminalRenderer has
 // too, so the editor can use either one:
 //
-//   build(root)  paints the component tree into the cell canvas, exactly as
+//   build(root)  paints the component tree into the canvas, as
 //                TerminalRenderer.build does (backgrounds, borders,
 //                scrollbars, text, the cursor). Returns the renderer.
-//   frame()      the canvas as plain text: one line of characters per row,
-//                rows joined by "\r\n", no escape codes. ide.screen() and
-//                the other text helpers read it, so specs work the same with
-//                either renderer.
+//   frame()      the text the canvas shows, like innerText in HTML: a
+//                window has no grid of characters to read back, only pixels,
+//                so it is the text that was drawn, in reading order. Top to
+//                bottom one line per row of text (text drawn at the same y),
+//                left to right within a row, joined by a space; rows joined
+//                by "\r\n". Only what was drawn: the part that fit, nothing
+//                hidden. No escape codes.
 //
 // Neither one draws to the window; only render() does.
 
-function renderer(columns: number, rows: number, window = new FakeWindow()) {
-  return new WindowRenderer(cellCanvas(columns, rows), window);
+function renderer(width = 200, height = 60, window = new FakeWindow()) {
+  window.pixelWidth = width;
+  window.pixelHeight = height;
+  return new WindowRenderer(window);
 }
 
-describe("frame(): the canvas as text", () => {
-  it("a blank canvas is rows of spaces", () => {
-    expect(renderer(3, 2).frame()).eq("   \r\n   ");
+// x, y, width, height
+function bounds(x: number, y: number, width: number, height: number) {
+  return LayoutBounds.Create(width, height, x, y);
+}
+
+describe("frame(): the text the canvas shows", () => {
+  it("a blank canvas has no text", () => {
+    expect(renderer().frame()).eq("");
   });
 
-  it("painted text is in its row and column", () => {
-    const r = renderer(4, 2);
-    paint(r.canvas(), 1, 1, "hi", style());
+  it("text drawn on the canvas comes back", () => {
+    const r = renderer();
+    r.canvas().drawText(bounds(10, 10, 180, 30), "hi", style());
 
-    expect(r.frame()).eq("    \r\n hi ");
+    expect(r.frame()).eq("hi");
   });
 
   it("has no escape codes, whatever the colors", () => {
-    const r = renderer(4, 1);
-    paint(
-      r.canvas(),
-      0,
-      0,
+    const r = renderer();
+    r.canvas().drawText(
+      bounds(10, 10, 180, 30),
       "ab",
       style()
         .setBackgroundColor(colors.BLUE)
@@ -47,98 +59,136 @@ describe("frame(): the canvas as text", () => {
         .setBold(true),
     );
 
-    expect(r.frame()).eq("ab  ");
+    expect(r.frame()).eq("ab");
   });
 
-  it("follows setLayout()", () => {
-    const r = renderer(2, 1);
-    r.setLayout(LayoutBounds.Create(5, 3));
+  it("one line per row of text, top to bottom", () => {
+    const r = renderer();
+    // drawn bottom first: the order of drawing doesn't matter, the place does
+    r.canvas().drawText(bounds(10, 35, 180, 20), "second", style());
+    r.canvas().drawText(bounds(10, 10, 180, 20), "first", style());
 
-    expect(r.frame().split("\r\n")).toEqual(["     ", "     ", "     "]);
+    expect(r.frame()).eq("first\r\nsecond");
+  });
+
+  it("text on the same row joins left to right, with a space", () => {
+    const r = renderer();
+    r.canvas().drawText(bounds(100, 10, 90, 20), "world", style());
+    r.canvas().drawText(bounds(10, 10, 80, 20), "hello", style());
+
+    expect(r.frame()).eq("hello world");
+  });
+
+  it("only the part that fit in its bounds", () => {
+    const r = renderer();
+    r.canvas().drawText(bounds(10, 10, 30, 20), "MMMMMMMMMM", style());
+    const text = r.frame();
+
+    expect(text.length).toBeGreaterThan(0);
+    expect(text.length).toBeLessThan(10);
+    expect("MMMMMMMMMM".startsWith(text)).eq(true);
+  });
+
+  // like innerText, which leaves out visibility: hidden
+  it("hidden text isn't in it", () => {
+    const r = renderer();
+    r.canvas().drawText(bounds(10, 10, 180, 20), "secret", style().setHidden(true));
+    r.canvas().drawText(bounds(10, 35, 180, 20), "shown", style());
+
+    expect(r.frame()).eq("shown");
+  });
+
+  it("clear() empties it", () => {
+    const r = renderer();
+    r.canvas().drawText(bounds(10, 10, 180, 20), "gone", style());
+    r.canvas().clear();
+
+    expect(r.frame()).eq("");
   });
 
   it("doesn't draw to the window", () => {
     const window = new FakeWindow();
-    renderer(3, 2, window).frame();
+    const r = renderer(200, 60, window);
+    r.canvas().drawText(bounds(10, 10, 180, 20), "hi", style());
+    r.frame();
 
     expect(window.renders).toHaveLength(0);
   });
 });
 
-describe("build(root): painting the editor's components", () => {
-  // the harness editor is 40 x 10 cells and uses the TerminalRenderer;
-  // building its tree with a WindowRenderer must give the same screen
-  it("paints the same screen as the terminal renderer", () => {
-    const ide = vim("hello |world\nsecond line");
-    const terminal = ide.screen();
+// a 200 x 100 root with one 150 x 30 child (blue, "hello window"), laid out
+// in pixels, the way the window lays out
+function tree() {
+  const root = new DisplayComponent().setLayout(
+    LayoutEngine.CreateBounds(200, 100),
+  );
+  const box = new DisplayComponent()
+    .setWidth(150)
+    .setHeight(30)
+    .setBackgroundColor(colors.BLUE)
+    .setContent("hello window");
+  root.addChildren(box);
 
-    const r = renderer(40, 10);
-    r.build(ide.rootWindow);
-    const rows = r.frame().split("\r\n");
+  LayoutEngine.Measure(root, LayoutEngine.CreateConstraints(200, 100));
+  LayoutEngine.Arrange(root);
+  return root;
+}
 
-    expect(rows).toHaveLength(terminal.length);
-    // all but the last row: the status line shows the memory in use, which
-    // changes from one paint to the next
-    expect(rows.slice(0, -1)).toEqual(terminal.slice(0, -1));
-    expect(rows.at(-1)).toMatch(/^mode: normal/);
+describe("build(root): painting a component tree", () => {
+  it("paints the components' text: frame() has it", () => {
+    const r = renderer(200, 100);
+    r.build(tree());
+
+    expect(r.frame()).eq("hello window");
+  });
+
+  it("paints the components' backgrounds", () => {
+    const window = new FakeWindow();
+    const r = renderer(200, 100, window);
+    r.build(tree()).render();
+    const frame = window.lastFrame();
+
+    // inside the box, right of its text, and outside it
+    expect(frame.pixel(140, 25)).eq("#2472c8");
+    expect(frame.pixel(180, 60)).not.eq("#2472c8");
   });
 
   it("returns the renderer", () => {
-    const ide = vim("|abc");
-    ide.screen();
-    const r = renderer(40, 10);
+    const r = renderer(200, 100);
 
-    expect(r.build(ide.rootWindow)).toBe(r);
-  });
-
-  it("paints the colors too: the cells have the terminal renderer's styles", () => {
-    const ide = vim("|abc");
-    ide.screen();
-    const expected = ide.renderer.layout(); // 40 x 10
-    const r = renderer(expected.width, expected.height);
-    r.build(ide.rootWindow);
-
-    const terminalCells = (ide.renderer as any).canvas().getCells();
-    const windowCells = r.canvas().getCells();
-    for (let y = 0; y < expected.height; y++) {
-      for (let x = 0; x < expected.width; x++) {
-        const a = terminalCells[y][x].styles;
-        const b = windowCells[y][x].styles;
-        expect(b.backgroundColor(), `background at ${x},${y}`).eq(
-          a.backgroundColor(),
-        );
-        expect(b.color(), `color at ${x},${y}`).eq(a.color());
-        expect(b.isInverse(), `inverse at ${x},${y}`).eq(a.isInverse());
-      }
-    }
+    expect(r.build(tree())).toBe(r);
   });
 
   it("a second build starts from a clean canvas", () => {
-    const ide = vim("|abc");
-    ide.screen();
-    const r = renderer(40, 10);
-    paint(r.canvas(), 0, 9, "leftover", style());
-    r.build(ide.rootWindow);
+    const r = renderer(200, 100);
+    r.canvas().drawText(bounds(10, 60, 180, 20), "leftover", style());
+    expect(r.frame()).toContain("leftover");
+
+    r.build(tree());
 
     expect(r.frame()).not.toContain("leftover");
   });
 
   it("doesn't draw to the window", () => {
-    const ide = vim("|abc");
-    ide.screen();
     const window = new FakeWindow();
-    renderer(40, 10, window).build(ide.rootWindow);
+    renderer(200, 100, window).build(tree());
 
     expect(window.renders).toHaveLength(0);
   });
 
   it("render() after build() shows the built screen in the window", () => {
-    const ide = vim("|abc");
-    ide.screen();
     const window = new FakeWindow();
-    const r = renderer(40, 10, window);
-    r.build(ide.rootWindow).render();
+    renderer(200, 100, window).build(tree()).render();
 
     expect(window.renders).toHaveLength(1);
+  });
+
+  // the whole editor builds without throwing; how its cell-sized layout
+  // looks in pixels is for the levels that connect it to a window
+  it("builds the editor's tree", () => {
+    const ide = vim("hello |world\nsecond line");
+    ide.screen();
+
+    expect(() => renderer(400, 200).build(ide.rootWindow)).not.toThrow();
   });
 });

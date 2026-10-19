@@ -48,6 +48,7 @@ export class WindowRenderer implements Renderer {
   }
 
   reload() {
+    this._canvas.dispose();
     this._canvas = new WindowCanvas(
       createCanvas(this._layout.width, this._layout.height),
     );
@@ -159,7 +160,7 @@ export class WindowRenderer implements Renderer {
   }
 
   frame(): string {
-    throw new Error("not implemented");
+    return this._canvas.texts();
   }
 
   invalidate(): void {

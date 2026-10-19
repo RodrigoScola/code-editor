@@ -19,10 +19,7 @@ import { ErrorWindow } from "./windows/ErrorWindow.js";
 import { logger } from "../logging/log.js";
 import { ConsoleLogWindow } from "./windows/ConsoleLogWindow.js";
 import { SecondarySidebar } from "./windows/SecondarySidebar.js";
-import {
-  Renderer,
-  TerminalRenderer,
-} from "../ui/Renderers/TerminalRenderer.js";
+import { Renderer } from "../ui/Renderers/TerminalRenderer.js";
 
 function setupGit(editor: EditorContext) {
   const codeGroup = editor.findWindow(CodeEditorGroup);
@@ -338,8 +335,8 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["a"], textEditorCommands.textEditor.insertAfter);
   editor.normalMode.bind(["r"], textEditorCommands.textEditor.renameCharacter);
   editor.normalMode.bind(["o"], textEditorCommands.textEditor.newLine);
-  editor.normalMode.bind(["$"], textEditorCommands.textEditor.goToEndLine);
-  editor.normalMode.bind(["0"], textEditorCommands.textEditor.goToBeginLine);
+  editor.normalMode.bind(["$"], textEditorCommands.textEditor.cursorEnd);
+  editor.normalMode.bind(["0"], textEditorCommands.textEditor.cursorHome);
   editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
   editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
   editor.normalMode.bind(["G"], textEditorCommands.textEditor.goToDocumentEnd);
@@ -566,7 +563,7 @@ function registerCommands(editor: EditorContext) {
 
   for (const group of groups) {
     for (const command of Object.values(group)) {
-      editor.commands.register(command);
+      editor.registerCommand(command);
     }
   }
 }

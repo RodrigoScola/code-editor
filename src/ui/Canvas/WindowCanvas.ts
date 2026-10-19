@@ -7,12 +7,13 @@ import { expandTabs, ICanvas } from "./TerminalCanvas.js";
 import { Configuration } from "../../config.js";
 import { ColorParser } from "../colors/Parsers/ColorParser.js";
 import { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from "../colors.js";
-import { text } from "stream/consumers";
-import { TextBuffer } from "../buffer/Buffer.js";
+import { WindowCanvasText } from "./WindowCanvasText.js";
 
 export class WindowCanvas implements ICanvas {
   private _canvas: Canvas;
   private _context: SKRSContext2D;
+
+  private _texts: WindowCanvasText[] = [];
 
   constructor(canvas: Canvas) {
     this._canvas = canvas;
@@ -119,6 +120,11 @@ export class WindowCanvas implements ICanvas {
     });
   }
   clear(): this {
+    for (const line of this._texts) {
+      line.dispose();
+    }
+    this._texts = [];
+
     this._context.fillStyle = DEFAULT_BACKGROUND;
     this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
 
@@ -302,6 +308,14 @@ export class WindowCanvas implements ICanvas {
       // 2. the text on top
       ctx.fillStyle = textColor;
       ctx.fillText(visible, bounds.x, bounds.y + ascent);
+      if (visible) {
+        this._texts.push(
+          WindowCanvasText.Create()
+            .setText(visible)
+            .setX(bounds.x)
+            .setY(bounds.y),
+        );
+      }
 
       // 3. move the underline and strikethrough here from applyTextStyles,
       //    so the background can't cover them
@@ -349,5 +363,29 @@ export class WindowCanvas implements ICanvas {
     ctx.font = "10px sans-serif";
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "start";
+  }
+  dispose() {
+    for (const line of this._texts) {
+      line.dispose();
+    }
+    this._texts = [];
+  }
+  texts() {
+    const byLine = new Map<number, WindowCanvasText[]>();
+    for (const t of this._texts) {
+      const line = byLine.get(t.y) ?? [];
+      line.push(t);
+      byLine.set(t.y, line);
+    }
+
+    return [...byLine.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([, runs]) =>
+        runs
+          .sort((a, b) => a.x - b.x)
+          .map((run) => run.text)
+          .join(" "),
+      )
+      .join("\r\n");
   }
 }

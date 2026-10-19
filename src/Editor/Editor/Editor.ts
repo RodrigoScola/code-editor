@@ -1,10 +1,11 @@
 import {
   CommandMode,
+  EditorCommand,
   NormalMode,
   VisualMode,
 } from "../../Commands/Commands.js";
 import { assert } from "../../assert.js";
-import { ICanvas } from "../../ui/Canvas/TerminalCanvas.js";
+import { ICanvas, TerminalCanvas } from "../../ui/Canvas/TerminalCanvas.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
 import {
   Renderer,
@@ -35,7 +36,6 @@ import { gitStatus, gitStatusAsync } from "../../tools/Git/git.js";
 import { InsertMode } from "../Modes/InsertMode.js";
 import { LayoutBounds } from "../../ui/layout/LayoutBounds.js";
 import { UIScreen } from "../../ui/components/UIScreen.js";
-import { Canvas } from "@napi-rs/canvas";
 
 // how old the status line's git status can get before it asks git again
 const GIT_STATUS_MAX_AGE_MS = 2000;
@@ -43,7 +43,7 @@ const GIT_STATUS_MAX_AGE_MS = 2000;
 export class EditorContext {
   focusManager: FocusManager = new FocusManager();
   static instance: EditorContext | null;
-  renderer: Renderer = new TerminalRenderer(new Canvas());
+  renderer: Renderer = new TerminalRenderer(new TerminalCanvas());
   rootWindow: EditorRoot = new EditorRoot();
   normalMode: NormalMode = new NormalMode();
   visualMode: VisualMode = new VisualMode();
@@ -55,7 +55,7 @@ export class EditorContext {
   );
 
   commandMode: CommandMode = new CommandMode();
-  commands: CommandRegistry = new CommandRegistry();
+  private _commands: CommandRegistry = new CommandRegistry();
   private currentMode: EditorMode = this.normalMode;
   modeName: EditingModes = "normal";
 
@@ -326,10 +326,14 @@ export class EditorContext {
     }
     return this;
   }
+  registerCommand(command: EditorCommand) {
+    return this._commands.register(command)
+  }
+  
 
   // runs a command from ctx.commands by its id
   executeCommand(id: string, args?: unknown) {
-    if (!this.commands.execute(id, this, args)) {
+    if (!this._commands.execute(id, this, args)) {
       throw new Error(`no command with the id ${id}`);
     }
     return this;

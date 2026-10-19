@@ -19,8 +19,8 @@ npm run build                            # before level 10, it runs dist/
 | 3 | [03-keys](03-keys.test.ts) | `WindowInputParser.Parse(event)`: SDL key events to `KeyEvent`s. A pure function. |
 | 4 | [04-modes](04-modes.test.ts) | Normal, insert and command mode driven by window events. Nothing new if 3 passes. |
 | 5 | [05-grid](05-grid.test.ts) | `WindowRenderer`: `layout()`/`setLayout()` in pixels, no cells. No drawing. |
-| 6 | [06-painting](06-painting.test.ts) | `render()`: cells to pixels with Canvas 2D, checked pixel by pixel. |
-| 7 | [07-text-frame](07-text-frame.test.ts) | `build(root)` and `frame()`: the rest of the `Renderer` interface. |
+| 6 | [06-painting](06-painting.test.ts) | `render()`: the canvas (a point is a pixel) handed to the window in one frame, checked pixel by pixel. How text is drawn is in `test/unit/ui/rendering/window-canvas.test.ts`. |
+| 7 | [07-text-frame](07-text-frame.test.ts) | `build(root)` and `frame()`: the rest of the `Renderer` interface. `frame()` is the text the canvas shows, like `innerText`: there is no character grid to read back. |
 | 8 | [08-window-events](08-window-events.test.ts) | `WindowEvents`: listens to the window (`onInput`, `onResize`, `onClose`). The renderer's `window()` and `close()`. |
 | 9 | [09-connect](09-connect.test.ts) | `setupEditor.window.connect(editor, renderer)`: the editor in a (fake) window, in-process. |
 | 10 | [10-app](10-app.test.ts) | `WindowRenderer.Open` (a real SDL window) and `node dist/index.js --window`. |

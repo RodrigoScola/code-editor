@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { WindowEvents, type PixelSize } from "../../../src/Input/windowEvents.js";
+import {
+  WindowEvents,
+  type PixelSize,
+} from "../../../src/Input/windowEvents.js";
 import type { WindowInputEvent } from "../../../src/Input/windowInput.js";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
 import { FakeWindow } from "./helpers.js";
@@ -38,6 +41,8 @@ describe("onInput: keys", () => {
   it("keyDown arrives as a WindowKeyDown with only its fields", () => {
     const { window, inputs } = setup();
     window.keyDown("escape");
+
+    console.log(inputs);
 
     expect(inputs).toEqual([
       {

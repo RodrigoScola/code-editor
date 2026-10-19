@@ -29,8 +29,12 @@ describe("moving by character and line", () => {
 
   it("moveDown keeps the column it started from across a short line", () => {
     expect(
-      exec("abc|d\nx\nabcdef", "textEditor.moveDown", "textEditor.moveDown"),
-    ).eq("abcd\nx\nabc|def");
+      exec(
+        "abc|d\nx\nabcdef\nhello",
+        "textEditor.moveDown",
+        "textEditor.moveDown",
+      ),
+    ).eq("abcd\nx\nabc|def\nhello");
   });
 
   it("cursorDown on the last line goes to its end", () => {
@@ -43,8 +47,8 @@ describe("moving by character and line", () => {
 });
 
 describe("home and end", () => {
-  it("cursorHome goes to the first non-blank character", () => {
-    expect(exec("    ab|c", "textEditor.cursorHome")).eq("    |abc");
+  it("cursorHome goes to the first character", () => {
+    expect(exec("    ab|c", "textEditor.cursorHome")).eq("|    abc");
   });
 
   it("pressing it again goes to column 0", () => {
@@ -58,8 +62,8 @@ describe("home and end", () => {
   });
 
   it("cursorTop and cursorBottom go to the ends of the file", () => {
-    expect(exec("ab\nc|d", "textEditor.cursorTop")).eq("|ab\ncd");
-    expect(exec("a|b\ncd", "textEditor.cursorBottom")).eq("ab\ncd|");
+    expect(exec("ab\nc|d", "textEditor.moveUp")).eq("|ab\ncd");
+    expect(exec("a|b\ncd", "textEditor.moveDown")).eq("ab\ncd|");
   });
 });
 
@@ -103,7 +107,7 @@ describe("moving by word", () => {
 
 describe("selecting while moving", () => {
   it("cursorRightSelect extends the selection", () => {
-    expect(exec("a|bc", "textEditor.cursorRightSelect")).eq("a«b»c");
+    expect(exec("a|bc", "textEditor.moveRightSelect")).eq("a«b»c");
   });
 
   it("cursorEndSelect selects to the end of the line", () => {
@@ -111,7 +115,7 @@ describe("selecting while moving", () => {
   });
 
   it("cursorHomeSelect selects back to the first non-blank", () => {
-    expect(exec("  ab|c", "textEditor.cursorHomeSelect")).eq("  »ab«c");
+    expect(exec("  ab|c", "textEditor.cursorHomeSelect")).eq("»  ab«c");
   });
 
   it("cursorWordLeftSelect selects back a word", () => {

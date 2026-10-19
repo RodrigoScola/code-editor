@@ -3,15 +3,16 @@ import { ICanvas } from "../ui/Canvas/TerminalCanvas.js";
 import colors from "../ui/colors.js";
 import { DisplayComponent } from "../ui/display/displayComponent.js";
 import { ComponentStyle } from "../ui/ComponentStyles.js";
-import { LayoutEngine } from "../ui/layout/layout.js";
 import { LayoutBounds } from "../ui/layout/LayoutBounds.js";
 import { LayoutDimensions } from "../ui/layout/LayoutDimensions.js";
 import { ViewPort } from "../ui/windows/viewport.js";
 import { EditorSelection } from "./Selection.js";
-import { Canvas } from "@napi-rs/canvas";
+import { CursorMovement } from "../ui/components/UiScreen/CursorMovement.js";
 
 export class Cursor {
   prefferedColumn: number = 0;
+
+  private _movement: CursorMovement = new CursorMovement(this);
 
   width: number = 1;
   height: number = 1;
@@ -164,91 +165,36 @@ export class Cursor {
     }
   }
   moveDown() {
-    const buffer = this._buffer;
-    if (!buffer) {
-      return this;
-    }
-
-    this.line = Math.max(Math.min(this.line + 1, buffer.count() - 1), 0);
-
-    let nextLinePos = this.prefferedColumn;
-
-    const line = buffer.at(this.line);
-    if (line) {
-      nextLinePos = line.length - 1;
-    } else {
-      nextLinePos = 0;
-    }
-
-    this.column = Math.min(this.prefferedColumn, nextLinePos);
-
-    if (this.selection) {
-      this.updateSelection();
-    }
+    this._movement.down();
     return this;
   }
 
   moveTo(line: number, column: number) {
-    const buffer = this._buffer;
-    if (!buffer) {
-      return;
-    }
-
-    this.line = Math.max(Math.min(line, buffer.count() - 1), 0);
-    const length = buffer.at(this.line)?.length ?? 0;
-    this.column = Math.max(Math.min(column, length), 0);
-    this.prefferedColumn = this.column;
-
-    if (this.selection) this.updateSelection();
+    this._movement.moveTo(line, column);
+    return this;
   }
 
   moveUp() {
-    const buffer = this._buffer;
-    if (!buffer) {
-      return this;
-    }
-
-    this.line = Math.max(this.line - 1, 0);
-
-    let nextLinePos = this.prefferedColumn;
-
-    const line = buffer.at(this.line);
-    if (line) {
-      nextLinePos = line.length - 1;
-    } else {
-      nextLinePos = 0;
-    }
-
-    this.column = Math.min(this.prefferedColumn, nextLinePos);
-
-    if (this.selection) this.updateSelection();
+    this._movement.up();
     return this;
   }
   moveLeft() {
-    this.column = Math.max(this.column - 1, 0);
+    this._movement.left();
     return this;
   }
+  atLineStart() {
+    return this.column === 0;
+  }
+  atEnd() {
+    return this.line == this.buffer()?.count();
+  }
+  atLineEnd() {
+    const line = this.buffer()?.at(this.line);
+    if (!line) return false;
+    return this.column === line.length;
+  }
   moveRight() {
-    const buffer = this._buffer;
-    if (!buffer) {
-      return;
-    }
-
-    const line = buffer.at(this.line);
-
-    let bufferLine = line?.length;
-
-    if (bufferLine) {
-      bufferLine -= 1;
-    }
-
-    const lineLength = bufferLine ?? this.column + 1;
-
-    this.column = Math.min(this.column + 1, Math.max(lineLength, 0));
-
-    this.prefferedColumn = this.column;
-
-    if (this.selection) this.updateSelection();
+    this._movement.right();
     return this;
   }
   reset() {
@@ -256,31 +202,41 @@ export class Cursor {
     this.column = 0;
     this.prefferedColumn = 0;
   }
-
-  goToLineBeginning() {
-    const buffer = this._buffer;
-    if (!buffer) {
-      return;
-    }
-
-    const currentLine = buffer.at(this.line);
-    assert(currentLine !== undefined, `invalid current line: ${this.line}`);
-
-    this.column = 0;
-    this.prefferedColumn = 0;
+  goHome() {
+    this._movement.home();
+    return this;
+  }
+  goEnd() {
+    this._movement.goEnd();
     return this;
   }
 
+  goToLineBeginning() {
+    this._movement.lineBeginning();
+  }
+
   goToLineEnd() {
-    const buffer = this._buffer;
-    if (!buffer) {
-      return;
-    }
-
-    const currentLine = buffer.at(this.line);
-    assert(currentLine !== undefined, `invalid current line: ${this.line}`);
-
-    this.prefferedColumn = this.column = Math.max(currentLine.length - 1, 0);
+    this._movement.lineEnd();
     return this;
+  }
+  atLastLine() {
+    return (this.buffer()?.count() || 0) - 1 === this.line;
+  }
+  nextWord() {
+    this._movement.nextWord();
+    return this;
+  }
+  previousWordStart() {
+    this._movement.previousWordStart();
+    return this;
+  }
+  nextCompleteWordStart() {
+    this._movement.nextCompleteWordStart();
+  }
+  home() {
+    this._movement.moveHome()
+  }
+  end() {
+    this._movement.goEnd()
   }
 }
