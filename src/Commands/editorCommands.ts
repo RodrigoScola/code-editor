@@ -7,6 +7,7 @@ import {
 } from "../utils.js";
 import { assert } from "../assert.js";
 import { movementCommands } from "./editor/commands/movement.js";
+import { textCommands } from './editor/commands/textCommands.js';
 
 export const textEditorCommands = {
   textEditor: {
@@ -43,6 +44,18 @@ export const textEditorCommands = {
         "Moves the cursor one character left, wrapping to the line above (Left arrow).",
       run: movementCommands.left,
     },
+copy:    {
+  id: 'textEditor.copy',
+  title: "copy buffer",
+  description: 'copy',
+  run: textCommands.copy
+
+
+},
+
+// const copy = "textEditor.copy";
+// const cut = "textEditor.cut";
+// const paste = "textEditor.paste";
     moveRight: {
       id: "textEditor.moveRight",
       title: "Text Editor: Move Cursor Right",

@@ -1,6 +1,5 @@
 import { Cursor } from "../../../Editor/Cursor.js";
 
-
 export class CursorMovement {
   private readonly cursor: Cursor;
   constructor(cursor: Cursor) {
@@ -36,7 +35,6 @@ export class CursorMovement {
     this.placeKeepingColumn(line, this.lineLength(line));
   }
 
-  
   left() {
     const { line, column } = this.cursor;
     if (column === 0 && line > 0) {
@@ -46,14 +44,15 @@ export class CursorMovement {
     }
   }
 
-  // at the end of a line, goes to the start of the line below
+  // on the last character of a line (or past it), goes to the start of the
+  // line below instead of onto the empty cell after the line
   right() {
     const { line, column } = this.cursor;
-    if (column === this.lineLength(line) && line < this.lastLine()) {
-      this.moveTo(line + 1, 0);
-    } else {
-      this.insertRight();
+    if (column >= this.lastChar(line)) {
+      if (line < this.lastLine()) this.moveTo(line + 1, 0);
+      return;
     }
+    this.moveTo(line, column + 1);
   }
 
   // on the first line, goes to its start
@@ -284,7 +283,7 @@ export class CursorMovement {
   }
 
   private lineLength(line: number) {
-    return this.lineText(line).length;
+    return Math.max(this.lineText(line).length, 0);
   }
 
   // the column of the last character (0 on an empty line)

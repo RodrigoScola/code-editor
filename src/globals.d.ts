@@ -75,6 +75,7 @@ interface BufferLike {
   insertAt(start: number, content: string): number;
   index(ind: number): { line: number; character: number };
   offsetOf(line: number, column: number): number;
+  range(start: number, end?: number): string;
 }
 
 interface ViewPorts {

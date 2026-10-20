@@ -105,6 +105,9 @@ export class TextBuffer implements BufferLike {
     }
     return "";
   }
+  range(start: number, end?: number) {
+    return this.content().substring(start, end)
+  }
 
   private removeIndex(start: number, end: number): string {
     const content = this.content();

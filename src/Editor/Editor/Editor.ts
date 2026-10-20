@@ -36,6 +36,7 @@ import { gitStatus, gitStatusAsync } from "../../tools/Git/git.js";
 import { InsertMode } from "../Modes/InsertMode.js";
 import { LayoutBounds } from "../../ui/layout/LayoutBounds.js";
 import { UIScreen } from "../../ui/components/UIScreen.js";
+import { Clipboard } from '../Clipboard.js';
 
 // how old the status line's git status can get before it asks git again
 const GIT_STATUS_MAX_AGE_MS = 2000;
@@ -50,6 +51,7 @@ export class EditorContext {
   normalMode: NormalMode = new NormalMode();
   visualMode: VisualMode = new VisualMode();
   insertMode: InsertMode = new InsertMode();
+  clipboard: Clipboard = new Clipboard();
 
   windowManager: WindowManager = new WindowManager(
     this.rootWindow,

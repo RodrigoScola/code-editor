@@ -111,6 +111,9 @@ export class TextLayout implements BufferLike {
   at(line: number): string | undefined {
     return this.lines().at(line)?.content();
   }
+  range(start: number, end?: number): string {
+    return this.buffer().range(start, end);
+  }
 
   removeRange(start: number, end: number): string {
     const removed = this.buffer().removeRange(start, end);

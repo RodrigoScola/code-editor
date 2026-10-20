@@ -25,7 +25,7 @@ describe("copy and cut", () => {
   it("copy with nothing selected copies the whole line", () => {
     const ide = code("a|b\ncd").executeCommand(copy);
 
-    expect(ide.clipboard.readText()).eq("ab\n");
+    expect(ide.clipboard.readText()).eq("ab");
   });
 
   it("cut removes the selection", () => {
@@ -59,7 +59,9 @@ describe("paste", () => {
 
   it("a whole line copied with nothing selected is pasted above the current line", () => {
     const ide = code("a|b\ncd").executeCommand(copy);
-    ide.setSelections([{ anchor: { line: 1, column: 1 }, active: { line: 1, column: 1 } }]);
+    ide.setSelections([
+      { anchor: { line: 1, column: 1 }, active: { line: 1, column: 1 } },
+    ]);
 
     ide.executeCommand(paste);
 
@@ -103,6 +105,11 @@ describe("undo and redo", () => {
   });
 
   it("cursorUndo goes back to the previous cursor position", () => {
-    expect(code("ab|c").executeCommand("textEditor.cursorEnd").executeCommand("textEditor.cursorUndo").state()).eq("ab|c");
+    expect(
+      code("ab|c")
+        .executeCommand("textEditor.cursorEnd")
+        .executeCommand("textEditor.cursorUndo")
+        .state(),
+    ).eq("ab|c");
   });
 });

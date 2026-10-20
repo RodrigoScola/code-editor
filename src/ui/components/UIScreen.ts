@@ -16,7 +16,6 @@ export class UIScreen extends UiComponent {
     this._cursor.setBuffer(this.view().content()).setView(this.view());
   }
 
-  // setText swaps the view's buffer, so the cursor has to follow it
   setText(str?: TextBuffer | string | null | undefined) {
     super.setText(str);
     this._cursor.setBuffer(this.view().content());
@@ -44,10 +43,6 @@ export class UIScreen extends UiComponent {
     this.cursor().nextCompleteWordStart();
   }
 
-  // the moves keep a selection and drag its active end along (the commands
-  // decide when to drop it); see CursorMovement for the three kinds
-
-  // VS Code
   moveCursorDown() {
     this.cursor().moveDown();
     return this;
@@ -73,7 +68,6 @@ export class UIScreen extends UiComponent {
     return this;
   }
 
-  // Vim's insert mode (the arrow keys)
   insertMoveDown() {
     this.cursor().insertDown();
     return this;
@@ -100,15 +94,11 @@ export class UIScreen extends UiComponent {
     return this;
   }
 
-  // the ...Select commands call this before moving, so pressing them again
-  // grows the selection instead of starting a new one
   startSelectionIfNone() {
     if (!this.hasSelection()) this.startSelection();
     return this;
   }
 
-  // drops the selection; when it wasn't empty, puts the cursor on its start
-  // or end and returns true
   collapseSelection(side: "start" | "end") {
     const cursor = this.cursor();
     const selection = cursor.selection;
@@ -130,9 +120,6 @@ export class UIScreen extends UiComponent {
   }
 
   paint(canvas: ICanvas): void {
-    // the background is already filled by the renderer with styles blended
-    // from the parent; refilling here with the raw styles would drop inherited
-    // colors (e.g. an unset background would become the terminal default)
     if (this.cursorEnabled()) {
       this.cursor().paintSelection(canvas);
     }
