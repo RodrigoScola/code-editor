@@ -40,6 +40,8 @@ import { UIScreen } from "../../ui/components/UIScreen.js";
 // how old the status line's git status can get before it asks git again
 const GIT_STATUS_MAX_AGE_MS = 2000;
 
+export type EditorCommandFn = (ctx: EditorContext) => unknown;
+
 export class EditorContext {
   focusManager: FocusManager = new FocusManager();
   static instance: EditorContext | null;
@@ -304,6 +306,9 @@ export class EditorContext {
     this.renderer.setLayout(layout);
     return this;
   }
+  layout() {
+    return this.renderer.layout();
+  }
   findComponentById(id: number) {
     return this.rootWindow.findChildrenById(id);
   }
@@ -327,12 +332,26 @@ export class EditorContext {
     return this;
   }
   registerCommand(command: EditorCommand) {
-    return this._commands.register(command)
+    return this._commands.register(command);
   }
-  
 
   // runs a command from ctx.commands by its id
-  executeCommand(id: string, args?: unknown) {
+
+  executeCommand(id: EditorCommandFn): this;
+  executeCommand(id: string): this;
+  executeCommand(id: string, args?: unknown): this;
+  executeCommand(id: EditorCommandFn | string, args?: unknown) {
+    if (typeof id === "string") {
+      return this.executeCommandId(id, args);
+    } else if (typeof id == "function") {
+      this.executeCommandFunction(id as EditorCommandFn);
+    }
+    return this;
+  }
+  private executeCommandFunction(fn: EditorCommandFn) {
+    fn(this);
+  }
+  private executeCommandId(id: string, args?: unknown) {
     if (!this._commands.execute(id, this, args)) {
       throw new Error(`no command with the id ${id}`);
     }

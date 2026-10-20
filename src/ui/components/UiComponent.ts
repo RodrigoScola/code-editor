@@ -77,7 +77,13 @@ export class UiComponent implements EWindow, Focusable, DisplayLike {
 
   onPrePaint(canvas: ICanvas) {
     const cl = this._view.contentLayout();
-    this._view.viewport().ensureVisible(cl.width, cl.height);
+    // the viewport counts characters and whole lines, not pixels
+    this._view
+      .viewport()
+      .ensureVisible(
+        Math.floor(cl.width / this._view.charWidth()),
+        Math.floor(cl.height / this._view.lineHeight()),
+      );
   }
 
   onEvent(event: EditorEvents): void {

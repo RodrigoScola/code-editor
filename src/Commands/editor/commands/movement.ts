@@ -9,6 +9,7 @@ function moveDownEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
+  editor.endSelection();
   editor.moveCursorDown();
 }
 
@@ -19,6 +20,7 @@ function moveUpEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
+  editor.endSelection();
   editor.moveCursorUp();
 }
 
@@ -29,6 +31,8 @@ function moveLeftEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
+  // with a selection, left only drops it, landing on its start
+  if (editor.collapseSelection("start")) return;
   editor.moveCursorLeft();
 }
 
@@ -39,6 +43,8 @@ function moveRightEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
+  // with a selection, right only drops it, landing on its end
+  if (editor.collapseSelection("end")) return;
   editor.moveCursorRight();
 }
 function moveRightSelectEditorCommand(ctx: EditorContext) {
@@ -48,7 +54,7 @@ function moveRightSelectEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
-  editor.startSelection();
+  editor.startSelectionIfNone();
   editor.moveCursorRight();
 }
 
@@ -59,7 +65,7 @@ function moveLeftSelectEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
-  editor.startSelection();
+  editor.startSelectionIfNone();
   editor.moveCursorLeft();
 }
 function moveUpSelectEditorCommand(ctx: EditorContext) {
@@ -69,7 +75,7 @@ function moveUpSelectEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
-  editor.startSelection();
+  editor.startSelectionIfNone();
   editor.moveCursorUp();
 }
 function moveDownSelectEditorCommand(ctx: EditorContext) {
@@ -79,30 +85,32 @@ function moveDownSelectEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
-  editor.startSelection();
-  editor.moveCursorUp();
+  editor.startSelectionIfNone();
+  editor.moveCursorDown();
 }
 
 function goToEndLine(ctx: EditorContext) {
   const activeEditor = ctx.getFocusedComponent();
   isTextComponent(activeEditor);
+  activeEditor.endSelection();
   activeEditor.moveCursorEnd();
 }
 function goToEndLineSelect(ctx: EditorContext) {
   const activeEditor = ctx.getFocusedComponent();
   isTextComponent(activeEditor);
-  activeEditor.startSelection();
+  activeEditor.startSelectionIfNone();
   activeEditor.moveCursorEnd();
 }
 function cursorHome(ctx: EditorContext) {
   const activeEditor = ctx.getFocusedComponent();
   isTextComponent(activeEditor);
+  activeEditor.endSelection();
   activeEditor.moveCursorHome();
 }
 function cursorHomeSelect(ctx: EditorContext) {
   const activeEditor = ctx.getFocusedComponent();
   isTextComponent(activeEditor);
-  activeEditor.startSelection();
+  activeEditor.startSelectionIfNone();
   activeEditor.moveCursorHome();
 }
 function prevWordStart(ctx: EditorContext) {
@@ -115,7 +123,7 @@ function prevWordStart(ctx: EditorContext) {
 function prevWordStartSelect(ctx: EditorContext) {
   const activeEditor = ctx.getFocusedComponent();
   isTextComponent(activeEditor);
-  activeEditor.startSelection();
+  activeEditor.startSelectionIfNone();
 
   activeEditor.movePreviousWord();
 }
@@ -132,7 +140,7 @@ function nextWordStartSelect(ctx: EditorContext) {
 
   if (!activeEditor) return;
   isTextComponent(activeEditor);
-  activeEditor.startSelection();
+  activeEditor.startSelectionIfNone();
   activeEditor.moveNextWord();
 }
 function nextCompleteWordStart(ctx: EditorContext) {
@@ -143,8 +151,60 @@ function nextCompleteWordStart(ctx: EditorContext) {
 function nextCompleteWordStartSelect(ctx: EditorContext) {
   const activeEditor = ctx.getFocusedComponent();
   isTextComponent(activeEditor);
-  activeEditor.startSelection();
+  activeEditor.startSelectionIfNone();
   activeEditor.moveNextCompleteWord();
+}
+
+// Vim's h j k l $ 0: the cursor sits on a character (see CursorMovement)
+function vimMoveDownEditorCommand(ctx: EditorContext) {
+  const editor = ctx.getFocusedComponent();
+  if (!editor) {
+    log("invalid active window");
+    return;
+  }
+  isTextComponent(editor);
+  editor.moveCursorDown();
+}
+
+function vimMoveUpEditorCommand(ctx: EditorContext) {
+  const editor = ctx.getFocusedComponent();
+  if (!editor) {
+    log("invalid active window");
+    return;
+  }
+  isTextComponent(editor);
+  editor.moveCursorUp();
+}
+
+function vimMoveLeftEditorCommand(ctx: EditorContext) {
+  const editor = ctx.getFocusedComponent();
+  if (!editor) {
+    log("invalid active window");
+    return;
+  }
+  isTextComponent(editor);
+  editor.moveCursorLeft();
+}
+
+function vimMoveRightEditorCommand(ctx: EditorContext) {
+  const editor = ctx.getFocusedComponent();
+  if (!editor) {
+    log("invalid active window");
+    return;
+  }
+  isTextComponent(editor);
+  editor.moveCursorRight();
+}
+
+function vimLineEnd(ctx: EditorContext) {
+  const activeEditor = ctx.getFocusedComponent();
+  isTextComponent(activeEditor);
+  activeEditor.moveLineEnd();
+}
+function vimLineStart(ctx: EditorContext) {
+  const activeEditor = ctx.getFocusedComponent();
+  isTextComponent(activeEditor);
+  activeEditor.moveLineStart();
 }
 
 export const movementCommands = {
@@ -166,4 +226,10 @@ export const movementCommands = {
   nextWordStartSelect,
   nextCompleteWordStart,
   nextCompleteWordStartSelect,
+  vimDown: vimMoveDownEditorCommand,
+  vimUp: vimMoveUpEditorCommand,
+  vimLeft: vimMoveLeftEditorCommand,
+  vimRight: vimMoveRightEditorCommand,
+  vimLineEnd,
+  vimLineStart,
 };

@@ -13,6 +13,7 @@ import { ScrollBar, ScrollBarStyle } from "../components/Scrollbar.js";
 import { ComponentScroll } from "./ComponentScroll.js";
 import { ComponentLayout } from "./ComponentLayout.js";
 import { ComponentChildren } from "./ComponentChildren.js";
+import { ComponentStyle } from "../ComponentStyles.js";
 
 export class DisplayComponent
   extends ComponentLayoutFns
@@ -460,6 +461,17 @@ export class DisplayComponent
   }
   lineWidth() {
     return this.content().lineWidth();
+  }
+  // how tall a line of text is: a cell on the terminal (font size 1), the
+  // font size in pixels in a window
+  lineHeight() {
+    return this.styles().fontSize();
+  }
+  // how wide a character is: a cell on the terminal; in a window the font's
+  // real width (not rounded, or columns drift away from the text)
+  charWidth() {
+    const fontSize = this.styles().fontSize();
+    return fontSize === 1 ? 1 : fontSize * ComponentStyle.CharAdvance;
   }
   setLineWidth(n: number | undefined) {
     this.content().setLineWidth(n);

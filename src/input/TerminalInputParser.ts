@@ -3,7 +3,7 @@ import { DEFAULT_TOKENS, InputParser } from "./InputParser.js";
 export type InputEvent =
   | {
       type: MouseInputKind;
-      event: MouseEvent;
+      event: InputMouseEvent;
     }
   | {
       type: KeyboardInputKind;
@@ -320,7 +320,7 @@ export abstract class TerminalInputParser {
   private static parseSgrMouse(
     params: string,
     final: string,
-  ): MouseEvent | null {
+  ): InputMouseEvent | null {
     const [b, x, y] = params.split(";").map(Number);
 
     if (![b, x, y].every(Number.isFinite)) {

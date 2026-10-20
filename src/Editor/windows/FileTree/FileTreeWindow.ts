@@ -135,9 +135,19 @@ export class FileTreeWindow extends UIScreen {
 
   onPrePaint(): void {
     this.syncBuffer();
-    this.cursor().width = this.view().contentLayout().width;
+    // the whole row, in characters (the cursor's size is cells); rounded
+    // down, so a last partial character doesn't stick out past the edge
+    this.cursor().width = Math.floor(
+      this.view().contentLayout().width / this.view().charWidth(),
+    );
     const cl = this.view().contentLayout();
-    this.view().viewport().ensureVisible(cl.width, cl.height);
+    // the viewport counts characters and whole lines, not pixels
+    this.view()
+      .viewport()
+      .ensureVisible(
+        Math.floor(cl.width / this.view().charWidth()),
+        Math.floor(cl.height / this.view().lineHeight()),
+      );
     this.cursor().ensureVisible(this.view().viewport());
   }
 
@@ -189,7 +199,7 @@ export class FileTreeWindow extends UIScreen {
         const width = Math.min(bound.width, right - from);
         if (width <= 0) continue;
 
-        temp.setX(from).setY(y).setWidth(width).setHeight(1);
+        temp.setX(from).setY(y).setWidth(width).setHeight(this.view().lineHeight());
 
         canvas.fillRect(temp, selection.styles);
         canvas.drawText(temp, text.slice(bound.x, bound.x + width));
@@ -199,7 +209,11 @@ export class FileTreeWindow extends UIScreen {
     const cursorX = x + node.cursor().column;
     if (cursorX >= layout.x && cursorX < right) {
       canvas.drawText(
-        temp.setX(cursorX).setY(y).setWidth(1).setHeight(1),
+        temp
+          .setX(cursorX)
+          .setY(y)
+          .setWidth(this.view().lineHeight())
+          .setHeight(this.view().lineHeight()),
         text[node.cursor().column] ?? " ",
         node.cursor().style,
       );
@@ -216,14 +230,17 @@ export class FileTreeWindow extends UIScreen {
   ): number {
     const layout = this.view().contentLayout();
     const viewport = this.view().viewport();
+    // rows and indents are in characters; a character is lineHeight wide and
+    // tall (1 on the terminal, the font size in a window), as in WindowCanvas
+    const lh = this.view().lineHeight();
 
     const viewportPosition = viewport.bufferToViewPort({
       x: indent * 2,
       y,
     });
 
-    const screenX = layout.x + viewportPosition.x;
-    const screenY = layout.y + viewportPosition.y;
+    const screenX = layout.x + viewportPosition.x * lh;
+    const screenY = layout.y + viewportPosition.y * lh;
 
     const viewportBottom = layout.y + layout.height;
 
@@ -239,8 +256,8 @@ export class FileTreeWindow extends UIScreen {
         .clone()
         .setX(screenX)
         .setY(screenY)
-        .setWidth(layout.width - viewportPosition.x)
-        .setHeight(1);
+        .setWidth(layout.width - viewportPosition.x * lh)
+        .setHeight(lh);
       const icon = node.isDirectory
         ? node.folded
           ? ICONS.arrow.triangleRight
@@ -272,7 +289,7 @@ export class FileTreeWindow extends UIScreen {
         y,
       });
 
-      if (layout.y + childViewportPosition.y >= viewportBottom) {
+      if (layout.y + childViewportPosition.y * lh >= viewportBottom) {
         break;
       }
     }
@@ -333,12 +350,12 @@ export class FileTreeWindow extends UIScreen {
   moveCursorDown() {
     const total = this.count();
     this.cursor().line = Math.min(total - 1, this.cursor().line + 1);
-    return this.cursor();
+    return this;
   }
 
   moveCursorUp() {
     this.cursor().line = Math.max(0, this.cursor().line - 1);
-    return this.cursor();
+    return this;
   }
   onEnter(ctx: EditorContext): void {
     const node = this.getNodeAtIndex(this.root, this.cursor().line);
@@ -411,8 +428,28 @@ export class FileTreeWindow extends UIScreen {
     }
     return this.select(hasFile, EditorContext.instance!);
   }
-  moveCursorLeft() {}
-  moveCursorRight(): void {}
+  moveCursorLeft() {
+    return this;
+  }
+  moveCursorRight() {
+    return this;
+  }
+
+  // the tree moves a row at a time, with Vim's keys too
+  vimMoveDown() {
+    this.moveCursorDown();
+    return this;
+  }
+  vimMoveUp() {
+    this.moveCursorUp();
+    return this;
+  }
+  vimMoveLeft() {
+    return this;
+  }
+  vimMoveRight() {
+    return this;
+  }
   onEvent(event: EditorEvents): void {
     super.onEvent(event);
     if (event.name === "workspaceChangeEvent") {

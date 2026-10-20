@@ -19,7 +19,9 @@ import { ErrorWindow } from "./windows/ErrorWindow.js";
 import { logger } from "../logging/log.js";
 import { ConsoleLogWindow } from "./windows/ConsoleLogWindow.js";
 import { SecondarySidebar } from "./windows/SecondarySidebar.js";
-import { Renderer } from "../ui/Renderers/TerminalRenderer.js";
+import { PixelSize, WindowEvents } from "../Input/windowEvents.js";
+import { WindowRenderer } from "../ui/Renderers/WindowRenderer.js";
+import { WindowInputEvent, WindowInputParser } from "../Input/windowInput.js";
 
 function setupGit(editor: EditorContext) {
   const codeGroup = editor.findWindow(CodeEditorGroup);
@@ -74,7 +76,9 @@ function statusWindow(editor: EditorContext) {
         .setBackgroundColor(colors.YELLOW)
         .setColor(colors.WHITE),
     )
-    .setName(WINDOW_NAMES.STATUS_WINDOW);
+    .setName(WINDOW_NAMES.STATUS_WINDOW)
+    .setMaxHeight(null)
+    .setHeight(statusWindow.view().lineHeight());
 
   editor.addWindow(statusWindow);
 }
@@ -83,12 +87,7 @@ function editorWindow(editor: EditorContext) {
   const window = new UiPanel().setName(WINDOW_NAMES.PRIMARY_WINDOW);
   const layout = editor.renderer.layout();
 
-  window.view().setLayout(
-    editor.renderer
-      .layout()
-      .clone()
-      .setHeight(layout.height - 1),
-  );
+  window.view().setLayout(editor.renderer.layout().clone());
   return window;
 }
 function setupFileTree(editor: EditorContext) {
@@ -97,9 +96,10 @@ function setupFileTree(editor: EditorContext) {
     .setIgnoreFileExt([".js.map"])
     .refresh();
 
+  // 30 characters wide
   treeView
     .view()
-    .setMaxWidth(30)
+    .setWidth(Math.ceil(30 * treeView.view().charWidth()))
     .setStyles(ComponentStyle.Create().setBackgroundColor(colors.MAGENTA))
     .setName(WINDOW_NAMES.TREE_WINDOW);
 
@@ -335,8 +335,8 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["a"], textEditorCommands.textEditor.insertAfter);
   editor.normalMode.bind(["r"], textEditorCommands.textEditor.renameCharacter);
   editor.normalMode.bind(["o"], textEditorCommands.textEditor.newLine);
-  editor.normalMode.bind(["$"], textEditorCommands.textEditor.cursorEnd);
-  editor.normalMode.bind(["0"], textEditorCommands.textEditor.cursorHome);
+  editor.normalMode.bind(["$"], textEditorCommands.textEditor.lineEnd);
+  editor.normalMode.bind(["0"], textEditorCommands.textEditor.lineStart);
   editor.normalMode.bind(["w"], textEditorCommands.textEditor.nextWordStart);
   editor.normalMode.bind(["b"], textEditorCommands.textEditor.prevWordStart);
   editor.normalMode.bind(["G"], textEditorCommands.textEditor.goToDocumentEnd);
@@ -363,110 +363,9 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.normalMode.bind(["d", "d"], textEditorCommands.textEditor.deleteLine);
 }
 
-function disableMouseEvents() {
-  process.stdout.write("\x1b[?1000l");
-  process.stdout.write("\x1b[?1006l");
-}
-function enableMouseEvents() {
-  process.stdout.write("\x1b[?1000h"); // press/release
-  process.stdout.write("\x1b[?1002h"); // drag (motion while a button is held)
-  process.stdout.write("\x1b[?1006h"); // SGR format: no 223-column limit, tells press from release
-}
 
-function clearOutput() {
-  process.stdout.write("\x1b[?1049l");
-}
 
-function hideCursor() {
-  process.stdout.write("\x1b[?25l");
-}
-function showCursor() {
-  process.stdout.write("\x1b[?25h");
-}
 
-export function enableKeyboardProtocol() {
-  process.stdout.write("\x1b[>1u");
-}
-
-export function disableKeyboardProtocol() {
-  process.stdout.write("\x1b[<u");
-}
-
-async function handleResize(
-  editor: EditorContext,
-  size?: { columns: number; rows: number },
-) {
-  const resolved = size ??
-    (await queryTerminalSize()) ?? {
-      columns: process.stdout.columns,
-      rows: process.stdout.rows,
-    };
-
-  clearOutput();
-  const resizedLayout = LayoutEngine.CreateBounds();
-  resizedLayout.setHeight(resolved.rows).setWidth(resolved.columns);
-  editor.setLayout(resizedLayout);
-  editor.rootWindow.layoutConstraints = LayoutEngine.CreateConstraints(
-    resizedLayout.width,
-    resizedLayout.height,
-  );
-
-  editor.rootWindow.setLayout(resizedLayout);
-
-  // the terminal moved its text around while resizing, so the next frame
-  // can't build on what it sent before
-  editor.renderer.invalidate();
-  editor.requestRepaint();
-}
-function queryTerminalSize(
-  timeoutMs = 150,
-): Promise<{ columns: number; rows: number } | null> {
-  return new Promise((resolve) => {
-    let settled = false;
-    let buffer = Buffer.alloc(0);
-
-    const onData = (chunk: Buffer) => {
-      buffer = Buffer.concat([buffer, chunk]);
-
-      const match = buffer.toString("utf8").match(/\x1b\[(\d+);(\d+)R/);
-
-      if (!match) {
-        return;
-      }
-
-      const rows = Number(match[1]);
-      const columns = Number(match[2]);
-
-      settle({
-        rows,
-        columns,
-      });
-    };
-
-    const timer = setTimeout(() => {
-      settle(null);
-    }, timeoutMs);
-
-    function settle(result: { columns: number; rows: number } | null) {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-
-      clearTimeout(timer);
-      process.stdin.off("data", onData);
-
-      process.stdout.write("\x1b[u");
-
-      resolve(result);
-    }
-
-    process.stdin.on("data", onData);
-
-    process.stdout.write("\x1b[s" + "\x1b[999;999H" + "\x1b[6n");
-  });
-}
 
 const commandLineCommands = {
   focusFileTree: {
@@ -579,35 +478,7 @@ function split(ctx: EditorContext, direction: DisplayDirection) {
   ctx.focus(demoWindow);
 }
 
-function errorsOnScreen(ctx: EditorContext) {
-  // from here on, errors go to the log window instead of killing the editor.
-  // registered after setup on purpose: a startup failure should still crash
-  // loudly rather than leave a half-built screen
-  function reportError(kind: string, err: unknown) {
-    const detail =
-      err instanceof Error ? (err.stack ?? err.message) : String(err);
 
-    try {
-      const errorWindow = ctx.findWindow(ErrorWindow);
-      if (!errorWindow) {
-        console.error(`could not find error window for error`);
-        console.error(detail);
-        return;
-      }
-
-      errorWindow.showError(`${kind} \n ${detail} \n${err}`);
-      ctx.requestRepaint();
-    } catch {
-      // an error thrown inside this handler would exit the process, so if
-      // logging itself fails there is nothing left to do but drop it
-    }
-  }
-
-  process.on("uncaughtException", (err) => reportError("uncaught", err));
-  process.on("unhandledRejection", (reason) =>
-    reportError("unhandled rejection", reason),
-  );
-}
 
 function errorWindow(ctx: EditorContext) {
   const errorWindow = new ErrorWindow(ctx);
@@ -638,21 +509,54 @@ function debugWindow(ctx: EditorContext) {
   logger.subscribe(debugWindow.attachListener);
 }
 
-function connectWindow() {}
+// lays the editor out to width x height: the renderer, and the tree it draws
+function resizeToWindow(editor: EditorContext, width: number, height: number) {
+  const layout = LayoutEngine.CreateBounds().setWidth(width).setHeight(height);
+  editor.setLayout(layout);
+  editor.rootWindow.layoutConstraints = LayoutEngine.CreateConstraints(
+    width,
+    height,
+  );
+  editor.rootWindow.setLayout(layout);
+}
+
+function connectWindow(editor: EditorContext, renderer: WindowRenderer) {
+  editor.renderer = renderer;
+  resizeToWindow(
+    editor,
+    renderer.window().pixelWidth,
+    renderer.window().pixelHeight,
+  );
+
+  editor.requestRepaint();
+
+  // like index.ts's process.stdin "data", for the window
+  return new WindowEvents(renderer.window())
+    .onInput((event) => windowInput(editor, event))
+    .onResize((size) => windowResize(editor, size));
+}
+
+// a window event is zero or more editor keys: a letter's keyDown is none,
+// its textInput is the letter
+function windowInput(editor: EditorContext, event: WindowInputEvent) {
+  for (const key of WindowInputParser.Parse(event)) {
+    editor.handleKey(key);
+  }
+}
+
+function windowResize(editor: EditorContext, size: PixelSize) {
+  const layout = editor.layout();
+  // SDL can report the same size again: no layout, no frame
+  if (layout.width === size.pixelWidth && layout.height === size.pixelHeight) {
+    return;
+  }
+
+  resizeToWindow(editor, size.pixelWidth, size.pixelHeight);
+  editor.requestRepaint();
+}
 
 export const setupEditor = {
   root: setupWindows,
-  terminal: {
-    clearOutput,
-    hideCursor,
-    showCursor,
-    disableMouseEvents,
-    enableMouseEvents,
-    enableKeyboardProtocol,
-    disableKeyboardProtocol,
-    handleResize,
-    errorsOnScreen,
-  },
   commands: {
     register: registerCommands,
     normalMode: setupNormalModeCommands,
@@ -660,9 +564,7 @@ export const setupEditor = {
     visualMode: setupVisualModeCommands,
   },
   window: {
-    connect: (editor: EditorContext, renderer: Renderer) => {
-      editor.renderer = renderer;
-    },
+    connect: connectWindow,
   },
 
   windows: {

@@ -7,6 +7,7 @@ import { DisplayLike } from "../layout/layout.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
 import { AnsiParser } from "../colors/Parsers/AnsiParser.js";
 import { Rendering } from "./Renderer.js";
+import { PixelWindow } from './WindowRenderer.js';
 
 // where a finished frame goes: the terminal in the app, console.log in tests
 export type RenderOutput = (frame: string) => void;

@@ -40,13 +40,13 @@ export class InsertMode implements EditorMode {
     } else if (InputParser.isEnter(key.token)) {
       editor.onEnter(ctx);
     } else if (InputParser.isArrowDown(key.token)) {
-      editor.moveCursorDown();
+      editor.insertMoveDown();
     } else if (InputParser.isArrowUp(key.token)) {
-      editor.moveCursorUp();
+      editor.insertMoveUp();
     } else if (InputParser.isArrowLeft(key.token)) {
-      editor.moveCursorLeft();
+      editor.insertMoveLeft();
     } else if (InputParser.isArrowRight(key.token)) {
-      editor.moveCursorRight();
+      editor.insertMoveRight();
     } else if (InputParser.isTab(key.token)) {
       buffer.addCharacter(cursor.line, cursor.column, "\t");
       cursor.column += 1;

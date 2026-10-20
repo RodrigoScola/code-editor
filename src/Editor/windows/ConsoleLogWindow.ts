@@ -11,8 +11,11 @@ export class TreeViewWindow extends UIScreen {
     this.setText(EditorContext.instance?.rootWindow.view().logChildren());
   }
   onPrePaint(): void {
-    this.cursor().width = this.view().contentLayout().width;
-    this.cursor().height = this.view().contentLayout().height;
+    // the whole content, in characters and lines (the cursor's size is cells)
+    const cl = this.view().contentLayout();
+    // rounded down, so it doesn't stick out past the edges
+    this.cursor().width = Math.floor(cl.width / this.view().charWidth());
+    this.cursor().height = Math.floor(cl.height / this.view().lineHeight());
     this.cursor().column = 0;
 
     if (EditorContext.instance?.rootWindow.view().dirty()) {

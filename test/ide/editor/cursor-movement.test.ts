@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { code, exec } from "../harness.js";
+import { movementCommands } from "../../../src/Commands/editor/commands/movement.js";
 
 // VS Code's cursor and delete commands (the non-Vim way to move around).
 //   cursorLeft/Right/Up/Down, cursorHome/End, cursorTop/Bottom
@@ -11,7 +12,7 @@ import { code, exec } from "../harness.js";
 
 describe("moving by character and line", () => {
   it("moveRight and moveLeft", () => {
-    expect(exec("a|bc", "textEditor.moveRight")).eq("ab|c");
+    expect(exec("a|bc", movementCommands.right)).eq("ab|c");
     expect(exec("a|bc", "textEditor.moveLeft")).eq("|abc");
   });
 
@@ -62,8 +63,12 @@ describe("home and end", () => {
   });
 
   it("cursorTop and cursorBottom go to the ends of the file", () => {
-    expect(exec("ab\nc|d", "textEditor.moveUp")).eq("|ab\ncd");
-    expect(exec("a|b\ncd", "textEditor.moveDown")).eq("ab\ncd|");
+    expect(exec("ab\nc|d", "textEditor.moveUp", "textEditor.moveUp")).eq(
+      "|ab\ncd",
+    );
+    expect(exec("a|b\ncd", "textEditor.moveDown", "textEditor.moveDown")).eq(
+      "ab\ncd|",
+    );
   });
 });
 
@@ -80,17 +85,13 @@ describe("moving by word", () => {
   });
 
   it("cursorWordStartRight goes to the start of the next word", () => {
-    expect(exec("|foo bar", "textEditor.cursorWordStartRight")).eq("foo |bar");
+    expect(exec("|foo bar", "textEditor.nextWordStart")).eq("foo |bar");
   });
 
   it("cursorWordLeft goes to the start of the word", () => {
-    expect(exec("foo bar|", "textEditor.cursorWordLeft")).eq("foo |bar");
+    expect(exec("foo bar|", "textEditor.prevWordStart")).eq("foo |bar");
     expect(
-      exec(
-        "foo bar|",
-        "textEditor.cursorWordLeft",
-        "textEditor.cursorWordLeft",
-      ),
+      exec("foo bar|", "textEditor.prevWordStart", "textEditor.prevWordStart"),
     ).eq("|foo bar");
   });
 
@@ -119,7 +120,7 @@ describe("selecting while moving", () => {
   });
 
   it("cursorWordLeftSelect selects back a word", () => {
-    expect(exec("foo bar|", "textEditor.cursorWordLeftSelect")).eq("foo »bar«");
+    expect(exec("foo bar|", "textEditor.prevWordStartSelect")).eq("foo »bar«");
   });
 });
 

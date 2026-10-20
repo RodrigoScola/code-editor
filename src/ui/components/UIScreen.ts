@@ -44,6 +44,10 @@ export class UIScreen extends UiComponent {
     this.cursor().nextCompleteWordStart();
   }
 
+  // the moves keep a selection and drag its active end along (the commands
+  // decide when to drop it); see CursorMovement for the three kinds
+
+  // VS Code
   moveCursorDown() {
     this.cursor().moveDown();
     return this;
@@ -68,6 +72,56 @@ export class UIScreen extends UiComponent {
     this.cursor().end();
     return this;
   }
+
+  // Vim's insert mode (the arrow keys)
+  insertMoveDown() {
+    this.cursor().insertDown();
+    return this;
+  }
+  insertMoveUp() {
+    this.cursor().insertUp();
+    return this;
+  }
+  insertMoveLeft() {
+    this.cursor().insertLeft();
+    return this;
+  }
+  insertMoveRight() {
+    this.cursor().insertRight();
+    return this;
+  }
+
+  moveLineEnd() {
+    this.cursor().lineEnd();
+    return this;
+  }
+  moveLineStart() {
+    this.cursor().lineStart();
+    return this;
+  }
+
+  // the ...Select commands call this before moving, so pressing them again
+  // grows the selection instead of starting a new one
+  startSelectionIfNone() {
+    if (!this.hasSelection()) this.startSelection();
+    return this;
+  }
+
+  // drops the selection; when it wasn't empty, puts the cursor on its start
+  // or end and returns true
+  collapseSelection(side: "start" | "end") {
+    const cursor = this.cursor();
+    const selection = cursor.selection;
+    cursor.clearSelection();
+    if (!selection || selection.isEmpty()) {
+      return false;
+    }
+
+    const point = side === "start" ? selection.start() : selection.end();
+    cursor.moveTo(point.y, point.x);
+    return true;
+  }
+
   startSelection() {
     return this.cursor().startSelection();
   }
@@ -110,7 +164,7 @@ export class UIScreen extends UiComponent {
     this.buffer().update(y, currentLineContent).insertLine(y, newLineContent);
 
     this.cursor().moveDown();
-    this.cursor().goToLineBeginning();
+    this.cursor().lineStart();
   }
   removeLine(at: number) {
     this.buffer().removeLine(at);

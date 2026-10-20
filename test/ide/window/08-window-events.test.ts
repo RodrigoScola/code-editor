@@ -42,7 +42,6 @@ describe("onInput: keys", () => {
     const { window, inputs } = setup();
     window.keyDown("escape");
 
-    console.log(inputs);
 
     expect(inputs).toEqual([
       {

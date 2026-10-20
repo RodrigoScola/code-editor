@@ -1,8 +1,6 @@
 import process from "process";
 import readline from "node:readline";
-import { LayoutEngine } from "./ui/layout/layout.js";
 import { EditorContext } from "./Editor/Editor/Editor.js";
-import { TerminalInputParser } from "./Input/TerminalInputParser.js";
 import { assert } from "./assert.js";
 import { setupEditor as setup } from "./Editor/setupEditor.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
@@ -13,15 +11,13 @@ import { CodeEditorGroup } from "./Editor/windows/Tab/TabWindow.js";
 import { captureLogs, logger } from "./logging/log.js";
 import { WINDOW_NAMES } from "./constants.js";
 import { UIScreen } from "./ui/components/UIScreen.js";
-import { TerminalRenderer } from "./ui/Renderers/TerminalRenderer.js";
+import { WindowRenderer } from "./ui/Renderers/WindowRenderer.js";
+import { setupTerminal } from "./Editor/setup/terminal.js";
 
 captureLogs((level, message) => logger.add(level, message));
 
 // reset any mouse-tracking mode left on by a previous run that didn't exit
 // cleanly (the terminal keeps this state, it isn't tied to our process)
-setup.terminal.disableMouseEvents();
-setup.terminal.enableKeyboardProtocol();
-setup.terminal.enableMouseEvents();
 
 readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) {
@@ -33,21 +29,15 @@ const editor = new EditorContext();
 
 // frames move the cursor to the cells they draw; a frame that changed
 // nothing is "" and costs no write
-if (editor.renderer.isTerminalRenderer()) {
-  (editor.renderer as TerminalRenderer).setOutput((frame) => {
-    if (frame) {
-      process.stdout.write(frame);
-    }
-  });
+
+const inWindow = process.argv.includes("--window");
+
+if (inWindow) {
+  const renderer = WindowRenderer.Open();
+  setup.window.connect(editor, renderer).onClose(() => process.exit(0));
+} else {
+  setupTerminal(editor);
 }
-
-// the editor paints its own cursor; the terminal's would sit wherever the
-// last frame stopped drawing
-setup.terminal.hideCursor();
-
-const bounds = LayoutEngine.CreateBounds();
-bounds.setHeight(process.stdout.rows).setWidth(process.stdout.columns);
-editor.renderer.setLayout(bounds);
 
 setup.root(editor);
 
@@ -69,6 +59,7 @@ editor.rootWindow.addChildren(popup);
 
 const statusWindow = editor.findWindow(StatusWindow);
 assert(statusWindow, "status window not setup");
+
 editor.rootWindow.addChildren(statusWindow);
 
 // tree view
@@ -88,7 +79,6 @@ const tabEditor = editor.findWindow(CodeEditorGroup)!;
 assert(textEditor, "invalid text editor window");
 
 window.addChildren(tabEditor);
-// ---------
 
 // git view
 setup.windows.git(editor);
@@ -111,15 +101,6 @@ setup.commands.commandMode(editor);
 editor.focus(textEditor);
 editor.requestRepaint();
 
-setup.terminal.errorsOnScreen(editor);
-
-process.stdout.on("resize", () => setup.terminal.handleResize(editor));
-
-process.stdout.on("finish", () => {
-  setup.terminal.clearOutput();
-  setup.terminal.disableMouseEvents();
-});
-
 // the frame loop, like requestAnimationFrame: every tick draws a frame only
 // if something asked for one (a key, a resize, git answering) or the layout
 // changed, so an editor that sits still does no work
@@ -133,21 +114,3 @@ setInterval(() => {
 }, 10);
 
 // handleKey asks for a frame itself
-function dispatchKey(parsedKey: KeyEvent) {
-  editor.handleKey(parsedKey);
-}
-
-process.stdin.on("data", (chunk) => {
-  for (const input of TerminalInputParser.parse(chunk)) {
-    if (input.type === "keyboard") {
-      dispatchKey(input.event);
-    }
-    // todo: mouse events are parsed but not dispatched yet
-  }
-});
-
-process.on("exit", () => {
-  setup.terminal.disableKeyboardProtocol();
-  setup.terminal.disableMouseEvents();
-  setup.terminal.showCursor();
-});

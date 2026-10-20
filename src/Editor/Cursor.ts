@@ -14,6 +14,7 @@ export class Cursor {
 
   private _movement: CursorMovement = new CursorMovement(this);
 
+  // in characters and lines, like line and column; paint() makes them pixels
   width: number = 1;
   height: number = 1;
 
@@ -54,19 +55,33 @@ export class Cursor {
       .setY(this.line);
   }
 
-  private outOfBounds(bounds: LayoutBounds) {
-    const relative = LayoutDimensions.ApplyRelative(
-      this.column,
-      this.line - (this._view?.viewport()?.firstLine || 0),
-      bounds,
-    );
+  // where the cursor is drawn inside the view's content, in pixels: a column
+  // is charWidth wide and a line lineHeight tall (1 each on the terminal)
+  private screenBounds(view: DisplayComponent, layout: LayoutBounds) {
+    const charWidth = view.charWidth();
+    const lineHeight = view.lineHeight();
+    const row = this.line - (view.viewport()?.firstLine || 0);
 
-    return (
+    return LayoutBounds.Create(
+      this.width * charWidth,
+      this.height * lineHeight,
+      layout.x + this.column * charWidth,
+      layout.y + row * lineHeight,
+    );
+  }
+
+  private outOfBounds(view: DisplayComponent, bounds: LayoutBounds) {
+    const relative = this.screenBounds(view, bounds);
+    // its line has to fit: one that starts above the bottom but ends below it
+    // is out (on the terminal a line is 1 tall, the same check as before)
+    const out =
       relative.x < bounds.x ||
       relative.y < bounds.y ||
       relative.x >= bounds.x + bounds.width ||
-      relative.y >= bounds.y + bounds.height
-    );
+      relative.y + view.lineHeight() > bounds.y + bounds.height;
+
+    relative.dispose();
+    return out;
   }
 
   startSelection() {
@@ -87,29 +102,23 @@ export class Cursor {
     if (!this._view) {
       return;
     }
-    const layout = this._view?.contentLayout();
+    const view = this._view;
+    const layout = view.contentLayout();
 
-    if (this.outOfBounds(layout)) {
+    if (this.outOfBounds(view, layout)) {
       return;
     }
 
-    const relative = LayoutDimensions.ApplyRelative(
-      this.column,
-      this.line - (this._view?.viewport().firstLine || 0),
-      layout,
-    );
+    const relative = this.screenBounds(view, layout);
 
-    relative.setHeight(this.height).setWidth(this.width);
-
-    const content = this.buffer()?.at(this.line);
-    assert(content, `invalid display row at ${relative.y}`);
-
-    let final = "";
-    for (let i = relative.x; i < relative.x + relative.width; i++) {
-      final += content[i];
-    }
+    // the characters under the cursor, a space past the end of the line
+    const content = this.buffer()?.at(this.line) ?? "";
+    const final = content
+      .slice(this.column, this.column + this.width)
+      .padEnd(this.width, " ");
 
     canvas.drawText(relative, final, this.style);
+    relative.dispose();
   }
 
   private _selectionBounds: LayoutBounds = LayoutBounds.Create();
@@ -164,24 +173,101 @@ export class Cursor {
       );
     }
   }
-  moveDown() {
-    this._movement.down();
-    return this;
-  }
+  // the moves themselves live in CursorMovement (see the two kinds there)
 
   moveTo(line: number, column: number) {
     this._movement.moveTo(line, column);
     return this;
   }
 
-  moveUp() {
-    this._movement.up();
-    return this;
-  }
+  // VS Code: between characters, left and right wrap
   moveLeft() {
     this._movement.left();
     return this;
   }
+  moveRight() {
+    this._movement.right();
+    return this;
+  }
+  moveUp() {
+    this._movement.up();
+    return this;
+  }
+  moveDown() {
+    this._movement.down();
+    return this;
+  }
+  home() {
+    this._movement.home();
+    return this;
+  }
+  end() {
+    this._movement.end();
+    return this;
+  }
+
+  // Vim's insert mode (the arrow keys): between characters, nothing wraps
+  insertLeft() {
+    this._movement.insertLeft();
+    return this;
+  }
+  insertRight() {
+    this._movement.insertRight();
+    return this;
+  }
+  insertUp() {
+    this._movement.insertUp();
+    return this;
+  }
+  insertDown() {
+    this._movement.insertDown();
+    return this;
+  }
+
+  // Vim's normal mode (h j k l $): on a character, nothing wraps
+  vimLeft() {
+    this._movement.vimLeft();
+    return this;
+  }
+  vimRight() {
+    this._movement.vimRight();
+    return this;
+  }
+  vimUp() {
+    this._movement.vimUp();
+    return this;
+  }
+  vimDown() {
+    this._movement.vimDown();
+    return this;
+  }
+  lineEnd() {
+    this._movement.vimLineEnd();
+    return this;
+  }
+
+  lineStart() {
+    this._movement.lineStart();
+    return this;
+  }
+  goToLineEnd() {
+    this._movement.lineEnd();
+    return this;
+  }
+
+  nextWord() {
+    this._movement.nextWord();
+    return this;
+  }
+  previousWordStart() {
+    this._movement.previousWordStart();
+    return this;
+  }
+  nextCompleteWordStart() {
+    this._movement.nextCompleteWordStart();
+    return this;
+  }
+
   atLineStart() {
     return this.column === 0;
   }
@@ -193,50 +279,12 @@ export class Cursor {
     if (!line) return false;
     return this.column === line.length;
   }
-  moveRight() {
-    this._movement.right();
-    return this;
+  atLastLine() {
+    return (this.buffer()?.count() || 0) - 1 === this.line;
   }
   reset() {
     this.line = 0;
     this.column = 0;
     this.prefferedColumn = 0;
-  }
-  goHome() {
-    this._movement.home();
-    return this;
-  }
-  goEnd() {
-    this._movement.goEnd();
-    return this;
-  }
-
-  goToLineBeginning() {
-    this._movement.lineBeginning();
-  }
-
-  goToLineEnd() {
-    this._movement.lineEnd();
-    return this;
-  }
-  atLastLine() {
-    return (this.buffer()?.count() || 0) - 1 === this.line;
-  }
-  nextWord() {
-    this._movement.nextWord();
-    return this;
-  }
-  previousWordStart() {
-    this._movement.previousWordStart();
-    return this;
-  }
-  nextCompleteWordStart() {
-    this._movement.nextCompleteWordStart();
-  }
-  home() {
-    this._movement.moveHome()
-  }
-  end() {
-    this._movement.goEnd()
   }
 }

@@ -97,8 +97,15 @@ export class ComponentLayout {
       text === undefined
         ? { width: 0, height: 0 }
         : {
-            width: Math.max(...text.split("\n").map((line) => line.length)),
-            height: text.split("\n").length,
+            // in characters and lines, made pixels (1 each on the terminal),
+            // rounded up so the last character isn't cut off
+            width: Math.ceil(
+              Math.max(...text.split("\n").map((line) => line.length)) *
+                component.charWidth(),
+            ),
+            height: Math.ceil(
+              text.split("\n").length * component.lineHeight(),
+            ),
           };
 
     if (children.length === 0) {

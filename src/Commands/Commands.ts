@@ -223,9 +223,9 @@ export class CommandMode implements EditorMode {
     } else if (InputParser.isArrowUp(key.token)) {
       editor.previousLine();
     } else if (InputParser.isArrowLeft(key.token)) {
-      editor.moveCursorLeft();
+      editor.insertMoveLeft();
     } else if (InputParser.isArrowRight(key.token)) {
-      editor.moveCursorRight();
+      editor.insertMoveRight();
     } else if (InputParser.isTab(key.token)) {
       buffer.addCharacter(cursor.line, cursor.column, "\t");
       cursor.column += 1;

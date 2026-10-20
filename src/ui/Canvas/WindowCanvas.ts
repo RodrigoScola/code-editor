@@ -1,5 +1,5 @@
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
-import { ComponentStyle } from "../ComponentStyles.js";
+import { ComponentStyle, DEFAULT_FONT } from "../ComponentStyles.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
 import { TextLayout } from "../TextLayout/text.js";
 import { ViewPort } from "../windows/viewport.js";
@@ -16,8 +16,18 @@ export class WindowCanvas implements ICanvas {
   private _texts: WindowCanvasText[] = [];
 
   constructor(canvas: Canvas) {
+    // text drawn in pixels; on the terminal a line is a cell (1)
+    ComponentStyle.FontSize = 16;
+
     this._canvas = canvas;
     this._context = canvas.getContext("2d");
+
+    // how wide a character of the font really is, per pixel of font size, so
+    // a column lands where the text's characters do (Consolas: about 0.55)
+    this._context.save();
+    this._context.font = `100px ${DEFAULT_FONT}`;
+    ComponentStyle.CharAdvance = this._context.measureText("0").width / 100;
+    this._context.restore();
   }
 
   view() {
@@ -288,7 +298,13 @@ export class WindowCanvas implements ICanvas {
       const textColor = ctx.fillStyle;
 
       const letterWidth = ctx.measureText("M").width;
-      const visible = content.slice(0, Math.floor(bounds.width / letterWidth));
+      // half a pixel of slack: a bounds n characters wide (n * charWidth) can
+      // come out a hair under n letters measured at this size, and floor would
+      // then drop the last one (a one-character cursor drew nothing)
+      const visible = content.slice(
+        0,
+        Math.floor((bounds.width + 0.5) / letterWidth),
+      );
       const m = ctx.measureText(visible);
       const width = Math.round(m.width);
       const ascent = Math.round(ctx.measureText("M").fontBoundingBoxAscent);

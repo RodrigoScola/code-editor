@@ -1,5 +1,11 @@
 import { assert } from "../../assert.js";
-import { splitLines } from '../../utils.js';
+
+// here, not in utils.ts: utils imports the components, and displayComponent
+// imports this file, so importing utils would load a component before the
+// DisplayComponent it extends
+function splitLines(str: string): string[] {
+  return str.split(/\r?\n/);
+}
 
 export class TextBuffer implements BufferLike {
   private lines: string[] = [];

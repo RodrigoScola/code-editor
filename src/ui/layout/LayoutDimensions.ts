@@ -58,7 +58,11 @@ export class LayoutDimensions {
 
         contentWidth = size.width;
       } else if (component.hasContent()) {
-        contentWidth = component.content().width();
+        // rounded up: a character is a fraction of a pixel wide in a window,
+        // and a box a hair too narrow cuts off the last character
+        contentWidth = Math.ceil(
+          component.content().width() * component.charWidth(),
+        );
       }
     }
 
@@ -97,7 +101,9 @@ export class LayoutDimensions {
 
         contentHeight = size.height;
       } else if (component.hasContent()) {
-        contentHeight = component.content().height();
+        contentHeight = Math.ceil(
+          component.content().height() * component.lineHeight(),
+        );
       }
     }
     if (contentHeight === null) {

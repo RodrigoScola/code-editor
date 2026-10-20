@@ -1,393 +1,313 @@
-import { assert } from "../../../assert.js";
 import { Cursor } from "../../../Editor/Cursor.js";
+
 
 export class CursorMovement {
   private readonly cursor: Cursor;
   constructor(cursor: Cursor) {
     this.cursor = cursor;
   }
+
+  // goes to line/column and makes that column the one up/down try to keep
   moveTo(line: number, column: number) {
-    const cursor = this.cursor;
-    const buffer = this.cursor.buffer();
-    if (!buffer) {
-      return;
-    }
-
-    cursor.line = Math.max(Math.min(line, buffer.count() - 1), 0);
-    const length = buffer.at(cursor.line)?.length ?? 0;
-    cursor.column = Math.max(Math.min(column, length), 0);
-    cursor.prefferedColumn = cursor.column;
-
-    cursor.selection && cursor.updateSelection();
-  }
-  home() {
-    this.cursor.line = 0;
-    this.cursor.column = 0;
-    this.cursor.prefferedColumn = 0;
-    this.cursor.selection && this.cursor.updateSelection();
-  }
-  right() {
-    const cursor = this.cursor;
-
-    const buffer = cursor.buffer();
-    if (!buffer) {
-      return;
-    }
-
-    const line = buffer.at(cursor.line);
-
-    let bufferLine = line?.length;
-
-    if (bufferLine) {
-      bufferLine -= 1;
-    }
-
-    const lineLength = bufferLine ?? cursor.column + 1;
-
-    cursor.column = Math.min(cursor.column + 1, Math.max(lineLength, 0));
-
-    cursor.prefferedColumn = cursor.column;
-
-    if (cursor.selection) cursor.updateSelection();
-    return cursor;
+    this.place(line, column);
+    this.cursor.prefferedColumn = this.cursor.column;
   }
 
+  // ─── Vim insert mode: between characters, nothing wraps ───
+
+  insertLeft() {
+    const { line, column } = this.cursor;
+    if (column > 0) this.moveTo(line, column - 1);
+  }
+
+  // can go one past the last character
+  insertRight() {
+    const { line, column } = this.cursor;
+    if (column < this.lineLength(line)) this.moveTo(line, column + 1);
+  }
+
+  insertUp() {
+    const line = this.lineAbove();
+    this.placeKeepingColumn(line, this.lineLength(line));
+  }
+
+  insertDown() {
+    const line = this.lineBelow();
+    this.placeKeepingColumn(line, this.lineLength(line));
+  }
+
+  
   left() {
-    const cursor = this.cursor;
-
-    cursor.column = Math.max(cursor.column - 1, 0);
-
-    if (cursor.selection) cursor.updateSelection();
-    return cursor;
+    const { line, column } = this.cursor;
+    if (column === 0 && line > 0) {
+      this.moveTo(line - 1, this.lineLength(line - 1));
+    } else {
+      this.insertLeft();
+    }
   }
 
+  // at the end of a line, goes to the start of the line below
+  right() {
+    const { line, column } = this.cursor;
+    if (column === this.lineLength(line) && line < this.lastLine()) {
+      this.moveTo(line + 1, 0);
+    } else {
+      this.insertRight();
+    }
+  }
+
+  // on the first line, goes to its start
   up() {
-    const cursor = this.cursor;
-    const buffer = cursor.buffer();
-
-    if (!buffer) {
-      return cursor;
-    }
-
-    cursor.line = Math.max(cursor.line - 1, 0);
-
-    let nextLinePos = cursor.prefferedColumn;
-
-    const line = buffer.at(cursor.line);
-    if (line) {
-      nextLinePos = line.length - 1;
+    if (this.cursor.line === 0) {
+      this.lineStart();
     } else {
-      nextLinePos = 0;
+      this.insertUp();
     }
-
-    cursor.column = Math.min(cursor.prefferedColumn, nextLinePos);
-
-    if (cursor.selection) cursor.updateSelection();
-    return cursor;
   }
 
+  // on the last line, goes to its end
   down() {
-    const cursor = this.cursor;
-    const buffer = cursor.buffer();
-    if (!buffer) {
-      return this;
-    }
-
-    cursor.line = Math.max(Math.min(cursor.line + 1, buffer.count() - 1), 0);
-
-    let nextLinePos = cursor.prefferedColumn;
-
-    const line = buffer.at(cursor.line);
-    if (line) {
-      nextLinePos = line.length - 1;
+    if (this.cursor.line === this.lastLine()) {
+      this.lineEnd();
     } else {
-      nextLinePos = 0;
-    }
-
-    cursor.column = Math.min(cursor.prefferedColumn, nextLinePos);
-
-    cursor.selection && cursor.updateSelection();
-
-    return cursor;
-  }
-
-  moveDown(cursor: Cursor) {
-    this.down();
-
-    if (cursor.atLastLine()) {
-      cursor.goToLineEnd();
+      this.insertDown();
     }
   }
-  moveUp(cursor: Cursor) {
-    if (cursor.atLineStart()) {
-      cursor.moveUp();
-      return;
+
+  // Home: the start of the line; pressed again there, the start of the file
+  home() {
+    if (this.cursor.column > 0) {
+      this.lineStart();
+    } else {
+      this.documentStart();
     }
-    cursor.moveUp().goToLineBeginning();
-  }
-  moveLeft() {
-    this.cursor.moveLeft();
-  }
-  moveRight() {
-    const cursor = this.cursor;
-    if (!cursor.atLineEnd()) {
-      cursor.moveRight();
-      return;
-    }
-    cursor.moveDown().goToLineBeginning();
-  }
-  moveHome() {
-    const cursor = this.cursor;
-    if (!cursor.atLineStart()) {
-      cursor.goToLineBeginning();
-      return;
-    }
-    this.home();
   }
 
+  // End: the end of the line; pressed again there, the end of the file
+  end() {
+    if (this.cursor.column < this.lineLength(this.cursor.line)) {
+      this.lineEnd();
+    } else {
+      this.documentEnd();
+    }
+  }
+
+  // ─── Vim normal mode: on a character ───
+
+  // h
+  vimLeft() {
+    this.insertLeft();
+  }
+
+  // l: stops on the last character
+  vimRight() {
+    const { line, column } = this.cursor;
+    if (column < this.lastChar(line)) this.moveTo(line, column + 1);
+  }
+
+  // k
+  vimUp() {
+    const line = this.lineAbove();
+    this.placeKeepingColumn(line, this.lastChar(line));
+  }
+
+  // j
+  vimDown() {
+    const line = this.lineBelow();
+    this.placeKeepingColumn(line, this.lastChar(line));
+  }
+
+  // $: the last character; j and k stay at the end of each line after it
+  vimLineEnd() {
+    this.moveTo(this.cursor.line, this.lastChar(this.cursor.line));
+    this.cursor.prefferedColumn = Infinity;
+  }
+
+  // ─── lines and the whole file ───
+
+  lineStart() {
+    this.moveTo(this.cursor.line, 0);
+  }
+
+  // one past the last character
   lineEnd() {
-    const cursor = this.cursor;
-    const buffer = cursor.buffer();
-    if (!buffer) {
-      return;
-    }
-
-    const currentLine = buffer.at(cursor.line);
-    assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
-
-    cursor.prefferedColumn = cursor.column = Math.max(currentLine.length, 0);
-
-    cursor.selection && cursor.updateSelection();
-    return cursor;
+    this.moveTo(this.cursor.line, this.lineLength(this.cursor.line));
   }
 
-  lineBeginning() {
-    const cursor = this.cursor;
-    const buffer = cursor.buffer();
-    if (!buffer) {
-      return;
-    }
-
-    const currentLine = buffer.at(cursor.line);
-    assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
-
-    cursor.column = 0;
-    cursor.prefferedColumn = 0;
-
-    cursor.selection && cursor.updateSelection();
-    return cursor;
+  documentStart() {
+    this.moveTo(0, 0);
   }
 
-  goEnd() {
-    const cursor = this.cursor
-    cursor.line = cursor.buffer()?.count() || 0;
-    cursor.goToLineEnd();
-
-    cursor.selection && cursor.updateSelection();
+  documentEnd() {
+    const last = this.lastLine();
+    this.moveTo(last, this.lineLength(last));
   }
 
-  moveEnd() {
-    const cursor = this.cursor;
-    if (!cursor.atLineEnd()) {
-      cursor.goToLineEnd();
-      return;
-    }
-    cursor.goEnd();
-  }
-  nextCompleteWordStart() {
-    const cursor = this.cursor;
-    const buffer = cursor.buffer();
-    if (!buffer) {
-      return;
-    }
+  // ─── words (Vim's w, W and b) ───
 
-    const currentLine = buffer.at(cursor.line);
-    assert(currentLine !== undefined, `invalid current line: ${cursor.line}`);
+  // w: the start of the next word; punctuation runs are words of their own
+  nextWord() {
+    const { line } = this.cursor;
+    const text = this.lineText(line);
+    let column = this.cursor.column;
 
-    let nextColumn = cursor.column;
-
-    if (nextColumn >= currentLine.length) {
-      cursor.column = Math.max(0, currentLine.length - 1);
-      cursor.prefferedColumn = cursor.column;
-      return;
-    }
-
-    if (isWhitespace(currentLine[nextColumn])) {
-      while (
-        nextColumn < currentLine.length &&
-        isWhitespace(currentLine[nextColumn])
-      ) {
-        nextColumn += 1;
+    if (column >= text.length) {
+      if (line < this.lastLine()) {
+        this.moveTo(line + 1, 0);
+      } else {
+        this.moveTo(line, this.lastChar(line));
       }
+      return;
+    }
+
+    const first = text[column];
+    if (isWhitespace(first)) {
+      column = skip(text, column, isWhitespace);
+    } else if (isWordChar(first)) {
+      column = skip(text, column, isWordChar);
+      column = skip(text, column, isWhitespace);
     } else {
-      while (
-        nextColumn < currentLine.length &&
-        !isWhitespace(currentLine[nextColumn])
-      ) {
-        nextColumn += 1;
-      }
-
-      while (
-        nextColumn < currentLine.length &&
-        isWhitespace(currentLine[nextColumn])
-      ) {
-        nextColumn += 1;
-      }
+      column = skip(text, column, isPunctuation);
+      column = skip(text, column, isWhitespace);
     }
-    const target = Math.max(
-      0,
-      Math.min(nextColumn, Math.max(currentLine.length - 1, 0)),
-    );
 
-    cursor.moveTo(cursor.line, target);
-  }
-  previousWordStart() {
-    const cursor = this.cursor;
-    const buffer = cursor.buffer();
-    if (!buffer) {
+    if (column >= text.length && line < this.lastLine()) {
+      this.moveTo(line + 1, 0);
       return;
     }
 
-    const currentLine = buffer.at(cursor.line);
+    this.moveTo(line, Math.min(column, this.lastChar(line)));
+  }
 
-    assert(
-      currentLine !== undefined,
-      "invalid line to go to the previous word command",
-    );
+  // W: the start of the next WORD (words are split only by white space)
+  nextCompleteWordStart() {
+    const { line } = this.cursor;
+    const text = this.lineText(line);
+    let column = this.cursor.column;
 
-    let column = cursor.column;
+    if (column >= text.length) {
+      this.moveTo(line, this.lastChar(line));
+      return;
+    }
+
+    if (isWhitespace(text[column])) {
+      column = skip(text, column, isWhitespace);
+    } else {
+      column = skip(text, column, (char) => !isWhitespace(char));
+      column = skip(text, column, isWhitespace);
+    }
+
+    this.moveTo(line, Math.min(column, this.lastChar(line)));
+  }
+
+  // b: back to the start of the word before the cursor
+  previousWordStart() {
+    const { line } = this.cursor;
+    const text = this.lineText(line);
+    let column = this.cursor.column;
+
+    // At the beginning of the line: go to the previous line.
+    if (column === 0) {
+      if (line > 0) {
+        this.moveTo(line - 1, this.lastChar(line - 1));
+      }
+      return;
+    }
 
     // Move left at least once.
-    if (column > 0) {
-      column--;
-    } else {
-      // At the beginning of the line: go to previous line.
-      const prevLine = buffer.at(cursor.line - 1);
-
-      if (prevLine !== undefined) {
-        cursor.line--;
-        cursor.column = Math.max(0, prevLine.length - 1);
-        cursor.prefferedColumn = cursor.column;
-      }
-
-      return;
-    }
+    column--;
 
     // Skip whitespace.
-    while (column > 0 && isWhitespace(currentLine[column])) {
+    while (column > 0 && isWhitespace(text[column])) {
       column--;
     }
 
     // If we're inside a word, move to its beginning.
-    if (isWordChar(currentLine[column])) {
-      while (column > 0 && isWordChar(currentLine[column - 1])) {
+    if (isWordChar(text[column])) {
+      while (column > 0 && isWordChar(text[column - 1])) {
         column--;
       }
     } else {
       // We're on punctuation.
       // Move across punctuation until we reach whitespace,
       // then find the beginning of the previous word.
-      while (column > 0 && !isWhitespace(currentLine[column - 1])) {
+      while (column > 0 && !isWhitespace(text[column - 1])) {
         column--;
       }
 
-      while (column > 0 && isWhitespace(currentLine[column - 1])) {
+      while (column > 0 && isWhitespace(text[column - 1])) {
         column--;
       }
 
-      if (isWordChar(currentLine[column])) {
-        while (column > 0 && isWordChar(currentLine[column - 1])) {
+      if (isWordChar(text[column])) {
+        while (column > 0 && isWordChar(text[column - 1])) {
           column--;
         }
       }
     }
 
-    cursor.moveTo(cursor.line, column);
+    this.moveTo(line, column);
   }
-  nextWord() {
+
+  // ─── helpers ───
+
+  // puts the cursor at line/column, clamped to the buffer, without touching
+  // the column up/down try to keep
+  private place(line: number, column: number) {
     const cursor = this.cursor;
-    const buffer = cursor.buffer();
-    if (!buffer) {
+    if (!cursor.buffer()) {
       return;
     }
 
-    const currentLine = buffer.at(cursor.line);
-    assert(
-      currentLine !== undefined,
-      "invalid line to go to the next word command",
-    );
+    cursor.line = clamp(line, 0, this.lastLine());
+    cursor.column = clamp(column, 0, this.lineLength(cursor.line));
 
-    let nextColumn = cursor.column;
-
-    if (nextColumn >= currentLine.length) {
-      const nextLine = buffer.at(cursor.line + 1);
-      if (nextLine !== undefined) {
-        cursor.line += 1;
-        cursor.column = 0;
-        cursor.prefferedColumn = 0;
-        return;
-      }
-
-      cursor.column = Math.max(0, currentLine.length - 1);
-      cursor.prefferedColumn = cursor.column;
-      return;
-    }
-
-    const initialChar = currentLine[nextColumn];
-    if (isWhitespace(initialChar)) {
-      while (
-        nextColumn < currentLine.length &&
-        isWhitespace(currentLine[nextColumn])
-      ) {
-        nextColumn += 1;
-      }
-    } else if (isWordChar(currentLine[nextColumn])) {
-      while (
-        nextColumn < currentLine.length &&
-        isWordChar(currentLine[nextColumn])
-      ) {
-        nextColumn += 1;
-      }
-
-      while (
-        nextColumn < currentLine.length &&
-        isWhitespace(currentLine[nextColumn])
-      ) {
-        nextColumn += 1;
-      }
-    } else {
-      while (
-        nextColumn < currentLine.length &&
-        !isWordChar(currentLine[nextColumn]) &&
-        !isWhitespace(currentLine[nextColumn])
-      ) {
-        nextColumn += 1;
-      }
-
-      while (
-        nextColumn < currentLine.length &&
-        isWhitespace(currentLine[nextColumn])
-      ) {
-        nextColumn += 1;
-      }
-    }
-
-    if (nextColumn >= currentLine.length) {
-      const nextLine = buffer.at(cursor.line + 1);
-      if (nextLine !== undefined) {
-        cursor.line += 1;
-        cursor.column = 0;
-        cursor.prefferedColumn = 0;
-        return;
-      }
-    }
-
-    cursor.column = Math.max(
-      0,
-      Math.min(nextColumn, Math.max(currentLine.length - 1, 0)),
-    );
-    cursor.prefferedColumn = cursor.column;
+    if (cursor.selection) cursor.updateSelection();
   }
+
+  // up/down: back to the column the cursor was last put on, as far as
+  // `lastColumn` lets it on that line
+  private placeKeepingColumn(line: number, lastColumn: number) {
+    this.place(line, Math.min(this.cursor.prefferedColumn, lastColumn));
+  }
+
+  private lineAbove() {
+    return Math.max(this.cursor.line - 1, 0);
+  }
+
+  private lineBelow() {
+    return Math.min(this.cursor.line + 1, this.lastLine());
+  }
+
+  private lineText(line: number) {
+    return this.cursor.buffer()?.at(line) ?? "";
+  }
+
+  private lineLength(line: number) {
+    return this.lineText(line).length;
+  }
+
+  // the column of the last character (0 on an empty line)
+  private lastChar(line: number) {
+    return Math.max(this.lineLength(line) - 1, 0);
+  }
+
+  private lastLine() {
+    return Math.max((this.cursor.buffer()?.count() ?? 0) - 1, 0);
+  }
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(value, max));
+}
+
+// the column after the run of characters starting at `from` that pass `test`
+function skip(text: string, from: number, test: (char: string) => boolean) {
+  let column = from;
+  while (column < text.length && test(text[column])) {
+    column++;
+  }
+  return column;
 }
 
 function isWhitespace(char: string | undefined) {
@@ -396,4 +316,8 @@ function isWhitespace(char: string | undefined) {
 
 function isWordChar(char: string | undefined) {
   return /\w/.test(char ?? "");
+}
+
+function isPunctuation(char: string | undefined) {
+  return !isWordChar(char) && !isWhitespace(char);
 }

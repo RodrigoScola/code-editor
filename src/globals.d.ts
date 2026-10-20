@@ -141,10 +141,10 @@ type MouseAction =
   | "wheelUp"
   | "wheelDown";
 
-interface MouseEvent {
+interface InputMouseEvent {
   kind: MouseInputKind;
   action: MouseAction;
-  button: MouseButtons;
+  button: MouseButtons | null;
   position: Point;
   ctrl: boolean;
   alt: boolean;

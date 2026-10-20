@@ -1,7 +1,10 @@
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { EditorContext } from "../../src/Editor/Editor/Editor.js";
+import {
+  EditorCommandFn,
+  EditorContext,
+} from "../../src/Editor/Editor/Editor.js";
 import { setupEditor } from "../../src/Editor/setupEditor.js";
 import { CodeEditorGroup } from "../../src/Editor/windows/Tab/TabWindow.js";
 import { StatusWindow } from "../../src/Editor/windows/StatusEditor.js";
@@ -98,9 +101,12 @@ export function after(text: string, keys: string, options: IdeOptions = {}) {
 
 // shorthand for command specs: run commands, return the marked text
 //   expect(exec("a|b", "textEditor.copyLinesDown")).eq("ab\na|b")
-export function exec(text: string, ...commands: string[]) {
+export function exec(text: string, ...commands: EditorCommandFn[]): string;
+export function exec(text: string, ...commands: string[]): string;
+export function exec(text: string, ...commands: EditorCommandFn[] | string[]) {
   const ctx = code(text);
   for (const command of commands) {
+    //@ts-expect-error idk
     ctx.executeCommand(command);
   }
   return ctx.state();

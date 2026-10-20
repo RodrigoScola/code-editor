@@ -4,7 +4,7 @@
 import { assert } from "node:console";
 import type { DisplayLike } from "../layout/layout.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
-import { TerminalRenderer, type Renderer } from "./TerminalRenderer.js";
+import { type Renderer } from "./TerminalRenderer.js";
 import { Canvas, createCanvas } from "@napi-rs/canvas";
 import { Rendering } from "./Renderer.js";
 import { ComponentStyle } from "../ComponentStyles.js";
@@ -12,6 +12,7 @@ import { WindowCanvas } from "../Canvas/WindowCanvas.js";
 import { format } from "node:path";
 import { buffer } from "node:stream/consumers";
 import { DEFAULT_BACKGROUND } from "../colors.js";
+import sdl from "@kmamal/sdl";
 
 // anything shaped like an SDL window
 export interface PixelWindow {
@@ -57,7 +58,17 @@ export class WindowRenderer implements Renderer {
 
   // on a new SDL window, resizable
   static Open(): WindowRenderer {
-    throw new Error("not implemented");
+    return new WindowRenderer(
+      sdl.video.createWindow({
+        title: "editor",
+        // the second monitor; the main one when there is only one
+        display: sdl.video.displays[2] ?? sdl.video.displays[0],
+        width: 1920,
+        height: 1080,
+        // drag its edges to resize; WindowEvents hands on the new size
+        resizable: true,
+      }),
+    );
   }
 
   // Renderer
@@ -171,12 +182,12 @@ export class WindowRenderer implements Renderer {
 
   // the window it draws to; a WindowEvents listens to it (src/Input/windowEvents.ts)
   window(): PixelWindow {
-    throw new Error("not implemented");
+    return this._window;
   }
 
   // window.destroy()
   close(): void {
-    throw new Error("not implemented");
+    this._window.destroy();
   }
 
   isTerminalRenderer() {

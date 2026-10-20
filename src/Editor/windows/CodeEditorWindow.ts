@@ -33,7 +33,7 @@ export class CodeEditorWindow extends UiComponent implements EWindow {
           new DisplayComponent()
             .setDirection("vertical")
             .setHeight("100%")
-            .setWidth(5)
+            .setWidth("fit-content")
             .setName("editor_lines")
             .setBackgroundColor(colors.RED)
             .setBold(true)

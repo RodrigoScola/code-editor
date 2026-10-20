@@ -8,6 +8,7 @@ import {
 } from "../../../src/ui/Canvas/TerminalCanvas.js";
 import { ComponentStyle } from "../../../src/ui/ComponentStyles.js";
 import { LayoutBounds } from "../../../src/ui/layout/LayoutBounds.js";
+import { PixelWindow } from "../../../src/ui/Renderers/WindowRenderer.js";
 
 // Shared by the window specs. Only imports modules that exist already, so a
 // spec fails on what it tests and not because another level isn't built.
@@ -27,7 +28,7 @@ export type RenderCall = {
 // it records every frame instead of showing it, and sends the events a real
 // window would, shaped like SDL's (modifiers come as numbers, plus fields
 // the editor doesn't use).
-export class FakeWindow {
+export class FakeWindow implements PixelWindow {
   pixelWidth: number;
   pixelHeight: number;
   destroyed = false;
@@ -85,21 +86,17 @@ export class FakeWindow {
     } = {},
   ) {
     this.emit("keyDown", {
-      scancode: 4,
       key,
-      repeat: modifiers.repeat ? 1 : 0,
-      shift: modifiers.shift ? 1 : 0,
-      ctrl: modifiers.ctrl ? 1 : 0,
-      alt: modifiers.alt ? 1 : 0,
-      super: 0,
-      altgr: 0,
-      capslock: 0,
-      numlock: 0,
+      type: "keyDown",
+      repeat: modifiers.repeat ? true : false,
+      shift: modifiers.shift ? true : false,
+      ctrl: modifiers.ctrl ? true : false,
+      alt: modifiers.alt ? true : false,
     });
   }
 
   textInput(text: string) {
-    this.emit("textInput", { text });
+    this.emit("textInput", { text, type: "textInput" });
   }
 
   // typing text the way a keyboard does: keyDown, then textInput, for every
@@ -117,8 +114,6 @@ export class FakeWindow {
     this.pixelWidth = pixelWidth;
     this.pixelHeight = pixelHeight;
     this.emit("resize", {
-      width: pixelWidth,
-      height: pixelHeight,
       pixelWidth,
       pixelHeight,
     });
@@ -223,7 +218,9 @@ export class Frame {
       let lastBottom = "";
       for (let x = r.x; x < r.x + r.width; x += scale) {
         const top = this.average(x, y, scale, r)!.join(";");
-        const bottom = (this.average(x, y + scale, scale, r) ?? [0, 0, 0]).join(";");
+        const bottom = (this.average(x, y + scale, scale, r) ?? [0, 0, 0]).join(
+          ";",
+        );
         if (top !== lastTop) line += `\x1b[38;2;${top}m`;
         if (bottom !== lastBottom) line += `\x1b[48;2;${bottom}m`;
         line += "▀";
@@ -240,9 +237,12 @@ export class Frame {
     // straight to stdout: vitest's reporters can swallow console.log from
     // tests that pass
     process.stdout.write(
-      [`${label} (${size}${zoom})`, `┌${border}┐`, ...lines, `└${border}┘`].join(
-        "\n",
-      ) + "\n",
+      [
+        `${label} (${size}${zoom})`,
+        `┌${border}┐`,
+        ...lines,
+        `└${border}┘`,
+      ].join("\n") + "\n",
     );
     return this;
   }

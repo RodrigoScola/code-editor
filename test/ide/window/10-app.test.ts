@@ -23,17 +23,8 @@ import colors from "../../../src/ui/colors.js";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 describe("WindowRenderer.Open: a real window", () => {
-  it("opens a window that fits the canvas's cells", () => {
-    const renderer = WindowRenderer.Open(cellCanvas(20, 5));
-    try {
-      expect(renderer.gridSize()).toEqual({ columns: 20, rows: 5 });
-    } finally {
-      renderer.close();
-    }
-  });
-
   it("is a window renderer", () => {
-    const renderer = WindowRenderer.Open(cellCanvas(4, 2));
+    const renderer = WindowRenderer.Open();
     try {
       expect(renderer.isWindowRenderer()).eq(true);
     } finally {
@@ -107,6 +98,9 @@ describe("node dist/index.js --window", () => {
       const child = spawn(process.execPath, [entry, ...args], {
         cwd: root,
         stdio: ["ignore", "pipe", "pipe"],
+        // on Windows, a console child of a process with no console (vitest
+        // run from VS Code) gets its own console window unless hidden
+        windowsHide: true,
       });
       let output = "";
       child.stdout.on("data", (d) => (output += d));

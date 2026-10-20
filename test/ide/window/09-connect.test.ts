@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setupEditor } from "../../../src/Editor/setupEditor.js";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
+import { StatusWindow } from "../../../src/Editor/windows/StatusEditor.js";
 import type { EditorCommand } from "../../../src/Commands/Commands.js";
 import { vim } from "../harness.js";
-import { cellCanvas, FakeWindow } from "./helpers.js";
+import { FakeWindow } from "./helpers.js";
 
 // Level 9: the editor running in a window, in-process. One call wires a
 // WindowRenderer into an editor, next to the terminal setup:
@@ -14,30 +15,38 @@ import { cellCanvas, FakeWindow } from "./helpers.js";
 // index.ts listens to process.stdin for the terminal, and after it:
 //   - editor.renderer is the window renderer, so editor.render() and
 //     editor.renderIfNeeded() (the frame loop in index.ts) draw to the window
-//   - the editor's layout is the window's grid (renderer.gridSize())
+//   - the editor is laid out in pixels, to the whole window
 //   - keys typed in the window reach the editor (WindowInputParser, level 3)
-//   - resizing the window lays the editor out again (renderer.gridSize() of
-//     the new size), only when the grid changes
+//   - resizing the window lays the editor out again, like a browser does on
+//     a new viewport: every new size, no grid to snap to
 //   - nothing is written to the terminal (process.stdout), ever
+//
+// Like HTML, there are no rows: a line of text is renderer.lineHeight()
+// pixels tall (CSS's line-height; 1 on the TerminalRenderer, where a line
+// is a cell). The status bar is one line of text, so one lineHeight tall;
+// the rest goes to the editor, like flex: 1.
+//
+//   renderer.lineHeight()   how tall one line of text is, in pixels
 //
 // Everything below is a real editor (test/ide/harness.ts) and a FakeWindow.
 // The last level runs the real thing.
 
-const COLUMNS = 50;
-const ROWS = 12;
+const WIDTH = 500;
+const HEIGHT = 240;
 
 function setup(text = "|abc") {
   const ide = vim(text);
-  const probe = new WindowRenderer(cellCanvas(1, 1), new FakeWindow());
-  const cw = probe.cellWidth();
-  const ch = probe.cellHeight();
+  const window = new FakeWindow(WIDTH, HEIGHT);
+  const renderer = new WindowRenderer(window);
 
-  // room for 50 x 12 cells and a bit, as a real window would have
-  const window = new FakeWindow(COLUMNS * cw + 4, ROWS * ch + 7);
-  const renderer = new WindowRenderer(cellCanvas(1, 1), window);
   setupEditor.window.connect(ide, renderer);
 
-  return { ide, window, renderer, cw, ch };
+  return { ide, window, renderer };
+}
+
+function statusHeight(ide: ReturnType<typeof vim>) {
+  ide.screen(); // lays the editor out
+  return ide.findWindow(StatusWindow)!.view().layout().height;
 }
 
 // the editor must never write to the terminal while it runs in a window
@@ -55,19 +64,11 @@ describe("connecting", () => {
     expect(ide.renderer).toBe(renderer);
   });
 
-  it("the editor is laid out to the window's grid", () => {
+  it("the editor is laid out to the whole window, in pixels", () => {
     const { ide } = setup();
 
-    expect(ide.renderer.layout().width).eq(COLUMNS);
-    expect(ide.renderer.layout().height).eq(ROWS);
-  });
-
-  it("the screen is the window's grid", () => {
-    const { ide } = setup();
-    const screen = ide.screen();
-
-    expect(screen).toHaveLength(ROWS);
-    expect(screen.every((row) => row.length === COLUMNS)).eq(true);
+    expect(ide.renderer.layout().width).eq(WIDTH);
+    expect(ide.renderer.layout().height).eq(HEIGHT);
   });
 
   it("the document shows on the screen", () => {
@@ -93,8 +94,8 @@ describe("the frame loop draws to the window", () => {
     const { ide, window } = setup();
     ide.renderIfNeeded();
 
-    expect(window.lastFrame().width).eq(window.pixelWidth);
-    expect(window.lastFrame().height).eq(window.pixelHeight);
+    expect(window.lastFrame().width).eq(WIDTH);
+    expect(window.lastFrame().height).eq(HEIGHT);
   });
 
   it("nothing changed: no frame", () => {
@@ -105,12 +106,14 @@ describe("the frame loop draws to the window", () => {
     expect(window.renders).toHaveLength(1);
   });
 
-  it("the frame shows the editor: its cells aren't all one color", () => {
+  it("the frame shows the editor: it isn't all one color", () => {
     const { ide, window } = setup("|hello");
     ide.renderIfNeeded();
     const frame = window.lastFrame();
 
-    expect(frame.colors(0, 0, frame.width, frame.height).size).toBeGreaterThan(2);
+    expect(frame.colors(0, 0, frame.width, frame.height).size).toBeGreaterThan(
+      2,
+    );
   });
 });
 
@@ -190,49 +193,53 @@ describe("typing in the window", () => {
 });
 
 describe("resizing the window", () => {
-  it("a bigger window: more columns and rows", () => {
-    const { ide, window, cw, ch } = setup();
-    window.resize(70 * cw, 20 * ch);
-    ide.renderIfNeeded();
+  it("a bigger window: the editor is laid out to it", () => {
+    const { ide, window } = setup();
+    window.resize(700, 400);
 
-    expect(ide.renderer.layout().width).eq(70);
-    expect(ide.renderer.layout().height).eq(20);
-    expect(ide.screen()).toHaveLength(20);
-    expect(ide.screen()[0]).toHaveLength(70);
+    expect(ide.renderer.layout().width).eq(700);
+    expect(ide.renderer.layout().height).eq(400);
   });
 
-  it("a smaller window: fewer columns and rows", () => {
-    const { ide, window, cw, ch } = setup();
-    window.resize(30 * cw, 6 * ch);
+  it("a smaller window: the editor is laid out to it", () => {
+    const { ide, window } = setup();
+    window.resize(300, 120);
 
-    expect(ide.screen()).toHaveLength(6);
-    expect(ide.screen()[0]).toHaveLength(30);
+    expect(ide.renderer.layout().width).eq(300);
+    expect(ide.renderer.layout().height).eq(120);
+  });
+
+  it("any new size counts, even one pixel (no grid to snap to)", () => {
+    const { ide, window } = setup();
+    ide.renderIfNeeded();
+    window.resize(WIDTH - 1, HEIGHT);
+
+    expect(ide.renderer.layout().width).eq(WIDTH - 1);
+    expect(ide.renderIfNeeded()).eq(true);
   });
 
   it("the next frame is the new window size", () => {
-    const { ide, window, cw, ch } = setup();
-    ide.renderIfNeeded();
-    window.resize(70 * cw, 20 * ch);
-
-    expect(ide.renderIfNeeded()).eq(true);
-    expect(window.lastFrame().width).eq(70 * cw);
-    expect(window.lastFrame().height).eq(20 * ch);
-  });
-
-  it("a resize that doesn't change the grid doesn't lay out or draw again", () => {
     const { ide, window } = setup();
     ide.renderIfNeeded();
+    window.resize(700, 400);
 
-    // one pixel narrower: still 50 x 12 cells (setup left spare pixels)
-    window.resize(window.pixelWidth - 1, window.pixelHeight - 1);
+    expect(ide.renderIfNeeded()).eq(true);
+    expect(window.lastFrame().width).eq(700);
+    expect(window.lastFrame().height).eq(400);
+  });
+
+  it("a resize to the same size doesn't draw again", () => {
+    const { ide, window } = setup();
+    ide.renderIfNeeded();
+    window.resize(WIDTH, HEIGHT);
 
     expect(ide.renderIfNeeded()).eq(false);
     expect(window.renders).toHaveLength(1);
   });
 
   it("the document is still there after a resize", () => {
-    const { ide, window, cw, ch } = setup("|keep me");
-    window.resize(60 * cw, 15 * ch);
+    const { ide, window } = setup("|keep me");
+    window.resize(600, 300);
 
     expect(ide.lines()).toEqual(["keep me"]);
     expect(ide.screen().join("\n")).toContain("keep me");

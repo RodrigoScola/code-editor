@@ -7,7 +7,6 @@ import {
 } from "../utils.js";
 import { assert } from "../assert.js";
 import { movementCommands } from "./editor/commands/movement.js";
-import { CursorMovement } from "../ui/components/UiScreen/CursorMovement.js";
 
 export const textEditorCommands = {
   textEditor: {
@@ -26,25 +25,29 @@ export const textEditorCommands = {
     moveDown: {
       id: "textEditor.moveDown",
       title: "Text Editor: Move Cursor Down",
-      description: "Moves the cursor one line down, keeping its column (j).",
+      description:
+        "Moves the cursor one line down, keeping its column (Down arrow).",
       run: movementCommands.down,
     },
     moveUp: {
       id: "textEditor.moveUp",
       title: "Text Editor: Move Cursor Up",
-      description: "Moves the cursor one line up, keeping its column (k).",
+      description:
+        "Moves the cursor one line up, keeping its column (Up arrow).",
       run: movementCommands.up,
     },
     moveLeft: {
       id: "textEditor.moveLeft",
       title: "Text Editor: Move Cursor Left",
-      description: "Moves the cursor one character left (h).",
+      description:
+        "Moves the cursor one character left, wrapping to the line above (Left arrow).",
       run: movementCommands.left,
     },
     moveRight: {
       id: "textEditor.moveRight",
       title: "Text Editor: Move Cursor Right",
-      description: "Moves the cursor one character right (r).",
+      description:
+        "Moves the cursor one character right, wrapping to the line below (Right arrow).",
       run: movementCommands.right,
     },
 
@@ -52,7 +55,7 @@ export const textEditorCommands = {
       id: "textEditor.moveRightSelect",
       title: "Text Editor: Start Selection and move Cursor Right",
       description:
-        "Moves the cursor one character right (r) and starts a selection",
+        "Moves the cursor one character right, growing the selection (Shift+Right).",
       run: movementCommands.rightSelect,
     },
 
@@ -60,7 +63,7 @@ export const textEditorCommands = {
       id: "textEditor.moveLeftSelect",
       title: "Text Editor: Start Selection and move Cursor left",
       description:
-        "Moves the cursor one character left (l) and starts a selection",
+        "Moves the cursor one character left, growing the selection (Shift+Left).",
       run: movementCommands.leftSelect,
     },
 
@@ -68,15 +71,15 @@ export const textEditorCommands = {
       id: "textEditor.moveUpSelect",
       title: "Text Editor: Start Selection and move Cursor up",
       description:
-        "Moves the cursor one character up (u) and starts a selection",
+        "Moves the cursor one line up, growing the selection (Shift+Up).",
       run: movementCommands.upSelect,
     },
 
     moveDownSelect: {
-      id: "textEditor.moveDowntSelect",
+      id: "textEditor.moveDownSelect",
       title: "Text Editor: Start Selection and move Cursor down",
       description:
-        "Moves the cursor one character down  (d) and starts a selection",
+        "Moves the cursor one line down, growing the selection (Shift+Down).",
       run: movementCommands.downSelect,
     },
     insertMode: {
@@ -143,7 +146,7 @@ export const textEditorCommands = {
       title: "Text Editor: Next Word",
       description:
         "start selection Jumps forward to the start of the next word (w).",
-      run: movementCommands.nextWordStart,
+      run: movementCommands.nextWordStartSelect,
     },
     nextCompleteWordStartSelect: {
       id: "textEditor.nextCompleteWordStartSelect",
@@ -155,14 +158,16 @@ export const textEditorCommands = {
     cursorEnd: {
       id: "textEditor.cursorEnd",
       title: "Text Editor: Go to End of Line",
-      description: "Moves the cursor to the last character of the line ($).",
+      description:
+        "Moves the cursor past the last character of the line; again, to the end of the file (End).",
       run: movementCommands.endline,
     },
 
     cursorHome: {
       id: "textEditor.cursorHome",
       title: "Text Editor: Go to Start of Line",
-      description: "Moves the cursor to the first column of the line (0).",
+      description:
+        "Moves the cursor to the first column of the line; again, to the start of the file (Home).",
       run: movementCommands.cursorHome,
     },
 
@@ -170,13 +175,14 @@ export const textEditorCommands = {
       id: "textEditor.cursorEndSelect",
       title: "Text Editor: Start Selection and Go to End of Line",
       description:
-        "Moves the cursor to the last character of the line ($). with selection",
+        "Moves the cursor past the last character of the line, growing the selection (Shift+End).",
       run: movementCommands.endlineSelect,
     },
     cursorHomeSelect: {
       id: "textEditor.cursorHomeSelect",
       title: "Text Editor: starts selection and Go to Start of Line",
-      description: "Moves the cursor to the first column of the line (0).",
+      description:
+        "Moves the cursor to the first column of the line, growing the selection (Shift+Home).",
       run: movementCommands.cursorHomeSelect,
     },
     prevWordStart: {
@@ -192,6 +198,7 @@ export const textEditorCommands = {
       description: "Jumps back to the start of the word before the cursor (b).",
       run: movementCommands.prevWordStartSelect,
     },
+
     goToDocumentStart: {
       id: "textEditor.goToDocumentStart",
       title: "Text Editor: Go to First Line",
@@ -204,7 +211,22 @@ export const textEditorCommands = {
       description: "Moves the cursor to the last line of the document (G).",
       run: goToDocumentEnd,
     },
+
+    lineEnd: {
+      id: "vim.lineEnd",
+      title: "Vim: Go to End of Line",
+      description: "Moves the cursor to the last character of the line ($).",
+      run: movementCommands.vimLineEnd,
+    },
+    lineStart: {
+      id: "vim.lineStart",
+      title: "Vim: Go to Start of Line",
+      description: "Moves the cursor to the first column of the line (0).",
+      run: movementCommands.vimLineStart,
+    },
   },
+
+  // normal mode, where the cursor sits on a character (see CursorMovement)
 } satisfies Record<string, Record<string, EditorCommand>>;
 
 function editorInsertMode(ctx: EditorContext) {
@@ -267,7 +289,7 @@ function renameCharacter(ctx: EditorContext) {
     // select the whole name. Selections end before their last column, and
     // goToLineEnd stops on the last character, so set the end by hand
     const name = input.cursor();
-    name.goToLineBeginning();
+    name.lineStart();
     name.startSelection();
     name.column = name.prefferedColumn = input.buffer().at(0)?.length ?? 0;
     name.updateSelection();

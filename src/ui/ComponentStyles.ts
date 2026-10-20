@@ -3,12 +3,19 @@ import { ObjectPool } from "../ObjectPool.js";
 
 // a named font first: napi-rs canvas turns the generic "monospace" into a
 // proportional font
-const DEFAULT_FONT = "Consolas, monospace";
+export const DEFAULT_FONT = "Consolas, monospace";
 
 export class ComponentStyle {
   private static Pool: ObjectPool<ComponentStyle> = new ObjectPool(
     () => new ComponentStyle(),
   );
+
+  // the font size of every style that doesn't set its own: 1 (a cell) on the
+  // terminal, pixels in a window (setupEditor.window.connect sets it)
+  static FontSize: number = 1;
+  // a character's width per pixel of font size; a WindowCanvas measures the
+  // real one from its font
+  static CharAdvance: number = 0.6;
 
   private bg: string = DEFAULT_BACKGROUND;
   private cl: string = DEFAULT_FOREGROUND;
@@ -22,7 +29,8 @@ export class ComponentStyle {
   private inv: boolean = false;
   private blk: boolean = false;
   private hdn: boolean = false;
-  private _fontSize: number = 16;
+  // null: not set, ComponentStyle.FontSize
+  private _fontSize: number | null = null;
   private _font: string = DEFAULT_FONT;
 
   reset() {
@@ -37,11 +45,13 @@ export class ComponentStyle {
     this.inv = false;
     this.blk = false;
     this.hdn = false;
+    this._fontSize = null;
+    this._font = DEFAULT_FONT;
     return this;
   }
 
   public fontSize() {
-    return this._fontSize;
+    return this._fontSize ?? ComponentStyle.FontSize;
   }
   setFontSize(fontSize: number) {
     this._fontSize = fontSize;
@@ -211,8 +221,11 @@ export class ComponentStyle {
         (first?.isInverse() ?? false) || (parent?.isInverse() ?? false),
       )
       .setBlink((first?.isBlink() ?? false) || (parent?.isBlink() ?? false))
-      .setFontSize((first?.fontSize() ?? 16) || (parent?.fontSize() ?? 16))
       .setHidden((first?.isHidden() ?? false) || (parent?.isHidden() ?? false));
+
+    // the first one set wins; neither set stays unset, so it follows
+    // ComponentStyle.FontSize
+    this._fontSize = first?._fontSize ?? parent?._fontSize ?? null;
 
     return this;
   }
