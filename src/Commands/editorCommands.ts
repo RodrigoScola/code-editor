@@ -225,6 +225,13 @@ copy:    {
       run: goToDocumentEnd,
     },
 
+    vimMoveLeft: {
+      id: "vim.moveLeft",
+      title: "Vim: Move Cursor Left",
+      description:
+        "Moves the cursor one character left, stopping at the start of the line (h).",
+      run: movementCommands.vimLeft,
+    },
     lineEnd: {
       id: "vim.lineEnd",
       title: "Vim: Go to End of Line",
@@ -283,7 +290,7 @@ function deleteLine(ctx: EditorContext) {
     return;
   }
 
-  editor.removeLine(cursor.line);
+  return editor.removeLine(cursor.line);
 }
 
 function renameCharacter(ctx: EditorContext) {

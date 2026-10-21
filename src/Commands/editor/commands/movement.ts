@@ -155,27 +155,7 @@ function nextCompleteWordStartSelect(ctx: EditorContext) {
   activeEditor.moveNextCompleteWord();
 }
 
-// Vim's h j k l $ 0: the cursor sits on a character (see CursorMovement)
-function vimMoveDownEditorCommand(ctx: EditorContext) {
-  const editor = ctx.getFocusedComponent();
-  if (!editor) {
-    log("invalid active window");
-    return;
-  }
-  isTextComponent(editor);
-  editor.moveCursorDown();
-}
-
-function vimMoveUpEditorCommand(ctx: EditorContext) {
-  const editor = ctx.getFocusedComponent();
-  if (!editor) {
-    log("invalid active window");
-    return;
-  }
-  isTextComponent(editor);
-  editor.moveCursorUp();
-}
-
+// Vim's h $ 0: the cursor sits on a character (see CursorMovement)
 function vimMoveLeftEditorCommand(ctx: EditorContext) {
   const editor = ctx.getFocusedComponent();
   if (!editor) {
@@ -183,17 +163,7 @@ function vimMoveLeftEditorCommand(ctx: EditorContext) {
     return;
   }
   isTextComponent(editor);
-  editor.moveCursorLeft();
-}
-
-function vimMoveRightEditorCommand(ctx: EditorContext) {
-  const editor = ctx.getFocusedComponent();
-  if (!editor) {
-    log("invalid active window");
-    return;
-  }
-  isTextComponent(editor);
-  editor.moveCursorRight();
+  editor.vimMoveLeft();
 }
 
 function vimLineEnd(ctx: EditorContext) {
@@ -226,10 +196,7 @@ export const movementCommands = {
   nextWordStartSelect,
   nextCompleteWordStart,
   nextCompleteWordStartSelect,
-  vimDown: vimMoveDownEditorCommand,
-  vimUp: vimMoveUpEditorCommand,
   vimLeft: vimMoveLeftEditorCommand,
-  vimRight: vimMoveRightEditorCommand,
   vimLineEnd,
   vimLineStart,
 };

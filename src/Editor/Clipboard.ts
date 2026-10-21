@@ -1,12 +1,11 @@
 export class Clipboard {
-    private _text: string = ''
+  private _text: string = "";
 
-    setText(str: string) {
-        this._text = str
-        return this
-    }
-
-    readText(): string {
-        return this._text
-    }
+  read(): string {
+    return this._text;
+  }
+  write(str: string) {
+    this._text = str;
+    return this;
+  }
 }

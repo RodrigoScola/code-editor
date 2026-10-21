@@ -45,7 +45,7 @@ describe("copying paths", () => {
 
     ide.executeCommand("explorer.copyPath");
 
-    expect(ide.clipboard.readText()).eq(join(root, "src/app/main.ts"));
+    expect(ide.clipboard.read()).eq(join(root, "src/app/main.ts"));
   });
 
   it("copyRelativePath copies the path inside the workspace", () => {
@@ -57,7 +57,7 @@ describe("copying paths", () => {
 
     ide.executeCommand("explorer.copyRelativePath");
 
-    expect(ide.clipboard.readText()).eq("src/app/main.ts");
+    expect(ide.clipboard.read()).eq("src/app/main.ts");
   });
 
   it("the separator can be a backslash", () => {
@@ -69,7 +69,7 @@ describe("copying paths", () => {
 
     ide.executeCommand("explorer.copyRelativePath");
 
-    expect(ide.clipboard.readText()).eq("src\\app\\main.ts");
+    expect(ide.clipboard.read()).eq("src\\app\\main.ts");
   });
 
   it('"auto" uses the platform\'s separator', () => {
@@ -81,7 +81,7 @@ describe("copying paths", () => {
 
     ide.executeCommand("explorer.copyRelativePath");
 
-    expect(ide.clipboard.readText()).eq(join("src", "app", "main.ts"));
+    expect(ide.clipboard.read()).eq(join("src", "app", "main.ts"));
   });
 
   it("a file outside the workspace copies its full path as the relative one", () => {
@@ -93,7 +93,7 @@ describe("copying paths", () => {
 
     ide.executeCommand("explorer.copyRelativePath");
 
-    expect(ide.clipboard.readText()).eq(join(elsewhere, "far.txt"));
+    expect(ide.clipboard.read()).eq(join(elsewhere, "far.txt"));
   });
 
   it("does nothing with no file open", () => {
@@ -103,7 +103,7 @@ describe("copying paths", () => {
 
     ide.executeCommand("explorer.copyPath");
 
-    expect(ide.clipboard.readText()).eq("before");
+    expect(ide.clipboard.read()).eq("before");
   });
 });
 

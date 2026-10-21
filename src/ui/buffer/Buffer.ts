@@ -17,7 +17,7 @@ export class TextBuffer implements BufferLike {
     }
   }
   private format(text: string) {
-    return splitLines(text)
+    return splitLines(text);
   }
   onChange(listener: () => void) {
     this.listeners.add(listener);
@@ -49,12 +49,12 @@ export class TextBuffer implements BufferLike {
     this.changed();
     return this;
   }
-  removeLine(line: number) {
+  removeLine(line: number): string {
     const at = Math.max(0, Math.min(line, this.lines.length - 1));
 
-    this.lines.splice(at, 1);
+    const result = this.lines.splice(at, 1);
     this.changed();
-    return at;
+    return result.join();
   }
 
   public remove(line: number, column: number) {
@@ -106,7 +106,7 @@ export class TextBuffer implements BufferLike {
     return "";
   }
   range(start: number, end?: number) {
-    return this.content().substring(start, end)
+    return this.content().substring(start, end);
   }
 
   private removeIndex(start: number, end: number): string {

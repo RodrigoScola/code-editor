@@ -6,8 +6,9 @@ import { after, vim } from "../harness.js";
 // character (except at column 0).
 //
 // In insert mode the cursor can stand after the last character of a line
-// (normal mode can't). The arrows move without leaving insert mode and,
-// as in Vim, <Left>/<Right> don't wrap to the next or previous line. With
+// (normal mode can't). The arrows move without leaving insert mode.
+// <Left> at column 0 wraps to the end of the line above (as in VS Code);
+// <Right> doesn't wrap to the line below (as in Vim). With
 // Shift they select (as in VS Code): «» mark the selection, « the anchor
 // and » the cursor, and typing, <BS>, <Del> or <CR> replace it.
 // Auto-indent on <CR> is in test/ide/editor/auto-indent.test.ts, <C-r> in
@@ -172,8 +173,8 @@ describe("moving in insert mode", () => {
     expect(after("|ab", "i<Left>X")).eq("X|ab");
   });
 
-  it("<Left> doesn't wrap to the line above", () => {
-    expect(after("a\n|b", "i<Left>X")).eq("a\nX|b");
+  it("<Left> at column 0 wraps to the end of the line above", () => {
+    expect(after("a\n|b", "i<Left>X")).eq("aX|\nb");
   });
 
   it("<Right> doesn't wrap to the line below", () => {

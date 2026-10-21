@@ -224,21 +224,9 @@ export class Cursor {
     return this;
   }
 
-  // Vim's normal mode (h j k l $): on a character, nothing wraps
+  // Vim's normal mode (h $): on a character, nothing wraps
   vimLeft() {
     this._movement.vimLeft();
-    return this;
-  }
-  vimRight() {
-    this._movement.vimRight();
-    return this;
-  }
-  vimUp() {
-    this._movement.vimUp();
-    return this;
-  }
-  vimDown() {
-    this._movement.vimDown();
     return this;
   }
   lineEnd() {

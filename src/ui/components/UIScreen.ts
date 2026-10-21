@@ -85,6 +85,11 @@ export class UIScreen extends UiComponent {
     return this;
   }
 
+  vimMoveLeft() {
+    this.cursor().vimLeft();
+    return this;
+  }
+
   moveLineEnd() {
     this.cursor().lineEnd();
     return this;

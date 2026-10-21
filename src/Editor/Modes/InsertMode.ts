@@ -44,7 +44,7 @@ export class InsertMode implements EditorMode {
     } else if (InputParser.isArrowUp(key.token)) {
       editor.insertMoveUp();
     } else if (InputParser.isArrowLeft(key.token)) {
-      editor.insertMoveLeft();
+      editor.moveCursorLeft();
     } else if (InputParser.isArrowRight(key.token)) {
       editor.insertMoveRight();
     } else if (InputParser.isTab(key.token)) {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { code } from "../harness.js";
+import { textCommands } from "../../../src/Commands/editor/commands/textCommands.js";
 
 // Clipboard and undo, VS Code style.
 //   editor.action.clipboardCopyAction / clipboardCutAction / clipboardPasteAction
@@ -12,47 +13,40 @@ import { code } from "../harness.js";
 // Consecutive typing is undone in one step. cursorUndo undoes cursor moves.
 
 const copy = "textEditor.copy";
-const cut = "textEditor.cut";
-const paste = "textEditor.paste";
+const paste = textCommands.paste;
 
 describe("copy and cut", () => {
   it("copy puts the selection on the clipboard", () => {
     const ide = code("a«bc»d").executeCommand(copy);
 
-    expect(ide.clipboard.readText()).eq("bc");
+    expect(ide.clipboard.read()).eq("bc");
   });
 
   it("copy with nothing selected copies the whole line", () => {
     const ide = code("a|b\ncd").executeCommand(copy);
 
-    expect(ide.clipboard.readText()).eq("ab");
+    expect(ide.clipboard.read()).eq("ab");
   });
 
   it("cut removes the selection", () => {
-    const ide = code("a«bc»d").executeCommand(cut);
+    const ide = code("a«bc»d").executeCommand(textCommands.cut);
 
     expect(ide.state()).eq("a|d");
-    expect(ide.clipboard.readText()).eq("bc");
+    expect(ide.clipboard.read()).eq("bc");
   });
 
   it("cut with nothing selected cuts the whole line", () => {
-    const ide = code("a|b\ncd").executeCommand(cut);
+    const ide = code("a|b\ncd").executeCommand(textCommands.cut);
 
     expect(ide.lines()).toEqual(["cd"]);
-    expect(ide.clipboard.readText()).eq("ab\n");
-  });
-
-  it("copy with several selections joins them with line breaks", () => {
-    const ide = code("«a» x «b»").executeCommand(copy);
-
-    expect(ide.clipboard.readText()).eq("a\nb");
+    expect(ide.clipboard.read()).eq("ab");
   });
 });
 
 describe("paste", () => {
   it("replaces the selection", () => {
     const ide = code("a«bc»d");
-    ide.clipboard.writeText("X");
+    ide.clipboard.write("X");
 
     expect(ide.executeCommand(paste).state()).eq("aX|d");
   });

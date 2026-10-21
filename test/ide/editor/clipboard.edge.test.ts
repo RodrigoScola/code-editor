@@ -14,7 +14,7 @@ describe("copy and cut", () => {
 
     ide.executeCommand(copy);
 
-    expect(ide.clipboard.readText()).eq("before");
+    expect(ide.clipboard.read()).eq("before");
   });
 
   it("cutting the last line removes it and puts the cursor on the line above", () => {
@@ -22,13 +22,13 @@ describe("copy and cut", () => {
 
     expect(ide.lines()).toEqual(["ab"]);
     expect(ide.selections()[0].active.line).eq(0);
-    expect(ide.clipboard.readText()).toContain("cd");
+    expect(ide.clipboard.read()).toContain("cd");
   });
 
   it("copy of a multi-line selection keeps its line breaks", () => {
     const ide = code("«ab\ncd»").executeCommand(copy);
 
-    expect(ide.clipboard.readText()).eq("ab\ncd");
+    expect(ide.clipboard.read()).eq("ab\ncd");
   });
 });
 
@@ -44,12 +44,21 @@ describe("paste", () => {
     const ide = code("a|\nb|\nc|");
     ide.clipboard.writeText("x\ny");
 
-    expect(ide.executeCommand(paste).lines()).toEqual(["ax", "y", "bx", "y", "cx", "y"]);
+    expect(ide.executeCommand(paste).lines()).toEqual([
+      "ax",
+      "y",
+      "bx",
+      "y",
+      "cx",
+      "y",
+    ]);
   });
 
   it("a full line pasted with text selected replaces the selection", () => {
     const ide = code("a|b\ncd").executeCommand(copy);
-    ide.setSelections([{ anchor: { line: 1, column: 0 }, active: { line: 1, column: 2 } }]);
+    ide.setSelections([
+      { anchor: { line: 1, column: 0 }, active: { line: 1, column: 2 } },
+    ]);
 
     ide.executeCommand(paste);
 
@@ -66,7 +75,11 @@ describe("paste", () => {
 
 describe("undo grouping", () => {
   it("moving the cursor ends an undo group", () => {
-    const ide = code("|").type("a").executeCommand("textEditor.cursorLeft").executeCommand("textEditor.cursorRight").type("b");
+    const ide = code("|")
+      .type("a")
+      .executeCommand("textEditor.cursorLeft")
+      .executeCommand("textEditor.cursorRight")
+      .type("b");
 
     expect(ide.executeCommand("textEditor.undo").state()).eq("a|");
   });
@@ -78,7 +91,9 @@ describe("undo grouping", () => {
   });
 
   it("undo puts back the selection that was there", () => {
-    expect(code("a«bc»d").type("X").executeCommand("textEditor.undo").state()).eq("a«bc»d");
+    expect(
+      code("a«bc»d").type("X").executeCommand("textEditor.undo").state(),
+    ).eq("a«bc»d");
   });
 
   it("redo after a new edit does nothing", () => {

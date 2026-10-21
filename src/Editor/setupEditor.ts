@@ -329,7 +329,7 @@ function setupNormalModeCommands(editor: EditorContext) {
   editor.commandMode.bind("wq", textEditorCommands.textEditor.saveFile);
   editor.normalMode.bind(["j"], textEditorCommands.textEditor.moveDown);
   editor.normalMode.bind(["k"], textEditorCommands.textEditor.moveUp);
-  editor.normalMode.bind(["h"], textEditorCommands.textEditor.moveLeft);
+  editor.normalMode.bind(["h"], textEditorCommands.textEditor.vimMoveLeft);
   editor.normalMode.bind(["l"], textEditorCommands.textEditor.moveRight);
   editor.normalMode.bind(["i"], textEditorCommands.textEditor.insertMode);
   editor.normalMode.bind(["a"], textEditorCommands.textEditor.insertAfter);

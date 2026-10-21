@@ -98,24 +98,6 @@ export class CursorMovement {
     this.insertLeft();
   }
 
-  // l: stops on the last character
-  vimRight() {
-    const { line, column } = this.cursor;
-    if (column < this.lastChar(line)) this.moveTo(line, column + 1);
-  }
-
-  // k
-  vimUp() {
-    const line = this.lineAbove();
-    this.placeKeepingColumn(line, this.lastChar(line));
-  }
-
-  // j
-  vimDown() {
-    const line = this.lineBelow();
-    this.placeKeepingColumn(line, this.lastChar(line));
-  }
-
   // $: the last character; j and k stay at the end of each line after it
   vimLineEnd() {
     this.moveTo(this.cursor.line, this.lastChar(this.cursor.line));
