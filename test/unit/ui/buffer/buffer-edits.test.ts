@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { TextBuffer } from "../../../../src/ui/buffer/Buffer.js";
+import { TextBuffer } from "../../../../src/ui/text/Buffer.js";
 
 // Editing ranges of a TextBuffer. Deleting a selection, typing over it,
 // pasting several lines, undo and language-server edits all come down to
-// these. Proposed additions to src/ui/buffer/Buffer.ts (Point is
+// these. Proposed additions to src/ui/text/Buffer.ts (Point is
 // { x: column, y: line }, like EditorSelection uses):
 //
 //   buffer.textInRange(start, end) -> string, lines joined with "\n"

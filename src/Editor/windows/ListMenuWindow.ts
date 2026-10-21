@@ -1,8 +1,8 @@
-import colors from "../../ui/colors.js";
-import { UIScreen } from "../../ui/components/UIScreen.js";
+import colors from "../../ui/colors/colors.js";
+import { UIScreen } from "../../ui/components/UiScreen/UIScreen.js";
 import { UiComponent } from "../../ui/components/UiComponent.js";
 import { UiInput } from "../../ui/components/UiInput.js";
-import { EditorContext } from "../Editor/Editor.js";
+import { EditorContext } from "../EditorContext.js";
 
 export class ListMenuWindow extends UIScreen {
   _input: UiInput;

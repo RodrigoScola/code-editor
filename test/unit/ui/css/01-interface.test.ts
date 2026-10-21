@@ -5,7 +5,7 @@ import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js
 // modules for the math (pure functions, no components), and new style
 // properties on components. Nothing has to work yet.
 //
-//   src/ui/colors.ts             parseColor, formatColor, mixColors, blendColors
+//   src/ui/colors/colors.ts             parseColor, formatColor, mixColors, blendColors
 //   src/ui/styles/easing.ts      easing(name) -> (t) => progress
 //   src/ui/styles/gradient.ts    parseGradient, gradientColorAt, sampleGradient
 //   src/ui/animation/Animation.ts  the Animation that component.animate() returns
@@ -32,13 +32,13 @@ async function load(path: string, hint: string): Promise<any> {
   }
 }
 
-describe("src/ui/colors.ts", () => {
+describe("src/ui/colors/colors.ts", () => {
   it.each(["parseColor", "formatColor", "mixColors", "blendColors"])(
     "exports %s()",
     async (name) => {
       const module = await load(
-        "../../../../src/ui/colors.js",
-        "create src/ui/colors.ts",
+        "../../../../src/ui/colors/colors.js",
+        "create src/ui/colors/colors.ts",
       );
       expect(typeof module[name]).eq("function");
     },

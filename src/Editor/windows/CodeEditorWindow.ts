@@ -1,8 +1,8 @@
-import { TextBuffer } from "../../ui/buffer/Buffer.js";
-import colors from "../../ui/colors.js";
+import { TextBuffer } from "../../ui/text/Buffer.js";
+import colors from "../../ui/colors/colors.js";
 import { DisplayComponent } from "../../ui/display/displayComponent.js";
-import { ViewPort } from "../../ui/windows/viewport.js";
-import { Cursor } from "../Cursor.js";
+import { ViewPort } from "../../ui/display/viewport.js";
+import { Cursor } from "../../ui/components/UiScreen/Cursor.js";
 import { Textdocument } from "../Documents/TextDocument.js";
 import {
   EditorView,
@@ -11,7 +11,7 @@ import {
 } from "../../ui/components/UiComponent.js";
 import { ICanvas } from "../../ui/Canvas/TerminalCanvas.js";
 import { assert } from "../../assert.js";
-import { UIScreen } from "../../ui/components/UIScreen.js";
+import { UIScreen } from "../../ui/components/UiScreen/UIScreen.js";
 
 export class CodeEditorWindow extends UiComponent implements EWindow {
   document: Textdocument;

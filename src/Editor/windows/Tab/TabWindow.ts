@@ -1,14 +1,14 @@
 import { type } from "os";
 import { assert } from "../../../assert.js";
 import { ICanvas } from "../../../ui/Canvas/TerminalCanvas.js";
-import colors from "../../../ui/colors.js";
+import colors from "../../../ui/colors/colors.js";
 import { ComponentBorder } from "../../../ui/display/border.js";
 import { DisplayComponent } from "../../../ui/display/displayComponent.js";
-import { EditorRoot } from "../../Editor/EditorRoot.js";
+import { EditorRoot } from "../EditorRoot.js";
 import { UiComponent } from "../../../ui/components/UiComponent.js";
 import { WindowManager } from "../WindowManager/WindowManager.js";
 import { isCodeEditorWindow } from "../../../utils.js";
-import { UIScreen } from "../../../ui/components/UIScreen.js";
+import { UIScreen } from "../../../ui/components/UiScreen/UIScreen.js";
 
 export interface ETabWindow {}
 

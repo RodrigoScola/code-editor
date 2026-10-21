@@ -1,6 +1,6 @@
 // editor.occurrencesHighlight without a language server: whole words,
 // matching case
-import type { TextPosition } from "../textMarkers.js";
+import type { TextPosition } from "../text/textMarkers.js";
 
 // every occurrence of the word at (or right before) position
 export function wordOccurrences(

@@ -1,5 +1,5 @@
 import { it, expect } from "vitest";
-import { setupEditor } from "../../../src/Editor/setupEditor.js";
+import { setupEditor } from "../../../src/Editor/setup/setupEditor.js";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
 import { FileTreeWindow } from "../../../src/Editor/windows/FileTree/FileTreeWindow.js";
 import { WINDOW_NAMES } from "../../../src/constants.js";

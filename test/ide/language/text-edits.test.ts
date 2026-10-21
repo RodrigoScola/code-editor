@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TextBuffer } from "../../../src/ui/buffer/Buffer.js";
+import { TextBuffer } from "../../../src/ui/text/Buffer.js";
 import { applyTextEdits } from "../../../src/tools/Lsp/textEdits.js";
 import { vim } from "../harness.js";
 

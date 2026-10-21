@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import colors from "../../../../src/ui/colors.js";
+import colors from "../../../../src/ui/colors/colors.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import {
   cell,

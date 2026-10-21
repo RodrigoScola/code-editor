@@ -3,40 +3,40 @@ import {
   EditorCommand,
   NormalMode,
   VisualMode,
-} from "../../Commands/Commands.js";
-import { assert } from "../../assert.js";
-import { ICanvas, TerminalCanvas } from "../../ui/Canvas/TerminalCanvas.js";
-import { LayoutEngine } from "../../ui/layout/layout.js";
+} from "../Commands/Commands.js";
+import { assert } from "../assert.js";
+import { ICanvas, TerminalCanvas } from "../ui/Canvas/TerminalCanvas.js";
+import { LayoutEngine } from "../ui/layout/layout.js";
 import {
   Renderer,
   TerminalRenderer,
-} from "../../ui/Renderers/TerminalRenderer.js";
+} from "../ui/Renderers/TerminalRenderer.js";
 import {
   DiskFile,
   MemoryFile,
   Textdocument,
-} from "../Documents/TextDocument.js";
-import { WindowManager } from "../windows/WindowManager/WindowManager.js";
-import { StatusWindow } from "../windows/StatusEditor.js";
-import { EditorRoot } from "./EditorRoot.js";
-import { CodeEditorWindow } from "../windows/CodeEditorWindow.js";
-import { Configuration, EditorConfig, setConfiguration } from "../../config.js";
-import { CodeEditorGroup } from "../windows/Tab/TabWindow.js";
-import { FocusManager } from "../../ui/windows/FocusManager.js";
-import { UiComponent } from "../../ui/components/UiComponent.js";
-import { stripAnsi } from "../../ui/Renderers/TerminalRenderer.js";
-import { CommandRegistry } from "../../Commands/CommandRegistry.js";
-import { parseKeys } from "../../Input/keyNotation.js";
-import { WINDOW_NAMES } from "../../constants.js";
-import { EditorSelection } from "../Selection.js";
-import { CURSOR, renderSelections, TextSelection } from "../textMarkers.js";
+} from "./Documents/TextDocument.js";
+import { WindowManager } from "./windows/WindowManager/WindowManager.js";
+import { StatusWindow } from "./windows/StatusEditor.js";
+import { EditorRoot } from "./windows/EditorRoot.js";
+import { CodeEditorWindow } from "./windows/CodeEditorWindow.js";
+import { Configuration, EditorConfig, setConfiguration } from "../config.js";
+import { CodeEditorGroup } from "./windows/Tab/TabWindow.js";
+import { FocusManager } from "../ui/events/FocusManager.js";
+import { UiComponent } from "../ui/components/UiComponent.js";
+import { stripAnsi } from "../ui/Renderers/TerminalRenderer.js";
+import { CommandRegistry } from "../Commands/CommandRegistry.js";
+import { parseKeys } from "../Input/keys/keyNotation.js";
+import { WINDOW_NAMES } from "../constants.js";
+import { EditorSelection } from "../ui/components/UiScreen/Selection.js";
+import { CURSOR, renderSelections, TextSelection } from "./text/textMarkers.js";
 import fs from "fs";
 import { resolve } from "path";
-import { gitStatus, gitStatusAsync } from "../../tools/Git/git.js";
-import { InsertMode } from "../Modes/InsertMode.js";
-import { LayoutBounds } from "../../ui/layout/LayoutBounds.js";
-import { UIScreen } from "../../ui/components/UIScreen.js";
-import { Clipboard } from '../Clipboard.js';
+import { gitStatus, gitStatusAsync } from "../tools/Git/git.js";
+import { InsertMode } from "./Modes/InsertMode.js";
+import { LayoutBounds } from "../ui/layout/LayoutBounds.js";
+import { UIScreen } from "../ui/components/UiScreen/UIScreen.js";
+import { Clipboard } from './Clipboard.js';
 
 // how old the status line's git status can get before it asks git again
 const GIT_STATUS_MAX_AGE_MS = 2000;
@@ -326,7 +326,7 @@ export class EditorContext {
   // ---------------------------------------------------------------------
 
   // presses keys written in Vim notation: "dw", "iX<Esc>", "<C-w>v"
-  // (see src/Input/keyNotation.ts)
+  // (see src/Input/keys/keyNotation.ts)
   keys(sequence: string) {
     for (const key of parseKeys(sequence)) {
       this.handleKey(key);
@@ -476,7 +476,7 @@ export class EditorContext {
   }
 
   // the document with its selections marked: "«foo» bar"
-  // (see src/Editor/textMarkers.ts)
+  // (see src/Editor/text/textMarkers.ts)
   state() {
     return renderSelections(this.lines().join("\n"), this.selections());
   }

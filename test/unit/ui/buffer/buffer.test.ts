@@ -3,9 +3,9 @@ import { describe, it, expect } from "vitest";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
-import { UIScreen } from "../../../../src/ui/components/UIScreen.js";
-import { EditorContext } from "../../../../src/Editor/Editor/Editor.js";
-import { TextBuffer } from "../../../../src/ui/buffer/Buffer.js";
+import { UIScreen } from "../../../../src/ui/components/UiScreen/UIScreen.js";
+import { EditorContext } from "../../../../src/Editor/EditorContext.js";
+import { TextBuffer } from "../../../../src/ui/text/Buffer.js";
 
 describe("tests the buffer and rendering", () => {
   it("creates a buffer and renders the tab correctly", () => {

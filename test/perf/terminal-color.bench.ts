@@ -1,5 +1,5 @@
 import { bench, describe } from "vitest";
-import colors from "../../src/ui/colors.js";
+import colors from "../../src/ui/colors/colors.js";
 
 // How long the color conversion takes, in real numbers. Run with
 // `npm run bench`. The pass/fail checks for these are in

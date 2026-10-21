@@ -1,13 +1,13 @@
 import fs, { Dirent } from "fs";
 import path from "path";
-import colors from "../../../ui/colors.js";
+import colors from "../../../ui/colors/colors.js";
 import { ICanvas } from "../../../ui/Canvas/TerminalCanvas.js";
-import { EditorContext } from "../../Editor/Editor.js";
-import { ComponentStyle } from "../../../ui/ComponentStyles.js";
+import { EditorContext } from "../../EditorContext.js";
+import { ComponentStyle } from "../../../ui/styles/ComponentStyles.js";
 import { ICONS } from "../../../constants.js";
-import { TextBuffer } from "../../../ui/buffer/Buffer.js";
+import { TextBuffer } from "../../../ui/text/Buffer.js";
 import { assert } from "../../../assert.js";
-import { UIScreen } from "../../../ui/components/UIScreen.js";
+import { UIScreen } from "../../../ui/components/UiScreen/UIScreen.js";
 import { TreeInput } from "./TreeInput.js";
 
 export class FileTreeWindow extends UIScreen {

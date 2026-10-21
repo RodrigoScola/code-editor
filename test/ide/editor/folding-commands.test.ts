@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { computeFoldingRanges } from "../../../src/Editor/folding.js";
+import { computeFoldingRanges } from "../../../src/Editor/text/folding.js";
 import { code } from "../harness.js";
 
-// Proposed module src/Editor/folding.ts:
+// Proposed module src/Editor/text/folding.ts:
 //   computeFoldingRanges(lines, { tabSize, markers? }) -> [{ start, end }]
 //     0-based lines, sorted by start. An indentation range starts at a line
 //     followed by more indented lines and ends at the last of them (a

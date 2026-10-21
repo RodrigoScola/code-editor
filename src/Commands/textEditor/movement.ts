@@ -1,6 +1,6 @@
-import { log } from "../../../log.js";
-import { EditorContext } from "../../../Editor/Editor/Editor.js";
-import { isTextComponent } from "../../../utils.js";
+import { log } from "../../logging/fileLog.js";
+import { EditorContext } from "../../Editor/EditorContext.js";
+import { isTextComponent } from "../../utils.js";
 
 function moveDownEditorCommand(ctx: EditorContext) {
   const editor = ctx.getFocusedComponent();

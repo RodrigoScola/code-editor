@@ -1,4 +1,4 @@
-import { Cursor } from "../../../Editor/Cursor.js";
+import { Cursor } from "./Cursor.js";
 
 export class CursorMovement {
   private readonly cursor: Cursor;

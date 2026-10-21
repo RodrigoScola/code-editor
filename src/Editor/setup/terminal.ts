@@ -1,8 +1,8 @@
-import { setupEditor as setup } from "../../Editor/setupEditor.js";
-import { TerminalInputParser } from "../../Input/TerminalInputParser.js";
+import { setupEditor as setup } from "./setupEditor.js";
+import { TerminalInputParser } from "../../Input/terminal/TerminalInputParser.js";
 import { LayoutEngine } from "../../ui/layout/layout.js";
 import { TerminalRenderer } from "../../ui/Renderers/TerminalRenderer.js";
-import { EditorContext } from "../Editor/Editor.js";
+import { EditorContext } from "../EditorContext.js";
 import { ErrorWindow } from "../windows/ErrorWindow.js";
 
 export function setupTerminal(editor: EditorContext) {

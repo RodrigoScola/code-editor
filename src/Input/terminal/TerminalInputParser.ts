@@ -1,4 +1,4 @@
-import { DEFAULT_TOKENS, InputParser } from "./InputParser.js";
+import { DEFAULT_TOKENS, InputParser } from "../keys/InputParser.js";
 
 export type InputEvent =
   | {

@@ -1,13 +1,13 @@
-import { assert } from "../assert.js";
-import { ICanvas } from "../ui/Canvas/TerminalCanvas.js";
-import colors from "../ui/colors.js";
-import { DisplayComponent } from "../ui/display/displayComponent.js";
-import { ComponentStyle } from "../ui/ComponentStyles.js";
-import { LayoutBounds } from "../ui/layout/LayoutBounds.js";
-import { LayoutDimensions } from "../ui/layout/LayoutDimensions.js";
-import { ViewPort } from "../ui/windows/viewport.js";
+import { assert } from "../../../assert.js";
+import { ICanvas } from "../../Canvas/TerminalCanvas.js";
+import colors from "../../colors/colors.js";
+import { DisplayComponent } from "../../display/displayComponent.js";
+import { ComponentStyle } from "../../styles/ComponentStyles.js";
+import { LayoutBounds } from "../../layout/LayoutBounds.js";
+import { LayoutDimensions } from "../../layout/LayoutDimensions.js";
+import { ViewPort } from "../../display/viewport.js";
 import { EditorSelection } from "./Selection.js";
-import { CursorMovement } from "../ui/components/UiScreen/CursorMovement.js";
+import { CursorMovement } from "./CursorMovement.js";
 
 export class Cursor {
   prefferedColumn: number = 0;

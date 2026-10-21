@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { code } from "../harness.js";
-import { textCommands } from "../../../src/Commands/editor/commands/textCommands.js";
+import { textCommands } from "../../../src/Commands/textEditor/textCommands.js";
 
 // Clipboard and undo, VS Code style.
 //   editor.action.clipboardCopyAction / clipboardCutAction / clipboardPasteAction

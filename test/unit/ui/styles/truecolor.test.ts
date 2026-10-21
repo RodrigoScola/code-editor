@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import colors from "../../../../src/ui/colors.js";
+import colors from "../../../../src/ui/colors/colors.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { layoutAndPaint, screen } from "../../../helpers/ui.js";

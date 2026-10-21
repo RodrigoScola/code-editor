@@ -1,6 +1,6 @@
 import { ICONS } from "../../constants.js";
-import colors from "../colors.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import colors from "../colors/colors.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
 
 const borders = ICONS.borders;
 

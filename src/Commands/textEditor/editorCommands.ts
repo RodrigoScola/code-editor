@@ -1,13 +1,13 @@
-import { EditorContext } from "../Editor/Editor/Editor.js";
-import type { EditorCommand } from "./Commands.js";
+import { EditorContext } from "../../Editor/EditorContext.js";
+import type { EditorCommand } from "../Commands.js";
 import {
   isCodeEditorWindow,
   isFileTreeWindow,
   isTextComponent,
-} from "../utils.js";
-import { assert } from "../assert.js";
-import { movementCommands } from "./editor/commands/movement.js";
-import { textCommands } from './editor/commands/textCommands.js';
+} from "../../utils.js";
+import { assert } from "../../assert.js";
+import { movementCommands } from "./movement.js";
+import { textCommands } from './textCommands.js';
 
 export const textEditorCommands = {
   textEditor: {

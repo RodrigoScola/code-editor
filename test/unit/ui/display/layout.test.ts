@@ -3,9 +3,9 @@ import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
-import colors from "../../../../src/ui/colors.js";
+import colors from "../../../../src/ui/colors/colors.js";
 import { assert } from "../../../../src/assert.js";
-import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import { ComponentStyle } from "../../../../src/ui/styles/ComponentStyles.js";
 
 describe("LayoutEngine measurement", () => {
   it("should create a canvas then assign 80 by 80, create a component and assign two children and their heights be 40 and width be 80", () => {

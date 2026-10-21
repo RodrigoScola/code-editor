@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { setupEditor } from "../../../src/Editor/setupEditor.js";
+import { setupEditor } from "../../../src/Editor/setup/setupEditor.js";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
 import { StatusWindow } from "../../../src/Editor/windows/StatusEditor.js";
 import type { EditorCommand } from "../../../src/Commands/Commands.js";

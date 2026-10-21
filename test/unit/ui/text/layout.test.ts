@@ -1,7 +1,7 @@
 import { assert } from "../../../../src/assert";
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas";
 import { DisplayTile } from "../../../../src/ui/display/DisplayTile";
-import colors from "../../../../src/ui/colors";
+import colors from "../../../../src/ui/colors/colors";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds";

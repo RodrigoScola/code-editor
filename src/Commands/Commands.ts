@@ -1,9 +1,9 @@
 import { assert } from "../assert.js";
-import { TerminalInputParser } from "../Input/TerminalInputParser.js";
-import { EditorContext } from "../Editor/Editor/Editor.js";
+import { TerminalInputParser } from "../Input/terminal/TerminalInputParser.js";
+import { EditorContext } from "../Editor/EditorContext.js";
 import { isTextComponent, isStatusEditorWindow } from "../utils.js";
 import { StatusWindow } from "../Editor/windows/StatusEditor.js";
-import { InputParser } from "../Input/InputParser.js";
+import { InputParser } from "../Input/keys/InputParser.js";
 
 export type CommandHandler = (ctx: EditorContext, args?: unknown) => void;
 

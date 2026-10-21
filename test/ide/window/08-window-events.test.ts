@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   WindowEvents,
   type PixelSize,
-} from "../../../src/Input/windowEvents.js";
-import type { WindowInputEvent } from "../../../src/Input/windowInput.js";
+} from "../../../src/Input/window/windowEvents.js";
+import type { WindowInputEvent } from "../../../src/Input/window/windowInput.js";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
 import { FakeWindow } from "./helpers.js";
 
@@ -14,7 +14,7 @@ import { FakeWindow } from "./helpers.js";
 // the window (window.on(...)) and hands on plain events, so nothing past it
 // needs to know about SDL.
 //
-//   src/Input/windowEvents.ts
+//   src/Input/window/windowEvents.ts
 //     new WindowEvents(window)  listens to a PixelWindow (SDL-shaped)
 //     onInput(listener)         keyDown and textInput, as WindowInputEvents
 //                               (the type WindowInputParser.Parse takes)

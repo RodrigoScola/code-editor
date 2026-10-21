@@ -1,6 +1,6 @@
 import { describe } from "vitest";
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
-import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import { ComponentStyle } from "../../../../src/ui/styles/ComponentStyles.js";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds.js";
 
 // Shared by the transparency specs.

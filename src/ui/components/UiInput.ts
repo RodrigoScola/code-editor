@@ -1,9 +1,9 @@
-import { EditorContext } from "../../Editor/Editor/Editor.js";
-import { TextBuffer } from "../buffer/Buffer.js";
+import { EditorContext } from "../../Editor/EditorContext.js";
+import { TextBuffer } from "../text/Buffer.js";
 import { ICanvas } from "../Canvas/TerminalCanvas.js";
-import { ComponentStyle } from "../ComponentStyles.js";
-import { TextLayout } from "../TextLayout/text.js";
-import { UIScreen } from "./UIScreen.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
+import { TextLayout } from "../text/text.js";
+import { UIScreen } from "./UiScreen/UIScreen.js";
 
 export class UiInput extends UIScreen {
   currentCommandLine: number = 0;

@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
 import { cellCanvas, paint, style } from "./helpers.js";
-import colors from "../../../src/ui/colors.js";
+import colors from "../../../src/ui/colors/colors.js";
 
 // Level 10: the real thing. A real SDL window (it flashes on screen for a
 // moment), then the built editor started the way `npm run dev:window` starts

@@ -1,17 +1,17 @@
 // The Renderer that draws into a native window, in pixels: no cells, those
 // are the TerminalRenderer's. It only draws; listening to the window is
-// WindowEvents' job (src/Input/windowEvents.ts)
+// WindowEvents' job (src/Input/window/windowEvents.ts)
 import { assert } from "node:console";
 import type { DisplayLike } from "../layout/layout.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
 import { type Renderer } from "./TerminalRenderer.js";
 import { Canvas, createCanvas } from "@napi-rs/canvas";
 import { Rendering } from "./Renderer.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
 import { WindowCanvas } from "../Canvas/WindowCanvas.js";
 import { format } from "node:path";
 import { buffer } from "node:stream/consumers";
-import { DEFAULT_BACKGROUND } from "../colors.js";
+import { DEFAULT_BACKGROUND } from "../colors/colors.js";
 import sdl from "@kmamal/sdl";
 
 // anything shaped like an SDL window
@@ -180,7 +180,7 @@ export class WindowRenderer implements Renderer {
 
   // the window
 
-  // the window it draws to; a WindowEvents listens to it (src/Input/windowEvents.ts)
+  // the window it draws to; a WindowEvents listens to it (src/Input/window/windowEvents.ts)
   window(): PixelWindow {
     return this._window;
   }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import colors from "../../../../src/ui/colors.js";
-import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import colors from "../../../../src/ui/colors/colors.js";
+import { ComponentStyle } from "../../../../src/ui/styles/ComponentStyles.js";
 import { cell, layoutAndPaint, screen } from "../../../helpers/ui.js";
 
 // Proposed API on TextLayout, for "one bold word in a sentence" and syntax

@@ -1,6 +1,6 @@
 import { start } from "repl";
-import { EditorContext } from "../../../Editor/Editor/Editor.js";
-import { isTextComponent } from "../../../utils.js";
+import { EditorContext } from "../../Editor/EditorContext.js";
+import { isTextComponent } from "../../utils.js";
 
 function copy(editor: EditorContext) {
   const activeEditor = editor.getFocusedComponent();

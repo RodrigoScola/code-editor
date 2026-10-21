@@ -1,12 +1,12 @@
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
-import { ComponentStyle, DEFAULT_FONT } from "../ComponentStyles.js";
+import { ComponentStyle, DEFAULT_FONT } from "../styles/ComponentStyles.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
-import { TextLayout } from "../TextLayout/text.js";
-import { ViewPort } from "../windows/viewport.js";
+import { TextLayout } from "../text/text.js";
+import { ViewPort } from "../display/viewport.js";
 import { expandTabs, ICanvas } from "./TerminalCanvas.js";
 import { Configuration } from "../../config.js";
 import { ColorParser } from "../colors/Parsers/ColorParser.js";
-import { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from "../colors.js";
+import { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from "../colors/colors.js";
 import { WindowCanvasText } from "./WindowCanvasText.js";
 
 export class WindowCanvas implements ICanvas {

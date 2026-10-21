@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { UiComponent } from "../../../../src/ui/components/UiComponent.js";
-import { FocusManager } from "../../../../src/ui/windows/FocusManager.js";
+import { FocusManager } from "../../../../src/ui/events/FocusManager.js";
 import { key } from "../../../helpers/ui.js";
 
 // Proposed API (DOM-like, on UiComponent):

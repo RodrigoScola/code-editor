@@ -28,14 +28,14 @@ npm run build                            # before level 10, it runs dist/
 ## What gets built
 
 ```
-src/Input/windowInput.ts
+src/Input/window/windowInput.ts
   type WindowKeyDown    = { type: "keyDown"; key: string | null;
                             shift; ctrl; alt; repeat: boolean }
   type WindowTextInput  = { type: "textInput"; text: string }
   type WindowInputEvent = WindowKeyDown | WindowTextInput
   WindowInputParser.Parse(event): KeyEvent[]
 
-src/Input/windowEvents.ts
+src/Input/window/windowEvents.ts
   new WindowEvents(window)            listens to a PixelWindow (window.on)
   onInput(f) onResize(f) onClose(f)   plain events, nothing SDL-shaped
 
@@ -51,7 +51,7 @@ src/ui/Renderers/WindowRenderer.ts
              isTerminalRenderer() isWindowRenderer()
   window:    window() close()
 
-src/Editor/setupEditor.ts
+src/Editor/setup/setupEditor.ts
   setupEditor.window.connect(editor, renderer)   listens with a WindowEvents
 
 src/index.ts

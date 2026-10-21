@@ -1,5 +1,5 @@
-import { UIScreen } from "../../ui/components/UIScreen.js";
-import { EditorContext } from "../Editor/Editor.js";
+import { UIScreen } from "../../ui/components/UiScreen/UIScreen.js";
+import { EditorContext } from "../EditorContext.js";
 
 export class ErrorWindow extends UIScreen {
   constructor(private ctx: EditorContext) {

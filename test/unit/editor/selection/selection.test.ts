@@ -7,8 +7,8 @@ import {
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
-import colors from "../../../../src/ui/colors.js";
-import { UIScreen } from "../../../../src/ui/components/UIScreen.js";
+import colors from "../../../../src/ui/colors/colors.js";
+import { UIScreen } from "../../../../src/ui/components/UiScreen/UIScreen.js";
 
 describe("tests the visual highlight of the selection", () => {
   it("keeps the cursor visible by scrolling the viewport", () => {

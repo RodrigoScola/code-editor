@@ -1,6 +1,6 @@
-import colors from "../ui/colors.js";
-import { ComponentStyle } from "../ui/ComponentStyles.js";
-import { LayoutBounds } from "../ui/layout/LayoutBounds.js";
+import colors from "../../colors/colors.js";
+import { ComponentStyle } from "../../styles/ComponentStyles.js";
+import { LayoutBounds } from "../../layout/LayoutBounds.js";
 
 export class EditorSelection {
   private _anchor: Point = { x: 0, y: 0 };

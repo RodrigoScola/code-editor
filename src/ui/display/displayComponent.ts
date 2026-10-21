@@ -1,11 +1,11 @@
 import { assert } from "../../assert.js";
-import { TextBuffer } from "../buffer/Buffer.js";
+import { TextBuffer } from "../text/Buffer.js";
 
 import { ICanvas } from "../Canvas/TerminalCanvas.js";
 import { DisplayLike, LayoutEngine } from "../layout/layout.js";
 import { LayoutDimensions } from "../layout/LayoutDimensions.js";
-import { OverflowTypes, TextAlign, TextLayout } from "../TextLayout/text.js";
-import { ViewPort } from "../windows/viewport.js";
+import { OverflowTypes, TextAlign, TextLayout } from "../text/text.js";
+import { ViewPort } from "./viewport.js";
 import { BorderStyles, ComponentBorder } from "./border.js";
 import { ComponentLayoutFns } from "../layout/componentLayout.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
@@ -13,7 +13,7 @@ import { ScrollBar, ScrollBarStyle } from "../components/Scrollbar.js";
 import { ComponentScroll } from "./ComponentScroll.js";
 import { ComponentLayout } from "./ComponentLayout.js";
 import { ComponentChildren } from "./ComponentChildren.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
 
 export class DisplayComponent
   extends ComponentLayoutFns

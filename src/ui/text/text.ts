@@ -1,5 +1,5 @@
 import { assert } from "../../assert.js";
-import { TextBuffer } from "../buffer/Buffer.js";
+import { TextBuffer } from "./Buffer.js";
 import { time } from "node:console";
 import { DisplayComponent } from "../display/displayComponent.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";

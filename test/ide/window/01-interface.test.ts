@@ -1,22 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { setupEditor } from "../../../src/Editor/setupEditor.js";
-import { WindowEvents } from "../../../src/Input/windowEvents.js";
-import { WindowInputParser } from "../../../src/Input/windowInput.js";
+import { setupEditor } from "../../../src/Editor/setup/setupEditor.js";
+import { WindowEvents } from "../../../src/Input/window/windowEvents.js";
+import { WindowInputParser } from "../../../src/Input/window/windowInput.js";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
 import { FakeWindow } from "./helpers.js";
-import { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from '../../../src/ui/colors.js';
+import { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from '../../../src/ui/colors/colors.js';
 
 // Level 1: the pieces exist and have the right shape. Nothing has to work
 // yet; every module and method the later levels use is listed here, so this
 // file is the checklist of what to create.
 //
-//   src/Input/windowInput.ts            WindowInputParser + event types
-//   src/Input/windowEvents.ts           WindowEvents: listens to the window
+//   src/Input/window/windowInput.ts            WindowInputParser + event types
+//   src/Input/window/windowEvents.ts           WindowEvents: listens to the window
 //   src/ui/Renderers/ansiColors.ts      ANSI color codes to CSS colors
 //   src/ui/Renderers/WindowRenderer.ts  the Renderer that draws to a window
-//   src/Editor/setupEditor.ts           setupEditor.window.connect(editor, renderer)
+//   src/Editor/setup/setupEditor.ts           setupEditor.window.connect(editor, renderer)
 
-describe("src/Input/windowInput.ts", () => {
+describe("src/Input/window/windowInput.ts", () => {
   it("exports the WindowInputParser class", () => {
     expect(typeof WindowInputParser).eq("function");
   });
@@ -92,7 +92,7 @@ describe("src/ui/Renderers/WindowRenderer.ts", () => {
 
 // the renderer only draws; this listens to the window, like index.ts listens
 // to process.stdin for the terminal
-describe("src/Input/windowEvents.ts", () => {
+describe("src/Input/window/windowEvents.ts", () => {
   it("exports the WindowEvents class", () => {
     expect(typeof WindowEvents).eq("function");
   });
@@ -115,7 +115,7 @@ describe("src/Input/windowEvents.ts", () => {
   });
 });
 
-describe("src/Editor/setupEditor.ts", () => {
+describe("src/Editor/setup/setupEditor.ts", () => {
   it("has setupEditor.window.connect(editor, renderer), next to setupEditor.terminal", () => {
     expect(typeof setupEditor.window.connect).eq("function");
   });

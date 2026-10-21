@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mergeFoldingRanges } from "../../../src/Editor/folding.js";
+import { mergeFoldingRanges } from "../../../src/Editor/text/folding.js";
 import { code } from "../harness.js";
 
 // Folding ranges from a language (a language server's foldingRange
@@ -7,7 +7,7 @@ import { code } from "../harness.js";
 // indentation. See test/ide/editor/folding-commands.test.ts for the
 // commands and the indentation ranges.
 //
-// Proposed, added to src/Editor/folding.ts:
+// Proposed, added to src/Editor/text/folding.ts:
 //   mergeFoldingRanges(ranges, { lineCount, limit = 5000 })
 //     -> the ranges to use, sorted by start
 //     ranges: { start, end, kind?: "comment" | "imports" | "region" }

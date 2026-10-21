@@ -1,8 +1,8 @@
-import colors from "../colors.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import colors from "../colors/colors.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
 import { Configuration } from "../../config.js";
-import { TextLayout } from "../TextLayout/text.js";
-import { ViewPort } from "../windows/viewport.js";
+import { TextLayout } from "../text/text.js";
+import { ViewPort } from "../display/viewport.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
 import { DisplayTile } from "../display/DisplayTile.js";
 

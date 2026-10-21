@@ -1,11 +1,11 @@
 import { bench, describe } from "vitest";
-import { EditorContext } from "../../src/Editor/Editor/Editor.js";
-import { setupEditor as setup } from "../../src/Editor/setupEditor.js";
+import { EditorContext } from "../../src/Editor/EditorContext.js";
+import { setupEditor as setup } from "../../src/Editor/setup/setupEditor.js";
 import { StatusWindow } from "../../src/Editor/windows/StatusEditor.js";
 import { FileTreeWindow } from "../../src/Editor/windows/FileTree/FileTreeWindow.js";
 import { CodeEditorGroup } from "../../src/Editor/windows/Tab/TabWindow.js";
 import { CodeEditorWindow } from "../../src/Editor/windows/CodeEditorWindow.js";
-import { UIScreen } from "../../src/ui/components/UIScreen.js";
+import { UIScreen } from "../../src/ui/components/UiScreen/UIScreen.js";
 import { LayoutEngine } from "../../src/ui/layout/layout.js";
 import { WINDOW_NAMES } from "../../src/constants.js";
 

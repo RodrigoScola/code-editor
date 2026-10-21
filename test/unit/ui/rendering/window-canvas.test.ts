@@ -3,15 +3,15 @@ import { describe, expect, it } from "vitest";
 import { Configuration } from "../../../../src/config.js";
 import type { ICanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
 import { WindowCanvas } from "../../../../src/ui/Canvas/WindowCanvas.js";
-import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import { ComponentStyle } from "../../../../src/ui/styles/ComponentStyles.js";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds.js";
-import { TextLayout } from "../../../../src/ui/TextLayout/text.js";
-import { ViewPort } from "../../../../src/ui/windows/viewport.js";
+import { TextLayout } from "../../../../src/ui/text/text.js";
+import { ViewPort } from "../../../../src/ui/display/viewport.js";
 import { distance, Frame, rgb } from "../../../ide/window/helpers.js";
 import {
   DEFAULT_BACKGROUND,
   DEFAULT_FOREGROUND,
-} from "../../../../src/ui/colors.js";
+} from "../../../../src/ui/colors/colors.js";
 
 // WindowCanvas: the ICanvas the window renderer paints into, drawn with
 // Canvas 2D (@napi-rs/canvas) straight onto the canvas it is given.

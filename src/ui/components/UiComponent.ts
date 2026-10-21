@@ -1,9 +1,9 @@
-import { TextBuffer } from "../buffer/Buffer.js";
+import { TextBuffer } from "../text/Buffer.js";
 import { ICanvas } from "../Canvas/TerminalCanvas.js";
 import { DisplayComponent } from "../display/displayComponent.js";
-import { EditorContext } from "../../Editor/Editor/Editor.js";
+import { EditorContext } from "../../Editor/EditorContext.js";
 import { assert } from "../../assert.js";
-import { Focusable } from "../windows/FocusManager.js";
+import { Focusable } from "../events/FocusManager.js";
 import { DisplayLike } from "../layout/layout.js";
 
 type WindowId = number;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeFoldingRanges } from "../../../src/Editor/folding.js";
+import { computeFoldingRanges } from "../../../src/Editor/text/folding.js";
 import { code } from "../harness.js";
 
 // Edge cases for folding (base spec: folding.test.ts).

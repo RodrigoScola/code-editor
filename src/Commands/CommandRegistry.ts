@@ -1,4 +1,4 @@
-import type { EditorContext } from "../Editor/Editor/Editor.js";
+import type { EditorContext } from "../Editor/EditorContext.js";
 import type { EditorCommand } from "./Commands.js";
 
 // Every command the editor can run, by id, so the same action can come from

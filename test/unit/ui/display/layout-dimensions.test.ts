@@ -3,8 +3,8 @@ import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
-import colors from "../../../../src/ui/colors.js";
-import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import colors from "../../../../src/ui/colors/colors.js";
+import { ComponentStyle } from "../../../../src/ui/styles/ComponentStyles.js";
 
 describe("tests the layout calculation on absolute", () => {
   it("doesnt need layout property if height and width is set", () => {

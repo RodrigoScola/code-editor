@@ -1,7 +1,7 @@
 import { describe, it } from "vitest";
 import { DisplayComponent } from "../../../../../src/ui/display/displayComponent.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout";
-import colors from "../../../../../src/ui/colors";
+import colors from "../../../../../src/ui/colors/colors";
 import { TerminalRenderer as Renderer } from "../../../../../src/ui/Renderers/TerminalRenderer.js";
 import { TerminalCanvas } from "../../../../../src/ui/Canvas/TerminalCanvas.js";
 

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { vim } from "../harness.js";
-import type { EditorContext } from "../../../src/Editor/Editor/Editor.js";
+import type { EditorContext } from "../../../src/Editor/EditorContext.js";
 import type { EditorCommand } from "../../../src/Commands/Commands.js";
 import {
   WindowInputParser,
   type WindowInputEvent,
   type WindowKeyDown,
-} from "../../../src/Input/windowInput.js";
+} from "../../../src/Input/window/windowInput.js";
 import { keyFor } from "./helpers.js";
 
 // Level 4: the editor's modes driven by window events. Same parser as level

@@ -29,7 +29,7 @@ npx tsc -p test                            # type check the specs
 status line, the registered commands and the real normal/visual key
 bindings) and hands back its `EditorContext`. Everything a spec does is a
 method on `EditorContext` itself
-([Editor.ts](../../src/Editor/Editor/Editor.ts)), so the specs and the
+([EditorContext.ts](../../src/Editor/EditorContext.ts)), so the specs and the
 editor use the same API, and you can call the same methods from editor code:
 
 ```ts
@@ -89,13 +89,13 @@ and show as type errors until then. The spec named here describes each one:
 | `backups`, `windowFocusChanged()` | [files/auto-save-backup](files/auto-save-backup.test.ts) |
 | `handleFileEvents()` | [files/watcher](files/watcher.test.ts) |
 
-- Marked text ([textMarkers.ts](../../src/Editor/textMarkers.ts)): `|` is a
+- Marked text ([textMarkers.ts](../../src/Editor/text/textMarkers.ts)): `|` is a
   cursor. In normal mode it sits on the character after it; in insert mode
   it is the insertion point. `«` is a selection's anchor and `»` its active
   end, so `«abc»` is selected left to right and `»abc«` right to left.
   Several of them mean multiple cursors. Until multiple cursors exist,
   `setSelections` throws "multiple cursors aren't supported yet".
-- Keys use Vim notation ([keyNotation.ts](../../src/Input/keyNotation.ts)):
+- Keys use Vim notation ([keyNotation.ts](../../src/Input/keys/keyNotation.ts)):
   `<Esc> <CR> <BS> <Tab> <C-r> <Space> <lt>` (a literal `<`).
 - Commands have an id, a title and a description
   ([Commands.ts](../../src/Commands/Commands.ts)) and live in `ctx.commands`
@@ -233,11 +233,11 @@ These are in today's code, not missing features:
 
 - `:w` throws "Expected an EditorComponent": `saveFileCommand` checks the
   focused component, but focus is on the text view inside the
-  `CodeEditorWindow` ([editorCommands.ts](../../src/Commands/editorCommands.ts)).
+  `CodeEditorWindow` ([editorCommands.ts](../../src/Commands/textEditor/editorCommands.ts)).
   Visual-mode `d` has the same problem in the other direction: it checks the
   active window with `isTextComponent`.
 - `:q` calls `process.exit(0)` directly
-  ([setupEditor.ts](../../src/Editor/setupEditor.ts)).
+  ([setupEditor.ts](../../src/Editor/setup/setupEditor.ts)).
 - `G` goes to the end of the current line instead of the last line
   (`goToDocumentEnd` calls `goToLineEnd`).
 - `b` at the very start of a file reads line -1 and crashes the assertion in

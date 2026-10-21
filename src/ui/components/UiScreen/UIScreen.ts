@@ -1,10 +1,10 @@
-import { assert } from "../../assert.js";
-import { Cursor } from "../../Editor/Cursor.js";
-import { EditorContext } from "../../Editor/Editor/Editor.js";
-import { EditorSelection } from "../../Editor/Selection.js";
-import { TextBuffer } from "../buffer/Buffer.js";
-import { ICanvas } from "../Canvas/TerminalCanvas.js";
-import { UiComponent } from "./UiComponent.js";
+import { assert } from "../../../assert.js";
+import { Cursor } from "./Cursor.js";
+import { EditorContext } from "../../../Editor/EditorContext.js";
+import { EditorSelection } from "./Selection.js";
+import { TextBuffer } from "../../text/Buffer.js";
+import { ICanvas } from "../../Canvas/TerminalCanvas.js";
+import { UiComponent } from "../UiComponent.js";
 
 export class UIScreen extends UiComponent {
   private _cursorEnabled: boolean = true;

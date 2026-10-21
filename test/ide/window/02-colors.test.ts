@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import colors, {
   DEFAULT_BACKGROUND,
   DEFAULT_FOREGROUND,
-} from "../../../src/ui/colors.js";
+} from "../../../src/ui/colors/colors.js";
 import { ColorParser } from "../../../src/ui/colors/Parsers/ColorParser.js";
 
 const ansiToCss = ColorParser.ToHex;
 
 // Level 2: turning a style's color into a pixel's color. Styles hold CSS
-// colors (the named ones in src/ui/colors.ts are "#rrggbb", see
+// colors (the named ones in src/ui/colors/colors.ts are "#rrggbb", see
 // test/unit/ui/styles/terminal-color.test.ts), which the window can use as
 // they are. Escape codes ("\x1b[44m") can still turn up, so ansiToCss(color)
 // reads those too. It returns "#rrggbb" (lower case), or null for "the

@@ -1,6 +1,6 @@
 import { ICanvas } from "../../ui/Canvas/TerminalCanvas.js";
-import colors from "../../ui/colors.js";
-import { EditorContext } from "../Editor/Editor.js";
+import colors from "../../ui/colors/colors.js";
+import { EditorContext } from "../EditorContext.js";
 import { LayoutDimensions } from "../../ui/layout/LayoutDimensions.js";
 import { UiInput } from "../../ui/components/UiInput.js";
 

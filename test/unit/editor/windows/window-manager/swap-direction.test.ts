@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { TerminalCanvas } from "../../../../../src/ui/Canvas/TerminalCanvas.js";
-import colors from "../../../../../src/ui/colors.js";
+import colors from "../../../../../src/ui/colors/colors.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
 import { TerminalRenderer as Renderer } from "../../../../../src/ui/Renderers/TerminalRenderer.js";
-import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
+import { EditorRoot } from "../../../../../src/Editor/windows/EditorRoot.js";
 import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
 import { DisplayComponent } from "../../../../../src/ui/display/displayComponent.js";
 import { UiComponent } from "../../../../../src/ui/components/UiComponent.js";
-import { UIScreen } from "../../../../../src/ui/components/UIScreen.js";
+import { UIScreen } from "../../../../../src/ui/components/UiScreen/UIScreen.js";
 
 const createTextWindow = (text: string) => new UiComponent().setText(text);
 

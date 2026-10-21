@@ -1,5 +1,5 @@
-import colors, { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from "./colors.js";
-import { ObjectPool } from "../ObjectPool.js";
+import colors, { DEFAULT_BACKGROUND, DEFAULT_FOREGROUND } from "../colors/colors.js";
+import { ObjectPool } from "../../ObjectPool.js";
 
 // a named font first: napi-rs canvas turns the generic "monospace" into a
 // proportional font

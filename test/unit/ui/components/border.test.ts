@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
-import colors from "../../../../src/ui/colors.js";
-import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import colors from "../../../../src/ui/colors/colors.js";
+import { ComponentStyle } from "../../../../src/ui/styles/ComponentStyles.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { ComponentBorder } from "../../../../src/ui/display/border.js";
-import { EditorRoot } from "../../../../src/Editor/Editor/EditorRoot.js";
+import { EditorRoot } from "../../../../src/Editor/windows/EditorRoot.js";
 
 describe("tests the component border", () => {
   it("border is in calculation of layout", () => {

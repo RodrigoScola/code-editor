@@ -3,7 +3,7 @@
 // index.ts does for the terminal (process.stdin's "data", process.stdout's
 // "resize"); the WindowRenderer only draws.
 import { listeners } from "cluster";
-import type { PixelWindow } from "../ui/Renderers/WindowRenderer.js";
+import type { PixelWindow } from "../../ui/Renderers/WindowRenderer.js";
 import type { WindowInputEvent } from "./windowInput.js";
 
 export interface PixelSize {

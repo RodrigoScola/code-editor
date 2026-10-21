@@ -372,7 +372,7 @@ The specs propose these modules (each spec's header has the details):
   `src/Workbench/windowTitle.ts`, `src/Workbench/profiles.ts`,
   `src/Lsp/hierarchy.ts`, `src/Language/colors.ts`, `src/Language/links.ts`,
   `src/Terminal/persistence.ts`, `src/Notebook/notebook.ts`, and additions
-  to `src/Editor/folding.ts`, `src/Language/languages.ts` and
+  to `src/Editor/text/folding.ts`, `src/Language/languages.ts` and
   `src/Debug/session.ts`
 
 ## Choices made in the specs

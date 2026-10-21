@@ -1,8 +1,8 @@
 import { assert } from "../../../assert.js";
 import { DisplayComponent } from "../../../ui/display/displayComponent.js";
-import { EditorRoot } from "../../Editor/EditorRoot.js";
+import { EditorRoot } from "../EditorRoot.js";
 import { UiComponent } from "../../../ui/components/UiComponent.js";
-import { FocusManager } from "../../../ui/windows/FocusManager.js";
+import { FocusManager } from "../../../ui/events/FocusManager.js";
 import { LayoutBounds } from "../../../ui/layout/LayoutBounds.js";
 
 export class WindowManager {

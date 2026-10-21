@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import colors from "../../../../src/ui/colors.js";
+import colors from "../../../../src/ui/colors/colors.js";
 import { ColorParser } from "../../../../src/ui/colors/Parsers/ColorParser.js";
 import { AnsiParser } from "../../../../src/ui/colors/Parsers/AnsiParser.js";
 

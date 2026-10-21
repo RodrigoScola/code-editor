@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { code, exec } from "../harness.js";
-import { movementCommands } from "../../../src/Commands/editor/commands/movement.js";
+import { movementCommands } from "../../../src/Commands/textEditor/movement.js";
 
 // VS Code's cursor and delete commands (the non-Vim way to move around).
 //   cursorLeft/Right/Up/Down, cursorHome/End, cursorTop/Bottom

@@ -3,7 +3,7 @@ import { POSITION_ORDER } from "../../constants.js";
 import { ICanvas } from "../Canvas/TerminalCanvas.js";
 import { DisplayLike } from "../layout/layout.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
 
 export class Rendering {
   static Border(componentLike: DisplayLike, canvas: ICanvas) {

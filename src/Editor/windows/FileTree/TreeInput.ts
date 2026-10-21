@@ -2,7 +2,7 @@ import assert from 'assert';
 import path from 'path';
 import { UiComponent } from '../../../ui/components/UiComponent.js';
 import { UiInput } from '../../../ui/components/UiInput.js';
-import { EditorContext } from '../../Editor/Editor.js';
+import { EditorContext } from '../../EditorContext.js';
 
 export class TreeInput extends UiInput {
   path: string;

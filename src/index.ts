@@ -1,8 +1,8 @@
 import process from "process";
 import readline from "node:readline";
-import { EditorContext } from "./Editor/Editor/Editor.js";
+import { EditorContext } from "./Editor/EditorContext.js";
 import { assert } from "./assert.js";
-import { setupEditor as setup } from "./Editor/setupEditor.js";
+import { setupEditor as setup } from "./Editor/setup/setupEditor.js";
 import { StatusWindow } from "./Editor/windows/StatusEditor.js";
 import { FileTreeWindow } from "./Editor/windows/FileTree/FileTreeWindow.js";
 import { GitEditorWindow } from "./Editor/windows/GitEditorWindow.js";
@@ -10,7 +10,7 @@ import { CodeEditorWindow } from "./Editor/windows/CodeEditorWindow.js";
 import { CodeEditorGroup } from "./Editor/windows/Tab/TabWindow.js";
 import { captureLogs, logger } from "./logging/log.js";
 import { WINDOW_NAMES } from "./constants.js";
-import { UIScreen } from "./ui/components/UIScreen.js";
+import { UIScreen } from "./ui/components/UiScreen/UIScreen.js";
 import { WindowRenderer } from "./ui/Renderers/WindowRenderer.js";
 import { setupTerminal } from "./Editor/setup/terminal.js";
 

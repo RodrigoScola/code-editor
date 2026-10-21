@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import colors, {
   DEFAULT_BACKGROUND,
   DEFAULT_FOREGROUND,
-} from "../../../src/ui/colors.js";
+} from "../../../src/ui/colors/colors.js";
 import { LayoutBounds } from "../../../src/ui/layout/LayoutBounds.js";
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
 import { distance, FakeWindow, Frame, paint, style } from "./helpers.js";

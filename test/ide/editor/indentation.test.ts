@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { guessIndentation } from "../../../src/Editor/indentation.js";
+import { guessIndentation } from "../../../src/Editor/text/indentation.js";
 import { code, exec } from "../harness.js";
 
-// Proposed module src/Editor/indentation.ts:
+// Proposed module src/Editor/text/indentation.ts:
 //   guessIndentation(lines, defaultTabSize, defaultInsertSpaces)
 //     -> { tabSize, insertSpaces }
 // VS Code's editor.detectIndentation looks at how indentation changes from

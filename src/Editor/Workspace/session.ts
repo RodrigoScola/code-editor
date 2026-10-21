@@ -1,5 +1,5 @@
 // Reopening what was open last time
-import type { EditorContext } from "../Editor/Editor.js";
+import type { EditorContext } from "../EditorContext.js";
 
 // plain, JSON-safe data
 export interface SessionData {

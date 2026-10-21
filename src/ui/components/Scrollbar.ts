@@ -1,4 +1,4 @@
-import { ComponentStyle } from "../ComponentStyles.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
 
 const THUMB = "#";
 const TRACK = ".";

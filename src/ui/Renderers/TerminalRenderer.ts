@@ -1,8 +1,8 @@
 import { assert } from "../../assert.js";
 import { TerminalCanvas } from "../Canvas/TerminalCanvas.js";
-import colors from "../colors.js";
+import colors from "../colors/colors.js";
 import { DisplayComponent } from "../display/displayComponent.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
 import { DisplayLike } from "../layout/layout.js";
 import { LayoutBounds } from "../layout/LayoutBounds.js";
 import { AnsiParser } from "../colors/Parsers/AnsiParser.js";

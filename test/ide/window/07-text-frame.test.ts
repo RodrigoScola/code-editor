@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 // WindowRenderer before the UI modules: importing displayComponent first runs
 // into a circular import (UiComponent / UIScreen)
 import { WindowRenderer } from "../../../src/ui/Renderers/WindowRenderer.js";
-import colors from "../../../src/ui/colors.js";
+import colors from "../../../src/ui/colors/colors.js";
 import { DisplayComponent } from "../../../src/ui/display/displayComponent.js";
 import { LayoutBounds } from "../../../src/ui/layout/LayoutBounds.js";
 import { LayoutEngine } from "../../../src/ui/layout/layout.js";

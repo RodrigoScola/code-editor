@@ -7,11 +7,11 @@ import {
 import { TerminalCanvas } from "../../../../../src/ui/Canvas/TerminalCanvas.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
 import { TerminalRenderer as Renderer } from "../../../../../src/ui/Renderers/TerminalRenderer.js";
-import colors from "../../../../../src/ui/colors.js";
+import colors from "../../../../../src/ui/colors/colors.js";
 import { WindowManager } from "../../../../../src/Editor/windows/WindowManager/WindowManager.js";
-import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
+import { EditorRoot } from "../../../../../src/Editor/windows/EditorRoot.js";
 import { UiComponent } from "../../../../../src/ui/components/UiComponent.js";
-import { UIScreen } from "../../../../../src/ui/components/UIScreen.js";
+import { UIScreen } from "../../../../../src/ui/components/UiScreen/UIScreen.js";
 import { isTextComponent } from "../../../../../src/utils.js";
 import { FileTreeWindow } from "../../../../../src/Editor/windows/FileTree/FileTreeWindow.js";
 

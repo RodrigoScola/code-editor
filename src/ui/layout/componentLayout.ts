@@ -1,7 +1,7 @@
-import colors from "../colors.js";
+import colors from "../colors/colors.js";
 import { DisplayComponent, parseSize } from "../display/displayComponent.js";
 import { ScrollBar, ScrollBarStyle } from "../components/Scrollbar.js";
-import { ComponentStyle } from "../ComponentStyles.js";
+import { ComponentStyle } from "../styles/ComponentStyles.js";
 import { LayoutEngine } from "./layout.js";
 import { LayoutBounds } from "./LayoutBounds.js";
 import { LayoutDimensions } from "./LayoutDimensions.js";

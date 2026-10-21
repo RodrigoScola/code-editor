@@ -1,8 +1,8 @@
 import { LogEntry, LogLevel } from "../../logging/log.js";
-import colors from "../../ui/colors.js";
-import { UIScreen } from "../../ui/components/UIScreen.js";
+import colors from "../../ui/colors/colors.js";
+import { UIScreen } from "../../ui/components/UiScreen/UIScreen.js";
 import { UiComponent, UiPanel } from "../../ui/components/UiComponent.js";
-import { EditorContext } from "../Editor/Editor.js";
+import { EditorContext } from "../EditorContext.js";
 
 export class TreeViewWindow extends UIScreen {
   constructor() {

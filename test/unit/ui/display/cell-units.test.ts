@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
-import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import { ComponentStyle } from "../../../../src/ui/styles/ComponentStyles.js";
 import { LayoutEngine } from "../../../../src/ui/layout/layout.js";
 
 // Cells: a plain number in a size means characters, on the terminal and in a

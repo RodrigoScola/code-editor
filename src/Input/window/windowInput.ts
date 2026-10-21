@@ -1,6 +1,6 @@
 // key is SDL's virtual key: the character the key types without Shift, or
 
-import { InputParser } from "./InputParser.js";
+import { InputParser } from "../keys/InputParser.js";
 
 // a name ("escape", "return", "left", ...)
 export type WindowKeyDown = {

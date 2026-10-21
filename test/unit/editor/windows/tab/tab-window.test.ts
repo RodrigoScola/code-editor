@@ -3,8 +3,8 @@ import { TabWindow } from "../../../../../src/Editor/windows/Tab/TabWindow.js";
 import { TerminalCanvas } from "../../../../../src/ui/Canvas/TerminalCanvas.js";
 import { LayoutEngine } from "../../../../../src/ui/layout/layout.js";
 import { TerminalRenderer as Renderer } from "../../../../../src/ui/Renderers/TerminalRenderer.js";
-import colors from "../../../../../src/ui/colors.js";
-import { EditorRoot } from "../../../../../src/Editor/Editor/EditorRoot.js";
+import colors from "../../../../../src/ui/colors/colors.js";
+import { EditorRoot } from "../../../../../src/Editor/windows/EditorRoot.js";
 import {
   MemoryFile,
   Textdocument,

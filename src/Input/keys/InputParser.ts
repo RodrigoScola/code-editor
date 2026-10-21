@@ -1,4 +1,4 @@
-import { InputEvent } from "./TerminalInputParser.js";
+import { InputEvent } from "../terminal/TerminalInputParser.js";
 
 export const DEFAULT_TOKENS = {
   RETURN: "<CR>",

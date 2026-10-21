@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LayoutEngine } from "../../../../src/ui/layout/layout";
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
-import colors from "../../../../src/ui/colors";
+import colors from "../../../../src/ui/colors/colors";
 import { TerminalRenderer as Renderer } from "../../../../src/ui/Renderers/TerminalRenderer.js";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds";
 

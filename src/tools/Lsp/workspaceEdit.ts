@@ -1,5 +1,5 @@
 // What rename, code actions and refactorings send back (LSP WorkspaceEdit)
-import type { EditorContext } from "../../Editor/Editor/Editor.js";
+import type { EditorContext } from "../../Editor/EditorContext.js";
 import type { TextEdit } from "./types.js";
 
 // version must match the open document's (null = any)

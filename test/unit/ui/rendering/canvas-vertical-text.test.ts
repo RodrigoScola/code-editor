@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import colors from "../../../../src/ui/colors.js";
+import colors from "../../../../src/ui/colors/colors.js";
 import { TerminalCanvas } from "../../../../src/ui/Canvas/TerminalCanvas.js";
-import { ComponentStyle } from "../../../../src/ui/ComponentStyles.js";
+import { ComponentStyle } from "../../../../src/ui/styles/ComponentStyles.js";
 import { Configuration } from "../../../../src/config.js";
 import { LayoutBounds } from "../../../../src/ui/layout/LayoutBounds.js";
 import { cell } from "../../../helpers/ui.js";

@@ -1,5 +1,5 @@
 // editor.bracketPairColorization.enabled, editor.guides.bracketPairs
-import type { TextPosition } from "../textMarkers.js";
+import type { TextPosition } from "../text/textMarkers.js";
 
 export interface BracketColor {
   line: number;

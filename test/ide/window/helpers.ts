@@ -6,7 +6,7 @@ import {
   type ICanvas,
   TerminalCanvas,
 } from "../../../src/ui/Canvas/TerminalCanvas.js";
-import { ComponentStyle } from "../../../src/ui/ComponentStyles.js";
+import { ComponentStyle } from "../../../src/ui/styles/ComponentStyles.js";
 import { LayoutBounds } from "../../../src/ui/layout/LayoutBounds.js";
 import { PixelWindow } from "../../../src/ui/Renderers/WindowRenderer.js";
 

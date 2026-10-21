@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { parseKeys } from "../../../src/Input/keyNotation.js";
+import { parseKeys } from "../../../src/Input/keys/keyNotation.js";
 import {
   WindowInputParser,
   type WindowInputEvent,
   type WindowKeyDown,
   type WindowTextInput,
-} from "../../../src/Input/windowInput.js";
+} from "../../../src/Input/window/windowInput.js";
 
 // Level 3: turning window keyboard events into the editor's key events.
 // WindowInputParser.parse(event) is the window's InputParser.parse: it
 // returns the KeyEvents ({ token, ctrl, alt, shift }) one event stands for,
 // the same ones the terminal makes for the same keys.
 //
-// The events (src/Input/windowInput.ts exports these types):
+// The events (src/Input/window/windowInput.ts exports these types):
 //
 //   type WindowKeyDown   = { type: "keyDown"; key: string | null;
 //                            shift: boolean; ctrl: boolean; alt: boolean;

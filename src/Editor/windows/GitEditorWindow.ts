@@ -1,9 +1,9 @@
-import { EditorContext } from "../Editor/Editor.js";
+import { EditorContext } from "../EditorContext.js";
 import path from "path";
 import cp from "child_process";
 import { GitEntry } from "../../tools/Git/gitEntry.js";
 import { gitStatus } from "../../tools/Git/git.js";
-import { UIScreen } from "../../ui/components/UIScreen.js";
+import { UIScreen } from "../../ui/components/UiScreen/UIScreen.js";
 
 export class GitEditorWindow extends UIScreen {
   private status: GitStatus | null = null;

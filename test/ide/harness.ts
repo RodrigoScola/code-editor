@@ -4,16 +4,16 @@ import { dirname, join } from "node:path";
 import {
   EditorCommandFn,
   EditorContext,
-} from "../../src/Editor/Editor/Editor.js";
-import { setupEditor } from "../../src/Editor/setupEditor.js";
+} from "../../src/Editor/EditorContext.js";
+import { setupEditor } from "../../src/Editor/setup/setupEditor.js";
 import { CodeEditorGroup } from "../../src/Editor/windows/Tab/TabWindow.js";
 import { StatusWindow } from "../../src/Editor/windows/StatusEditor.js";
 import { UiPanel } from "../../src/ui/components/UiComponent.js";
 import { LayoutEngine } from "../../src/ui/layout/layout.js";
 import { WINDOW_NAMES } from "../../src/constants.js";
-import { parseSelections } from "../../src/Editor/textMarkers.js";
+import { parseSelections } from "../../src/Editor/text/textMarkers.js";
 
-export { parseKeys } from "../../src/Input/keyNotation.js";
+export { parseKeys } from "../../src/Input/keys/keyNotation.js";
 export { stripAnsi } from "../../src/ui/Renderers/TerminalRenderer.js";
 export {
   ACTIVE,
@@ -21,11 +21,11 @@ export {
   CURSOR,
   parseSelections,
   renderSelections,
-} from "../../src/Editor/textMarkers.js";
+} from "../../src/Editor/text/textMarkers.js";
 export type {
   TextPosition as Position,
   TextSelection as Selection,
-} from "../../src/Editor/textMarkers.js";
+} from "../../src/Editor/text/textMarkers.js";
 
 // Builds a real editor for a spec and hands back its EditorContext. Every
 // helper the specs use lives on EditorContext itself (src/Editor/Editor/
@@ -39,10 +39,10 @@ export type {
 //   ide.executeCommand("textEditor.addSelectionToNextFindMatch");
 //   expect(ide.state()).eq("«foo» bar «foo»");
 //
-// Start text is marked text (src/Editor/textMarkers.ts): "|" is a cursor,
+// Start text is marked text (src/Editor/text/textMarkers.ts): "|" is a cursor,
 // "«" and "»" are the anchor and the active end of a selection. In normal
 // mode the cursor sits on the character after "|"; in insert mode it is the
-// insertion point. Keys use Vim notation (src/Input/keyNotation.ts).
+// insertion point. Keys use Vim notation (src/Input/keys/keyNotation.ts).
 
 export type IdeOptions = {
   // the document's file name; the extension picks the language

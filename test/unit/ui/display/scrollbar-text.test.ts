@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DisplayComponent } from "../../../../src/ui/display/displayComponent.js";
 import { ScrollBarStyle } from "../../../../src/ui/components/Scrollbar.js";
-import { TextBuffer } from "../../../../src/ui/buffer/Buffer.js";
+import { TextBuffer } from "../../../../src/ui/text/Buffer.js";
 import { cell, layoutAndPaint, screen } from "../../../helpers/ui.js";
 
 // A component's own text is content too, like in HTML: a scrolling box

@@ -3,7 +3,7 @@ import {
   blendColors,
   formatColor,
   mixColors,
-} from "../../../../src/ui/colors.js";
+} from "../../../../src/ui/colors/colors.js";
 import { ColorOptions } from "../../../../src/ui/colors/colorOptions.js";
 import { ColorParser } from "../../../../src/ui/colors/Parsers/ColorParser.js";
 

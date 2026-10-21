@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { EditorSelection } from "../../../../src/Editor/Selection.js";
-import { TextBuffer } from "../../../../src/ui/buffer/Buffer.js";
-import { UIScreen } from "../../../../src/ui/components/UIScreen.js";
+import { EditorSelection } from "../../../../src/ui/components/UiScreen/Selection.js";
+import { TextBuffer } from "../../../../src/ui/text/Buffer.js";
+import { UIScreen } from "../../../../src/ui/components/UiScreen/UIScreen.js";
 
 // The selection itself, and editing a text view through it.
 //
-// EditorSelection (src/Editor/Selection.ts) has anchor/head and
+// EditorSelection (src/ui/components/UiScreen/Selection.ts) has anchor/head and
 // startSelection()/endSelection() (the earlier and later point). Proposed:
 //   selection.isEmpty()      anchor and head are the same point
 //   selection.isReversed()   the head is before the anchor (selected
